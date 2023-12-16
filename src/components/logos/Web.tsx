@@ -1,24 +1,9 @@
-import { memo } from 'react';
+import { SVGProps, memo } from 'react';
 
-function _Web({
-  width,
-  height,
-  fill,
-  className = '',
-}: {
-  width?: number | string;
-  height?: number | string;
-  fill?: string;
-  className?: string;
-}) {
+function _Web(props: SVGProps<SVGSVGElement>) {
+  const { fill, ...rest } = props;
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={width}
-      height={height}
-      className={className}
-      viewBox="0 0 29 29"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 29" {...rest}>
       <path
         fill={fill}
         d="m11 18.6-.39.17a13.45 13.45 0 0 0 1.12 2.9 5.25 5.25 0 0 0 2.08 2.24c.36.18.7.26 1.03.26.95 0 2.1-.71 3.1-2.5.46-.82.85-1.8 1.13-2.9a10.3 10.3 0 0 0-8.06-.17Z"

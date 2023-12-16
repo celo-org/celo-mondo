@@ -171,9 +171,9 @@ Toasts
   --toastify-color-light: #ffffff;
   --toastify-color-dark: #2e3338;
   --toastify-color-info: #3498db;
-  --toastify-color-success: #35d07f;
+  --toastify-color-success: #56DF7C;
   --toastify-color-warning: #fcd34d;
-  --toastify-color-error: #dc2626;
+  --toastify-color-error: #E70532;
   --toastify-color-transparent: rgba(255, 255, 255, 0.7);
 
   --toastify-icon-color-info: var(--toastify-color-info);

@@ -1,11 +1,11 @@
 import { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import { PropsWithChildren } from 'react';
-import 'react-toastify/dist/ReactToastify.css';
 import { links } from 'src/config/links';
-import 'src/styles/fonts.css';
 import 'src/styles/globals.css';
-import 'src/vendor/inpage-metamask';
 import { App } from './app';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   applicationName: 'Celo Station',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren<any>) {
   return (
     <html lang="en">
-      <body className="">
+      <body className={`${inter.variable} font-sans`}>
         <App>{children}</App>
       </body>
     </html>

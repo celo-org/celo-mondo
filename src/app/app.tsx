@@ -8,8 +8,6 @@ import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
 import { Footer } from 'src/components/nav/Footer';
 import { Header } from 'src/components/nav/Header';
 import { WagmiContext } from 'src/config/wagmi';
-import 'src/styles/fonts.css';
-import 'src/styles/globals.css';
 import { useIsSsr } from 'src/utils/ssr';
 import 'src/vendor/inpage-metamask';
 
@@ -44,7 +42,7 @@ export function App({ children }: PropsWithChildren<any>) {
 
 export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
-    <div className="min-w-screen relative flex h-full min-h-screen w-full flex-col justify-between bg-yellow-500">
+    <div className="min-w-screen bg-taupe-100 relative flex h-full min-h-screen w-full flex-col justify-between text-black">
       <Header />
       <div className="mx-auto flex max-w-screen-xl grow items-center sm:px-4">
         <main className="my-4 flex w-full flex-1 items-center justify-center">{children}</main>

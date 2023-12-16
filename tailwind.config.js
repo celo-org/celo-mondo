@@ -8,59 +8,35 @@ module.exports = {
     colors: {
       transparent: 'transparent',
       current: 'currentColor',
-      black: '#2E3338',
-      black50: '#939799',
+      black: '#000000',
       white: '#ffffff',
       gray: colors.gray,
       blue: colors.blue,
       red: colors.red,
-      yellow: colors.amber,
-      teal: colors.teal,
-      neutral: colors.neutral,
-      fuchsia: colors.fuchsia,
-      emerald: colors.emerald,
-      cyan: colors.cyan,
-      zinc: colors.zinc,
+      yellow: {
+        500: '#FCFF52', // Prosperity
+      },
+      purple: {
+        200: '#B490FF', // Lavender
+        500: '#1E002B', // Fig
+      },
       green: {
-        50: '#e8fbf3',
-        100: '#baf3db',
-        200: '#8cebc4',
-        300: '#5ee3ad',
-        400: '#2fdb95',
-        500: '#19d88a',
-        600: '#16c27c',
-        700: '#14ac6e',
-        800: '#119760',
-        900: '#0f8152',
-        950: '#0c6c45',
+        200: '#BEEAA9',
+        500: '#56DF7C', // Jade
       },
-      greengray: {
-        darkest: '#C5D0CA',
-        dark: '#D1DDD7',
-        DEFAULT: '#DEE8E2',
-        light: '#EDF8F1',
-        lightest: '#F7FCF9',
-      },
-      bluegray: {
-        DEFAULT: '#EAEFF0',
-      },
-      'primary-dark': '#02010A',
-      'clean-white': '#FFFFFF',
-      'primary-blush': '#FCD7FC',
+      taupe: {
+        100: '#FCF6F1', // Gypsum
+        300: '#E7E3D4', // Sand
+        600: '#655947', // Wood
+      }
     },
     fontFamily: {
-      sans: ['Roboto', 'sans-serif'],
-      serif: ['serif'],
-      mono: ['Roboto Mono', 'Courier New', 'monospace'],
-      fg: ['var(--font-founders-grotesk)'],   
-      inter: ['Inter', 'sans-serif'],
-    },
-    fontSize: {
-      sm: ['15px', '20px'],
+      sans: ['var(--font-inter)', 'sans-serif'],
+      serif: ['Garamond', 'serif'],
+      mono: ['Courier New', 'monospace'],
     },
     extend: {
       spacing: {
-        46: '11.5rem',
         100: '26rem',
         112: '28rem',
         128: '32rem',
@@ -77,5 +53,15 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+
+  plugins: [
+    require("daisyui"),
+  ],
+
+  daisyui: {
+    themes: false, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
+    styled: true, // include daisyUI colors and design decisions for all components
+    utils: true, // adds responsive and modifier utility classes
+    logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
+  },
 }

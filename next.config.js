@@ -36,15 +36,6 @@ module.exports = {
     return config
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/:any*',
-        destination: '/',
-      },
-    ]
-  },
-
   async headers() {
     return [
       {

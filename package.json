@@ -15,6 +15,7 @@
   "homepage": "https://github.com/jmrossy/celo-station",
   "license": "MIT",
   "dependencies": {
+    "@celo/abis": "^10.0.0",
     "@celo/rainbowkit-celo": "^1.1.2",
     "@metamask/jazzicon": "https://github.com/jmrossy/jazzicon#7a8df28974b4e81129bfbe3cab76308b889032a6",
     "@metamask/post-message-stream": "6.1.2",
@@ -23,6 +24,7 @@
     "@tanstack/react-query": "^5.13.4",
     "@vercel/analytics": "^1.1.1",
     "bignumber.js": "^9.1.2",
+    "clsx": "^2.0.0",
     "formik": "2.4.5",
     "next": "14.0.4",
     "react": "^18.2.0",
@@ -40,6 +42,7 @@
     "@typescript-eslint/parser": "^6.14.0",
     "autoprefixer": "^10.4.16",
     "critters": "^0.0.20",
+    "daisyui": "^4.4.20",
     "eslint": "^8.55.0",
     "eslint-config-next": "^14.0.4",
     "eslint-config-prettier": "^9.1.0",
