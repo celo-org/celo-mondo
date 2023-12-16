@@ -20,7 +20,7 @@ export function NavBar() {
               key={l.label}
               className={clsx(
                 'flex items-center justify-center',
-                l.to === pathname && 'font-semibold',
+                l.to === pathname ? 'font-semibold opacity-100' : 'opacity-70',
               )}
             >
               <Link href={l.to}>{l.label}</Link>

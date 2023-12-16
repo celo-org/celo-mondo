@@ -36,6 +36,10 @@ module.exports = {
       mono: ['Courier New', 'monospace'],
     },
     extend: {
+      screens: {
+        'all': '1px',
+        'xs': '480px',
+      },
       spacing: {
         100: '26rem',
         112: '28rem',

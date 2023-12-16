@@ -44,9 +44,7 @@ export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
     <div className="min-w-screen bg-taupe-100 relative flex h-full min-h-screen w-full flex-col justify-between text-black">
       <Header />
-      <div className="mx-auto flex max-w-screen-xl grow items-center sm:px-4">
-        <main className="my-4 flex w-full flex-1 items-center justify-center">{children}</main>
-      </div>
+      <main className="w-full flex-1">{children}</main>
       <Footer />
     </div>
   );

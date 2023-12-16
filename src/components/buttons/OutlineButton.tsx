@@ -1,13 +1,13 @@
 import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
 
-export function SolidButton({
+export function OutlineButton({
   children,
   className,
   ...props
 }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) {
   return (
     <button
-      className={`border-taupe-300 btn h-fit min-h-fit rounded-full bg-yellow-500 px-5 py-2.5 font-semibold text-black hover:bg-yellow-500 hover:opacity-90 ${className}`}
+      className={`border-taupe-300 btn btn-outline h-fit min-h-fit rounded-full px-4 py-2.5 font-semibold text-black hover:bg-black/5 ${className}`}
       {...props}
     >
       {children}

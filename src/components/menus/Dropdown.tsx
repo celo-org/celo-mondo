@@ -19,7 +19,7 @@ export function Dropdown({
       </div>
       <div
         tabIndex={0}
-        className="dropdown-content z-[1] mt-4 w-52 rounded-box bg-white p-2 shadow"
+        className="border-taupe-300 dropdown-content z-[1] mt-3 border bg-white p-4 shadow"
       >
         {content}
       </div>
@@ -46,7 +46,7 @@ export function DropdownMenu({
       </div>
       <ul
         tabIndex={0}
-        className="menu dropdown-content z-[1] mt-4 w-52 rounded-box bg-white p-2 shadow"
+        className="border-taupe-300 menu dropdown-content z-[1] mt-3 w-52 border bg-white p-2 shadow"
       >
         {items.map((item, index) => (
           <li key={index}>{item}</li>

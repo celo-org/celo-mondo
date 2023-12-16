@@ -24,15 +24,17 @@ export class Identicon extends PureComponent<Props> {
     const jazziconResult = jazzicon(size, addressToSeed(address));
 
     return (
-      <div
-        style={{ height: size, ...styles }}
-        ref={(nodeElement) => {
-          if (nodeElement) {
-            nodeElement.innerHTML = '';
-            nodeElement.appendChild(jazziconResult);
-          }
-        }}
-      ></div>
+      <div className="border-taupe-300 flex w-fit items-center justify-center rounded-full border p-px">
+        <div
+          style={{ height: size, width: size, ...styles }}
+          ref={(nodeElement) => {
+            if (nodeElement) {
+              nodeElement.innerHTML = '';
+              nodeElement.appendChild(jazziconResult);
+            }
+          }}
+        ></div>
+      </div>
     );
   }
 }

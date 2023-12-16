@@ -1,7 +1,11 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import Link from 'next/link';
 import { toast } from 'react-toastify';
+import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
+import { Identicon } from 'src/components/icons/Identicon';
 import { Dropdown } from 'src/components/menus/Dropdown';
+import { Amount } from 'src/components/numbers/Amount';
 import { shortenAddress } from 'src/utils/addresses';
 import { tryClipboardSet } from 'src/utils/clipboard';
 import { useAccount, useDisconnect } from 'wagmi';
@@ -10,8 +14,30 @@ export function WalletDropdown() {
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnect } = useDisconnect();
-  console.log('dis', disconnect);
 
+  return (
+    <div className="relative mb-1 flex justify-end">
+      {address && isConnected ? (
+        <Dropdown
+          button={
+            <OutlineButton className="all:py-1 pl-1.5 pr-3">
+              <div className="flex items-center justify-center space-x-1">
+                <Identicon address={address} size={26} />
+                <div className="text-sm">{shortenAddress(address, true)}</div>
+              </div>
+            </OutlineButton>
+          }
+          content={<DropdownContent address={address} disconnect={disconnect} />}
+          className="dropdown-end"
+        />
+      ) : (
+        <SolidButton onClick={openConnectModal}>Connect</SolidButton>
+      )}
+    </div>
+  );
+}
+
+function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
   const onClickCopy = async () => {
     if (!address) return;
     await tryClipboardSet(address);
@@ -19,16 +45,37 @@ export function WalletDropdown() {
   };
 
   return (
-    <div className="relative mb-1 flex justify-end opacity-90">
-      {address && isConnected ? (
-        <Dropdown
-          button={<SolidButton>{shortenAddress(address)}</SolidButton>}
-          content={'FOObar'}
-          className="dropdown-end"
-        />
-      ) : (
-        <SolidButton onClick={openConnectModal}>Connect</SolidButton>
-      )}
+    <div className="flex min-w-[16rem] flex-col items-center space-y-3">
+      <div className="flex flex-col items-center">
+        <Identicon address={address} size={34} />
+        <button title="Click to copy" onClick={onClickCopy} className="text-sm">
+          {shortenAddress(address)}
+        </button>
+      </div>
+      <div className="flex flex-col items-center">
+        <label className="text-sm">Total Balance</label>
+        <Amount value={0} className="text-2xl" />
+      </div>
+      <div className="flex w-full flex-col justify-stretch">
+        <ValueRow label="Wallet Balance" value={0} />
+        <ValueRow label="Total Locked" value={0} />
+        <ValueRow label="Total Earned" value={0} />
+      </div>
+      <div className="flex w-full items-center justify-between space-x-4">
+        <Link href="/account">
+          <OutlineButton>My Account</OutlineButton>
+        </Link>
+        <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>
+      </div>
+    </div>
+  );
+}
+
+function ValueRow({ label, value }: { label: string; value: string | number | bigint }) {
+  return (
+    <div className="border-taupe-300 flex flex-col border p-3">
+      <label className="text-sm">{label}</label>
+      <Amount value={value} className="text-xl" />
     </div>
   );
 }
