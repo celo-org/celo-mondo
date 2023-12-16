@@ -32,7 +32,7 @@ const securityHeaders = [
 
 module.exports = {
   webpack: (config) => {
-    config.externals = ['pino-pretty']
+    config.externals = [...config.externals, 'pino-pretty']
     return config
   },
 
