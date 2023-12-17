@@ -37,6 +37,10 @@ export function objFilter<K extends string, I, O extends I>(
   >;
 }
 
+export function objLength(obj: Record<any, any>) {
+  return Object.keys(obj).length;
+}
+
 // promiseObjectAll :: {k: Promise a} -> Promise {k: a}
 export function promiseObjAll<K extends string, V>(obj: {
   [key in K]: Promise<V>;

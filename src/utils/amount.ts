@@ -10,7 +10,7 @@ const DEFAULT_TOKEN_DECIMALS = 18;
  * @returns Converted value in string type.
  */
 export function fromWei(
-  value: BigNumber.Value | null | undefined,
+  value: BigNumber.Value | bigint | null | undefined,
   decimals = DEFAULT_TOKEN_DECIMALS,
 ): string {
   if (!value) return (0).toString();
@@ -27,12 +27,12 @@ export function fromWei(
  * @returns Converted value in string type.
  */
 export function fromWeiRounded(
-  value: BigNumber.Value | null | undefined,
+  value: BigNumber.Value | bigint | null | undefined,
   decimals = DEFAULT_TOKEN_DECIMALS,
   displayDecimals?: number,
 ): string {
   if (!value) return '0';
-  const flooredValue = BigNumber(value).toFixed(0, BigNumber.ROUND_FLOOR);
+  const flooredValue = BigNumber(value.toString()).toFixed(0, BigNumber.ROUND_FLOOR);
   const amount = BigNumber(formatUnits(BigInt(flooredValue), decimals));
   if (amount.isZero()) return '0';
   displayDecimals ??= amount.gte(10000) ? 2 : DEFAULT_DISPLAY_DECIMALS;

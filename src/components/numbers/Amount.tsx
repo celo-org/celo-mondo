@@ -14,21 +14,31 @@ export function Amount({
   tokenId,
   tokenAddress,
   className,
+  decimals = 2,
+  showSymbol = true,
 }: {
   value?: BigNumber.Value | bigint;
-  valueWei?: string;
+  valueWei?: BigNumber.Value | bigint;
   tokenId?: TokenId;
   tokenAddress?: Address;
   className?: string;
+  decimals?: number;
+  showSymbol?: boolean;
 }) {
   if (valueWei) {
     value = fromWei(valueWei);
   }
-  const valueFormatted = BigNumber(value?.toString() || '0').toFormat(NUMBER_FORMAT);
+  const valueFormatted = BigNumber(value?.toString() || '0')
+    .decimalPlaces(decimals)
+    .toFormat(NUMBER_FORMAT);
 
   const token =
     (tokenId ? getTokenById(tokenId) : tokenAddress ? getTokenByAddress(tokenAddress) : null) ||
     CELO;
 
-  return <span className={`font-serif ${className}`}>{`${valueFormatted} ${token.symbol}`}</span>;
+  return (
+    <span className={`font-serif ${className}`}>{`${valueFormatted} ${
+      showSymbol ? token.symbol : ''
+    }`}</span>
+  );
 }

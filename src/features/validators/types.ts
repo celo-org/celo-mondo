@@ -5,8 +5,8 @@ export interface ValidatorGroup {
   name: string;
   url: string;
   eligible: boolean;
-  capacity: string;
-  votes: string;
+  capacity: bigint;
+  votes: bigint;
   members: Record<Address, Validator>;
 }
 
@@ -18,7 +18,7 @@ export enum ValidatorStatus {
 export interface Validator {
   address: Address;
   name: string;
-  score: string;
+  score: bigint;
   signer: Address;
   status: ValidatorStatus;
 }
@@ -28,19 +28,6 @@ export enum ValidatorGroupStatus {
   Full = 0,
   Okay = 1,
   Good = 2,
-}
-
-export interface ValidatorGroupTableRow {
-  id: string;
-  address: Address;
-  name: string;
-  url: string;
-  members: Record<string, Validator>;
-  numElected: number;
-  numMembers: number;
-  votes: number;
-  percent: number;
-  status: ValidatorGroupStatus;
 }
 
 export enum StakeActionType {

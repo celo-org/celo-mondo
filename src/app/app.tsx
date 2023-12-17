@@ -10,6 +10,7 @@ import { Header } from 'src/components/nav/Header';
 import { WagmiContext } from 'src/config/wagmi';
 import { useIsSsr } from 'src/utils/ssr';
 import 'src/vendor/inpage-metamask';
+import 'src/vendor/polyfill';
 
 function SafeHydrate({ children }: PropsWithChildren<any>) {
   // Disable app SSR for now as it's not needed and
