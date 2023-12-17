@@ -36,7 +36,7 @@ function ThemeToggle() {
       <div className="text-[15px] font-normal leading-tight text-gray-950 dark:text-neutral-400">
         Theme
       </div>
-      <div className="trainsition-color relative flex items-center justify-center gap-[5px] rounded-[32px] border border border border border-gray-950 px-0.5 py-[1px] dark:bg-fuchsia-200">
+      <div className="trainsition-color dark:bg-fuchsia-200 relative flex items-center justify-center gap-[5px] rounded-[32px] border border border border border-gray-950 px-0.5 py-[1px]">
         <div className="relative flex h-5 w-4 flex-col items-start justify-start p-1 pr-0">
           <Image src={Sun} alt="light theme icon" width={14} height={14} />
         </div>

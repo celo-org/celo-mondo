@@ -24,7 +24,7 @@ export class Identicon extends PureComponent<Props> {
     const jazziconResult = jazzicon(size, addressToSeed(address));
 
     return (
-      <div className="border-taupe-300 flex w-fit items-center justify-center rounded-full border p-px">
+      <div className="flex w-fit items-center justify-center rounded-full border border-taupe-300 p-px">
         <div
           style={{ height: size, width: size, ...styles }}
           ref={(nodeElement) => {

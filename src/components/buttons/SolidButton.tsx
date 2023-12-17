@@ -7,7 +7,7 @@ export function SolidButton({
 }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) {
   return (
     <button
-      className={`border-taupe-300 btn h-fit min-h-fit rounded-full bg-yellow-500 px-5 py-2.5 font-semibold text-black hover:bg-yellow-500 hover:opacity-90 ${className}`}
+      className={`btn h-fit min-h-fit rounded-full border-taupe-300 bg-yellow-500 px-5 py-2.5 font-semibold text-black hover:bg-yellow-500 hover:opacity-90 ${className}`}
       {...props}
     >
       {children}

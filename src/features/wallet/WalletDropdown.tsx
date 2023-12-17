@@ -20,7 +20,7 @@ export function WalletDropdown() {
       {address && isConnected ? (
         <Dropdown
           button={
-            <OutlineButton className="all:py-1 pl-1.5 pr-3">
+            <OutlineButton className="pl-1.5 pr-3 all:py-1">
               <div className="flex items-center justify-center space-x-1">
                 <Identicon address={address} size={26} />
                 <div className="text-sm">{shortenAddress(address, true)}</div>
@@ -73,7 +73,7 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
 
 function ValueRow({ label, value }: { label: string; value: string | number | bigint }) {
   return (
-    <div className="border-taupe-300 flex flex-col border p-3">
+    <div className="flex flex-col border border-taupe-300 p-3">
       <label className="text-sm">{label}</label>
       <Amount value={value} className="text-xl" />
     </div>

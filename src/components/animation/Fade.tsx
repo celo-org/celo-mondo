@@ -1,16 +1,16 @@
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react';
 
 export function Fade(props: PropsWithChildren<{ show: boolean }>) {
-  const { show, children } = props
-  const [render, setRender] = useState(show)
+  const { show, children } = props;
+  const [render, setRender] = useState(show);
 
   useEffect(() => {
-    if (show) setRender(true)
-  }, [show])
+    if (show) setRender(true);
+  }, [show]);
 
   const onAnimationEnd = () => {
-    if (!show) setRender(false)
-  }
+    if (!show) setRender(false);
+  };
 
   return render ? (
     <div
@@ -22,5 +22,5 @@ export function Fade(props: PropsWithChildren<{ show: boolean }>) {
     >
       {children}
     </div>
-  ) : null
+  ) : null;
 }

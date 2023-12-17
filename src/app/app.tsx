@@ -42,7 +42,7 @@ export function App({ children }: PropsWithChildren<any>) {
 
 export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
-    <div className="min-w-screen bg-taupe-100 relative flex h-full min-h-screen w-full flex-col justify-between text-black">
+    <div className="min-w-screen relative flex h-full min-h-screen w-full flex-col justify-between bg-taupe-100 text-black">
       <Header />
       <main className="w-full flex-1">{children}</main>
       <Footer />
