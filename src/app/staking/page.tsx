@@ -1,6 +1,8 @@
+'use client';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Card } from 'src/components/layout/Card';
 import { Section } from 'src/components/layout/Section';
+import { useValidatorGroups } from 'src/features/validators/hooks';
 
 export default function Index() {
   return (
@@ -41,9 +43,14 @@ function HeroStat({ label, value }: { label: string; value: string }) {
 }
 
 function ListSection() {
+  const { groups } = useValidatorGroups();
   return (
     <Section>
-      <Card>TODO</Card>
+      <Card>
+        <div className="space-y-4">
+          {groups?.map((g) => <div key={g.address}>{JSON.stringify(g)}</div>)}
+        </div>
+      </Card>
     </Section>
   );
 }

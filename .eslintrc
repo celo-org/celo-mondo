@@ -15,6 +15,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:@tanstack/eslint-plugin-query/recommended",
     "next", 
     "next/core-web-vitals", 
     "prettier"

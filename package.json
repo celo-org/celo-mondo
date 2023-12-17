@@ -35,6 +35,7 @@
     "wagmi": "1.4.12"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.12.1",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.4",
     "@types/react": "^18.2.45",

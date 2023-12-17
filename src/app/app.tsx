@@ -1,7 +1,7 @@
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Analytics } from '@vercel/analytics/react';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState } from 'react';
 import { ToastContainer, Zoom, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
@@ -10,8 +10,6 @@ import { Header } from 'src/components/nav/Header';
 import { WagmiContext } from 'src/config/wagmi';
 import { useIsSsr } from 'src/utils/ssr';
 import 'src/vendor/inpage-metamask';
-
-const reactQueryClient = new QueryClient({});
 
 function SafeHydrate({ children }: PropsWithChildren<any>) {
   // Disable app SSR for now as it's not needed and
@@ -25,10 +23,12 @@ function SafeHydrate({ children }: PropsWithChildren<any>) {
 }
 
 export function App({ children }: PropsWithChildren<any>) {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <ErrorBoundary>
       <SafeHydrate>
-        <QueryClientProvider client={reactQueryClient}>
+        <QueryClientProvider client={queryClient}>
           <WagmiContext>
             <BodyLayout>{children}</BodyLayout>
             <ToastContainer transition={Zoom} position={toast.POSITION.BOTTOM_RIGHT} />

@@ -1,2 +1,2 @@
-declare type Address = string;
+declare type Address = `0x${string}`;
 declare type HexString = string;
