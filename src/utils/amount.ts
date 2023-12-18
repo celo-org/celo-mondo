@@ -1,8 +1,6 @@
 import BigNumber from 'bignumber.js';
+import { DEFAULT_DISPLAY_DECIMALS, DEFAULT_TOKEN_DECIMALS } from 'src/config/consts';
 import { formatUnits, parseUnits } from 'viem';
-
-const DEFAULT_DISPLAY_DECIMALS = 4;
-const DEFAULT_TOKEN_DECIMALS = 18;
 
 /**
  * Convert the given Wei value to Ether value

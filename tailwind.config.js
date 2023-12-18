@@ -27,6 +27,7 @@ module.exports = {
       taupe: {
         100: '#FCF6F1', // Gypsum
         300: '#E7E3D4', // Sand
+        400: '#C6C2B5',
         600: '#655947', // Wood
       }
     },

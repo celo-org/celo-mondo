@@ -12,6 +12,10 @@ export function bigIntSum(a: readonly number[] | readonly bigint[]): bigint {
   return BigInt(a.reduce((acc, val) => acc.plus(val.toString()), new BigNumber(0)).toFixed(0));
 }
 
+export function bigIntMean(a: readonly number[] | readonly bigint[]): bigint {
+  return bigIntSum(a) / BigInt(a.length);
+}
+
 export function bigIntMax(...args: bigint[]): bigint {
   return args.reduce((m, e) => (e > m ? e : m));
 }

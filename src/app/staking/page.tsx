@@ -14,7 +14,7 @@ export default function Index() {
   return (
     <div className="space-y-8">
       <HeroSection totalVotes={totalVotes} groups={groups} />
-      <ListSection groups={groups} />
+      <ListSection totalVotes={totalVotes} groups={groups} />
     </div>
   );
 }
@@ -73,14 +73,11 @@ function HeroStat({
   );
 }
 
-function ListSection({ groups }: { groups?: ValidatorGroup[] }) {
+function ListSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: ValidatorGroup[] }) {
   return (
     <Section>
-      <Card>
-        <ValidatorGroupTable groups={groups || []} />
-        {/* <div className="space-y-4">
-          {groups?.map((g) => <div key={g.address}>{JSON.stringify(g)}</div>)}
-        </div> */}
+      <Card className="p-0" bodyClassName="p-0">
+        <ValidatorGroupTable groups={groups || []} totalVotes={totalVotes || 0n} />
       </Card>
     </Section>
   );
