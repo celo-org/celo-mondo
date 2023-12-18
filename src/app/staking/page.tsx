@@ -4,6 +4,7 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Card } from 'src/components/layout/Card';
 import { Section } from 'src/components/layout/Section';
 import { Amount } from 'src/components/numbers/Amount';
+import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
 import { useValidatorGroups } from 'src/features/validators/hooks';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { bigIntMin } from 'src/utils/math';
@@ -76,9 +77,10 @@ function ListSection({ groups }: { groups?: ValidatorGroup[] }) {
   return (
     <Section>
       <Card>
-        <div className="space-y-4">
+        <ValidatorGroupTable groups={groups || []} />
+        {/* <div className="space-y-4">
           {groups?.map((g) => <div key={g.address}>{JSON.stringify(g)}</div>)}
-        </div>
+        </div> */}
       </Card>
     </Section>
   );
