@@ -5,8 +5,8 @@ import { Card } from 'src/components/layout/Card';
 import { Section } from 'src/components/layout/Section';
 import { Amount } from 'src/components/numbers/Amount';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
-import { useValidatorGroups } from 'src/features/validators/hooks';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
+import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { bigIntMin } from 'src/utils/math';
 
 export default function Index() {

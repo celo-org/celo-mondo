@@ -9,6 +9,7 @@ import { Amount } from 'src/components/numbers/Amount';
 import { shortenAddress } from 'src/utils/addresses';
 import { tryClipboardSet } from 'src/utils/clipboard';
 import { useAccount, useDisconnect } from 'wagmi';
+import { useAccountBalance, useLockedBalance } from '../account/hooks';
 
 export function WalletDropdown() {
   const { address, isConnected } = useAccount();
@@ -38,6 +39,11 @@ export function WalletDropdown() {
 }
 
 function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
+  const { balance: walletBalance } = useAccountBalance();
+  const { balance: lockedBalance } = useLockedBalance();
+
+  const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
+
   const onClickCopy = async () => {
     if (!address) return;
     await tryClipboardSet(address);
@@ -45,7 +51,7 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
   };
 
   return (
-    <div className="flex min-w-[16rem] flex-col items-center space-y-3">
+    <div className="flex min-w-[18rem] flex-col items-center space-y-3">
       <div className="flex flex-col items-center">
         <Identicon address={address} size={34} />
         <button title="Click to copy" onClick={onClickCopy} className="text-sm">
@@ -54,12 +60,12 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
       </div>
       <div className="flex flex-col items-center">
         <label className="text-sm">Total Balance</label>
-        <Amount value={0} className="text-2xl" />
+        <Amount valueWei={totalBalance} className="text-2xl" />
       </div>
-      <div className="flex w-full flex-col justify-stretch">
-        <ValueRow label="Wallet Balance" value={0} />
-        <ValueRow label="Total Locked" value={0} />
-        <ValueRow label="Total Earned" value={0} />
+      <div className="flex w-full flex-col justify-stretch divide-y divide-taupe-300 border border-taupe-300">
+        <ValueRow label="Wallet Balance" valueWei={walletBalance?.value} />
+        <ValueRow label="Total Locked" valueWei={lockedBalance?.value} />
+        <ValueRow label="Total Earned" valueWei={0} />
       </div>
       <div className="flex w-full items-center justify-between space-x-4">
         <Link href="/account">
@@ -71,11 +77,11 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
   );
 }
 
-function ValueRow({ label, value }: { label: string; value: string | number | bigint }) {
+function ValueRow({ label, valueWei }: { label: string; valueWei?: string | number | bigint }) {
   return (
-    <div className="flex flex-col border border-taupe-300 p-3">
+    <div className="flex flex-col px-3 py-2.5">
       <label className="text-sm">{label}</label>
-      <Amount value={value} className="text-xl" />
+      <Amount valueWei={valueWei} className="text-xl" />
     </div>
   );
 }

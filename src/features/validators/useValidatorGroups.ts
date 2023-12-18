@@ -3,8 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Addresses } from 'src/config/contracts';
 // import { getContract } from 'viem';
 import BigNumber from 'bignumber.js';
-import { useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { useToastError } from 'src/components/notifications/useToastError';
 import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
@@ -24,11 +23,7 @@ export function useValidatorGroups() {
     staleTime: 60 * 60 * 1000, // 1 hour
   });
 
-  useEffect(() => {
-    if (!error) return;
-    logger.error(error);
-    toast.error('Error fetching validator groups');
-  }, [error]);
+  useToastError(error, 'Error fetching validator groups');
 
   return {
     isLoading,
