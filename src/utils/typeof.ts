@@ -1,4 +1,4 @@
-export function isNullish<T>(val: T) {
+export function isNullish<T>(val: T | null | undefined): val is null | undefined {
   if (val === null || val === undefined) return true;
   else return false;
 }

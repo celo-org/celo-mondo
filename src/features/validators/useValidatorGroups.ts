@@ -15,9 +15,9 @@ export function useValidatorGroups() {
 
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useValidatorGroups', publicClient],
-    queryFn: async () => {
+    queryFn: () => {
       logger.debug('Fetching validator groups');
-      return await fetchValidatorGroupInfo(publicClient);
+      return fetchValidatorGroupInfo(publicClient);
     },
     gcTime: Infinity,
     staleTime: 60 * 60 * 1000, // 1 hour

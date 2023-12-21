@@ -14,8 +14,19 @@ import { config } from 'src/config/config';
 import { Color } from 'src/styles/Color';
 import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 
+const fornoRpc = 'https://forno.celo.org?apikey=${config.fornoApiKey}';
+const infuraRpc = 'https://mainnet.infura.io/v3';
 const { chains, publicClient } = configureChains(
-  [Celo],
+  [
+    {
+      ...Celo,
+      rpcUrls: {
+        default: { http: [fornoRpc] },
+        infura: { http: [infuraRpc] },
+        public: { http: [fornoRpc] },
+      },
+    },
+  ],
   [jsonRpcProvider({ rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }) })],
 );
 

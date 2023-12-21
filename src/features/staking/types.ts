@@ -16,7 +16,7 @@ export function stakeActionLabel(type: StakeActionType, activeTense = false) {
   }
 }
 
-export type GroupVotes = Record<string, { active: string; pending: string }>; // address to votes
+export type GroupVotes = Record<Address, { active: bigint; pending: bigint }>; // address to votes
 
 export enum StakeEventType {
   Activate = 'activate',
@@ -26,9 +26,9 @@ export enum StakeEventType {
 export interface StakeEvent {
   type: StakeEventType;
   group: Address;
-  value: string;
-  units: string;
+  value: bigint; // in wei
+  units: bigint;
   blockNumber: number;
   timestamp: number;
-  txHash: string;
+  txHash: HexString;
 }

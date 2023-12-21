@@ -71,7 +71,7 @@
     "typecheck": "tsc",
     "lint": "next lint",
     "start": "next start",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build"
   },

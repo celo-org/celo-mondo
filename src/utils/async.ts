@@ -70,7 +70,7 @@ export async function fetchWithTimeout(
  * @param baseRetryMs base delay between attempts
  * @returns runner return value
  */
-export async function retryAsync<T>(runner: () => T, attempts = 5, baseRetryMs = 50) {
+export async function retryAsync<T>(runner: () => T, attempts = 3, baseRetryMs = 200) {
   let saveError;
   for (let i = 0; i < attempts; i++) {
     try {

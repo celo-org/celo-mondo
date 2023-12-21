@@ -10,11 +10,11 @@ import { formatUnits, parseUnits } from 'viem';
 export function fromWei(
   value: BigNumber.Value | bigint | null | undefined,
   decimals = DEFAULT_TOKEN_DECIMALS,
-): string {
-  if (!value) return (0).toString();
+): number {
+  if (!value) return 0;
   const valueString = value.toString(10).trim();
   const flooredValue = BigNumber(valueString).toFixed(0, BigNumber.ROUND_FLOOR);
-  return parseFloat(formatUnits(BigInt(flooredValue), decimals)).toString();
+  return parseFloat(formatUnits(BigInt(flooredValue), decimals));
 }
 
 /**
@@ -45,8 +45,8 @@ export function fromWeiRounded(
 export function toWei(
   value: BigNumber.Value | null | undefined,
   decimals = DEFAULT_TOKEN_DECIMALS,
-): string {
-  if (!value) return BigNumber(0).toString();
+): bigint {
+  if (!value) return 0n;
   // First convert to a BigNumber, and then call `toString` with the
   // explicit radix 10 such that the result is formatted as a base-10 string
   // and not in scientific notation.
@@ -54,10 +54,10 @@ export function toWei(
   const valueString = valueBN.toString(10).trim();
   const components = valueString.split('.');
   if (components.length === 1) {
-    return parseUnits(valueString, decimals).toString();
+    return parseUnits(valueString, decimals);
   } else if (components.length === 2) {
     const trimmedFraction = components[1].substring(0, decimals);
-    return parseUnits(`${components[0]}.${trimmedFraction}`, decimals).toString();
+    return parseUnits(`${components[0]}.${trimmedFraction}`, decimals);
   } else {
     throw new Error(`Cannot convert ${valueString} to wei`);
   }

@@ -6,10 +6,11 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Dropdown } from 'src/components/menus/Dropdown';
 import { Amount } from 'src/components/numbers/Amount';
+import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { shortenAddress } from 'src/utils/addresses';
 import { tryClipboardSet } from 'src/utils/clipboard';
 import { useAccount, useDisconnect } from 'wagmi';
-import { useAccountBalance, useLockedBalance } from '../account/hooks';
+import { useBalance, useLockedBalance } from '../account/hooks';
 
 export function WalletDropdown() {
   const { address, isConnected } = useAccount();
@@ -39,8 +40,10 @@ export function WalletDropdown() {
 }
 
 function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
-  const { balance: walletBalance } = useAccountBalance();
-  const { balance: lockedBalance } = useLockedBalance();
+  const { balance: walletBalance } = useBalance(address);
+  const { balance: lockedBalance } = useLockedBalance(address);
+  // TODO need to provide useStakingRewards with groupvotes here
+  const { totalRewards } = useStakingRewards(address);
 
   const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
 
@@ -65,7 +68,7 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
       <div className="flex w-full flex-col justify-stretch divide-y divide-taupe-300 border border-taupe-300">
         <ValueRow label="Wallet Balance" valueWei={walletBalance?.value} />
         <ValueRow label="Total Locked" valueWei={lockedBalance?.value} />
-        <ValueRow label="Total Earned" valueWei={0} />
+        <ValueRow label="Total Earned" valueWei={totalRewards} />
       </div>
       <div className="flex w-full items-center justify-between space-x-4">
         <Link href="/account">

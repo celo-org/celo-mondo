@@ -39,7 +39,7 @@ export function capitalizeAddress(address: string) {
   return '0x' + address.substring(2).toUpperCase();
 }
 
-export function areAddressesEqual(a1: string, a2: string) {
+export function eqAddress(a1: string, a2: string) {
   return normalizeAddress(a1) === normalizeAddress(a2);
 }
 

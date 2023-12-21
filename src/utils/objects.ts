@@ -12,6 +12,15 @@ export function deepCopy(v: any) {
 
 export type ValueOf<T> = T[keyof T];
 
+export function objLength(obj: Record<any, any>) {
+  return Object.keys(obj).length;
+}
+
+// Useful for maintaining type safety when using Object.keys
+export function objKeys<T extends string | number>(obj: Record<T, any>): T[] {
+  return Object.keys(obj) as T[];
+}
+
 export function objMapEntries<M extends Record<K, I>, K extends keyof M, O, I = ValueOf<M>>(
   obj: M,
   func: (k: K, v: I) => O,
@@ -35,10 +44,6 @@ export function objFilter<K extends string, I, O extends I>(
     K,
     O
   >;
-}
-
-export function objLength(obj: Record<any, any>) {
-  return Object.keys(obj).length;
 }
 
 // promiseObjectAll :: {k: Promise a} -> Promise {k: a}

@@ -1,6 +1,6 @@
 import { ChainId } from 'src/config/chains';
 import { Color } from 'src/styles/Color';
-import { areAddressesEqual } from 'src/utils/addresses';
+import { eqAddress } from 'src/utils/addresses';
 
 export interface Token {
   id: string;
@@ -104,7 +104,7 @@ export function getTokenByAddress(address: Address): Token {
     .flat();
   // This assumes no clashes btwn different tokens on diff chains
   for (const [id, tokenAddr] of idAddressTuples) {
-    if (areAddressesEqual(address, tokenAddr)) {
+    if (eqAddress(address, tokenAddr)) {
       return Tokens[id as TokenId];
     }
   }
