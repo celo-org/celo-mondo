@@ -7,6 +7,7 @@ import { Identicon } from 'src/components/icons/Identicon';
 import { Dropdown } from 'src/components/menus/Dropdown';
 import { Amount } from 'src/components/numbers/Amount';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
+import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { shortenAddress } from 'src/utils/addresses';
 import { tryClipboardSet } from 'src/utils/clipboard';
 import { useAccount, useDisconnect } from 'wagmi';
@@ -42,8 +43,8 @@ export function WalletDropdown() {
 function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
   const { balance: walletBalance } = useBalance(address);
   const { balance: lockedBalance } = useLockedBalance(address);
-  // TODO need to provide useStakingRewards with groupvotes here
-  const { totalRewards } = useStakingRewards(address);
+  const { stakes } = useStakingBalances(address);
+  const { totalRewards } = useStakingRewards(address, stakes);
 
   const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
 
@@ -68,7 +69,7 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
       <div className="flex w-full flex-col justify-stretch divide-y divide-taupe-300 border border-taupe-300">
         <ValueRow label="Wallet Balance" valueWei={walletBalance?.value} />
         <ValueRow label="Total Locked" valueWei={lockedBalance?.value} />
-        <ValueRow label="Total Earned" valueWei={totalRewards} />
+        <ValueRow label="Total Earned" value={totalRewards} />
       </div>
       <div className="flex w-full items-center justify-between space-x-4">
         <Link href="/account">
@@ -80,11 +81,19 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
   );
 }
 
-function ValueRow({ label, valueWei }: { label: string; valueWei?: string | number | bigint }) {
+function ValueRow({
+  label,
+  value,
+  valueWei,
+}: {
+  label: string;
+  value?: number;
+  valueWei?: bigint;
+}) {
   return (
     <div className="flex flex-col px-3 py-2.5">
       <label className="text-sm">{label}</label>
-      <Amount valueWei={valueWei} className="text-xl" />
+      <Amount value={value} valueWei={valueWei} className="text-xl" />
     </div>
   );
 }

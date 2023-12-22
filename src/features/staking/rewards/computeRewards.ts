@@ -1,4 +1,4 @@
-import { GroupVotes, StakeEvent, StakeEventType } from 'src/features/staking/types';
+import { StakeEvent, StakeEventType, StakingBalances } from 'src/features/staking/types';
 import { fromWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { objKeys } from 'src/utils/objects';
@@ -6,15 +6,15 @@ import { getDaysBetween } from 'src/utils/time';
 
 export function computeStakingRewards(
   stakeEvents: StakeEvent[],
-  groupVotes: GroupVotes,
+  stakes: StakingBalances,
   mode: 'amount' | 'apy' = 'amount',
 ): Record<Address, number> {
   return mode === 'amount'
-    ? computeRewardAmount(stakeEvents, groupVotes)
-    : computeRewardApy(stakeEvents, groupVotes);
+    ? computeRewardAmount(stakeEvents, stakes)
+    : computeRewardApy(stakeEvents, stakes);
 }
 
-function computeRewardAmount(stakeEvents: StakeEvent[], groupVotes: GroupVotes) {
+function computeRewardAmount(stakeEvents: StakeEvent[], stakes: StakingBalances) {
   const groupTotals: Record<Address, bigint> = {}; // group addr to sum votes
   for (const event of stakeEvents) {
     const { group, type, value } = event;
@@ -28,7 +28,7 @@ function computeRewardAmount(stakeEvents: StakeEvent[], groupVotes: GroupVotes) 
 
   const groupRewards: Record<Address, number> = {}; // group addr to rewards in wei
   for (const group of objKeys(groupTotals)) {
-    const currentVotes = groupVotes[group]?.active || 0n;
+    const currentVotes = stakes[group]?.active || 0n;
     const totalVoted = groupTotals[group];
     const rewardWei = currentVotes + totalVoted;
     if (rewardWei > 0n) {
@@ -41,9 +41,9 @@ function computeRewardAmount(stakeEvents: StakeEvent[], groupVotes: GroupVotes) 
   return groupRewards;
 }
 
-function computeRewardApy(stakeEvents: StakeEvent[], groupVotes: GroupVotes) {
+function computeRewardApy(stakeEvents: StakeEvent[], stakes: StakingBalances) {
   // First get total reward amounts per group
-  const groupRewardAmounts = computeRewardAmount(stakeEvents, groupVotes);
+  const groupRewardAmounts = computeRewardAmount(stakeEvents, stakes);
 
   // Next, gather events by group
   const groupEvents: Record<Address, StakeEvent[]> = {}; // group addr to events
