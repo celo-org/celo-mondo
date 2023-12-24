@@ -14,7 +14,7 @@ export function Modal({
 }: PropsWithChildren<{ id: string; className?: string }>) {
   return (
     <dialog id={id} className="modal modal-bottom sm:modal-middle">
-      <div className={`modal-box ${className}`}>
+      <div className={`modal-box all:rounded-none ${className}`}>
         <form method="dialog">
           <button className="btn btn-circle btn-ghost btn-sm absolute right-2 top-2 outline-none">
             ✕

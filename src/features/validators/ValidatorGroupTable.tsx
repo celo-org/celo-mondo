@@ -17,13 +17,18 @@ import { Amount } from 'src/components/numbers/Amount';
 import { config } from 'src/config/config';
 
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
-import { cleanGroupName } from 'src/features/validators/utils';
+import { cleanGroupName, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { fromWeiRounded } from 'src/utils/amount';
 import { bigIntMean } from 'src/utils/math';
 import { ValidatorGroup, ValidatorGroupRow, ValidatorStatus } from './types';
 
 const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
+enum Filter {
+  All = 'All',
+  Elected = 'Elected',
+  Unelected = 'Unelected',
+}
 
 export function ValidatorGroupTable({
   totalVotes,
@@ -32,16 +37,109 @@ export function ValidatorGroupTable({
   totalVotes: bigint;
   groups: ValidatorGroup[];
 }) {
+  const [filter, setFilter] = useState<Filter>(Filter.All);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [columnVisibility, setColumnVisibility] = useState({});
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      id: 'avgScore',
-      desc: true,
-    },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'votes', desc: true }]);
 
-  const columns = useMemo(() => {
+  const columns = useTableColumns(totalVotes);
+  const groupRows = useTableRows({ groups, filter, searchQuery });
+  const table = useReactTable<ValidatorGroupRow>({
+    data: groupRows,
+    columns,
+    state: {
+      sorting,
+      columnVisibility,
+    },
+    onSortingChange: setSorting,
+    onColumnVisibilityChange: setColumnVisibility,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    debugTable: config.debug,
+  });
+
+  // Set up responsive column visibility
+  const isMobile = useIsMobile();
+  useEffect(() => {
+    if (isMobile) {
+      DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(false));
+    } else {
+      DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
+    }
+  }, [isMobile, table]);
+
+  return (
+    <>
+      <div className="flex items-center justify-between px-4 pt-2">
+        <div className="flex space-x-5">
+          <FilterButton
+            filter={Filter.All}
+            setFilter={setFilter}
+            groups={groups}
+            isActive={filter === Filter.All}
+          />
+          <FilterButton
+            filter={Filter.Elected}
+            setFilter={setFilter}
+            groups={groups}
+            isActive={filter === Filter.Elected}
+          />
+          <FilterButton
+            filter={Filter.Unelected}
+            setFilter={setFilter}
+            groups={groups}
+            isActive={filter === Filter.Unelected}
+          />
+        </div>
+        <SearchField value={searchQuery} setValue={setSearchQuery} className="w-64 text-sm" />
+      </div>
+      <table className="w-full">
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  className="border-y border-taupe-300 px-4 py-3 first:min-w-[3rem] last:min-w-0 md:min-w-[8rem]"
+                >
+                  {header.isPlaceholder ? null : (
+                    <div
+                      className={clsx(
+                        'text-left font-normal',
+                        header.column.getCanSort() && 'cursor-pointer select-none',
+                      )}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      {{
+                        asc: ' 🔼',
+                        desc: ' 🔽',
+                      }[header.column.getIsSorted() as string] ?? null}
+                    </div>
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map((row) => (
+            <tr key={row.id}>
+              {row.getVisibleCells().map((cell) => (
+                <td key={cell.id} className="relative border-y border-taupe-300 px-4 py-4">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  );
+}
+
+function useTableColumns(totalVotes: bigint) {
+  return useMemo(() => {
     const columnHelper = createColumnHelper<ValidatorGroupRow>();
     return [
       columnHelper.display({
@@ -96,100 +194,34 @@ export function ValidatorGroupTable({
       }),
     ];
   }, [totalVotes]);
-
-  const groupRows = useGroupTableRows({ groups, searchQuery });
-  const table = useReactTable<ValidatorGroupRow>({
-    data: groupRows,
-    columns,
-    state: {
-      sorting,
-      columnVisibility,
-    },
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    debugTable: config.debug,
-  });
-
-  // Set up responsive column visibility
-  const isMobile = useIsMobile();
-  useEffect(() => {
-    if (isMobile) {
-      DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(false));
-    } else {
-      DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
-    }
-  }, [isMobile, table]);
-
-  return (
-    <>
-      <div className="flex items-center justify-between px-4 py-4">
-        <div className="font-serif text-xl">{`All ${groupRows.length}`}</div>
-        <SearchField value={searchQuery} setValue={setSearchQuery} className="w-64 text-sm" />
-      </div>
-      <table className="w-full">
-        <thead>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="border-y border-taupe-300 px-4 py-3 first:min-w-[3rem] last:min-w-0 md:min-w-[8rem]"
-                >
-                  {header.isPlaceholder ? null : (
-                    <div
-                      className={clsx(
-                        'text-left font-normal',
-                        header.column.getCanSort() && 'cursor-pointer select-none',
-                      )}
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {{
-                        asc: ' 🔼',
-                        desc: ' 🔽',
-                      }[header.column.getIsSorted() as string] ?? null}
-                    </div>
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="relative border-y border-taupe-300 px-4 py-4">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </>
-  );
 }
 
-function useGroupTableRows({
+function useTableRows({
   groups,
+  filter,
   searchQuery,
 }: {
   groups: ValidatorGroup[];
+  filter: Filter;
   searchQuery: string;
 }) {
   return useMemo<ValidatorGroupRow[]>(() => {
     const query = searchQuery.trim().toLowerCase();
-    const filteredGroups = groups.filter(
-      (g) =>
-        g.name.toLowerCase().includes(query) ||
-        g.address.toLowerCase().includes(query) ||
-        Object.values(g.members).some(
-          (m) => m.address.toLowerCase().includes(query) || m.name.toLowerCase().includes(query),
-        ),
-    );
+    const filteredGroups = groups
+      .filter((g) => {
+        if (filter === Filter.Elected) return isElected(g);
+        else if (filter === Filter.Unelected) return !isElected(g);
+        else return true;
+      })
+      .filter(
+        (g) =>
+          !g ||
+          g.name.toLowerCase().includes(query) ||
+          g.address.toLowerCase().includes(query) ||
+          Object.values(g.members).some(
+            (m) => m.address.toLowerCase().includes(query) || m.name.toLowerCase().includes(query),
+          ),
+      );
 
     const groupRows = filteredGroups.map((g): ValidatorGroupRow => {
       const members = Object.values(g.members);
@@ -205,7 +237,45 @@ function useGroupTableRows({
       };
     });
     return groupRows;
-  }, [groups, searchQuery]);
+  }, [groups, filter, searchQuery]);
+}
+
+function FilterButton({
+  filter,
+  setFilter,
+  groups,
+  isActive,
+}: {
+  filter: Filter;
+  setFilter: (f: Filter) => void;
+  groups: ValidatorGroup[];
+  isActive: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+  let count = groups.length;
+  if (filter === Filter.Elected) count = groups.filter((g) => isElected(g)).length;
+  else if (filter === Filter.Unelected) count = groups.filter((g) => !isElected(g)).length;
+  return (
+    <button
+      className="relative flex items-center space-x-1 transition-all"
+      onClick={() => setFilter(filter)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <span>{filter}</span>
+      <div
+        className={clsx(
+          'w-10 rounded-full border border-purple-500 text-sm font-thin',
+          (hover || isActive) && 'bg-purple-500 text-white',
+        )}
+      >
+        {count}
+      </div>
+      {isActive && (
+        <span className="absolute -bottom-4 left-0 right-0 h-[2px] bg-purple-500"></span>
+      )}
+    </button>
+  );
 }
 
 function CumulativeColumn({
