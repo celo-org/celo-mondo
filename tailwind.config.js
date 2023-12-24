@@ -17,7 +17,10 @@ module.exports = {
         500: '#FCFF52', // Prosperity
       },
       purple: {
-        200: '#B490FF', // Lavender
+        50: '#F4EFFF',
+        100: '#E9DFFF',
+        200: '#D4BFFF',
+        300: '#B490FF', // Lavender
         500: '#1E002B', // Fig
       },
       green: {

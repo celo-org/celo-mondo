@@ -16,6 +16,8 @@ import { SearchField } from 'src/components/input/SearchField';
 import { Amount } from 'src/components/numbers/Amount';
 import { config } from 'src/config/config';
 
+import Link from 'next/link';
+import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { cleanGroupName, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -71,7 +73,7 @@ export function ValidatorGroupTable({
   return (
     <>
       <div className="flex flex-col items-center justify-stretch gap-4 px-4 pt-2 md:flex-row md:justify-between">
-        <div className="flex justify-between space-x-7 md:space-x-5">
+        <div className="flex justify-between space-x-7">
           <FilterButton
             filter={Filter.All}
             setFilter={setFilter}
@@ -128,10 +130,12 @@ export function ValidatorGroupTable({
         </thead>
         <tbody>
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id}>
+            <tr key={row.id} className="transition-all hover:bg-purple-50 active:bg-purple-100">
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="relative border-y border-taupe-300 px-4 py-4">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                <td key={cell.id} className="relative border-y border-taupe-300">
+                  <Link href={`/staking/${row.original.address}`} className="flex px-4 py-4">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </Link>
                 </td>
               ))}
             </tr>
@@ -188,7 +192,12 @@ function useTableColumns(totalVotes: bigint) {
         id: 'cta',
         header: '',
         cell: (props) => (
-          <OutlineButton onClick={() => alert(props.row.original.address)}>
+          <OutlineButton
+            onClick={(e) => {
+              e.preventDefault();
+              alert(props.row.original.address);
+            }}
+          >
             <div className="flex items-center space-x-1.5">
               <span>Stake</span>
               <ChevronIcon direction="e" width={10} height={10} />
@@ -231,8 +240,8 @@ function useTableRows({
       const members = Object.values(g.members);
       const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
       const avgScore = electedMembers.length
-        ? BigInt(fromWeiRounded(bigIntMean(electedMembers.map((m) => m.score)), 22, 0))
-        : 0n;
+        ? parseFloat(fromWeiRounded(bigIntMean(electedMembers.map((m) => m.score)), 22, 0))
+        : 0;
       return {
         ...g,
         numMembers: members.length,
@@ -255,30 +264,13 @@ function FilterButton({
   groups: ValidatorGroup[];
   isActive: boolean;
 }) {
-  const [hover, setHover] = useState(false);
   let count = groups.length;
   if (filter === Filter.Elected) count = groups.filter((g) => isElected(g)).length;
   else if (filter === Filter.Unelected) count = groups.filter((g) => !isElected(g)).length;
   return (
-    <button
-      className="relative flex items-center space-x-1 transition-all"
-      onClick={() => setFilter(filter)}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      <span>{filter}</span>
-      <div
-        className={clsx(
-          'w-10 rounded-full border border-purple-500 text-sm font-thin',
-          (hover || isActive) && 'bg-purple-500 text-white',
-        )}
-      >
-        {count}
-      </div>
-      {isActive && (
-        <span className="absolute -bottom-4 left-0 right-0 hidden h-[2px] bg-purple-500 md:block"></span>
-      )}
-    </button>
+    <TabHeaderButton isActive={isActive} count={count} onClick={() => setFilter(filter)}>
+      {filter}
+    </TabHeaderButton>
   );
 }
 

@@ -43,6 +43,15 @@ export function eqAddress(a1: string, a2: string) {
   return normalizeAddress(a1) === normalizeAddress(a2);
 }
 
+export function eqAddressSafe(a1: string, a2: string) {
+  try {
+    return eqAddress(a1, a2);
+  } catch (error) {
+    logger.error('Error comparing addresses', error, a1, a2);
+    return false;
+  }
+}
+
 export function ensure0x(hexstr: string) {
   return hexstr.startsWith('0x') ? hexstr : `0x${hexstr}`;
 }

@@ -3,17 +3,17 @@ import { PropsWithChildren } from 'react';
 export function Circle({
   size,
   title,
-  classes,
+  className,
   children,
 }: PropsWithChildren<{
   size: string | number;
   title?: string;
-  classes?: string;
+  className?: string;
 }>) {
   return (
     <div
       style={{ width: `${size}px`, height: `${size}px` }}
-      className={`flex items-center justify-center overflow-hidden rounded-full transition-all ${classes}`}
+      className={`flex items-center justify-center overflow-hidden rounded-full transition-all ${className}`}
       title={title}
     >
       {children}

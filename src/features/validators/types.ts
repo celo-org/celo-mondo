@@ -37,7 +37,7 @@ export enum ValidatorGroupStatus {
 */
 
 export interface ValidatorGroupRow extends ValidatorGroup {
-  avgScore: bigint;
+  avgScore: number;
   numElected: number;
   numMembers: number;
 }

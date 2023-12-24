@@ -41,6 +41,7 @@ export function WalletDropdown() {
 }
 
 function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
+  // TODO update these hooks with a refetch interval after upgrading to wagmi v2
   const { balance: walletBalance } = useBalance(address);
   const { balance: lockedBalance } = useLockedBalance(address);
   const { stakes } = useStakingBalances(address);
