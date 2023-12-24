@@ -70,8 +70,8 @@ export function ValidatorGroupTable({
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 pt-2">
-        <div className="flex space-x-5">
+      <div className="flex flex-col items-center justify-stretch gap-4 px-4 pt-2 md:flex-row md:justify-between">
+        <div className="flex justify-between space-x-7 md:space-x-5">
           <FilterButton
             filter={Filter.All}
             setFilter={setFilter}
@@ -91,7 +91,11 @@ export function ValidatorGroupTable({
             isActive={filter === Filter.Unelected}
           />
         </div>
-        <SearchField value={searchQuery} setValue={setSearchQuery} className="w-64 text-sm" />
+        <SearchField
+          value={searchQuery}
+          setValue={setSearchQuery}
+          className="w-full text-sm md:w-64"
+        />
       </div>
       <table className="w-full">
         <thead>
@@ -272,7 +276,7 @@ function FilterButton({
         {count}
       </div>
       {isActive && (
-        <span className="absolute -bottom-4 left-0 right-0 h-[2px] bg-purple-500"></span>
+        <span className="absolute -bottom-4 left-0 right-0 hidden h-[2px] bg-purple-500 md:block"></span>
       )}
     </button>
   );

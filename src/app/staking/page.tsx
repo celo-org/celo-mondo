@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Card } from 'src/components/layout/Card';
 import { Section } from 'src/components/layout/Section';
-import { Modal, useModal } from 'src/components/menus/Modal';
+import { useModal } from 'src/components/menus/Modal';
 import { Amount } from 'src/components/numbers/Amount';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
@@ -24,7 +24,7 @@ export default function Index() {
         <HeroSection totalVotes={totalVotes} groups={groups} />
         <ListSection totalVotes={totalVotes} groups={groups} />
       </div>
-      <Modal id="stake">Test</Modal>
+      {/* <Modal id="stake">Test</Modal> */}
     </>
   );
 }
