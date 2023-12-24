@@ -9,15 +9,15 @@ import {
 } from '@tanstack/react-table';
 import BigNumber from 'bignumber.js';
 import clsx from 'clsx';
-import Image from 'next/image';
 import { useEffect, useMemo, useState } from 'react';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
-import { Identicon } from 'src/components/icons/Identicon';
 import { SearchField } from 'src/components/input/SearchField';
 import { Amount } from 'src/components/numbers/Amount';
 import { config } from 'src/config/config';
-import { VALIDATOR_GROUP_IMAGES } from 'src/config/validators';
+
+import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
+import { cleanGroupName } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { fromWeiRounded } from 'src/utils/amount';
 import { bigIntMean } from 'src/utils/math';
@@ -53,18 +53,8 @@ export function ValidatorGroupTable({
         header: 'Name',
         cell: (props) => (
           <div className="flex items-center space-x-2">
-            {VALIDATOR_GROUP_IMAGES[props.row.original.address] ? (
-              <Image
-                src={VALIDATOR_GROUP_IMAGES[props.row.original.address]}
-                height={30}
-                width={30}
-                alt=""
-                className="rounded-full border border-taupe-300 p-px"
-              />
-            ) : (
-              <Identicon address={props.row.original.address} size={30} />
-            )}
-            <span>{props.getValue()}</span>
+            <ValidatorGroupLogo address={props.row.original.address} size={30} />
+            <span>{cleanGroupName(props.getValue())}</span>
           </div>
         ),
       }),
