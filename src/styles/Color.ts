@@ -3,14 +3,20 @@ export enum Color {
   // Grays
   Black = '#000000',
   White = '#FFFFFF',
+  Grey = '#888888',
 
   // Accents
   Yellow = '#FCFF52',
   Gypsum = '#FCF6F1',
   Sand = '#E7E3D4',
   Wood = '#655947',
-  Purple = '#1E002B',
+  Lavender = '#B490FF',
+  Fig = '#1E002B',
   Green = '#56DF7C',
+  Forest = '#476520',
+  Citrus = '#FF9A51',
+  Lotus = '#FFA3EB',
+  Sky = '#7CC0FF',
 
   // Colors from former branding
   OldGreen = '#35D07F',

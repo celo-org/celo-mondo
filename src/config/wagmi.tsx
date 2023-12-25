@@ -67,7 +67,7 @@ export function WagmiContext({ children }: { children: React.ReactNode }) {
       <RainbowKitProvider
         chains={wagmiChains}
         theme={lightTheme({
-          accentColor: Color.Purple,
+          accentColor: Color.Fig,
           borderRadius: 'small',
           fontStack: 'system',
         })}

@@ -1,10 +1,9 @@
 import { accountsABI, electionABI, lockedGoldABI, validatorsABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
-import { Addresses } from 'src/config/contracts';
-// import { getContract } from 'viem';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
+import { Addresses } from 'src/config/contracts';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
 import { PublicClient, usePublicClient } from 'wagmi';

@@ -1,7 +1,7 @@
 import { logger } from 'src/utils/logger';
 import { getAddress, isAddress } from 'viem';
 
-export function isValidAddress(address: string) {
+export function isValidAddress(address: string): address is Address {
   // Need to catch because ethers' isAddress throws in some cases (bad checksum)
   try {
     const isValid = address && isAddress(address);

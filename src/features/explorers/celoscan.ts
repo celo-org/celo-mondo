@@ -1,7 +1,9 @@
+import { config } from 'src/config/config';
 import { fetchWithTimeout, retryAsync } from 'src/utils/async';
 import { ExplorerResponse } from './types';
 
 export async function queryCeloscan<R>(url: string) {
+  url = config.celoscanApiKey ? `${url}&apikey=${config.celoscanApiKey}` : url;
   const result = await retryAsync(() => executeQuery<R>(url));
   return result;
 }

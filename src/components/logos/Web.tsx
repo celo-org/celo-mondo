@@ -54,9 +54,9 @@ function _Web(props: SVGProps<SVGSVGElement>) {
       />
       <path
         fill="#02010A"
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M28.84 14.57a14 14 0 1 0-14 14 14 14 0 0 0 14-14Zm-3 0a11 11 0 1 0-22 0 11 11 0 0 0 22 0Z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   );

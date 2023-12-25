@@ -28,9 +28,7 @@ export function Amount({
   if (valueWei) {
     value = fromWei(valueWei);
   }
-  const valueFormatted = BigNumber(value?.toString() || '0')
-    .decimalPlaces(decimals)
-    .toFormat(NUMBER_FORMAT);
+  const valueFormatted = formatNumberString(value, decimals);
 
   const token =
     (tokenId ? getTokenById(tokenId) : tokenAddress ? getTokenByAddress(tokenAddress) : null) ||
@@ -41,4 +39,10 @@ export function Amount({
       showSymbol ? token.symbol : ''
     }`}</span>
   );
+}
+
+export function formatNumberString(value?: BigNumber.Value | bigint, decimals = 0) {
+  return BigNumber(value?.toString() || '0')
+    .decimalPlaces(decimals)
+    .toFormat(NUMBER_FORMAT);
 }

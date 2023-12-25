@@ -7,7 +7,7 @@ export function TabHeaderButton({
   count,
   onClick,
   children,
-}: PropsWithChildren<{ isActive: boolean; onClick: () => void; count?: number }>) {
+}: PropsWithChildren<{ isActive: boolean; onClick: () => void; count?: number | string }>) {
   const [hover, setHover] = useState(false);
   return (
     <button
@@ -28,7 +28,7 @@ export function TabHeaderButton({
         </div>
       )}
       {isActive && (
-        <span className="absolute -bottom-4 left-0 right-0 hidden h-[2px] bg-purple-500 md:block"></span>
+        <span className="absolute -bottom-4 left-0 right-0 z-10 hidden h-[2px] bg-purple-500 md:block"></span>
       )}
     </button>
   );
