@@ -17,14 +17,15 @@ const IMG_SRC_HOSTS = ['https://raw.githubusercontent.com', 'https://*.walletcon
 
 export function middleware(request: NextRequest) {
   const isDev = process.env.NODE_ENV === 'development';
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  // const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
   // const nonceRule = `'nonce-${nonce}'`;
   // Note, causes a problem for firefox: https://github.com/MetaMask/metamask-extension/issues/3133
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''};
+    script-src 'self'${isDev ? " 'unsafe-eval'" : ''};
+    script-src-elem 'self' 'unsafe-inline';
+    style-src 'self' 'unsafe-inline';
     connect-src 'self' ${CONNECT_SRC_HOSTS.join(' ')};
-    style-src 'self'${isDev ? " 'unsafe-inline'" : ''};
     img-src 'self' blob: data: ${IMG_SRC_HOSTS.join(' ')};
     font-src 'self' data:;
     object-src 'none';
@@ -39,7 +40,7 @@ export function middleware(request: NextRequest) {
   const contentSecurityPolicyHeaderValue = cspHeader.replace(/\s{2,}/g, ' ').trim();
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
+  // requestHeaders.set('x-nonce', nonce);
   requestHeaders.set('Content-Security-Policy', contentSecurityPolicyHeaderValue);
 
   const response = NextResponse.next({
