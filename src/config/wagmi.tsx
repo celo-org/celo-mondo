@@ -8,28 +8,33 @@ import {
   trustWallet,
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets';
+import { infuraProvider } from '@wagmi/core/providers/infura';
 import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc';
 import 'react-toastify/dist/ReactToastify.css';
 import { config } from 'src/config/config';
+import { links } from 'src/config/links';
 import { Color } from 'src/styles/Color';
 import { WagmiConfig, configureChains, createConfig } from 'wagmi';
 
-const fornoRpc = 'https://forno.celo.org?apikey=${config.fornoApiKey}';
-const infuraRpc = 'https://mainnet.infura.io/v3';
+export const fornoRpcUrl = `${links.forno}?apikey=${config.fornoApiKey}`;
+export const infuraRpcUrl = `${links.infura}/${config.infuraApiKey}`;
 const { chains, publicClient } = configureChains(
   [
     {
       ...Celo,
       rpcUrls: {
-        default: { http: [fornoRpc] },
-        infura: { http: [infuraRpc] },
-        public: { http: [fornoRpc] },
+        default: { http: [fornoRpcUrl] },
+        infura: { http: [links.infura] },
+        public: { http: [fornoRpcUrl] },
       },
     },
   ],
-  [jsonRpcProvider({ rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }) })],
+  [
+    jsonRpcProvider({ rpc: (chain) => ({ http: chain.rpcUrls.default.http[0] }) }),
+    infuraProvider({ apiKey: config.infuraApiKey }),
+  ],
+  {},
 );
-
 export const wagmiChains = chains;
 
 const connectorConfig = {
@@ -65,7 +70,7 @@ export function WagmiContext({ children }: { children: React.ReactNode }) {
   return (
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider
-        chains={wagmiChains}
+        chains={chains}
         theme={lightTheme({
           accentColor: Color.Fig,
           borderRadius: 'small',

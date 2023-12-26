@@ -26,6 +26,7 @@ module.exports = {
       green: {
         200: '#BEEAA9',
         500: '#56DF7C', // Jade
+        700: '#476520', // Forest
       },
       taupe: {
         100: '#FCF6F1', // Gypsum

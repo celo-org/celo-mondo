@@ -79,14 +79,14 @@ function reduceLogs(
   logs: TransactionLog[],
   isAdd: boolean,
 ) {
-  for (const event of logs) {
+  for (const log of logs) {
     try {
-      if (!event.topics || event.topics.length < 3) continue;
+      if (!log.topics || log.topics.length < 3) continue;
       const { eventName, args } = decodeEventLog({
         abi: electionABI,
-        data: event.data,
+        data: log.data,
         // @ts-ignore https://github.com/wevm/viem/issues/381
-        topics: event.topics,
+        topics: log.topics,
         strict: false,
       });
       if (
@@ -104,7 +104,7 @@ function reduceLogs(
         stakerToVotes[staker] = (stakerToVotes[staker] ?? 0) - value;
       }
     } catch (error) {
-      logger.warn('Error decoding event log', error, event);
+      logger.warn('Error decoding event log', error, log);
     }
   }
 }

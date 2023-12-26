@@ -1,6 +1,5 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
-import { toast } from 'react-toastify';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
@@ -9,7 +8,7 @@ import { Amount } from 'src/components/numbers/Amount';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { shortenAddress } from 'src/utils/addresses';
-import { tryClipboardSet } from 'src/utils/clipboard';
+import { useCopyHandler } from 'src/utils/clipboard';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance } from '../account/hooks';
 
@@ -41,6 +40,7 @@ export function WalletDropdown() {
 }
 
 function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
+  // TODO only run if content is open: https://github.com/saadeghi/daisyui/discussions/2697
   // TODO update these hooks with a refetch interval after upgrading to wagmi v2
   const { balance: walletBalance } = useBalance(address);
   const { balance: lockedBalance } = useLockedBalance(address);
@@ -49,11 +49,7 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
 
   const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
 
-  const onClickCopy = async () => {
-    if (!address) return;
-    await tryClipboardSet(address);
-    toast.success('Address copied to clipboard', { autoClose: 1200 });
-  };
+  const onClickCopy = useCopyHandler(address);
 
   return (
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">

@@ -13,6 +13,7 @@ export interface AppState {
   failUnconfirmedTransactions: () => void;
 }
 
+// TODO is a store needed?
 export const useStore = create<AppState>()(
   persist(
     (set) => ({

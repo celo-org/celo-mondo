@@ -10,6 +10,7 @@ import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TextLink } from 'src/components/buttons/TextLink';
+import { HeatmapSquares } from 'src/components/charts/Heatmap';
 import { ArrowIcon } from 'src/components/icons/Arrow';
 import { Circle } from 'src/components/icons/Circle';
 import { Identicon } from 'src/components/icons/Identicon';
@@ -17,17 +18,21 @@ import { Section } from 'src/components/layout/Section';
 import { Twitter } from 'src/components/logos/Twitter';
 import { Web } from 'src/components/logos/Web';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { EPOCH_DURATION_MS, ZERO_ADDRESS } from 'src/config/consts';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
+import { useGroupRewardHistory } from 'src/features/validators/useGroupRewardHistory';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
 import { Color } from 'src/styles/Color';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { eqAddressSafe, shortenAddress } from 'src/utils/addresses';
 import { fromWei, fromWeiRounded } from 'src/utils/amount';
+import { useCopyHandler } from 'src/utils/clipboard';
 import { objLength } from 'src/utils/objects';
+
+const HEATMAP_SIZE = 100;
 
 export const dynamicParams = true;
 
@@ -47,8 +52,9 @@ export default function Page({ params: { address } }: { params: { address: Addre
 
   return (
     <Section>
-      <div className="space-y-12 px-2">
+      <div className="space-y-8 px-2">
         <HeaderSection group={group} />
+        <HeatmapSection group={group} />
         <DetailsSection group={group} />
       </div>
     </Section>
@@ -59,6 +65,8 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
   const address = group?.address || ZERO_ADDRESS;
   const webUrl = VALIDATOR_GROUPS[address]?.url;
   const twitterUrl = VALIDATOR_GROUPS[address]?.twitter;
+
+  const onClickAddress = useCopyHandler(group?.address);
 
   return (
     <div>
@@ -74,7 +82,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
           <div>
             <h1 className="font-serif text-4xl">{group?.name || '...'}</h1>
             <div className=" mt-2 flex items-center space-x-3">
-              <OutlineButton className="all:border-black all:font-normal">
+              <OutlineButton className="all:border-black all:font-normal" onClick={onClickAddress}>
                 {shortenAddress(address)}
               </OutlineButton>
               {webUrl && (
@@ -96,6 +104,41 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
         </div>
         <div className="flex flex-col space-y-6">
           <SolidButton>Stake</SolidButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeatmapSection({ group }: { group?: ValidatorGroup }) {
+  const { rewardHistory } = useGroupRewardHistory(group?.address, HEATMAP_SIZE);
+
+  const data = useMemo(() => {
+    const hasReward = Array(HEATMAP_SIZE).fill(false);
+    if (!rewardHistory?.length) return hasReward;
+    const startTimestamp = Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE;
+    for (let i = 0; i < rewardHistory.length; i++) {
+      if (rewardHistory[i].timestamp < startTimestamp) continue;
+      const epochIndex = Math.floor(
+        (rewardHistory[i].timestamp - startTimestamp) / EPOCH_DURATION_MS,
+      );
+      hasReward[epochIndex] = true;
+    }
+    return hasReward;
+  }, [rewardHistory]);
+
+  return (
+    <div className="space-y-2 border border-taupe-300 p-2">
+      <h3>Reward payments (last 100 days)</h3>
+      <HeatmapSquares data={data} rows={4} columns={25} />
+      <div className="ml-px flex space-x-10">
+        <div className="flex items-center">
+          <div className="bg-green-700 h-3 w-3"></div>
+          <label className="ml-2 text-sm">Reward Paid</label>
+        </div>
+        <div className="flex items-center">
+          <div className="h-3 w-3 bg-gray-400"></div>
+          <label className="ml-2 text-sm">No Reward</label>
         </div>
       </div>
     </div>

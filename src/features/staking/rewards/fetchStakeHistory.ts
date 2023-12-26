@@ -5,20 +5,20 @@ import { links } from 'src/config/links';
 import { queryCeloscan } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { StakeEvent, StakeEventType } from 'src/features/staking/types';
-import { ensure0x, eqAddress, isValidAddress, strip0x } from 'src/utils/addresses';
+import { ensure0x, eqAddress, isValidAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
 import { isNullish } from 'src/utils/typeof';
-import { decodeEventLog } from 'viem';
+import { decodeEventLog, pad } from 'viem';
 
-//ValidatorGroupVoteActivated(address,address,uint256,uint256)
+// Keccak-256 ValidatorGroupVoteActivated(address,address,uint256,uint256)
 const VOTE_ACTIVATED_TOPIC_0 = '0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a5d4aec8f7dbcaeabfe';
-//ValidatorGroupActiveVoteRevoked(address,address,uint256,uint256)
+// Keccak-256 ValidatorGroupActiveVoteRevoked(address,address,uint256,uint256)
 const VOTE_REVOKED_TOPIC_0 = '0xae7458f8697a680da6be36406ea0b8f40164915ac9cc40c0dad05a2ff6e8c6a8';
 
 export async function fetchStakeEvents(accountAddress: Address, fromBlockNumber?: number) {
   const electionAddress = Addresses.Election;
   const fromBlock = fromBlockNumber ? fromBlockNumber : 100; // Not using block 0 here because of some explorers have issues with incorrect txs in low blocks
-  const topic1 = getPaddedAddress(accountAddress).toLowerCase();
+  const topic1 = pad(accountAddress).toLowerCase();
   const baseUrl = `${links.celoscanApi}/api?module=logs&action=getLogs&fromBlock=${fromBlock}&toBlock=latest&address=${electionAddress}&topic1=${topic1}&topic0_1_opr=and`;
 
   const activateLogsUrl = `${baseUrl}&topic0=${VOTE_ACTIVATED_TOPIC_0}`;
@@ -82,8 +82,4 @@ export function parseStakeLogs(
     }
   }
   return stakeEvents;
-}
-
-function getPaddedAddress(address: Address) {
-  return ensure0x(strip0x(address).padStart(64, '0'));
 }

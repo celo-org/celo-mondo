@@ -1,3 +1,5 @@
+import { useCallback } from 'react';
+import { toast } from 'react-toastify';
 import { logger } from './logger';
 
 export function isClipboardReadSupported() {
@@ -23,4 +25,12 @@ export async function tryClipboardGet() {
     logger.error('Failed to read from clipboard', error);
     return null;
   }
+}
+
+export function useCopyHandler(value?: string) {
+  return useCallback(async () => {
+    if (!value) return;
+    const result = await tryClipboardSet(value);
+    if (result) toast.success('Copied to clipboard', { autoClose: 1200 });
+  }, [value]);
 }

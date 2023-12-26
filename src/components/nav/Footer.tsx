@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { links } from 'src/config/links';
 import Discord from 'src/images/logos/discord.svg';
 import Github from 'src/images/logos/github.svg';
@@ -13,7 +14,13 @@ export function Footer() {
         <FooterIconLink to={links.twitter} imgSrc={Twitter} alt="Twitter" />
         <FooterIconLink to={links.discord} imgSrc={Discord} alt="Discord" />
       </div>
-      <BlockNumber />
+      <div className="flex items-center space-x-1">
+        <div className="text-xs text-taupe-400">
+          Powered by <ExternalLink href={links.celoscan}>CeloScan</ExternalLink> and{' '}
+          <ExternalLink href="https://docs.celo.org/network/node/forno">Forno</ExternalLink> |
+        </div>
+        <BlockNumber />
+      </div>
     </div>
   );
 }
