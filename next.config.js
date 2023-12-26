@@ -21,12 +21,11 @@ const securityHeaders = [
     key: 'Referrer-Policy',
     value: 'strict-origin-when-cross-origin',
   },
-  // Note, causes a problem for firefox: https://github.com/MetaMask/metamask-extension/issues/3133
   {
+    // Note: This is a fallback default CSP.
+    // See middleware.ts for the actual CSP
     key: 'Content-Security-Policy',
-    value: `default-src 'self'; script-src 'self'${
-      isDev ? " 'unsafe-eval' 'unsafe-inline'" : ''
-    }; connect-src 'self' https://*.celo.org https://*.celoscan.io https://*.walletconnect.com wss://walletconnect.celo.org wss://*.walletconnect.com wss://*.walletconnect.org https://raw.githubusercontent.com https://celo-mainnet.infura.io; img-src 'self' data: https://raw.githubusercontent.com https://*.walletconnect.com; style-src 'self' 'unsafe-inline' https://*.googleapis.com; font-src 'self' data:; base-uri 'self'; form-action 'self'; frame-src 'self' https://*.walletconnect.com https://*.walletconnect.org;`,
+    value: `default-src 'self';`,
   },
 ]
 
