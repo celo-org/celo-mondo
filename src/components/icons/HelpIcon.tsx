@@ -16,7 +16,7 @@ function _HelpIcon({ text, size = 20 }: { text: string; size?: number }) {
       width={size}
       height={size}
       onClick={onClick}
-      classes="opacity-50"
+      className="opacity-50"
     />
   );
 }

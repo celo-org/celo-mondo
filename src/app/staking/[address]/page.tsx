@@ -133,7 +133,7 @@ function HeatmapSection({ group }: { group?: ValidatorGroup }) {
       <HeatmapSquares data={data} rows={4} columns={25} />
       <div className="ml-px flex space-x-10">
         <div className="flex items-center">
-          <div className="bg-green-700 h-3 w-3"></div>
+          <div className="h-3 w-3 bg-green-700"></div>
           <label className="ml-2 text-sm">Reward Paid</label>
         </div>
         <div className="flex items-center">
