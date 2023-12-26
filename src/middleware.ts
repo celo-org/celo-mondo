@@ -1,8 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-const isDev = process.env.NODE_ENV === 'development';
-
 const CONNECT_SRC_HOSTS = [
   'https://*.celo.org',
   'https://*.celoscan.io',
@@ -18,13 +16,15 @@ const FRAME_SRC_HOSTS = ['https://*.walletconnect.com', 'https://*.walletconnect
 const IMG_SRC_HOSTS = ['https://raw.githubusercontent.com', 'https://*.walletconnect.com'];
 
 export function middleware(request: NextRequest) {
+  const isDev = process.env.NODE_ENV === 'development';
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const nonceRule = `'nonce-${nonce}'`;
   // Note, causes a problem for firefox: https://github.com/MetaMask/metamask-extension/issues/3133
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ''};
+    script-src 'self' ${nonceRule} 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ''};
     connect-src 'self' ${CONNECT_SRC_HOSTS.join(' ')};
-    style-src 'self' ${isDev ? "'unsafe-inline'" : "'nonce-${nonce}'"};
+    style-src 'self' ${isDev ? "'unsafe-inline'" : nonceRule};
     img-src 'self' blob: data: ${IMG_SRC_HOSTS.join(' ')};
     font-src 'self' data:;
     object-src 'none';
@@ -32,8 +32,8 @@ export function middleware(request: NextRequest) {
     form-action 'self';
     frame-src 'self' ${FRAME_SRC_HOSTS.join(' ')};
     frame-ancestors 'none';
-    block-all-mixed-content;
-    upgrade-insecure-requests;
+    ${!isDev ? 'block-all-mixed-content;' : ''}
+    ${!isDev ? 'upgrade-insecure-requests;' : ''}
 `;
   // Replace newline characters and spaces
   const contentSecurityPolicyHeaderValue = cspHeader.replace(/\s{2,}/g, ' ').trim();
@@ -43,6 +43,7 @@ export function middleware(request: NextRequest) {
   requestHeaders.set('Content-Security-Policy', contentSecurityPolicyHeaderValue);
 
   const response = NextResponse.next({
+    headers: requestHeaders,
     request: {
       headers: requestHeaders,
     },
@@ -52,21 +53,21 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon (favicon files)
-     */
-    {
-      source: '/((?!api|_next/image|_next/static|favicon).*)',
-      missing: [
-        { type: 'header', key: 'next-router-prefetch' },
-        { type: 'header', key: 'purpose', value: 'prefetch' },
-      ],
-    },
-  ],
-};
+// export const config = {
+//   matcher: [
+//     /*
+//      * Match all request paths except for the ones starting with:
+//      * - api (API routes)
+//      * - _next/static (static files)
+//      * - _next/image (image optimization files)
+//      * - favicon (favicon files)
+//      */
+//     {
+//       source: '/((?!api|_next/image|_next/static|favicon).*)',
+//       missing: [
+//         { type: 'header', key: 'next-router-prefetch' },
+//         { type: 'header', key: 'purpose', value: 'prefetch' },
+//       ],
+//     },
+//   ],
+// };
