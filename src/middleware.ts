@@ -24,7 +24,7 @@ export function middleware(request: NextRequest) {
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ''};
     connect-src 'self' ${CONNECT_SRC_HOSTS.join(' ')};
-    style-src 'self' ${isDev ? "'unsafe-inline'" : "'nonce-${nonce}' 'strict-dynamic'"};
+    style-src 'self' ${isDev ? "'unsafe-inline'" : "'nonce-${nonce}'"};
     img-src 'self' blob: data: ${IMG_SRC_HOSTS.join(' ')};
     font-src 'self' data:;
     object-src 'none';

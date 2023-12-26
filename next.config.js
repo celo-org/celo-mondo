@@ -21,12 +21,12 @@ const securityHeaders = [
     key: 'Referrer-Policy',
     value: 'strict-origin-when-cross-origin',
   },
-  {
-    // Note: This is a fallback default CSP.
-    // See middleware.ts for the actual CSP
-    key: 'Content-Security-Policy',
-    value: `default-src 'self';`,
-  },
+  // {
+  //   // Note: This is a fallback default CSP.
+  //   // See middleware.ts for the actual CSP
+  //   key: 'Content-Security-Policy',
+  //   value: `default-src 'self';`,
+  // },
 ]
 
 module.exports = {
