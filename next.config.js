@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 
-const { version } = require('./package.json')
+const { version } = require('./package.json');
 
-const isDev = process.env.NODE_ENV !== 'production'
+const isDev = process.env.NODE_ENV !== 'production';
 
+// Sometimes useful to disable this during development
+const ENABLE_CSP_HEADER = true;
 const CONNECT_SRC_HOSTS = [
   'https://*.celo.org',
   'https://*.celoscan.io',
@@ -31,7 +33,7 @@ const cspHeader = `
   frame-ancestors 'none';
   ${!isDev ? 'block-all-mixed-content;' : ''}
   ${!isDev ? 'upgrade-insecure-requests;' : ''}
-`.replace(/\s{2,}/g, ' ').trim()
+`.replace(/\s{2,}/g, ' ').trim();
 
 const securityHeaders = [
   {
@@ -50,11 +52,15 @@ const securityHeaders = [
     key: 'Referrer-Policy',
     value: 'strict-origin-when-cross-origin',
   },
-  {
-    key: 'Content-Security-Policy',
-    value: cspHeader,
-  },
-]
+  ...(ENABLE_CSP_HEADER
+    ? [
+        {
+          key: 'Content-Security-Policy',
+          value: cspHeader,
+        },
+      ]
+    : [])
+];
 
 module.exports = {
   webpack: (config) => {
@@ -85,4 +91,4 @@ module.exports = {
   },
 
   reactStrictMode: true,
-}
+};
