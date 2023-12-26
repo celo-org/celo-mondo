@@ -22,9 +22,9 @@ export function middleware(request: NextRequest) {
   // Note, causes a problem for firefox: https://github.com/MetaMask/metamask-extension/issues/3133
   const cspHeader = `
     default-src 'self';
-    script-src 'self' ${isDev ? "'unsafe-eval' 'unsafe-inline'" : ''};
+    script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''};
     connect-src 'self' ${CONNECT_SRC_HOSTS.join(' ')};
-    style-src 'self' ${isDev ? "'unsafe-inline'" : ''};
+    style-src 'self'${isDev ? " 'unsafe-inline'" : ''};
     img-src 'self' blob: data: ${IMG_SRC_HOSTS.join(' ')};
     font-src 'self' data:;
     object-src 'none';
