@@ -52,10 +52,9 @@ const connectors = connectorsForWallets([
       walletConnectWallet(connectorConfig),
       Valora(connectorConfig),
       // CeloTerminal(connectorConfig),
-      // CeloWallet(connectorConfig),
       omniWallet(connectorConfig),
       trustWallet(connectorConfig),
-      // ledger
+      // TODO ledger
     ],
   },
 ]);

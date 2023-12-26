@@ -1,7 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 import { Spinner } from 'src/components/animation/Spinner';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
@@ -30,6 +29,7 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { eqAddressSafe, shortenAddress } from 'src/utils/addresses';
 import { fromWei, fromWeiRounded } from 'src/utils/amount';
 import { useCopyHandler } from 'src/utils/clipboard';
+import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 
 const HEATMAP_SIZE = 100;
@@ -37,26 +37,19 @@ const HEATMAP_SIZE = 100;
 export const dynamicParams = true;
 
 export default function Page({ params: { address } }: { params: { address: Address } }) {
-  const router = useRouter();
   const { groups } = useValidatorGroups();
   const group = useMemo(
     () => groups?.find((g) => eqAddressSafe(g.address, address)),
     [address, groups],
   );
-  useEffect(() => {
-    if (groups && !group) {
-      // Unknown / valid group address provided, return to staking home
-      router.replace('/staking');
-    }
-  }, [group, groups, router]);
+
+  usePageInvariant(!groups || group, '/', 'Validator group not found');
 
   return (
-    <Section>
-      <div className="space-y-8 px-2">
-        <HeaderSection group={group} />
-        <HeatmapSection group={group} />
-        <DetailsSection group={group} />
-      </div>
+    <Section containerClassName="space-y-8">
+      <HeaderSection group={group} />
+      <HeatmapSection group={group} />
+      <DetailsSection group={group} />
     </Section>
   );
 }
@@ -70,7 +63,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 
   return (
     <div>
-      <TextLink href="/staking" className="font-medium text-taupe-600">
+      <TextLink href="/" className="font-medium text-taupe-600">
         <div className="flex items-center">
           <ArrowIcon width={20} height={20} direction="w" fill={Color.Wood} />
           <span>Staking</span>
