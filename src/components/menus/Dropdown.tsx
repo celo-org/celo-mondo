@@ -1,6 +1,5 @@
 import { Menu, Popover, Transition } from '@headlessui/react';
 import { Fragment, ReactElement, ReactNode } from 'react';
-import { OutlineButton } from 'src/components/buttons/OutlineButton';
 
 interface MenuProps {
   button: ReactNode;
@@ -13,9 +12,7 @@ interface MenuProps {
 export function DropdownMenu({ button, buttonClasses, menuItems, menuClasses }: MenuProps) {
   return (
     <Menu as="div" className="relative">
-      <Menu.Button as={OutlineButton} className={buttonClasses}>
-        {button}
-      </Menu.Button>
+      <Menu.Button className={buttonClasses}>{button}</Menu.Button>
       <Transition
         as={Fragment}
         enter="transition ease-out duration-200"
@@ -50,9 +47,7 @@ export function DropdownModal({ button, buttonClasses, modal, modalClasses }: Mo
     <Popover className="relative">
       {({ open }) => (
         <>
-          <Popover.Button as={OutlineButton} className={buttonClasses}>
-            {button({ open })}
-          </Popover.Button>
+          <Popover.Button className={buttonClasses}>{button({ open })}</Popover.Button>
           <Transition
             as={Fragment}
             enter="transition ease-out duration-200"

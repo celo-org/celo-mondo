@@ -6,6 +6,8 @@ import { Section } from 'src/components/layout/Section';
 import { Modal, useModal } from 'src/components/menus/Modal';
 import { Amount } from 'src/components/numbers/Amount';
 import { StakeForm } from 'src/features/staking/StakeForm';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
+import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
@@ -44,13 +46,15 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
     return min;
   }, [groups]);
 
+  const showStakeModal = useTransactionModal(TxModalType.Stake);
+
   return (
     <Section className="bg-purple-500 text-white" containerClassName="all:px-0">
       <div className="my-10 flex items-center justify-between gap-20 lg:gap-x-40 xl:gap-x-80">
         <div className="flex w-80 flex-col space-y-6">
           <h1 className="font-serif text-4xl">Discover Validators</h1>
           <p>Stake your CELO with validators to start earning rewards immediately.</p>
-          <SolidButton>{`Stake and earn 4%`}</SolidButton>
+          <SolidButton onClick={showStakeModal}>{`Stake and earn 4%`}</SolidButton>
         </div>
         <div className="hidden grid-cols-2 grid-rows-2 gap-10 border border-white/20 p-6 md:grid">
           <HeroStat label="Staking APY" text="6%" />

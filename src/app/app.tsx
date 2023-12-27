@@ -8,13 +8,14 @@ import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
 import { Footer } from 'src/components/nav/Footer';
 import { Header } from 'src/components/nav/Header';
 import { WagmiContext } from 'src/config/wagmi';
+import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
 import 'src/vendor/inpage-metamask';
 import 'src/vendor/polyfill';
 
 function SafeHydrate({ children }: PropsWithChildren<any>) {
-  // Disable app SSR for now as it's not needed and
-  // complicates wallet integrations
+  // Avoid SSR for now as it's not needed and it
+  // complicates wallet integrations and media query hooks
   const isSsr = useIsSsr();
   if (isSsr) {
     return <div></div>;
@@ -32,6 +33,7 @@ export function App({ children }: PropsWithChildren<any>) {
         <QueryClientProvider client={queryClient}>
           <WagmiContext>
             <BodyLayout>{children}</BodyLayout>
+            <TransactionModal />
             <ToastContainer transition={Zoom} position={toast.POSITION.BOTTOM_RIGHT} />
           </WagmiContext>
         </QueryClientProvider>

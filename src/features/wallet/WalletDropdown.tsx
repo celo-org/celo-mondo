@@ -1,6 +1,6 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
-import { OutlineButton } from 'src/components/buttons/OutlineButton';
+import { OutlineButton, OutlineButtonClassName } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
 import { DropdownModal } from 'src/components/menus/Dropdown';
@@ -27,7 +27,7 @@ export function WalletDropdown() {
               <div className="text-sm">{shortenAddress(address, true)}</div>
             </div>
           )}
-          buttonClasses="pl-1.5 pr-3 all:py-1"
+          buttonClasses={`${OutlineButtonClassName} pl-1.5 pr-3 all:py-1`}
           modal={({ close }) => (
             <DropdownContent address={address} disconnect={disconnect} close={close} />
           )}
@@ -58,7 +58,7 @@ function DropdownContent({
 
   const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
 
-  const onClickCopy = useCopyHandler(address, close);
+  const onClickCopy = useCopyHandler(address);
 
   return (
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">
