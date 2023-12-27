@@ -1,10 +1,11 @@
 'use client';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Card } from 'src/components/layout/Card';
 import { Section } from 'src/components/layout/Section';
-import { useModal } from 'src/components/menus/Modal';
+import { Modal, useModal } from 'src/components/menus/Modal';
 import { Amount } from 'src/components/numbers/Amount';
+import { StakeForm } from 'src/features/staking/StakeForm';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
@@ -12,19 +13,18 @@ import { bigIntMin } from 'src/utils/math';
 
 export default function Index() {
   const { groups, totalVotes } = useValidatorGroups();
-  const showModal = useModal('stake');
-  useEffect(() => {
-    setTimeout(() => {
-      showModal();
-    }, 5000);
-  }, [showModal]);
+
+  const { isModalOpen, openModal: _openModal, closeModal } = useModal();
+
   return (
     <>
       <div className="space-y-8">
         <HeroSection totalVotes={totalVotes} groups={groups} />
         <ListSection totalVotes={totalVotes} groups={groups} />
       </div>
-      {/* <Modal id="stake">Test</Modal> */}
+      <Modal isOpen={isModalOpen} close={closeModal}>
+        <StakeForm />
+      </Modal>
     </>
   );
 }
@@ -50,7 +50,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
         <div className="flex w-80 flex-col space-y-6">
           <h1 className="font-serif text-4xl">Discover Validators</h1>
           <p>Stake your CELO with validators to start earning rewards immediately.</p>
-          <SolidButton>{`Stake and earn up to 6%`}</SolidButton>
+          <SolidButton>{`Stake and earn 4%`}</SolidButton>
         </div>
         <div className="hidden grid-cols-2 grid-rows-2 gap-10 border border-white/20 p-6 md:grid">
           <HeroStat label="Staking APY" text="6%" />

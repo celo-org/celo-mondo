@@ -17,6 +17,7 @@
   "dependencies": {
     "@celo/abis": "^10.0.0",
     "@celo/rainbowkit-celo": "^1.1.2",
+    "@headlessui/react": "^1.7.17",
     "@metamask/jazzicon": "https://github.com/jmrossy/jazzicon#7a8df28974b4e81129bfbe3cab76308b889032a6",
     "@metamask/post-message-stream": "6.1.2",
     "@metamask/providers": "10.2.1",

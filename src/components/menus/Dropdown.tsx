@@ -1,57 +1,75 @@
-import { ReactNode } from 'react';
+import { Menu, Popover, Transition } from '@headlessui/react';
+import { Fragment, ReactElement, ReactNode } from 'react';
+import { OutlineButton } from 'src/components/buttons/OutlineButton';
 
-/**
- * A small dropdown modal
- */
-export function Dropdown({
-  button,
-  content,
-  className,
-}: {
+interface MenuProps {
   button: ReactNode;
-  content: ReactNode;
-  className?: string;
-}) {
+  buttonClasses?: string;
+  menuItems: ReactNode[];
+  menuClasses?: string;
+}
+
+// Uses Headless menu, which auto-closes on any item click
+export function DropdownMenu({ button, buttonClasses, menuItems, menuClasses }: MenuProps) {
   return (
-    <div className={`dropdown ${className}`}>
-      <div tabIndex={0} role="button">
+    <Menu as="div" className="relative">
+      <Menu.Button as={OutlineButton} className={buttonClasses}>
         {button}
-      </div>
-      <div
-        tabIndex={0}
-        className="dropdown-content z-[1] mt-3 border border-taupe-300 bg-white p-4 shadow"
+      </Menu.Button>
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-200"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-100"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
       >
-        {content}
-      </div>
-    </div>
+        <Menu.Items
+          className={`absolute -right-1.5 z-40 mt-3 origin-top-right rounded-md bg-white shadow-md ring-1 ring-black ring-opacity-5 drop-shadow-md focus:outline-none ${menuClasses}`}
+        >
+          {menuItems.map((mi, i) => (
+            <Menu.Item key={`menu-item-${i}`}>{mi}</Menu.Item>
+          ))}
+        </Menu.Items>
+      </Transition>
+    </Menu>
   );
 }
 
-/**
- * A dropdown menu with a list of items
- */
-export function DropdownMenu({
-  button,
-  items,
-  className,
-}: {
-  button: ReactNode;
-  items: Array<ReactNode>;
-  className?: string;
-}) {
+interface ModalProps {
+  button: (props: { open: boolean }) => ReactElement;
+  buttonClasses?: string;
+  modal: (props: { close: () => void }) => ReactElement;
+  modalClasses?: string;
+}
+
+// Uses Headless Popover, which is a more general purpose dropdown box
+export function DropdownModal({ button, buttonClasses, modal, modalClasses }: ModalProps) {
   return (
-    <div className={`dropdown ${className}`}>
-      <div tabIndex={0} role="button" className="btn btn-ghost rounded-btn">
-        {button}
-      </div>
-      <ul
-        tabIndex={0}
-        className="menu dropdown-content z-[1] mt-3 w-52 border border-taupe-300 bg-white p-2 shadow"
-      >
-        {items.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
-      </ul>
-    </div>
+    <Popover className="relative">
+      {({ open }) => (
+        <>
+          <Popover.Button as={OutlineButton} className={buttonClasses}>
+            {button({ open })}
+          </Popover.Button>
+          <Transition
+            as={Fragment}
+            enter="transition ease-out duration-200"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-100"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Popover.Panel
+              className={`absolute right-0 z-40 mt-2 bg-white ring-1 ring-black/5 drop-shadow-md focus:outline-none ${modalClasses}`}
+            >
+              {({ close }) => modal({ close })}
+            </Popover.Panel>
+          </Transition>
+        </>
+      )}
+    </Popover>
   );
 }

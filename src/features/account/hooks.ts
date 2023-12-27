@@ -27,7 +27,7 @@ export function useLockedBalance(address?: Address) {
     enabled: !!address,
   });
 
-  const balance: FetchBalanceResult | undefined = data
+  const lockedBalance: FetchBalanceResult | undefined = data
     ? {
         decimals: CELO.decimals,
         formatted: formatUnits(data, CELO.decimals),
@@ -38,5 +38,5 @@ export function useLockedBalance(address?: Address) {
 
   useToastError(error, 'Error fetching locked balance');
 
-  return { balance, isError, isLoading };
+  return { lockedBalance, isError, isLoading };
 }

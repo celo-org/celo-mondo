@@ -5,7 +5,7 @@ import { NavBar } from './NavBar';
 
 export function Header() {
   return (
-    <header className="relative z-30 w-full px-3 py-3 sm:px-5">
+    <header className="relative w-full px-3 py-3 sm:px-5">
       <div className="flex items-center justify-between">
         <Link href="/" className="flex items-center md:hidden">
           <CeloGlyph width={26} height={26}></CeloGlyph>

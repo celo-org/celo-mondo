@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
-import { Dropdown } from 'src/components/menus/Dropdown';
+import { DropdownModal } from 'src/components/menus/Dropdown';
 import { Amount } from 'src/components/numbers/Amount';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
@@ -20,17 +20,18 @@ export function WalletDropdown() {
   return (
     <div className="relative mb-1 flex justify-end">
       {address && isConnected ? (
-        <Dropdown
-          button={
-            <OutlineButton className="pl-1.5 pr-3 all:py-1">
-              <div className="flex items-center justify-center space-x-1">
-                <Identicon address={address} size={26} />
-                <div className="text-sm">{shortenAddress(address, true)}</div>
-              </div>
-            </OutlineButton>
-          }
-          content={<DropdownContent address={address} disconnect={disconnect} />}
-          className="dropdown-end"
+        <DropdownModal
+          button={() => (
+            <div className="flex items-center justify-center space-x-1">
+              <Identicon address={address} size={26} />
+              <div className="text-sm">{shortenAddress(address, true)}</div>
+            </div>
+          )}
+          buttonClasses="pl-1.5 pr-3 all:py-1"
+          modal={({ close }) => (
+            <DropdownContent address={address} disconnect={disconnect} close={close} />
+          )}
+          modalClasses="p-4"
         />
       ) : (
         <SolidButton onClick={openConnectModal}>Connect</SolidButton>
@@ -39,17 +40,25 @@ export function WalletDropdown() {
   );
 }
 
-function DropdownContent({ address, disconnect }: { address: Address; disconnect: () => void }) {
+function DropdownContent({
+  address,
+  disconnect,
+  close,
+}: {
+  address: Address;
+  disconnect: () => void;
+  close: () => void;
+}) {
   // TODO only run if content is open: https://github.com/saadeghi/daisyui/discussions/2697
   // TODO update these hooks with a refetch interval after upgrading to wagmi v2
   const { balance: walletBalance } = useBalance(address);
-  const { balance: lockedBalance } = useLockedBalance(address);
+  const { lockedBalance } = useLockedBalance(address);
   const { stakes } = useStakingBalances(address);
   const { totalRewards } = useStakingRewards(address, stakes);
 
   const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
 
-  const onClickCopy = useCopyHandler(address);
+  const onClickCopy = useCopyHandler(address, close);
 
   return (
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">
@@ -70,7 +79,7 @@ function DropdownContent({ address, disconnect }: { address: Address; disconnect
       </div>
       <div className="flex w-full items-center justify-between space-x-4">
         <Link href="/account">
-          <OutlineButton>My Account</OutlineButton>
+          <OutlineButton onClick={close}>My Account</OutlineButton>
         </Link>
         <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>
       </div>

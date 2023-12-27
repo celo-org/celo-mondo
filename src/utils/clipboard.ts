@@ -27,10 +27,11 @@ export async function tryClipboardGet() {
   }
 }
 
-export function useCopyHandler(value?: string) {
+export function useCopyHandler(value?: string, onDone?: () => void) {
   return useCallback(async () => {
     if (!value) return;
     const result = await tryClipboardSet(value);
     if (result) toast.success('Copied to clipboard', { autoClose: 1200 });
-  }, [value]);
+    if (onDone) onDone();
+  }, [value, onDone]);
 }
