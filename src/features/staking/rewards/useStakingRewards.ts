@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { computeStakingRewards } from 'src/features/staking/rewards/computeRewards';
 import { fetchStakeEvents } from 'src/features/staking/rewards/fetchStakeHistory';
-import { StakingBalances } from 'src/features/staking/types';
+import { GroupToStake } from 'src/features/staking/types';
 import { logger } from 'src/utils/logger';
 
-export function useStakingRewards(address?: Address, stakes?: StakingBalances) {
+export function useStakingRewards(address?: Address, stakes?: GroupToStake) {
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useStakingRewards', address, stakes],
     queryFn: async () => {

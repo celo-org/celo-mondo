@@ -1,3 +1,6 @@
+export type GroupToStake = Record<Address, { active: bigint; pending: bigint }>;
+export type StakingBalances = { active: bigint; pending: bigint; total: bigint };
+
 export enum StakeActionType {
   Vote = 'vote',
   Activate = 'activate',
@@ -15,8 +18,6 @@ export function stakeActionLabel(type: StakeActionType, activeTense = false) {
     throw new Error(`Invalid lock action type: ${type}`);
   }
 }
-
-export type StakingBalances = Record<Address, { active: bigint; pending: bigint }>;
 
 export enum StakeEventType {
   Activate = 'activate',

@@ -32,7 +32,7 @@ export function useLockedBalance(address?: Address) {
         decimals: CELO.decimals,
         formatted: formatUnits(data, CELO.decimals),
         symbol: CELO.symbol,
-        value: data,
+        value: BigInt(data),
       }
     : undefined;
 

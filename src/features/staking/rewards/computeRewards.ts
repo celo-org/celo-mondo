@@ -1,4 +1,4 @@
-import { StakeEvent, StakeEventType, StakingBalances } from 'src/features/staking/types';
+import { GroupToStake, StakeEvent, StakeEventType } from 'src/features/staking/types';
 import { fromWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { objKeys } from 'src/utils/objects';
@@ -6,7 +6,7 @@ import { getDaysBetween } from 'src/utils/time';
 
 export function computeStakingRewards(
   stakeEvents: StakeEvent[],
-  stakes: StakingBalances,
+  stakes: GroupToStake,
   mode: 'amount' | 'apy' = 'amount',
 ): Record<Address, number> {
   return mode === 'amount'
@@ -14,7 +14,7 @@ export function computeStakingRewards(
     : computeRewardApy(stakeEvents, stakes);
 }
 
-function computeRewardAmount(stakeEvents: StakeEvent[], stakes: StakingBalances) {
+function computeRewardAmount(stakeEvents: StakeEvent[], stakes: GroupToStake) {
   const groupTotals: Record<Address, bigint> = {}; // group addr to sum votes
   for (const event of stakeEvents) {
     const { group, type, value } = event;
@@ -41,7 +41,7 @@ function computeRewardAmount(stakeEvents: StakeEvent[], stakes: StakingBalances)
   return groupRewards;
 }
 
-function computeRewardApy(stakeEvents: StakeEvent[], stakes: StakingBalances) {
+function computeRewardApy(stakeEvents: StakeEvent[], stakes: GroupToStake) {
   // First get total reward amounts per group
   const groupRewardAmounts = computeRewardAmount(stakeEvents, stakes);
 

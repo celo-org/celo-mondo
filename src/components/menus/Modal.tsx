@@ -56,7 +56,7 @@ export function Modal({
               <Dialog.Panel
                 className={`w-full ${
                   width || 'max-w-xs'
-                } max-h-[90vh] transform overflow-auto rounded-2xl bg-white ${
+                } max-h-[90vh] transform overflow-auto bg-white ${
                   padding || 'px-4 py-4'
                 } text-left shadow-lg transition-all`}
               >
@@ -73,6 +73,8 @@ export function Modal({
                       onClick={close}
                       title="Close"
                       className="hover:rotate-90"
+                      width={20}
+                      height={20}
                     />
                   </div>
                 )}

@@ -18,6 +18,8 @@ import { config } from 'src/config/config';
 
 import Link from 'next/link';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
+import { useStore } from 'src/features/store';
+import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { cleanGroupName, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -147,6 +149,8 @@ export function ValidatorGroupTable({
 }
 
 function useTableColumns(totalVotes: bigint) {
+  const setTxModal = useStore((state) => state.setTransactionModal);
+
   return useMemo(() => {
     const columnHelper = createColumnHelper<ValidatorGroupRow>();
     return [
@@ -195,7 +199,7 @@ function useTableColumns(totalVotes: bigint) {
           <OutlineButton
             onClick={(e) => {
               e.preventDefault();
-              alert(props.row.original.address);
+              setTxModal({ type: TxModalType.Stake, props: { defaultGroup: props.row.original } });
             }}
           >
             <div className="flex items-center space-x-1.5">
@@ -206,7 +210,7 @@ function useTableColumns(totalVotes: bigint) {
         ),
       }),
     ];
-  }, [totalVotes]);
+  }, [totalVotes, setTxModal]);
 }
 
 function useTableRows({

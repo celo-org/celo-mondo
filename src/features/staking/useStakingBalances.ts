@@ -2,7 +2,7 @@ import { electionABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
-import { StakingBalances } from 'src/features/staking/types';
+import { GroupToStake } from 'src/features/staking/types';
 import { logger } from 'src/utils/logger';
 import { objKeys } from 'src/utils/objects';
 import { PublicClient, usePublicClient } from 'wagmi';
@@ -12,10 +12,16 @@ export function useStakingBalances(address?: Address) {
 
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useStakingBalances', publicClient, address],
-    queryFn: () => {
+    queryFn: async () => {
       if (!address) return null;
       logger.debug('Fetching staking balances');
-      return fetchStakingBalances(publicClient, address);
+      const groupToStake = await fetchStakingBalances(publicClient, address);
+      const stakes = Object.values(groupToStake);
+      const active = stakes.reduce((acc, stake) => acc + stake.active, 0n);
+      const pending = stakes.reduce((acc, stake) => acc + stake.pending, 0n);
+      const total = active + pending;
+      const stakeBalances = { active, pending, total };
+      return { groupToStake, stakeBalances };
     },
     gcTime: 10 * 60 * 1000, // 10 minutes
     staleTime: 1 * 60 * 1000, // 1 minute
@@ -26,7 +32,8 @@ export function useStakingBalances(address?: Address) {
   return {
     isLoading,
     isError,
-    stakes: data || undefined,
+    groupToStake: data?.groupToStake,
+    stakeBalances: data?.stakeBalances,
   };
 }
 
@@ -60,7 +67,7 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
     })),
   });
 
-  const votes: StakingBalances = {};
+  const votes: GroupToStake = {};
   for (let i = 0; i < groupAddrs.length; i++) {
     const groupAddr = groupAddrs[i];
     const pending = pendingVotes[i];
@@ -75,7 +82,7 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
 
 export async function checkHasActivatable(
   publicClient: PublicClient,
-  stakes: StakingBalances,
+  stakes: GroupToStake,
   address: Address,
 ) {
   const groupsWithPending = objKeys(stakes).filter((groupAddr) => stakes[groupAddr].pending > 0);

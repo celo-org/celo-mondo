@@ -2,11 +2,11 @@ import {
   computeStakingRewards,
   getTimeWeightedAverageActive,
 } from 'src/features/staking/rewards/computeRewards';
-import { StakeEvent, StakeEventType, StakingBalances } from 'src/features/staking/types';
+import { GroupToStake, StakeEvent, StakeEventType } from 'src/features/staking/types';
 import { nowMinusDays } from 'src/test/time';
 import { toWei } from 'src/utils/amount';
 
-function stakes(activeAmount: number, group = '0x1'): StakingBalances {
+function stakes(activeAmount: number, group = '0x1'): GroupToStake {
   return {
     [group]: { active: toWei(activeAmount), pending: 0n },
   };

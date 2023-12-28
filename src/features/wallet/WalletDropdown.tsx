@@ -53,8 +53,8 @@ function DropdownContent({
   // TODO update these hooks with a refetch interval after upgrading to wagmi v2
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalance } = useLockedBalance(address);
-  const { stakes } = useStakingBalances(address);
-  const { totalRewards } = useStakingRewards(address, stakes);
+  const { groupToStake } = useStakingBalances(address);
+  const { totalRewards } = useStakingRewards(address, groupToStake);
 
   const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
 
