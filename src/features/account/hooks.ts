@@ -1,4 +1,4 @@
-import { lockedGoldABI } from '@celo/abis';
+import { accountsABI, lockedGoldABI } from '@celo/abis';
 import type { FetchBalanceResult } from '@wagmi/core';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { ZERO_ADDRESS } from 'src/config/consts';
@@ -39,4 +39,32 @@ export function useLockedBalance(address?: Address) {
   useToastError(error, 'Error fetching locked balance');
 
   return { lockedBalance, isError, isLoading };
+}
+
+// Note, this retrieves the address's info from the Accounts contract
+// It has nothing to do with wallets or backend services
+export function useAccountDetails(address?: Address) {
+  const {
+    data: isRegistered,
+    isError,
+    isLoading,
+    error,
+  } = useContractRead({
+    address: Addresses.Accounts,
+    abi: accountsABI,
+    functionName: 'isAccount',
+    args: [address || ZERO_ADDRESS],
+    enabled: !!address,
+  });
+
+  // Note, more reads can be added here if more info is needed, such
+  // as name, metadataUrl, walletAddress, voteSignerToAccount, etc.
+
+  useToastError(error, 'Error fetching account registration status');
+
+  return {
+    account: { isRegistered },
+    isError,
+    isLoading,
+  };
 }
