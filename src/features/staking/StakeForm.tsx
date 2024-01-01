@@ -1,15 +1,12 @@
-import { Form, Formik, useField, useFormikContext } from 'formik';
-import { useEffect, useMemo } from 'react';
-import { OutlineButton } from 'src/components/buttons/OutlineButton';
+import { Form, Formik, useField } from 'formik';
+import { useEffect } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
-import { NumberField } from 'src/components/input/NumberField';
-import { formatNumberString } from 'src/components/numbers/Amount';
+import { AmountField } from 'src/components/input/AmountField';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { fromWeiRounded } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { bigIntMax } from 'src/utils/math';
 import { useAccount } from 'wagmi';
@@ -56,7 +53,7 @@ export function StakeForm({ defaultGroup }: { defaultGroup?: Address }) {
     >
       <Form className="mt-2 flex w-full flex-col items-stretch space-y-4">
         <h2 className="font-serif text-2xl">Stake with a validator</h2>
-        <AmountField availableLockedWei={availableLockedWei} />
+        <StakeAmountField availableLockedWei={availableLockedWei} />
         <GroupField groups={groups} defaultGroup={defaultGroup} />
         <SolidButton type="submit">Stake</SolidButton>
       </Form>
@@ -64,35 +61,8 @@ export function StakeForm({ defaultGroup }: { defaultGroup?: Address }) {
   );
 }
 
-function AmountField({ availableLockedWei }: { availableLockedWei: bigint }) {
-  const { setFieldValue } = useFormikContext();
-
-  const availableLocked = useMemo(() => fromWeiRounded(availableLockedWei), [availableLockedWei]);
-
-  const onClickMax = async () => {
-    await setFieldValue('amount', availableLocked);
-  };
-
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <label htmlFor="amount" className="pl-0.5 text-sm">
-          Amount
-        </label>
-        <span className="text-xs">
-          {`${formatNumberString(availableLocked, 2)} Locked CELO available`}
-        </span>
-      </div>
-      <div className="relative mt-2">
-        <NumberField name="amount" className="w-full all:py-3" />
-        <div className="absolute right-1 top-2 z-10">
-          <OutlineButton onClick={onClickMax} type="button">
-            Max
-          </OutlineButton>
-        </div>
-      </div>
-    </div>
-  );
+function StakeAmountField({ availableLockedWei }: { availableLockedWei: bigint }) {
+  return <AmountField maxValueWei={availableLockedWei} maxDescription="Locked CELO available" />;
 }
 
 function GroupField({

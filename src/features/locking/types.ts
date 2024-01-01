@@ -20,21 +20,16 @@ export enum LockActionType {
   Lock = 'lock',
   Unlock = 'unlock',
   Withdraw = 'withdraw',
-}
-
-export function lockActionLabel(type: LockActionType, activeTense = false) {
-  if (type === LockActionType.Lock) {
-    return activeTense ? 'Locking' : 'Lock';
-  } else if (type === LockActionType.Unlock) {
-    return activeTense ? 'Unlocking' : 'Unlock';
-  } else if (type === LockActionType.Withdraw) {
-    return activeTense ? 'Withdrawing' : 'Withdraw';
-  } else {
-    throw new Error(`Invalid lock action type: ${type}`);
-  }
+  Relock = 'relock',
 }
 
 export interface LockTokenParams {
-  weiAmount: bigint;
-  action: LockActionType;
+  type: LockActionType;
+  amountWei: bigint;
 }
+
+interface LockTokenTxPlanItem extends LockTokenParams {
+  pendingWithdrawal?: PendingWithdrawal;
+}
+
+export type LockTokenTxPlan = Array<LockTokenTxPlanItem>;

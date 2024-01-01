@@ -1,3 +1,4 @@
+// TODO combine some of these like lock/unlock/withdraw ?
 export enum TxModalType {
   Lock = 'lock',
   Unlock = 'unlock',

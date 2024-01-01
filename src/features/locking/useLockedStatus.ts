@@ -1,11 +1,36 @@
 import { lockedGoldABI } from '@celo/abis';
+import { useQuery } from '@tanstack/react-query';
+import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { LockedStatus, PendingWithdrawal } from 'src/features/locking/types';
-import { PublicClient } from 'wagmi';
+import { logger } from 'src/utils/logger';
+import { PublicClient, usePublicClient } from 'wagmi';
 
-type PendingWithdrawalsRaw = readonly [readonly bigint[], readonly bigint[]]; // values and times
+export function useLockedStatus(address?: Address) {
+  const publicClient = usePublicClient();
 
-export async function fetchLockedStatus(
+  const { isLoading, isError, error, data } = useQuery({
+    queryKey: ['useLockedStatus', publicClient, address],
+    queryFn: async () => {
+      if (!address) return null;
+      logger.debug('Fetching locked status balance and withdrawals');
+      return fetchLockedStatus(publicClient, address);
+    },
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+
+  useToastError(error, 'Error fetching locked balances and withdrawals');
+
+  return {
+    isLoading,
+    isError,
+    lockedBalances: data?.balances,
+    pendingWithdrawals: data?.pendingWithdrawals,
+  };
+}
+
+async function fetchLockedStatus(
   publicClient: PublicClient,
   address: Address,
 ): Promise<LockedStatus> {
@@ -29,7 +54,8 @@ export async function fetchLockedStatus(
     throw new Error('Error fetching locked balances or pending withdrawals');
   }
   const totalLocked = totalLockedResp.result;
-  const pendingWithdrawalsRaw: PendingWithdrawalsRaw = pendingWithdrawalsResp.result;
+  // [values, times]
+  const pendingWithdrawalsRaw = pendingWithdrawalsResp.result;
 
   let pendingBlocked = 0n;
   let pendingFree = 0n;

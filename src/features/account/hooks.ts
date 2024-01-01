@@ -7,6 +7,7 @@ import { CELO } from 'src/config/tokens';
 import { formatUnits } from 'viem';
 import { useBalance as _useBalance, useContractRead } from 'wagmi';
 
+// Defaults to CELO if tokenAddress is not provided
 export function useBalance(address?: Address, tokenAddress?: Address) {
   const { data, isError, isLoading, error } = _useBalance({
     address: address,
