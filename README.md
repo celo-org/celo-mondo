@@ -1,3 +1,7 @@
+# **WORK IN PROGRESS**
+
+Everything is still very much in flux.
+
 # Celo Station
 
 Celo Station is a [DApp](https://en.wikipedia.org/wiki/Decentralized_application) for participating in staking and governance on [Celo](https://celo.org).
