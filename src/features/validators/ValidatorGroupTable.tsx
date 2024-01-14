@@ -21,11 +21,9 @@ import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { useStore } from 'src/features/store';
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
-import { cleanGroupName, isElected } from 'src/features/validators/utils';
+import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
+import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
-import { fromWeiRounded } from 'src/utils/amount';
-import { bigIntMean } from 'src/utils/math';
-import { ValidatorGroup, ValidatorGroupRow, ValidatorStatus } from './types';
 
 const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
 enum Filter {
@@ -240,19 +238,12 @@ function useTableRows({
           ),
       );
 
-    const groupRows = filteredGroups.map((g): ValidatorGroupRow => {
-      const members = Object.values(g.members);
-      const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
-      const avgScore = electedMembers.length
-        ? parseFloat(fromWeiRounded(bigIntMean(electedMembers.map((m) => m.score)), 22, 0))
-        : 0;
-      return {
+    const groupRows = filteredGroups.map(
+      (g): ValidatorGroupRow => ({
         ...g,
-        numMembers: members.length,
-        numElected: electedMembers.length,
-        avgScore,
-      };
-    });
+        ...getGroupStats(g),
+      }),
+    );
     return groupRows;
   }, [groups, filter, searchQuery]);
 }

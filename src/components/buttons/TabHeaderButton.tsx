@@ -16,7 +16,7 @@ export function TabHeaderButton({
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <span>{children}</span>
+      <span className="font-medium">{children}</span>
       {!isNullish(count) && (
         <div
           className={clsx(

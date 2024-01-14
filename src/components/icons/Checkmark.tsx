@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-function _XIcon({
+function _Checkmark({
   width,
   height,
   fill,
@@ -17,14 +17,14 @@ function _XIcon({
       width={width}
       height={height}
       className={className}
-      viewBox="0 0 10 10"
+      viewBox="0 0 16 16"
     >
       <path
         fill={fill}
-        d="M10 0.97908L9.02092 0L5 4.02092L0.979081 0L0 0.97908L4.02092 5L0 9.02092L0.979081 10L5 5.97908L9.02092 10L10 9.02092L5.97908 5L10 0.97908Z"
+        d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"
       />
     </svg>
   );
 }
 
-export const XIcon = memo(_XIcon);
+export const Checkmark = memo(_Checkmark);
