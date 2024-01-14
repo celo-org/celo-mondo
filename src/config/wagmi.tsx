@@ -14,6 +14,7 @@ import { config } from 'src/config/config';
 import { links } from 'src/config/links';
 import { valora } from 'src/config/wallets';
 import { Color } from 'src/styles/Color';
+import { fallback } from 'viem';
 import { celo } from 'viem/chains';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 
@@ -34,7 +35,7 @@ export const wagmiConfig = createConfig({
   chains: [celo],
   connectors,
   transports: {
-    [celo.id]: http(),
+    [celo.id]: fallback([http(fornoRpcUrl), http(infuraRpcUrl)]),
   },
 });
 
