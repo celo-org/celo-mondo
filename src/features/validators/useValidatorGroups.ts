@@ -6,7 +6,8 @@ import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
-import { PublicClient, usePublicClient } from 'wagmi';
+import { MulticallReturnType, PublicClient } from 'viem';
+import { usePublicClient } from 'wagmi';
 import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 
 export function useValidatorGroups() {
@@ -51,7 +52,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   for (let i = 0; i < validatorAddrs.length; i++) {
     const valAddr = validatorAddrs[i];
     const valDetails = validatorDetails[i];
-    const valName = validatorNames[i].result || '';
+    const valName = validatorNames[i] || '';
     const groupAddr = valDetails.affiliation;
     // Create new group if there isn't one yet
     if (!groups[groupAddr]) {
@@ -89,7 +90,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   const groupNames = await fetchNamesForAccounts(publicClient, groupAddrs);
   for (let i = 0; i < groupAddrs.length; i++) {
     const groupAddr = groupAddrs[i];
-    groups[groupAddr].name = groupNames[i].result || groupAddr.substring(0, 10) + '...';
+    groups[groupAddr].name = groupNames[i] || groupAddr.substring(0, 10) + '...';
   }
 
   // Fetch vote-related details about the validator groups
@@ -140,7 +141,8 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
 
 async function fetchValidatorDetails(publicClient: PublicClient, addresses: readonly Address[]) {
   // Fetch validator details, needed for their scores and signers
-  const validatorDetailsRaw = await publicClient.multicall({
+  // @ts-ignore Bug with viem 2.0 multicall types
+  const validatorDetailsRaw: MulticallReturnType<any> = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Validators,
       abi: validatorsABI,
@@ -152,18 +154,20 @@ async function fetchValidatorDetails(publicClient: PublicClient, addresses: read
   // https://viem.sh/docs/faq.html#why-is-a-contract-function-return-type-returning-an-array-instead-of-an-object
   return validatorDetailsRaw.map((d, i) => {
     if (!d.result) throw new Error(`Validator details missing for index ${i}`);
+    const result = d.result as [Address, Address, Address, bigint, Address];
     return {
-      ecdsaPublicKey: d.result[0],
-      blsPublicKey: d.result[1],
-      affiliation: d.result[2],
-      score: d.result[3],
-      signer: d.result[4],
+      ecdsaPublicKey: result[0],
+      blsPublicKey: result[1],
+      affiliation: result[2],
+      score: result[3],
+      signer: result[4],
     };
   });
 }
 
-function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly Address[]) {
-  return publicClient.multicall({
+async function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly Address[]) {
+  // @ts-ignore Bug with viem 2.0 multicall types
+  const names: MulticallReturnType<any> = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Accounts,
       abi: accountsABI,
@@ -171,6 +175,10 @@ function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly A
       args: [addr],
     })),
     allowFailure: true,
+  });
+  return names.map((n) => {
+    if (!n.result) return null;
+    return n.result as string;
   });
 }
 

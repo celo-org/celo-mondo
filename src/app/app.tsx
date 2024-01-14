@@ -1,7 +1,6 @@
 'use client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Analytics } from '@vercel/analytics/react';
-import { PropsWithChildren, useState } from 'react';
+import { PropsWithChildren } from 'react';
 import { ToastContainer, Zoom, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
@@ -13,6 +12,21 @@ import { useIsSsr } from 'src/utils/ssr';
 import 'src/vendor/inpage-metamask';
 import 'src/vendor/polyfill';
 
+export function App({ children }: PropsWithChildren<any>) {
+  return (
+    <ErrorBoundary>
+      <SafeHydrate>
+        <WagmiContext>
+          <BodyLayout>{children}</BodyLayout>
+          <TransactionModal />
+          <ToastContainer transition={Zoom} position={toast.POSITION.BOTTOM_RIGHT} />
+        </WagmiContext>
+      </SafeHydrate>
+      <Analytics />
+    </ErrorBoundary>
+  );
+}
+
 function SafeHydrate({ children }: PropsWithChildren<any>) {
   // Avoid SSR for now as it's not needed and it
   // complicates wallet integrations and media query hooks
@@ -22,25 +36,6 @@ function SafeHydrate({ children }: PropsWithChildren<any>) {
   } else {
     return children;
   }
-}
-
-export function App({ children }: PropsWithChildren<any>) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <ErrorBoundary>
-      <SafeHydrate>
-        <QueryClientProvider client={queryClient}>
-          <WagmiContext>
-            <BodyLayout>{children}</BodyLayout>
-            <TransactionModal />
-            <ToastContainer transition={Zoom} position={toast.POSITION.BOTTOM_RIGHT} />
-          </WagmiContext>
-        </QueryClientProvider>
-      </SafeHydrate>
-      <Analytics />
-    </ErrorBoundary>
-  );
 }
 
 export function BodyLayout({ children }: PropsWithChildren<any>) {

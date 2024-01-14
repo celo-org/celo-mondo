@@ -1,45 +1,34 @@
 import { accountsABI, lockedGoldABI } from '@celo/abis';
-import type { FetchBalanceResult } from '@wagmi/core';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { CELO } from 'src/config/tokens';
-import { formatUnits } from 'viem';
-import { useBalance as _useBalance, useContractRead } from 'wagmi';
+import { useBalance as _useBalance, useReadContract } from 'wagmi';
 
 // Defaults to CELO if tokenAddress is not provided
-export function useBalance(address?: Address, tokenAddress?: Address) {
+export function useBalance(address?: Address) {
   const { data, isError, isLoading, error } = _useBalance({
     address: address,
-    token: tokenAddress,
   });
 
   useToastError(error, 'Error fetching account balance');
 
-  return { balance: data, isError, isLoading };
+  return { balance: data?.value, isError, isLoading };
 }
 
 export function useLockedBalance(address?: Address) {
-  const { data, isError, isLoading, error } = useContractRead({
+  const { data, isError, isLoading, error } = useReadContract({
     address: Addresses.LockedGold,
     abi: lockedGoldABI,
     functionName: 'getAccountTotalLockedGold',
     args: [address || ZERO_ADDRESS],
-    enabled: !!address,
+    query: {
+      enabled: !!address,
+    },
   });
-
-  const lockedBalance: FetchBalanceResult | undefined = data
-    ? {
-        decimals: CELO.decimals,
-        formatted: formatUnits(data, CELO.decimals),
-        symbol: CELO.symbol,
-        value: BigInt(data),
-      }
-    : undefined;
 
   useToastError(error, 'Error fetching locked balance');
 
-  return { lockedBalance, isError, isLoading };
+  return { lockedBalance: data ? BigInt(data) : undefined, isError, isLoading };
 }
 
 // Note, this retrieves the address's info from the Accounts contract
@@ -50,12 +39,14 @@ export function useAccountDetails(address?: Address) {
     isError,
     isLoading,
     error,
-  } = useContractRead({
+  } = useReadContract({
     address: Addresses.Accounts,
     abi: accountsABI,
     functionName: 'isAccount',
     args: [address || ZERO_ADDRESS],
-    enabled: !!address,
+    query: {
+      enabled: !!address,
+    },
   });
 
   // Note, more reads can be added here if more info is needed, such

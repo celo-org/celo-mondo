@@ -4,11 +4,12 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { EPOCH_DURATION_MS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { links } from 'src/config/links';
-import { infuraRpcUrl, wagmiChains } from 'src/config/wagmi';
+import { infuraRpcUrl } from 'src/config/wagmi';
 import { queryCeloscan } from 'src/features/explorers/celoscan';
 import { logger } from 'src/utils/logger';
-import { createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
-import { PublicClient, usePublicClient } from 'wagmi';
+import { PublicClient, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
+import { celo } from 'viem/chains';
+import { usePublicClient } from 'wagmi';
 
 const REWARD_DISTRIBUTED_ABI_FRAGMENT =
   'event EpochRewardsDistributedToVoters(address indexed group, uint256 value)';
@@ -69,7 +70,7 @@ async function fetchValidatorGroupRewardHistory(
     batch: { wait: 100, batchSize: 100 },
   });
   const infuraBatchClient = createPublicClient({
-    chain: wagmiChains[0],
+    chain: celo,
     transport: infuraBatchTransport,
   });
 

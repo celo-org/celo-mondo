@@ -5,7 +5,8 @@ import { Addresses } from 'src/config/contracts';
 import { GroupToStake } from 'src/features/staking/types';
 import { logger } from 'src/utils/logger';
 import { objKeys } from 'src/utils/objects';
-import { PublicClient, usePublicClient } from 'wagmi';
+import { MulticallReturnType, PublicClient } from 'viem';
+import { usePublicClient } from 'wagmi';
 
 export function useStakingBalances(address?: Address) {
   const publicClient = usePublicClient();
@@ -49,7 +50,8 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
 
   const groupAddrsAndAccount = groupAddrs.map((a) => [a, address]);
 
-  const pendingVotes = await publicClient.multicall({
+  // @ts-ignore Bug with viem 2.0 multicall types
+  const pendingVotes: MulticallReturnType<any> = await publicClient.multicall({
     contracts: groupAddrsAndAccount.map(([g, a]) => ({
       address: Addresses.Election,
       abi: electionABI,
@@ -58,7 +60,7 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
     })),
   });
 
-  const activeVotes = await publicClient.multicall({
+  const activeVotes: MulticallReturnType<any> = await publicClient.multicall({
     contracts: groupAddrsAndAccount.map(([g, a]) => ({
       address: Addresses.Election,
       abi: electionABI,
@@ -74,7 +76,7 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
     const active = activeVotes[i];
     if (pending.status !== 'success') throw new Error('Pending votes call failed');
     if (active.status !== 'success') throw new Error('Active votes call failed');
-    votes[groupAddr] = { pending: pending.result, active: active.result };
+    votes[groupAddr] = { pending: pending.result as bigint, active: active.result as bigint };
   }
 
   return votes;
