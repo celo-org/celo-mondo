@@ -4,7 +4,6 @@ import { ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useBalance as _useBalance, useReadContract } from 'wagmi';
 
-// Defaults to CELO if tokenAddress is not provided
 export function useBalance(address?: Address) {
   const { data, isError, isLoading, error } = _useBalance({
     address: address,

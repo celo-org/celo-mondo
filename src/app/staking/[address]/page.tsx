@@ -19,6 +19,7 @@ import { Identicon } from 'src/components/icons/Identicon';
 import { SlashIcon } from 'src/components/icons/Slash';
 import { XIcon } from 'src/components/icons/XIcon';
 import { Section } from 'src/components/layout/Section';
+import { StatBox } from 'src/components/layout/StatBox';
 import { Twitter } from 'src/components/logos/Twitter';
 import { Web } from 'src/components/logos/Web';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
@@ -98,7 +99,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
           <ValidatorGroupLogo address={address} size={90} />
           <div>
             <h1 className="font-serif text-4xl">{group?.name || '...'}</h1>
-            <div className=" mt-2 flex items-center space-x-1.5 sm:space-x-3">
+            <div className="mt-2 flex items-center space-x-1.5 sm:space-x-3">
               <OutlineButton
                 className="all:py-1 all:font-normal"
                 onClick={onClickAddress}
@@ -160,19 +161,20 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
     return hasReward;
   }, [rewardHistory]);
 
-  const capacityPercent = BigNumber(group?.votes?.toString() || 0)
-    .div(group?.capacity?.toString() || 1)
-    .multipliedBy(100)
-    .decimalPlaces(0)
-    .toNumber();
+  const capacityPercent = Math.min(
+    BigNumber(group?.votes?.toString() || 0)
+      .div(group?.capacity?.toString() || 1)
+      .multipliedBy(100)
+      .decimalPlaces(0)
+      .toNumber(),
+    100,
+  );
 
   const heatmapStartDate = new Date(Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE);
 
   return (
     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
-      <div className="flex flex-1 flex-col space-y-2 border border-taupe-300 bg-white p-2 sm:p-3">
-        <h3 className="text-sm">Total staked</h3>
-        <Amount valueWei={group?.votes} className="text-2xl" />
+      <StatBox header="Total staked" valueWei={group?.votes}>
         <div className="relative h-2 w-full border border-taupe-300 bg-taupe-100">
           <div
             className="absolute bottom-0 left-0 top-0 bg-purple-500"
@@ -182,9 +184,8 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
         <div className="text-xs text-taupe-600">{`Maximum: ${formatNumberString(
           fromWei(group?.capacity),
         )} CELO`}</div>
-      </div>
-      <div className="flex flex-1 flex-col space-y-2 border border-taupe-300 bg-white p-2 sm:p-3">
-        <h3 className="text-sm">Rewards distributed</h3>
+      </StatBox>
+      <StatBox header="Rewards distributed">
         <div className="flex justify-between text-xs">
           <span>{heatmapStartDate.toLocaleDateString()}</span>
           <span>Yesterday</span>
@@ -200,7 +201,7 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
             <label className="ml-2 text-xs">No Reward</label>
           </div>
         </div>
-      </div>
+      </StatBox>
     </div>
   );
 }

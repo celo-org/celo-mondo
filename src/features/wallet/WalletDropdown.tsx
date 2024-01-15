@@ -49,8 +49,6 @@ function DropdownContent({
   disconnect: () => void;
   close: () => void;
 }) {
-  // TODO only run if content is open: https://github.com/saadeghi/daisyui/discussions/2697
-  // TODO update these hooks with a refetch interval after upgrading to wagmi v2
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalance } = useLockedBalance(address);
   const { groupToStake } = useStakingBalances(address);
