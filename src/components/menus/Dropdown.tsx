@@ -23,7 +23,7 @@ export function DropdownMenu({ button, buttonClasses, menuItems, menuClasses }: 
         leaveTo="transform opacity-0 scale-95"
       >
         <Menu.Items
-          className={`absolute -right-1.5 z-40 mt-3 origin-top-right rounded-md bg-white shadow-md ring-1 ring-black ring-opacity-5 drop-shadow-md focus:outline-none ${menuClasses}`}
+          className={`absolute z-40 mt-3 w-max origin-top-left bg-white ring-1 ring-black/5 drop-shadow-md focus:outline-none ${menuClasses}`}
         >
           {menuItems.map((mi, i) => (
             <Menu.Item key={`menu-item-${i}`}>{mi}</Menu.Item>

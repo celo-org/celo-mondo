@@ -18,7 +18,7 @@ export function WalletDropdown() {
   const { disconnect } = useDisconnect();
 
   return (
-    <div className="relative mb-1 flex justify-end">
+    <div className="relative flex justify-end">
       {address && isConnected ? (
         <DropdownModal
           button={() => (
