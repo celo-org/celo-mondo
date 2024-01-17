@@ -2,6 +2,7 @@ import { accountsABI, lockedGoldABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { isNullish } from 'src/utils/typeof';
 import { useBalance as _useBalance, useReadContract } from 'wagmi';
 
 export function useBalance(address?: Address) {
@@ -20,14 +21,12 @@ export function useLockedBalance(address?: Address) {
     abi: lockedGoldABI,
     functionName: 'getAccountTotalLockedGold',
     args: [address || ZERO_ADDRESS],
-    query: {
-      enabled: !!address,
-    },
+    query: { enabled: !!address },
   });
 
   useToastError(error, 'Error fetching locked balance');
 
-  return { lockedBalance: data ? BigInt(data) : undefined, isError, isLoading };
+  return { lockedBalance: !isNullish(data) ? BigInt(data) : undefined, isError, isLoading };
 }
 
 // Note, this retrieves the address's info from the Accounts contract
@@ -43,9 +42,7 @@ export function useAccountDetails(address?: Address) {
     abi: accountsABI,
     functionName: 'isAccount',
     args: [address || ZERO_ADDRESS],
-    query: {
-      enabled: !!address,
-    },
+    query: { enabled: !!address },
   });
 
   // Note, more reads can be added here if more info is needed, such
@@ -54,7 +51,7 @@ export function useAccountDetails(address?: Address) {
   useToastError(error, 'Error fetching account registration status');
 
   return {
-    account: { isRegistered },
+    isRegistered,
     isError,
     isLoading,
   };

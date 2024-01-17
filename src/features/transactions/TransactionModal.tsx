@@ -1,19 +1,16 @@
 import { useCallback, useEffect } from 'react';
 import { Modal, useModal } from 'src/components/menus/Modal';
-import { StakeForm } from 'src/features/staking/StakeForm';
+import { AccountConnectForm } from 'src/features/account/AccountConnectForm';
+import { StakeFlow } from 'src/features/staking/StakeFlow';
 import { useStore } from 'src/features/store';
 import { TxModalType } from 'src/features/transactions/types';
+import { useAccount } from 'wagmi';
 
 const TypeToComponent: Record<TxModalType, React.FC<any>> = {
   [TxModalType.Lock]: PlaceholderContent,
-  [TxModalType.Unlock]: PlaceholderContent,
-  [TxModalType.Withdraw]: PlaceholderContent,
-  [TxModalType.Stake]: StakeForm,
-  [TxModalType.Unstake]: PlaceholderContent,
+  [TxModalType.Stake]: StakeFlow,
   [TxModalType.Vote]: PlaceholderContent,
-  [TxModalType.Unvote]: PlaceholderContent,
   [TxModalType.Delegate]: PlaceholderContent,
-  [TxModalType.Undelegate]: PlaceholderContent,
 };
 
 export function useTransactionModal(type: TxModalType, props?: any) {
@@ -27,7 +24,14 @@ export function TransactionModal() {
   const activeModal = useStore((state) => state.activeModal);
   const { type, props } = activeModal;
 
-  const Component = type ? TypeToComponent[type] : PlaceholderContent;
+  const { address, isConnected } = useAccount();
+  const isReady = address && isConnected;
+
+  const Component = !isReady
+    ? AccountConnectForm
+    : type
+      ? TypeToComponent[type]
+      : PlaceholderContent;
 
   useEffect(() => {
     if (!openModal || !activeModal?.type) return;

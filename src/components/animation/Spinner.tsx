@@ -1,16 +1,14 @@
-import { memo } from 'react';
-import styles from 'src/components/animation/Spinner.module.css';
+import clsx from 'clsx';
 
-// From https://loading.io/css/
-function _Spinner() {
-  return (
-    <div className={styles.spinner}>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-  );
+type Size = 'xs' | 'sm' | 'md' | 'lg';
+
+export function Spinner({ size, className }: { size: Size; className?: string }) {
+  return <div className={clsx('loading loading-spinner', sizeToClass[size], className)}></div>;
 }
 
-export const Spinner = memo(_Spinner);
+const sizeToClass = {
+  xs: 'loading-xs',
+  sm: 'loading-sm',
+  md: 'loading-md',
+  lg: 'loading-lg',
+};

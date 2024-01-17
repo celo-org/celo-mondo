@@ -319,7 +319,7 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
   if (!chartData?.length) {
     return (
       <div className="flex items-center justify-center p-20">
-        <Spinner />
+        <Spinner size="lg" />
       </div>
     );
   }
