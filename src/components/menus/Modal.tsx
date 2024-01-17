@@ -15,16 +15,14 @@ export function Modal({
   isOpen,
   title,
   close,
-  width,
-  padding,
+  dialogClassName,
   children,
   showCloseBtn = true,
 }: PropsWithChildren<{
   isOpen: boolean;
   title?: string;
   close: () => void;
-  width?: string;
-  padding?: string;
+  dialogClassName?: string;
   showCloseBtn?: boolean;
 }>) {
   return (
@@ -43,7 +41,7 @@ export function Modal({
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center text-center sm:p-4">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -54,11 +52,7 @@ export function Modal({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className={`w-full ${
-                  width || 'max-w-xs'
-                } max-h-[90vh] transform overflow-auto bg-white ${
-                  padding || 'px-4 py-4'
-                } text-left shadow-lg transition-all`}
+                className={`transform overflow-auto bg-white p-1.5 text-left shadow-lg transition-all ${dialogClassName}`}
               >
                 {title && (
                   <Dialog.Title as="h3" className="text text-gray-700">
@@ -73,8 +67,8 @@ export function Modal({
                       onClick={close}
                       title="Close"
                       className="hover:rotate-90"
-                      width={20}
-                      height={20}
+                      width={22}
+                      height={22}
                     />
                   </div>
                 )}

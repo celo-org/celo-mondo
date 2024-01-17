@@ -1,4 +1,4 @@
-import { Spinner } from 'src/components/animation/Spinner';
+import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
 import { useAccountDetails, useLockedBalance } from 'src/features/account/hooks';
 import { LockForm } from 'src/features/locking/LockForm';
@@ -31,7 +31,7 @@ export function StakeFlow({
     isNullish(stakeBalances) ||
     isNullish(isRegistered)
   ) {
-    Component = <Spinner size="lg" />;
+    Component = <SpinnerWithLabel className="py-20">Loading staking data...</SpinnerWithLabel>;
   } else if (!isRegistered) {
     Component = <AccountRegisterForm />;
   } else if (lockedBalance <= 0 && stakeBalances.total <= 0) {
@@ -41,6 +41,11 @@ export function StakeFlow({
   }
 
   return (
-    <div className="flex min-h-[30rem] min-w-[20rem] items-center justify-center">{Component}</div>
+    <>
+      <div className="border-b border-taupe-300 pb-1">
+        <h3 className="text-sm font-medium">Stake CELO</h3>
+      </div>
+      {Component}
+    </>
   );
 }

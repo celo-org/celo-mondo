@@ -40,7 +40,9 @@ export function TransactionModal() {
 
   return (
     <Modal isOpen={isModalOpen} close={closeModal}>
-      <Component {...props} />
+      <div className="flex min-h-[24rem] min-w-[18rem] max-w-sm flex-col border border-taupe-300 p-2">
+        <Component {...props} />
+      </div>
     </Modal>
   );
 }
