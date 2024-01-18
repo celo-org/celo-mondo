@@ -1,6 +1,8 @@
-import { Form, Formik, FormikErrors, useField } from 'formik';
+import { Field, Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
+import Image from 'next/image';
 import { useEffect, useMemo } from 'react';
-import { SolidButton } from 'src/components/buttons/SolidButton';
+import { toast } from 'react-toastify';
+import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { AmountField } from 'src/components/input/AmountField';
 import { useBalance } from 'src/features/account/hooks';
 import { useIsGovernanceVoting } from 'src/features/governance/useVotingStatus';
@@ -13,7 +15,8 @@ import {
 } from 'src/features/locking/utils';
 import { StakingBalances } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
-import { toWei } from 'src/utils/amount';
+import InfoIcon from 'src/images/icons/info-circle.svg';
+import { fromWeiRounded, toWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
 import { isNullish } from 'src/utils/typeof';
@@ -21,15 +24,21 @@ import { useAccount } from 'wagmi';
 
 interface LockFormValues {
   amount: number;
-  type: LockActionType;
+  action: LockActionType;
 }
 
 const initialValues: LockFormValues = {
   amount: 0,
-  type: LockActionType.Lock,
+  action: LockActionType.Lock,
 };
 
-export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
+export function LockForm({
+  defaultAction,
+  showTip,
+}: {
+  defaultAction?: LockActionType;
+  showTip?: boolean;
+}) {
   const { address } = useAccount();
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalances } = useLockedStatus(address);
@@ -37,6 +46,7 @@ export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
   const { isVoting } = useIsGovernanceVoting(address);
 
   const onSubmit = (values: LockFormValues) => {
+    // TODO execute lock plan here, may require many txs
     alert(values);
   };
 
@@ -51,7 +61,7 @@ export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
     <Formik<LockFormValues>
       initialValues={{
         ...initialValues,
-        type: defaultType || initialValues.type,
+        action: defaultAction || initialValues.action,
       }}
       onSubmit={onSubmit}
       validate={validate}
@@ -59,15 +69,27 @@ export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-2 flex w-full flex-col items-stretch space-y-4">
-          <h2 className="font-serif text-2xl">Stake with a validator</h2>
-          <ActionTypeField defaultType={defaultType} />
-          <LockAmountField
-            lockedBalances={lockedBalances}
-            walletBalance={walletBalance}
-            type={values.type}
-          />
-          <SolidButton type="submit">{toTitleCase(values.type)}</SolidButton>
+        <Form className="mt-3 flex flex-1 flex-col justify-between">
+          <div className="space-y-6">
+            {showTip && (
+              <div className="flex space-x-2 bg-purple-50 p-2 text-xs">
+                <Image src={InfoIcon} width={16} height={16} alt="tip" />
+                <span>
+                  You currently have no locked CELO. Only locked CELO can participate in staking.
+                  Lock funds to begin.
+                </span>
+              </div>
+            )}
+            <ActionTypeField defaultAction={defaultAction} />
+            <LockAmountField
+              lockedBalances={lockedBalances}
+              walletBalance={walletBalance}
+              action={values.action}
+            />
+          </div>
+          <FormSubmitButton isLoading={false} loadingText={ActionToVerb[values.action]}>
+            {toTitleCase(values.action)}
+          </FormSubmitButton>
         </Form>
       )}
     </Formik>
@@ -77,40 +99,51 @@ export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
 function LockAmountField({
   lockedBalances,
   walletBalance,
-  type,
+  action,
 }: {
   lockedBalances?: LockedBalances;
   walletBalance?: bigint;
-  type: LockActionType;
+  action: LockActionType;
 }) {
   const maxAmountWei = useMemo(
-    () => getMaxAmount(type, lockedBalances, walletBalance),
-    [lockedBalances, walletBalance, type],
+    () => getMaxAmount(action, lockedBalances, walletBalance),
+    [lockedBalances, walletBalance, action],
   );
-  return <AmountField maxValueWei={maxAmountWei} maxDescription="Locked CELO available" />;
-}
 
-function ActionTypeField({ defaultType }: { defaultType?: LockActionType }) {
-  const [field, , helpers] = useField<LockActionType>('type');
-
+  // Auto set amount for withdraw action
+  const isWithdraw = action === LockActionType.Withdraw;
+  const { setFieldValue } = useFormikContext();
   useEffect(() => {
-    helpers.setValue(defaultType || LockActionType.Lock).catch((e) => logger.error(e));
-  }, [defaultType, helpers]);
+    if (!isWithdraw) return;
+    setFieldValue('amount', fromWeiRounded(maxAmountWei)).catch((e) => logger.error(e));
+  }, [maxAmountWei, isWithdraw, setFieldValue]);
 
   return (
-    <div>
-      <label htmlFor="type" className="pl-0.5 text-sm">
-        type
-      </label>
-      <div>
-        <select name="type" className="w-full" value={field.value}>
-          {Object.values(LockActionType).map((type) => (
-            <option key={type} value={type}>
-              {toTitleCase(type)}
-            </option>
-          ))}
-        </select>
-      </div>
+    <AmountField
+      maxValueWei={maxAmountWei}
+      maxDescription="Locked CELO available"
+      disabled={isWithdraw}
+    />
+  );
+}
+
+function ActionTypeField({ defaultAction }: { defaultAction?: LockActionType }) {
+  const [, , helpers] = useField<LockActionType>('action');
+
+  useEffect(() => {
+    helpers.setValue(defaultAction || LockActionType.Lock).catch((e) => logger.error(e));
+  }, [defaultAction, helpers]);
+
+  return (
+    <div role="group" className="flex items-center justify-between space-x-2 px-1">
+      {Object.values(LockActionType).map((action) =>
+        action !== LockActionType.Relock ? (
+          <label key={action} className="flex items-center text-sm">
+            <Field type="radio" name="action" value={action} className="radio mr-1.5" />
+            {toTitleCase(action)}
+          </label>
+        ) : null,
+      )}
     </div>
   );
 }
@@ -122,20 +155,23 @@ function validateForm(
   stakeBalances: StakingBalances,
   isVoting: boolean,
 ): FormikErrors<LockFormValues> {
-  const { amount, type } = values;
+  const { amount, action } = values;
 
   // TODO implement toWeiAdjusted() and use it here
   const amountWei = toWei(amount);
+  if (!amountWei || amountWei <= 0n) {
+    return { amount: 'Invalid amount' };
+  }
 
-  const maxAmountWei = getMaxAmount(type, lockedBalances, walletBalance);
+  const maxAmountWei = getMaxAmount(action, lockedBalances, walletBalance);
   if (amountWei > maxAmountWei) {
     const errorMsg =
-      type === LockActionType.Withdraw ? 'No pending available to withdraw' : 'Amount exceeds max';
+      action === LockActionType.Withdraw ? 'No pending available' : 'Amount exceeds max';
     return { amount: errorMsg };
   }
 
   // Special case handling for locking whole balance
-  if (type === LockActionType.Lock) {
+  if (action === LockActionType.Lock) {
     const remainingAfterPending = amountWei - getTotalPendingCelo(lockedBalances);
     if (remainingAfterPending >= walletBalance) {
       return { amount: 'Cannot lock entire balance' };
@@ -143,14 +179,20 @@ function validateForm(
   }
 
   // Ensure user isn't trying to unlock CELO used for staking
-  if (type === LockActionType.Unlock) {
+  if (action === LockActionType.Unlock) {
     if (isVoting) {
-      return { amount: 'Locked funds have voted for governance' };
+      toast.warn(
+        'Locked funds that have voted for a governance cannot be unlocked until the proposal is resolved.',
+      );
+      return { amount: 'Locked funds in use' };
     }
 
     const nonVotingLocked = getTotalNonvotingLocked(lockedBalances, stakeBalances);
     if (amountWei > nonVotingLocked) {
-      return { amount: 'Locked funds in use for staking' };
+      toast.warn(
+        'Locked funds that are current staked must be unstaked before they can be unlocked.',
+      );
+      return { amount: 'Locked funds in use' };
     }
   }
 
@@ -158,17 +200,23 @@ function validateForm(
 }
 
 function getMaxAmount(
-  type: LockActionType,
+  action: LockActionType,
   lockedBalances?: LockedBalances,
   walletBalance?: bigint,
 ) {
-  if (type === LockActionType.Lock) {
+  if (action === LockActionType.Lock) {
     return getTotalUnlockedCelo(lockedBalances, walletBalance);
-  } else if (type === LockActionType.Unlock) {
+  } else if (action === LockActionType.Unlock) {
     return lockedBalances?.locked || 0n;
-  } else if (type === LockActionType.Withdraw) {
+  } else if (action === LockActionType.Withdraw) {
     return lockedBalances?.pendingFree || 0n;
   } else {
-    throw new Error(`Invalid lock type: ${type}`);
+    throw new Error(`Invalid lock action: ${action}`);
   }
 }
+
+const ActionToVerb: Partial<Record<LockActionType, string>> = {
+  [LockActionType.Lock]: 'Locking',
+  [LockActionType.Unlock]: 'Unlocking',
+  [LockActionType.Withdraw]: 'Withdrawing',
+};

@@ -19,7 +19,11 @@ export function StakeFlow({
   const { address } = useAccount();
   const { lockedBalance, isLoading: isLoadingLocked } = useLockedBalance(address);
   const { stakeBalances, isLoading: isLoadingStaked } = useStakingBalances(address);
-  const { isRegistered, isLoading: isLoadingRegistration } = useAccountDetails(address);
+  const {
+    isRegistered,
+    isLoading: isLoadingRegistration,
+    refetch: refetchAccountDetails,
+  } = useAccountDetails(address);
 
   let Component;
   if (
@@ -33,16 +37,16 @@ export function StakeFlow({
   ) {
     Component = <SpinnerWithLabel className="py-20">Loading staking data...</SpinnerWithLabel>;
   } else if (!isRegistered) {
-    Component = <AccountRegisterForm />;
-  } else if (lockedBalance <= 0 && stakeBalances.total <= 0) {
-    Component = <LockForm />;
+    Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
+  } else if (lockedBalance <= 0n && stakeBalances.total <= 0n) {
+    Component = <LockForm showTip={true} />;
   } else {
     Component = <StakeForm defaultGroup={defaultGroup} defaultAction={defaultAction} />;
   }
 
   return (
     <>
-      <div className="border-b border-taupe-300 pb-1">
+      <div className="border-b border-taupe-300 pb-1.5">
         <h3 className="text-sm font-medium">Stake CELO</h3>
       </div>
       {Component}

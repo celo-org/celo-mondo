@@ -21,7 +21,7 @@ export default function Page() {
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalance } = useLockedBalance(address);
   const { groupToStake } = useStakingBalances(address);
-  const { totalRewards } = useStakingRewards(address, groupToStake);
+  const { totalRewards: _totalRewards } = useStakingRewards(address, groupToStake);
 
   const totalBalance = (walletBalance || 0n) + (lockedBalance || 0n);
 

@@ -5,8 +5,15 @@ import { Addresses } from 'src/config/contracts';
 import { useWriteContractWithReceipt } from 'src/features/transactions/hooks';
 import CeloCube from 'src/images/logos/celo-cube.webp';
 
-export function AccountRegisterForm() {
-  const { writeContract, isLoading } = useWriteContractWithReceipt('account registration');
+export function AccountRegisterForm({
+  refetchAccountDetails,
+}: {
+  refetchAccountDetails: () => any;
+}) {
+  const { writeContract, isLoading } = useWriteContractWithReceipt(
+    'account registration',
+    refetchAccountDetails,
+  );
 
   const onClickCreate = () => {
     writeContract({

@@ -1,32 +1,38 @@
 import { accountsABI, lockedGoldABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { BALANCE_REFRESH_INTERVAL, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { isNullish } from 'src/utils/typeof';
 import { useBalance as _useBalance, useReadContract } from 'wagmi';
 
 export function useBalance(address?: Address) {
-  const { data, isError, isLoading, error } = _useBalance({
+  const { data, isError, isLoading, error, refetch } = _useBalance({
     address: address,
+    query: { enabled: !!address, refetchInterval: BALANCE_REFRESH_INTERVAL },
   });
 
   useToastError(error, 'Error fetching account balance');
 
-  return { balance: data?.value, isError, isLoading };
+  return { balance: data?.value, isError, isLoading, refetch };
 }
 
 export function useLockedBalance(address?: Address) {
-  const { data, isError, isLoading, error } = useReadContract({
+  const { data, isError, isLoading, error, refetch } = useReadContract({
     address: Addresses.LockedGold,
     abi: lockedGoldABI,
     functionName: 'getAccountTotalLockedGold',
     args: [address || ZERO_ADDRESS],
-    query: { enabled: !!address },
+    query: { enabled: !!address, refetchInterval: BALANCE_REFRESH_INTERVAL },
   });
 
   useToastError(error, 'Error fetching locked balance');
 
-  return { lockedBalance: !isNullish(data) ? BigInt(data) : undefined, isError, isLoading };
+  return {
+    lockedBalance: !isNullish(data) ? BigInt(data) : undefined,
+    isError,
+    isLoading,
+    refetch,
+  };
 }
 
 // Note, this retrieves the address's info from the Accounts contract
@@ -37,6 +43,7 @@ export function useAccountDetails(address?: Address) {
     isError,
     isLoading,
     error,
+    refetch,
   } = useReadContract({
     address: Addresses.Accounts,
     abi: accountsABI,
@@ -54,5 +61,6 @@ export function useAccountDetails(address?: Address) {
     isRegistered,
     isError,
     isLoading,
+    refetch,
   };
 }

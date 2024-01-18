@@ -42,6 +42,7 @@ export function StakeForm({
   };
 
   const validate = (values: StakeFormValues) => {
+    logger.debug(defaultAction);
     alert(values);
   };
 
