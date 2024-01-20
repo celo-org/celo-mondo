@@ -8,7 +8,11 @@ import { useBalance as _useBalance, useReadContract } from 'wagmi';
 export function useBalance(address?: Address) {
   const { data, isError, isLoading, error, refetch } = _useBalance({
     address: address,
-    query: { enabled: !!address, refetchInterval: BALANCE_REFRESH_INTERVAL },
+    query: {
+      enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
+    },
   });
 
   useToastError(error, 'Error fetching account balance');
@@ -22,7 +26,11 @@ export function useLockedBalance(address?: Address) {
     abi: lockedGoldABI,
     functionName: 'getAccountTotalLockedGold',
     args: [address || ZERO_ADDRESS],
-    query: { enabled: !!address, refetchInterval: BALANCE_REFRESH_INTERVAL },
+    query: {
+      enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
+    },
   });
 
   useToastError(error, 'Error fetching locked balance');

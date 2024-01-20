@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { AmountField } from 'src/components/input/AmountField';
 import { TipBox } from 'src/components/layout/TipBox';
+import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useBalance } from 'src/features/account/hooks';
 import { useIsGovernanceVoting } from 'src/features/governance/useVotingStatus';
@@ -44,11 +45,11 @@ export function LockForm({
 }) {
   const { address } = useAccount();
   const { balance: walletBalance } = useBalance(address);
-  const { lockedBalances, pendingWithdrawals } = useLockedStatus(address);
+  const { lockedBalances, pendingWithdrawals, refetch } = useLockedStatus(address);
   const { stakeBalances } = useStakingBalances(address);
   const { isVoting } = useIsGovernanceVoting(address);
 
-  const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock');
+  const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', refetch);
 
   const [transactionPlanIndex, setTransactionPlanIndex] = useState(0);
   const isInputDisabled = isLoading || transactionPlanIndex > 0;
@@ -165,7 +166,7 @@ function LockAmountField({
 }) {
   const maxAmountWei = useMemo(
     () => getMaxAmount(action, lockedBalances, walletBalance),
-    [lockedBalances, walletBalance, action],
+    [action, lockedBalances, walletBalance],
   );
 
   // Auto set amount for withdraw action
@@ -179,7 +180,7 @@ function LockAmountField({
   return (
     <AmountField
       maxValueWei={maxAmountWei}
-      maxDescription="Locked CELO available"
+      maxDescription="CELO available"
       disabled={disabled || isWithdraw}
     />
   );
@@ -252,7 +253,7 @@ function validateForm(
   // Special case handling for locking whole balance
   if (action === LockActionType.Lock) {
     const remainingAfterPending = amountWei - getTotalPendingCelo(lockedBalances);
-    if (remainingAfterPending >= walletBalance) {
+    if (walletBalance - remainingAfterPending <= MIN_REMAINING_BALANCE) {
       return { amount: 'Cannot lock entire balance' };
     }
   }

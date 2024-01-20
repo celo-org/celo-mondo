@@ -4,10 +4,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { toTitleCase } from 'src/utils/strings';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
-export function useWriteContractWithReceipt(
-  description: string,
-  onSuccess?: (hash: string) => void,
-) {
+export function useWriteContractWithReceipt(description: string, onSuccess?: () => any) {
   const {
     data: hash,
     error: writeError,
@@ -38,7 +35,7 @@ export function useWriteContractWithReceipt(
   useToastTxSuccess(isConfirmed, hash, `${toTitleCase(description)} transaction is confirmed!`);
 
   useEffect(() => {
-    if (hash && isConfirmed && onSuccess) onSuccess(hash);
+    if (hash && isConfirmed && onSuccess) onSuccess();
   }, [hash, isConfirmed, onSuccess]);
 
   return {
