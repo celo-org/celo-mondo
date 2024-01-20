@@ -1,20 +1,37 @@
 Copyright (c) 2024 J M Rossy
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+SOFTWARE LICENSE AGREEMENT
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+This Software License Agreement (the "Agreement") is entered into by and between J M Rossy ("Licensor"), and the user ("Licensee").
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+1. LICENSE GRANT
+
+Licensor hereby grants Licensee a non-exclusive, non-transferable license to use the software Celo Station (the "Software") for the sole purpose of testing, subject to the terms and conditions of this Agreement.
+
+2. RESTRICTIONS
+
+Licensee shall not, without the prior written consent of Licensor:
+   a. Copy, reproduce, or distribute the Software.
+   b. Modify, adapt, translate, reverse engineer, decompile, or disassemble the Software.
+   c. Remove any proprietary notices, labels, or marks on the Software.
+   d. Transfer, sublicense, or assign the Software to any third party.
+
+3. OWNERSHIP
+
+Licensor retains all right, title, and interest in and to the Software, including all intellectual property rights.
+
+4. TERM AND TERMINATION
+
+This Agreement is effective Jan 20, 2024 and will continue until terminated. Licensor may terminate this Agreement immediately upon any breach of the terms herein by Licensee.
+
+5. DISCLAIMER OF WARRANTY
+
+The Software is provided "as is," without any warranties, express or implied. Licensor disclaims any implied warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+6. LIMITATION OF LIABILITY
+
+Licensor shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly.
+
+7. GOVERNING LAW
+
+This Agreement shall be governed by and construed in accordance with the laws of Canada.

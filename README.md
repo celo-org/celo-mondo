@@ -21,7 +21,3 @@ For support, you can [file an issue](https://github.com/jmrossy/celo-station/iss
 - Install: `yarn`
 - Run locally: `yarn dev`
 - Build: `yarn build`
-
-## License
-
-This project is [MIT licensed](./LICENSE)
