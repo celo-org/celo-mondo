@@ -22,6 +22,8 @@ export enum LockActionType {
   Withdraw = 'withdraw',
 }
 
+export const LockActionValues = Object.values(LockActionType);
+
 export interface LockFormValues {
   amount: number;
   action: LockActionType;

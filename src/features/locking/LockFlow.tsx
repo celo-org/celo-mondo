@@ -20,6 +20,7 @@ export function LockFlow({ defaultAction }: { defaultAction?: LockActionType }) 
     Component = <SpinnerWithLabel className="py-20">Loading account data...</SpinnerWithLabel>;
   } else if (!isRegistered) {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
+    // TODO lock complete screen here
   } else {
     Component = <LockForm defaultAction={defaultAction} />;
   }

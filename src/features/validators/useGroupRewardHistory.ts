@@ -67,7 +67,7 @@ async function fetchValidatorGroupRewardHistory(
   // const rewardLogs = await queryCeloscan<TransactionLog[]>(rewardLogsUrl);
 
   const infuraBatchTransport = http(infuraRpcUrl, {
-    batch: { wait: 100, batchSize: 100 },
+    batch: { wait: 100, batchSize: 1000 },
   });
   const infuraBatchClient = createPublicClient({
     chain: celo,
@@ -82,6 +82,8 @@ async function fetchValidatorGroupRewardHistory(
     args: { group },
   });
 
+  // TODO consider estimating date based on block number here instead of making so many calls
+  // Infura appears to be unreliable with these
   const rewards: Array<{ blockNumber: number; reward: bigint }> = [];
   for (const log of rewardLogs) {
     try {
@@ -103,6 +105,7 @@ async function fetchValidatorGroupRewardHistory(
     }
   }
 
+  // TODO confirm batch is working, may have broken in v2 upgrade
   // GetBlock calls required to get the timestamps for each block :(
   const blockDetails = await Promise.all(
     rewards.map((r) => infuraBatchClient.getBlock({ blockNumber: BigInt(r.blockNumber) })),

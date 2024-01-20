@@ -145,7 +145,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 }
 
 function StatSection({ group }: { group?: ValidatorGroup }) {
-  const { rewardHistory } = useGroupRewardHistory(group?.address, HEATMAP_SIZE);
+  const { rewardHistory, isLoading } = useGroupRewardHistory(group?.address, HEATMAP_SIZE);
 
   const data = useMemo(() => {
     const hasReward = Array(HEATMAP_SIZE).fill(false);
@@ -185,7 +185,7 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
           fromWei(group?.capacity),
         )} CELO`}</div>
       </StatBox>
-      <StatBox header="Rewards distributed">
+      <StatBox header="Rewards distributed" className="relative">
         <div className="flex justify-between text-xs">
           <span>{heatmapStartDate.toLocaleDateString()}</span>
           <span>Yesterday</span>
@@ -201,6 +201,11 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
             <label className="ml-2 text-xs">No Reward</label>
           </div>
         </div>
+        {isLoading && (
+          <div className="absolute right-2 top-0">
+            <Spinner size="xs" />
+          </div>
+        )}
       </StatBox>
     </div>
   );

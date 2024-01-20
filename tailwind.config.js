@@ -1,5 +1,5 @@
 // Should mostly match styles/Color.ts
-const colors = require('tailwindcss/colors')
+const colors = require('tailwindcss/colors');
 
 module.exports = {
   darkMode: 'class',
@@ -33,7 +33,7 @@ module.exports = {
         300: '#E7E3D4', // Sand
         400: '#C6C2B5',
         600: '#655947', // Wood
-      }
+      },
     },
     fontFamily: {
       sans: ['var(--font-inter)', 'sans-serif'],
@@ -42,8 +42,8 @@ module.exports = {
     },
     extend: {
       screens: {
-        'all': '1px',
-        'xs': '480px',
+        all: '1px',
+        xs: '480px',
       },
       spacing: {
         100: '26rem',
@@ -63,14 +63,30 @@ module.exports = {
     },
   },
 
-  plugins: [
-    require("daisyui"),
-  ],
+  plugins: [require('daisyui')],
 
   daisyui: {
-    themes: false, // false: only light + dark | true: all themes | array: specific themes like this ["light", "dark", "cupcake"]
+    themes: [
+      {
+        light: {
+          primary: '#FCFF52',
+          secondary: '#E7E3D4',
+          accent: '#B490FF',
+          neutral: '#ffffff',
+          'base-100': '#ffffff',
+          info: '#F4EFFF',
+          success: '#56DF7C',
+          warning: '#fcd34d',
+          error: '#F77171',
+
+          '--rounded-box': '0px',
+          '--rounded-btn': '0px',
+          '--rounded-badge': '0px',
+        },
+      },
+    ],
     styled: true, // include daisyUI colors and design decisions for all components
     utils: true, // adds responsive and modifier utility classes
     logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
   },
-}
+};

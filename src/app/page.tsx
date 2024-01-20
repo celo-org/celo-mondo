@@ -48,7 +48,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-4xl">Discover Validators</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl">Discover Validators</h1>
         <SolidButton onClick={() => showStakeModal()} className="px-8">
           Stake
         </SolidButton>

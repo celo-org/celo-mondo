@@ -43,6 +43,7 @@ export function StakeFlow({
   } else {
     Component = <StakeForm defaultGroup={defaultGroup} defaultAction={defaultAction} />;
   }
+  // TODO stake complete screen here
 
   return (
     <>

@@ -16,7 +16,7 @@ export function ValidatorGroupLogo({ address, size }: { address: Address; size: 
           className="rounded-full border border-taupe-300 p-px"
         />
       ) : !address || address === ZERO_ADDRESS ? (
-        <Circle size={size} className="bg-purple-500" />
+        <Circle size={size} className="bg-yellow-500" />
       ) : (
         <Identicon address={address} size={size} />
       )}

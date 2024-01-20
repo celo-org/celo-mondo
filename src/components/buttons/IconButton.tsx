@@ -17,7 +17,7 @@ export function IconButton(props: Props) {
   const allClasses = `${base} ${onHover} ${onDisabled} ${onActive} ${className}`;
 
   return (
-    <button className={allClasses} {...rest}>
+    <button type="button" className={allClasses} {...rest}>
       {imgSrc && <Image src={imgSrc} alt={rest.title || ''} width={width} height={height} />}
       {children}
     </button>

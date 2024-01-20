@@ -198,7 +198,10 @@ function useTableColumns(totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
-              setTxModal({ type: TxModalType.Stake, props: { defaultGroup: props.row.original } });
+              setTxModal({
+                type: TxModalType.Stake,
+                props: { defaultGroup: props.row.original.address },
+              });
             }}
             className="all:bg-white all:hover:bg-white/70"
           >

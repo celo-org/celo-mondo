@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useToastTxSuccess } from 'src/components/notifications/TxSuccessToast';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { toTitleCase } from 'src/utils/strings';
@@ -45,4 +45,23 @@ export function useWriteContractWithReceipt(description: string, onSuccess?: () 
     isConfirmed,
     writeContract,
   };
+}
+
+// Some flows require multiple transactions to be sent in a specific order.
+// This hook allows us to track the progress of a multi-transaction flow.
+export function useTransactionPlanCounter(isTxLoading?: boolean, onPlanSuccess?: () => any) {
+  const [txPlanIndex, setTxPlanIndex] = useState(0);
+  const isPlanStarted = isTxLoading || txPlanIndex > 0;
+  const onTxSuccess = useCallback(
+    (txPlanLength: number) => {
+      if (txPlanIndex >= txPlanLength - 1) {
+        setTxPlanIndex(0);
+        if (onPlanSuccess) onPlanSuccess();
+      } else {
+        setTxPlanIndex(txPlanIndex + 1);
+      }
+    },
+    [txPlanIndex, onPlanSuccess],
+  );
+  return { txPlanIndex, isPlanStarted, onTxSuccess };
 }

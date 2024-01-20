@@ -31,9 +31,9 @@ export function AmountField({
         <span className="text-xs">{`${formatNumberString(maxValue, 2)} ${maxDescription}`}</span>
       </div>
       <div className="relative mt-2">
-        <NumberField name="amount" className="w-full all:py-3" disabled={disabled} />
-        <div className="absolute right-1 top-2 z-10">
-          <OutlineButton onClick={onClickMax} type="button">
+        <NumberField name="amount" className="w-full text-lg all:py-2" disabled={disabled} />
+        <div className="absolute right-1.5 top-1/2 z-10 -translate-y-1/2">
+          <OutlineButton onClick={onClickMax} type="button" className="all:py-1.5">
             Max
           </OutlineButton>
         </div>

@@ -1,15 +1,10 @@
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { fromWeiRounded } from 'src/utils/amount';
 import { bigIntMean } from 'src/utils/math';
-import { toTitleCase } from 'src/utils/strings';
+import { toTitleCase, trimToLength } from 'src/utils/strings';
 
 export function cleanGroupName(name: string) {
-  return toTitleCase(
-    name
-      .replace(/group|Group/g, '')
-      .replace(/[-_]/g, ' ')
-      .trim(),
-  );
+  return trimToLength(toTitleCase(name.replace(/group|Group/g, '').replace(/[-_]/g, ' ')), 20);
 }
 
 export function isElected(group: ValidatorGroup) {

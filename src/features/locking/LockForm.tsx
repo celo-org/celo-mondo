@@ -1,9 +1,10 @@
 import { lockedGoldABI } from '@celo/abis';
-import { Field, Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
-import { useEffect, useMemo, useState } from 'react';
+import { Form, Formik, FormikErrors, useFormikContext } from 'formik';
+import { useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
+import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { AmountField } from 'src/components/input/AmountField';
+import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
@@ -12,6 +13,7 @@ import { useIsGovernanceVoting } from 'src/features/governance/useVotingStatus';
 import { getLockActionTxPlan } from 'src/features/locking/lockPlan';
 import {
   LockActionType,
+  LockActionValues,
   LockFormValues,
   LockedBalances,
   PendingWithdrawal,
@@ -24,7 +26,10 @@ import {
 } from 'src/features/locking/utils';
 import { StakingBalances } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
-import { useWriteContractWithReceipt } from 'src/features/transactions/hooks';
+import {
+  useTransactionPlanCounter,
+  useWriteContractWithReceipt,
+} from 'src/features/transactions/hooks';
 import { fromWeiRounded, toWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
@@ -50,29 +55,19 @@ export function LockForm({
   const { isVoting } = useIsGovernanceVoting(address);
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', refetch);
-
-  const [transactionPlanIndex, setTransactionPlanIndex] = useState(0);
-  const isInputDisabled = isLoading || transactionPlanIndex > 0;
+  const { txPlanIndex, isPlanStarted, onTxSuccess } = useTransactionPlanCounter(isLoading);
 
   const onSubmit = (values: LockFormValues) => {
     if (!address || !pendingWithdrawals || !stakeBalances) return;
     const txPlan = getLockActionTxPlan(values, pendingWithdrawals, stakeBalances);
-    const nextTx = txPlan[transactionPlanIndex] as any;
+    const nextTx = txPlan[txPlanIndex] as any;
     writeContract(
       {
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         ...nextTx,
       },
-      {
-        onSuccess: () => {
-          if (transactionPlanIndex >= txPlan.length - 1) {
-            setTransactionPlanIndex(0);
-          } else {
-            setTransactionPlanIndex(transactionPlanIndex + 1);
-          }
-        },
-      },
+      { onSuccess: () => onTxSuccess(txPlan.length) },
     );
   };
 
@@ -95,7 +90,7 @@ export function LockForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-3 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between">
           <div className="space-y-5">
             {showTip && (
               <TipBox color="purple">
@@ -103,18 +98,18 @@ export function LockForm({
                 Lock CELO to begin.
               </TipBox>
             )}
-            <ActionTypeField defaultAction={defaultAction} disabled={isInputDisabled} />
+            <ActionTypeField defaultAction={defaultAction} disabled={isPlanStarted} />
             <LockAmountField
               lockedBalances={lockedBalances}
               walletBalance={walletBalance}
               action={values.action}
-              disabled={isInputDisabled}
+              disabled={isPlanStarted}
             />
           </div>
           <ButtonSection
             pendingWithdrawals={pendingWithdrawals}
             stakeBalances={stakeBalances}
-            transactionPlanIndex={transactionPlanIndex}
+            txPlanIndex={txPlanIndex}
             isLoading={isLoading}
           />
         </Form>
@@ -129,27 +124,13 @@ function ActionTypeField({
   defaultAction?: LockActionType;
   disabled?: boolean;
 }) {
-  const [, , helpers] = useField<LockActionType>('action');
-
-  useEffect(() => {
-    helpers.setValue(defaultAction || LockActionType.Lock).catch((e) => logger.error(e));
-  }, [defaultAction, helpers]);
-
   return (
-    <div role="group" className="flex items-center justify-between space-x-6 px-1">
-      {Object.values(LockActionType).map((action) => (
-        <label key={action} className="flex items-center text-sm">
-          <Field
-            type="radio"
-            name="action"
-            value={action}
-            className="radio mr-1.5"
-            disabled={disabled}
-          />
-          {toTitleCase(action)}
-        </label>
-      ))}
-    </div>
+    <RadioField<LockActionType>
+      name="action"
+      values={LockActionValues}
+      defaultValue={defaultAction}
+      disabled={disabled}
+    />
   );
 }
 
@@ -189,12 +170,12 @@ function LockAmountField({
 function ButtonSection({
   pendingWithdrawals,
   stakeBalances,
-  transactionPlanIndex,
+  txPlanIndex,
   isLoading,
 }: {
   pendingWithdrawals?: PendingWithdrawal[];
   stakeBalances?: StakingBalances;
-  transactionPlanIndex: number;
+  txPlanIndex: number;
   isLoading: boolean;
 }) {
   const { values } = useFormikContext<LockFormValues>();
@@ -209,22 +190,16 @@ function ButtonSection({
     }
   }, [values, pendingWithdrawals, stakeBalances]);
 
-  const txIndexString = numTxs > 1 ? ` (${transactionPlanIndex + 1} / ${numTxs})` : '';
-
   return (
-    <div className="flex flex-col space-y-2">
-      {numTxs > 1 && (
-        <TipBox color="yellow">
-          {`This action will require ${numTxs} transactions. ${ActionToTipText[values.action]}`}
-        </TipBox>
-      )}
-      <FormSubmitButton
-        isLoading={isLoading}
-        loadingText={`${ActionToVerb[values.action]} ${txIndexString}`}
-      >
-        {`${toTitleCase(values.action)} ${txIndexString}`}
-      </FormSubmitButton>
-    </div>
+    <MultiTxFormSubmitButton
+      txIndex={txPlanIndex}
+      numTxs={numTxs}
+      isLoading={isLoading}
+      loadingText={ActionToVerb[values.action]}
+      tipText={ActionToTipText[values.action]}
+    >
+      {`${toTitleCase(values.action)}`}
+    </MultiTxFormSubmitButton>
   );
 }
 

@@ -2,10 +2,12 @@ export type GroupToStake = Record<Address, { active: bigint; pending: bigint }>;
 export type StakingBalances = { active: bigint; pending: bigint; total: bigint };
 
 export enum StakeActionType {
-  Vote = 'vote',
-  Activate = 'activate',
-  Revoke = 'revoke',
+  Stake = 'stake',
+  Unstake = 'unstake',
+  Transfer = 'transfer',
 }
+
+export const StakeActionValues = Object.values(StakeActionType);
 
 export enum StakeEventType {
   Activate = 'activate',
