@@ -56,7 +56,7 @@ function DropdownContent({
   const { groupToStake } = useStakingBalances(address);
   const { totalRewards } = useStakingRewards(address, groupToStake);
 
-  const totalBalance = (walletBalance?.value || 0n) + (lockedBalance?.value || 0n);
+  const totalBalance = (walletBalance || 0n) + (lockedBalance || 0n);
 
   const onClickCopy = useCopyHandler(address);
 
@@ -73,8 +73,8 @@ function DropdownContent({
         <Amount valueWei={totalBalance} className="text-2xl" />
       </div>
       <div className="flex w-full flex-col justify-stretch divide-y divide-taupe-300 border border-taupe-300">
-        <ValueRow label="Wallet Balance" valueWei={walletBalance?.value} />
-        <ValueRow label="Total Locked" valueWei={lockedBalance?.value} />
+        <ValueRow label="Wallet Balance" valueWei={walletBalance} />
+        <ValueRow label="Total Locked" valueWei={lockedBalance} />
         <ValueRow label="Total Earned" value={totalRewards} />
       </div>
       <div className="flex w-full items-center justify-between space-x-4">

@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
+import { config } from 'src/config/config';
 import { links } from 'src/config/links';
 import Discord from 'src/images/logos/discord.svg';
 import Github from 'src/images/logos/github.svg';
@@ -37,7 +38,10 @@ function BlockNumber() {
   const { data, isError } = useBlockNumber({
     watch: true,
     cacheTime: 20_000,
-    staleTime: 10_000,
+    query: {
+      staleTime: 10_000,
+      enabled: config.watchBlockNumber,
+    },
   });
   return <div className="text-xs">{isError ? 'Error' : data?.toString() || '...'}</div>;
 }

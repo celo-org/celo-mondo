@@ -4,7 +4,8 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { LockedStatus, PendingWithdrawal } from 'src/features/locking/types';
 import { logger } from 'src/utils/logger';
-import { PublicClient, usePublicClient } from 'wagmi';
+import { PublicClient } from 'viem';
+import { usePublicClient } from 'wagmi';
 
 export function useLockedStatus(address?: Address) {
   const publicClient = usePublicClient();

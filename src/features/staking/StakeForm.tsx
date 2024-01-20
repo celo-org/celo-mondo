@@ -27,10 +27,7 @@ export function StakeForm({ defaultGroup }: { defaultGroup?: Address }) {
   const { lockedBalance } = useLockedBalance(address);
   const { stakeBalances } = useStakingBalances(address);
 
-  const availableLockedWei = bigIntMax(
-    (lockedBalance?.value || 0n) - (stakeBalances?.total || 0n),
-    0n,
-  );
+  const availableLockedWei = bigIntMax((lockedBalance || 0n) - (stakeBalances?.total || 0n), 0n);
 
   const onSubmit = (values: StakeFormValues) => {
     alert(values);

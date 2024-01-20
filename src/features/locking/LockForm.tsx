@@ -44,7 +44,7 @@ export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
     if (!walletBalance || !lockedBalances || !stakeBalances || isNullish(isVoting)) {
       return { amount: 'Form not ready' };
     }
-    return validateForm(values, lockedBalances, walletBalance.value, stakeBalances, isVoting);
+    return validateForm(values, lockedBalances, walletBalance, stakeBalances, isVoting);
   };
 
   return (
@@ -64,7 +64,7 @@ export function LockForm({ defaultType }: { defaultType?: LockActionType }) {
           <ActionTypeField defaultType={defaultType} />
           <LockAmountField
             lockedBalances={lockedBalances}
-            walletBalance={walletBalance?.value}
+            walletBalance={walletBalance}
             type={values.type}
           />
           <SolidButton type="submit">{toTitleCase(values.type)}</SolidButton>
