@@ -1,21 +1,30 @@
 import { useCallback, useEffect } from 'react';
 import { Modal, useModal } from 'src/components/menus/Modal';
 import { AccountConnectForm } from 'src/features/account/AccountConnectForm';
+import { LockFlow } from 'src/features/locking/LockFlow';
 import { StakeFlow } from 'src/features/staking/StakeFlow';
 import { useStore } from 'src/features/store';
 import { TxModalType } from 'src/features/transactions/types';
 import { useAccount } from 'wagmi';
 
 const TypeToComponent: Record<TxModalType, React.FC<any>> = {
-  [TxModalType.Lock]: PlaceholderContent,
+  [TxModalType.Lock]: LockFlow,
   [TxModalType.Stake]: StakeFlow,
   [TxModalType.Vote]: PlaceholderContent,
   [TxModalType.Delegate]: PlaceholderContent,
 };
 
-export function useTransactionModal(type: TxModalType, props?: any) {
+export function useTransactionModal(defaultType?: TxModalType, defaultProps?: any) {
   const setTxModal = useStore((state) => state.setTransactionModal);
-  return useCallback(() => setTxModal({ type, props }), [setTxModal, type, props]);
+  return useCallback(
+    (_type?: TxModalType, _props?: any) => {
+      const type = _type || defaultType;
+      const props = _props || defaultProps;
+      if (!type) return;
+      setTxModal({ type, props });
+    },
+    [setTxModal, defaultType, defaultProps],
+  );
 }
 
 export function TransactionModal() {

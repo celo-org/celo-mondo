@@ -16,7 +16,7 @@ export function SolidButtonWithSpinner({
   return (
     <SolidButton disabled={isLoading} {...props}>
       <div className="flex items-center space-x-2">
-        {isLoading && <Spinner size="sm" />}
+        {isLoading && <Spinner size="xs" />}
         <span>{isLoading ? loadingText || 'Submitting' : children}</span>
       </div>
     </SolidButton>

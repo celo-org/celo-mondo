@@ -29,13 +29,13 @@ export function useWriteContractWithReceipt(
 
   useToastError(
     writeError,
-    `Error sending ${description} transaction, please check your wallet balance/settings and try again.`,
+    `Error sending ${description} transaction, please check your wallet balance & settings.`,
   );
   useToastError(
     waitError,
     `Error confirming ${description} transaction, please ensure the transaction is valid.`,
   );
-  useToastTxSuccess(isConfirmed, `${toTitleCase(description)} transaction is confirmed!`);
+  useToastTxSuccess(isConfirmed, hash, `${toTitleCase(description)} transaction is confirmed!`);
 
   useEffect(() => {
     if (hash && isConfirmed && onSuccess) onSuccess(hash);

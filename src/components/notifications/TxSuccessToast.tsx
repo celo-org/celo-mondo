@@ -13,7 +13,7 @@ export function useToastTxSuccess(
   useEffect(() => {
     if (!isConfirmed || !txHash) return;
     logger.debug(msg);
-    toastTxSuccess(msg, txHash, chainId);
+    toastTxSuccess(txHash, msg, chainId);
   }, [isConfirmed, txHash, msg, chainId]);
 }
 
