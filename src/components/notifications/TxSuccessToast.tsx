@@ -1,8 +1,28 @@
+import { useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { ChainId, chainIdToChain } from 'src/config/chains';
+import { logger } from 'src/utils/logger';
 
-export function toastTxSuccess(msg: string, txHash: string, chainId: ChainId) {
+export function useToastTxSuccess(
+  isConfirmed?: boolean,
+  txHash?: string,
+  msg?: string,
+  chainId: ChainId = ChainId.Celo,
+) {
+  useEffect(() => {
+    if (!isConfirmed || !txHash) return;
+    logger.debug(msg);
+    toastTxSuccess(txHash, msg, chainId);
+  }, [isConfirmed, txHash, msg, chainId]);
+}
+
+export function toastTxSuccess(
+  txHash?: string,
+  msg = 'Transaction confirmed!',
+  chainId: ChainId = ChainId.Celo,
+) {
+  if (!txHash) return;
   const explorerUrl = chainIdToChain[chainId].explorerUrl;
   toast.success(<TxSuccessToast msg={msg} txHash={txHash} explorerUrl={explorerUrl} />, {
     autoClose: 15000,

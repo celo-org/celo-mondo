@@ -10,22 +10,20 @@ import {
 import BigNumber from 'bignumber.js';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
-import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { SearchField } from 'src/components/input/SearchField';
 import { Amount } from 'src/components/numbers/Amount';
 import { config } from 'src/config/config';
 
 import Link from 'next/link';
+import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { useStore } from 'src/features/store';
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
-import { cleanGroupName, isElected } from 'src/features/validators/utils';
+import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
+import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
-import { fromWeiRounded } from 'src/utils/amount';
-import { bigIntMean } from 'src/utils/math';
-import { ValidatorGroup, ValidatorGroupRow, ValidatorStatus } from './types';
 
 const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
 enum Filter {
@@ -73,8 +71,8 @@ export function ValidatorGroupTable({
   }, [isMobile, table]);
 
   return (
-    <>
-      <div className="flex flex-col items-center justify-stretch gap-4 px-4 pt-2 md:flex-row md:justify-between">
+    <div>
+      <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-center md:justify-between">
         <div className="flex justify-between space-x-7">
           <FilterButton
             filter={Filter.All}
@@ -98,10 +96,11 @@ export function ValidatorGroupTable({
         <SearchField
           value={searchQuery}
           setValue={setSearchQuery}
+          placeholder="Search by name or address"
           className="w-full text-sm md:w-64"
         />
       </div>
-      <table className="w-full">
+      <table className="mt-2 w-full lg:min-w-[62rem] xl:min-w-[75rem]">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -113,15 +112,15 @@ export function ValidatorGroupTable({
                   {header.isPlaceholder ? null : (
                     <div
                       className={clsx(
-                        'text-left font-normal',
+                        'relative text-left font-normal',
                         header.column.getCanSort() && 'cursor-pointer select-none',
                       )}
                       onClick={header.column.getToggleSortingHandler()}
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
-                        asc: ' 🔼',
-                        desc: ' 🔽',
+                        asc: <TableSortChevron direction="n" />,
+                        desc: <TableSortChevron direction="s" />,
                       }[header.column.getIsSorted() as string] ?? null}
                     </div>
                   )}
@@ -144,7 +143,7 @@ export function ValidatorGroupTable({
           ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 }
 
@@ -160,7 +159,7 @@ function useTableColumns(totalVotes: bigint) {
         cell: (props) => <div>{getRowSortedIndex(props)}</div>,
       }),
       columnHelper.accessor('name', {
-        header: 'Name',
+        header: 'Group name',
         cell: (props) => (
           <div className="flex items-center space-x-2">
             <ValidatorGroupLogo address={props.row.original.address} size={30} />
@@ -169,7 +168,7 @@ function useTableColumns(totalVotes: bigint) {
         ),
       }),
       columnHelper.accessor('votes', {
-        header: 'Total Staked',
+        header: 'Staked',
         cell: (props) => (
           <Amount
             valueWei={props.getValue()}
@@ -196,17 +195,15 @@ function useTableColumns(totalVotes: bigint) {
         id: 'cta',
         header: '',
         cell: (props) => (
-          <OutlineButton
+          <SolidButton
             onClick={(e) => {
               e.preventDefault();
               setTxModal({ type: TxModalType.Stake, props: { defaultGroup: props.row.original } });
             }}
+            className="all:bg-white all:hover:bg-white/70"
           >
-            <div className="flex items-center space-x-1.5">
-              <span>Stake</span>
-              <ChevronIcon direction="e" width={10} height={10} />
-            </div>
-          </OutlineButton>
+            Stake
+          </SolidButton>
         ),
       }),
     ];
@@ -240,19 +237,12 @@ function useTableRows({
           ),
       );
 
-    const groupRows = filteredGroups.map((g): ValidatorGroupRow => {
-      const members = Object.values(g.members);
-      const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
-      const avgScore = electedMembers.length
-        ? parseFloat(fromWeiRounded(bigIntMean(electedMembers.map((m) => m.score)), 22, 0))
-        : 0;
-      return {
+    const groupRows = filteredGroups.map(
+      (g): ValidatorGroupRow => ({
         ...g,
-        numMembers: members.length,
-        numElected: electedMembers.length,
-        avgScore,
-      };
-    });
+        ...getGroupStats(g),
+      }),
+    );
     return groupRows;
   }, [groups, filter, searchQuery]);
 }
@@ -303,6 +293,14 @@ function CumulativeColumn({
         style={{ width: `${width}px` }}
         className="absolute bottom-0 top-0 ml-20 border-x border-purple-200 bg-purple-200/20"
       ></div>
+    </div>
+  );
+}
+
+function TableSortChevron({ direction }: { direction: 'n' | 's' }) {
+  return (
+    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+      <ChevronIcon direction={direction} width={10} height={10} />
     </div>
   );
 }

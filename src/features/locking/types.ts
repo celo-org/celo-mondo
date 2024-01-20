@@ -20,16 +20,16 @@ export enum LockActionType {
   Lock = 'lock',
   Unlock = 'unlock',
   Withdraw = 'withdraw',
-  Relock = 'relock',
 }
 
-export interface LockTokenParams {
-  type: LockActionType;
-  amountWei: bigint;
+export interface LockFormValues {
+  amount: number;
+  action: LockActionType;
 }
 
-interface LockTokenTxPlanItem extends LockTokenParams {
-  pendingWithdrawal?: PendingWithdrawal;
-}
-
-export type LockTokenTxPlan = Array<LockTokenTxPlanItem>;
+export type LockTokenTxPlan = Array<{
+  action: LockActionType;
+  functionName: 'lock' | 'relock' | 'unlock' | 'withdraw';
+  args?: Array<bigint | number>;
+  value?: bigint;
+}>;

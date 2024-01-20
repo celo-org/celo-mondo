@@ -64,6 +64,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
         eligible: false,
         capacity: 0n,
         votes: 0n,
+        lastSlashed: null,
       };
     }
     // Create new validator group member
@@ -88,12 +89,14 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   // Fetch details about the validator groups
   const groupAddrs = Object.keys(groups) as Address[];
   const groupNames = await fetchNamesForAccounts(publicClient, groupAddrs);
+  const groupSlashTimes = await fetchGroupLastSlashed(publicClient, groupAddrs);
   for (let i = 0; i < groupAddrs.length; i++) {
     const groupAddr = groupAddrs[i];
     groups[groupAddr].name = groupNames[i] || groupAddr.substring(0, 10) + '...';
+    groups[groupAddr].lastSlashed = groupSlashTimes[i];
   }
 
-  // Fetch vote-related details about the validator groups
+  // Fetch vote-related total amounts
   const { eligibleGroups, groupVotes, totalLocked, totalVotes } =
     await fetchVotesAndTotalLocked(publicClient);
 
@@ -167,7 +170,7 @@ async function fetchValidatorDetails(publicClient: PublicClient, addresses: read
 
 async function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly Address[]) {
   // @ts-ignore Bug with viem 2.0 multicall types
-  const names: MulticallReturnType<any> = await publicClient.multicall({
+  const results: MulticallReturnType<any> = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Accounts,
       abi: accountsABI,
@@ -176,9 +179,29 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
     })),
     allowFailure: true,
   });
-  return names.map((n) => {
+  return results.map((n) => {
     if (!n.result) return null;
     return n.result as string;
+  });
+}
+
+async function fetchGroupLastSlashed(publicClient: PublicClient, addresses: readonly Address[]) {
+  // @ts-ignore Bug with viem 2.0 multicall types
+  const results: MulticallReturnType<any> = await publicClient.multicall({
+    contracts: addresses.map((addr) => ({
+      address: Addresses.Validators,
+      abi: validatorsABI,
+      functionName: 'getValidatorGroup',
+      args: [addr],
+    })),
+    allowFailure: true,
+  });
+  return results.map((n) => {
+    const result = n.result as
+      | [Address, bigint, bigint, bigint, bigint[], bigint, bigint]
+      | undefined;
+    if (!result || !Array.isArray(result) || result.length < 7) return null;
+    return Number(result[6]) * 1000;
   });
 }
 

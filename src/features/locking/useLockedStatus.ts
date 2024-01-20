@@ -10,7 +10,7 @@ import { usePublicClient } from 'wagmi';
 export function useLockedStatus(address?: Address) {
   const publicClient = usePublicClient();
 
-  const { isLoading, isError, error, data } = useQuery({
+  const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ['useLockedStatus', publicClient, address],
     queryFn: async () => {
       if (!address) return null;
@@ -28,6 +28,7 @@ export function useLockedStatus(address?: Address) {
     isError,
     lockedBalances: data?.balances,
     pendingWithdrawals: data?.pendingWithdrawals,
+    refetch,
   };
 }
 

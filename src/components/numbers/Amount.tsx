@@ -43,6 +43,6 @@ export function Amount({
 
 export function formatNumberString(value?: BigNumber.Value | bigint, decimals = 0) {
   return BigNumber(value?.toString() || '0')
-    .decimalPlaces(decimals)
+    .decimalPlaces(decimals, BigNumber.ROUND_FLOOR)
     .toFormat(NUMBER_FORMAT);
 }

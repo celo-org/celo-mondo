@@ -4,9 +4,11 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { AmountField } from 'src/components/input/AmountField';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { useLockedBalance } from 'src/features/account/hooks';
+import { StakeActionType } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
+
 import { logger } from 'src/utils/logger';
 import { bigIntMax } from 'src/utils/math';
 import { useAccount } from 'wagmi';
@@ -21,7 +23,13 @@ const initialValues: StakeFormValues = {
   group: ZERO_ADDRESS,
 };
 
-export function StakeForm({ defaultGroup }: { defaultGroup?: Address }) {
+export function StakeForm({
+  defaultGroup,
+  defaultAction,
+}: {
+  defaultGroup?: Address;
+  defaultAction?: StakeActionType;
+}) {
   const { address } = useAccount();
   const { groups } = useValidatorGroups();
   const { lockedBalance } = useLockedBalance(address);
@@ -34,6 +42,7 @@ export function StakeForm({ defaultGroup }: { defaultGroup?: Address }) {
   };
 
   const validate = (values: StakeFormValues) => {
+    logger.debug(defaultAction);
     alert(values);
   };
 

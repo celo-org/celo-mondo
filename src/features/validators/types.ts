@@ -9,6 +9,7 @@ export interface ValidatorGroup {
   eligible: boolean;
   capacity: bigint;
   votes: bigint;
+  lastSlashed: number | null; // timestamp
   members: Record<Address, Validator>;
 }
 

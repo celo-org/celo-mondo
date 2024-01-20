@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-function _XIcon({
+function _Search({
   width,
   height,
   fill,
@@ -17,14 +17,14 @@ function _XIcon({
       width={width}
       height={height}
       className={className}
-      viewBox="0 0 10 10"
+      viewBox="0 0 16 16"
     >
       <path
         fill={fill}
-        d="M10 0.97908L9.02092 0L5 4.02092L0.979081 0L0 0.97908L4.02092 5L0 9.02092L0.979081 10L5 5.97908L9.02092 10L10 9.02092L5.97908 5L10 0.97908Z"
+        d="M6.7 13.4c1.5 0 3-.5 4.2-1.5l4 4.1 1.1-1.1-4-4a6.7 6.7 0 1 0-5.3 2.5Zm0-11.9a5.1 5.1 0 1 1 0 10.3 5.1 5.1 0 0 1 0-10.3Z"
       />
     </svg>
   );
 }
 
-export const XIcon = memo(_XIcon);
+export const Search = memo(_Search);
