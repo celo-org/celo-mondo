@@ -6,13 +6,24 @@ interface MenuProps {
   buttonClasses?: string;
   menuItems: ReactNode[];
   menuClasses?: string;
+  menuHeader?: ReactNode;
+  disabled?: boolean;
 }
 
 // Uses Headless menu, which auto-closes on any item click
-export function DropdownMenu({ button, buttonClasses, menuItems, menuClasses }: MenuProps) {
+export function DropdownMenu({
+  button,
+  buttonClasses,
+  menuItems,
+  menuClasses,
+  menuHeader,
+  disabled,
+}: MenuProps) {
   return (
     <Menu as="div" className="relative">
-      <Menu.Button className={buttonClasses}>{button}</Menu.Button>
+      <Menu.Button className={buttonClasses} disabled={disabled}>
+        {button}
+      </Menu.Button>
       <Transition
         as={Fragment}
         enter="transition ease-out duration-200"
@@ -25,6 +36,7 @@ export function DropdownMenu({ button, buttonClasses, menuItems, menuClasses }: 
         <Menu.Items
           className={`absolute z-40 mt-2.5 w-max origin-top-left bg-white ring-1 ring-black/5 drop-shadow-md focus:outline-none ${menuClasses}`}
         >
+          {menuHeader}
           {menuItems.map((mi, i) => (
             <Menu.Item key={`menu-item-${i}`}>{mi}</Menu.Item>
           ))}

@@ -28,10 +28,3 @@ export interface LockFormValues {
   amount: number;
   action: LockActionType;
 }
-
-export type LockTokenTxPlan = Array<{
-  action: LockActionType;
-  functionName: 'lock' | 'relock' | 'unlock' | 'withdraw';
-  args?: Array<bigint | number>;
-  value?: bigint;
-}>;

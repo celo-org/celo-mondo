@@ -19,6 +19,7 @@ export function AmountField({
   const maxValue = useMemo(() => fromWeiRounded(maxValueWei), [maxValueWei]);
 
   const onClickMax = async () => {
+    if (disabled) return;
     await setFieldValue('amount', maxValue);
   };
 

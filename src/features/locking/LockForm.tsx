@@ -10,7 +10,7 @@ import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useBalance } from 'src/features/account/hooks';
 import { useIsGovernanceVoting } from 'src/features/governance/useVotingStatus';
-import { getLockActionTxPlan } from 'src/features/locking/lockPlan';
+import { getLockTxPlan } from 'src/features/locking/lockPlan';
 import {
   LockActionType,
   LockActionValues,
@@ -59,7 +59,7 @@ export function LockForm({
 
   const onSubmit = (values: LockFormValues) => {
     if (!address || !pendingWithdrawals || !stakeBalances) return;
-    const txPlan = getLockActionTxPlan(values, pendingWithdrawals, stakeBalances);
+    const txPlan = getLockTxPlan(values, pendingWithdrawals, stakeBalances);
     const nextTx = txPlan[txPlanIndex] as any;
     writeContract(
       {
@@ -179,15 +179,9 @@ function ButtonSection({
   isLoading: boolean;
 }) {
   const { values } = useFormikContext<LockFormValues>();
-
   const numTxs = useMemo(() => {
-    try {
-      if (!pendingWithdrawals || !stakeBalances) return 0;
-      return getLockActionTxPlan(values, pendingWithdrawals, stakeBalances).length;
-    } catch (error) {
-      logger.debug('Error getting lock plan', error);
-      return 0;
-    }
+    if (!pendingWithdrawals || !stakeBalances) return 0;
+    return getLockTxPlan(values, pendingWithdrawals, stakeBalances).length;
   }, [values, pendingWithdrawals, stakeBalances]);
 
   return (
@@ -210,13 +204,11 @@ function validateForm(
   stakeBalances: StakingBalances,
   isVoting: boolean,
 ): FormikErrors<LockFormValues> {
-  const { amount, action } = values;
+  const { action, amount } = values;
 
   // TODO implement toWeiAdjusted() and use it here
   const amountWei = toWei(amount);
-  if (!amountWei || amountWei <= 0n) {
-    return { amount: 'Invalid amount' };
-  }
+  if (!amountWei || amountWei <= 0n) return { amount: 'Invalid amount' };
 
   const maxAmountWei = getMaxAmount(action, lockedBalances, walletBalance);
   if (amountWei > maxAmountWei) {
@@ -270,13 +262,13 @@ function getMaxAmount(
   }
 }
 
-const ActionToVerb: Partial<Record<LockActionType, string>> = {
+const ActionToVerb: Record<LockActionType, string> = {
   [LockActionType.Lock]: 'Locking',
   [LockActionType.Unlock]: 'Unlocking',
   [LockActionType.Withdraw]: 'Withdrawing',
 };
 
-const ActionToTipText: Partial<Record<LockActionType, string>> = {
+const ActionToTipText: Record<LockActionType, string> = {
   [LockActionType.Lock]: 'Pending unlocked amounts must be re-locked first.',
   [LockActionType.Unlock]:
     'Unlocking requires revoking staking, governance, and delegation votes first.',

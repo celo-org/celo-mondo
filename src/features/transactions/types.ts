@@ -4,3 +4,10 @@ export enum TxModalType {
   Vote = 'vote',
   Delegate = 'delegate',
 }
+
+export type TxPlan<A extends string = string, F extends string = string> = Array<{
+  action: A;
+  functionName: F;
+  args?: Array<bigint | number>;
+  value?: bigint;
+}>;

@@ -23,3 +23,9 @@ export interface StakeEvent {
   timestamp: number;
   txHash: HexString;
 }
+
+export interface StakeFormValues {
+  action: StakeActionType;
+  amount: number;
+  group: Address;
+}

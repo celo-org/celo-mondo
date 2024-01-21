@@ -63,6 +63,18 @@ export function toWei(
   }
 }
 
+export function toWeiSafe(
+  value: BigNumber.Value | null | undefined,
+  decimals = DEFAULT_TOKEN_DECIMALS,
+) {
+  try {
+    const safeValue = tryParseAmount(value);
+    return toWei(safeValue, decimals);
+  } catch (error) {
+    return 0n;
+  }
+}
+
 /**
  * Try to parse the given value into BigNumber.js BigNumber
  * @param value The value to parse.

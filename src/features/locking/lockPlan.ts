@@ -1,30 +1,26 @@
-import {
-  LockActionType,
-  LockFormValues,
-  LockTokenTxPlan,
-  PendingWithdrawal,
-} from 'src/features/locking/types';
+import { LockActionType, LockFormValues, PendingWithdrawal } from 'src/features/locking/types';
 import { StakingBalances } from 'src/features/staking/types';
-import { toWei } from 'src/utils/amount';
+import { TxPlan } from 'src/features/transactions/types';
+import { toWeiSafe } from 'src/utils/amount';
 import { bigIntMin } from 'src/utils/math';
 
 // Lock token operations can require varying numbers of txs in specific order
 // This determines the ideal tx types and order
-export function getLockActionTxPlan(
+export function getLockTxPlan(
   values: LockFormValues,
   pendingWithdrawals: PendingWithdrawal[],
   _stakeBalances: StakingBalances,
   // TODO add governance, delegation state here
-): LockTokenTxPlan {
+): TxPlan {
   const { action, amount } = values;
   // TODO toWeiAdjusted here
-  const amountWei = toWei(amount);
+  const amountWei = toWeiSafe(amount);
 
   // TODO update this to account for staking, governance, and delegation revocations first
   if (action === LockActionType.Unlock) {
     return [{ action, functionName: 'unlock', args: [amountWei] }];
   } else if (action === LockActionType.Lock) {
-    const txs: LockTokenTxPlan = [];
+    const txs: TxPlan = [];
     // Need relock from the pendings in reverse order
     // due to the way the storage is managed in the contract
     let amountRemaining = amountWei;
@@ -45,7 +41,7 @@ export function getLockActionTxPlan(
     }
     return txs;
   } else if (action === LockActionType.Withdraw) {
-    const txs: LockTokenTxPlan = [];
+    const txs: TxPlan = [];
     const now = Date.now();
     // Withdraw all available pendings
     for (const p of pendingWithdrawals) {

@@ -11,7 +11,7 @@ import { usePublicClient } from 'wagmi';
 export function useStakingBalances(address?: Address) {
   const publicClient = usePublicClient();
 
-  const { isLoading, isError, error, data } = useQuery({
+  const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ['useStakingBalances', publicClient, address],
     queryFn: async () => {
       if (!address) return null;
@@ -35,6 +35,7 @@ export function useStakingBalances(address?: Address) {
     isError,
     groupToStake: data?.groupToStake,
     stakeBalances: data?.stakeBalances,
+    refetch,
   };
 }
 
