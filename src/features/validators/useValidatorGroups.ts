@@ -103,10 +103,9 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   // Process vote-related details about the validator groups
   for (let i = 0; i < eligibleGroups.length; i++) {
     const groupAddr = eligibleGroups[i];
-    const numVotes = groupVotes[i];
     const group = groups[groupAddr];
+    group.votes = groupVotes[i];
     group.eligible = true;
-    group.votes = numVotes;
     group.capacity = getValidatorGroupCapacity(group, validatorAddrs.length, totalLocked);
   }
 

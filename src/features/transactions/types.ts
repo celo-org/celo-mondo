@@ -8,6 +8,6 @@ export enum TxModalType {
 export type TxPlan<A extends string = string, F extends string = string> = Array<{
   action: A;
   functionName: F;
-  args?: Array<bigint | number>;
+  args?: Array<bigint | number | string | Address>;
   value?: bigint;
 }>;

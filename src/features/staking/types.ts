@@ -1,4 +1,12 @@
-export type GroupToStake = Record<Address, { active: bigint; pending: bigint }>;
+export type GroupToStake = Record<
+  Address,
+  {
+    active: bigint;
+    pending: bigint;
+    // The group's index in the on-chain voting list. Required for unstaking
+    groupIndex: number;
+  }
+>;
 export type StakingBalances = { active: bigint; pending: bigint; total: bigint };
 
 export enum StakeActionType {
@@ -28,4 +36,6 @@ export interface StakeFormValues {
   action: StakeActionType;
   amount: number;
   group: Address;
+  // Only used in transfer actions, the new target group
+  transferGroup: Address;
 }

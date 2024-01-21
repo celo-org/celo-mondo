@@ -33,10 +33,10 @@ import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useGroupRewardHistory } from 'src/features/validators/useGroupRewardHistory';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
-import { getGroupStats } from 'src/features/validators/utils';
+import { findGroup, getGroupStats } from 'src/features/validators/utils';
 import { Color } from 'src/styles/Color';
 import { useIsMobile } from 'src/styles/mediaQueries';
-import { eqAddressSafe, shortenAddress } from 'src/utils/addresses';
+import { shortenAddress } from 'src/utils/addresses';
 import { fromWei, fromWeiRounded } from 'src/utils/amount';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
@@ -49,10 +49,7 @@ export const dynamicParams = true;
 
 export default function Page({ params: { address } }: { params: { address: Address } }) {
   const { groups } = useValidatorGroups();
-  const group = useMemo(
-    () => groups?.find((g) => eqAddressSafe(g.address, address)),
-    [address, groups],
-  );
+  const group = useMemo(() => findGroup(groups, address), [groups, address]);
 
   usePageInvariant(!groups || group, '/', 'Validator group not found');
 

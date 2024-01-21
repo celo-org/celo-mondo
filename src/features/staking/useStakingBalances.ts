@@ -8,6 +8,12 @@ import { objKeys } from 'src/utils/objects';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
+export const emptyStakeBalances = {
+  active: 0n,
+  pending: 0n,
+  total: 0n,
+};
+
 export function useStakingBalances(address?: Address) {
   const publicClient = usePublicClient();
 
@@ -77,7 +83,11 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
     const active = activeVotes[i];
     if (pending.status !== 'success') throw new Error('Pending votes call failed');
     if (active.status !== 'success') throw new Error('Active votes call failed');
-    votes[groupAddr] = { pending: pending.result as bigint, active: active.result as bigint };
+    votes[groupAddr] = {
+      pending: pending.result as bigint,
+      active: active.result as bigint,
+      groupIndex: i,
+    };
   }
 
   return votes;

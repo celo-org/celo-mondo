@@ -1,7 +1,13 @@
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
+import { eqAddressSafe } from 'src/utils/addresses';
 import { fromWeiRounded } from 'src/utils/amount';
 import { bigIntMean } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
+
+export function findGroup(groups?: ValidatorGroup[], address?: Address) {
+  if (!groups || !address) return undefined;
+  return groups.find((g) => eqAddressSafe(g.address, address));
+}
 
 export function cleanGroupName(name: string) {
   return trimToLength(toTitleCase(name.replace(/group|Group/g, '').replace(/[-_]/g, ' ')), 20);

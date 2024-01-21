@@ -6,6 +6,7 @@ export const AVG_BLOCK_TIMES_MS = 5_000; // 5 seconds
 export const EPOCH_DURATION_MS = 86_400_000; // 1 day
 export const BALANCE_REFRESH_INTERVAL = 5_000; // 5 seconds
 export const MIN_GROUP_SCORE_FOR_RANDOM = 90;
+export const MIN_INCREMENTAL_VOTE_AMOUNT = 10000000000000000n; // 0.01 CELO
 
 // From the Election contract electableValidators config
 export const MAX_NUM_ELECTABLE_VALIDATORS = 110;

@@ -26,7 +26,7 @@ export function AmountField({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <label htmlFor="amount" className="pl-0.5 text-sm">
+        <label htmlFor="amount" className="pl-0.5 text-xs font-medium">
           Amount
         </label>
         <span className="text-xs">{`${formatNumberString(maxValue, 2)} ${maxDescription}`}</span>

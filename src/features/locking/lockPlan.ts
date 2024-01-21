@@ -2,6 +2,7 @@ import { LockActionType, LockFormValues, PendingWithdrawal } from 'src/features/
 import { StakingBalances } from 'src/features/staking/types';
 import { TxPlan } from 'src/features/transactions/types';
 import { toWeiSafe } from 'src/utils/amount';
+import { logger } from 'src/utils/logger';
 import { bigIntMin } from 'src/utils/math';
 
 // Lock token operations can require varying numbers of txs in specific order
@@ -54,6 +55,7 @@ export function getLockTxPlan(
     }
     return txs;
   } else {
-    throw new Error(`Invalid lock token action type: ${action}`);
+    logger.error(`Invalid lock token action type: ${action}`);
+    return [];
   }
 }

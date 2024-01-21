@@ -15,6 +15,7 @@ export function MultiTxFormSubmitButton({
   isLoading,
   loadingText,
   children,
+  ...props
 }: Props) {
   const txIndexString = numTxs > 1 ? ` (${txIndex + 1} / ${numTxs})` : '';
 
@@ -25,7 +26,11 @@ export function MultiTxFormSubmitButton({
           {`This action will require ${numTxs} transactions. ${tipText}`}
         </TipBox>
       )}
-      <FormSubmitButton isLoading={isLoading} loadingText={`${loadingText} ${txIndexString}`}>
+      <FormSubmitButton
+        isLoading={isLoading}
+        loadingText={`${loadingText} ${txIndexString}`}
+        {...props}
+      >
         {`${children} ${txIndexString}`}
       </FormSubmitButton>
     </div>

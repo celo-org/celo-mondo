@@ -8,7 +8,7 @@ import { toWei } from 'src/utils/amount';
 
 function stakes(activeAmount: number, group = '0x1'): GroupToStake {
   return {
-    [group]: { active: toWei(activeAmount), pending: 0n },
+    [group]: { active: toWei(activeAmount), pending: 0n, groupIndex: 0 },
   };
 }
 

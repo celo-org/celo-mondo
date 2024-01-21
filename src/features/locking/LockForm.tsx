@@ -16,7 +16,6 @@ import {
   LockActionValues,
   LockFormValues,
   LockedBalances,
-  PendingWithdrawal,
 } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import {
@@ -25,11 +24,8 @@ import {
   getTotalUnlockedCelo,
 } from 'src/features/locking/utils';
 import { StakingBalances } from 'src/features/staking/types';
-import { useStakingBalances } from 'src/features/staking/useStakingBalances';
-import {
-  useTransactionPlanCounter,
-  useWriteContractWithReceipt,
-} from 'src/features/transactions/hooks';
+import { emptyStakeBalances, useStakingBalances } from 'src/features/staking/useStakingBalances';
+import { useTransactionPlan, useWriteContractWithReceipt } from 'src/features/transactions/hooks';
 import { fromWeiRounded, toWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
@@ -54,27 +50,28 @@ export function LockForm({
   const { stakeBalances } = useStakingBalances(address);
   const { isVoting } = useIsGovernanceVoting(address);
 
-  const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', refetch);
-  const { txPlanIndex, isPlanStarted, onTxSuccess } = useTransactionPlanCounter(isLoading);
+  const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
+    useTransactionPlan<LockFormValues>({
+      createTxPlan: (v) =>
+        getLockTxPlan(v, pendingWithdrawals || [], stakeBalances || emptyStakeBalances),
+      onStepSuccess: refetch,
+    });
+  const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', onTxSuccess);
+  const isInputDisabled = isLoading || isPlanStarted;
 
   const onSubmit = (values: LockFormValues) => {
-    if (!address || !pendingWithdrawals || !stakeBalances) return;
-    const txPlan = getLockTxPlan(values, pendingWithdrawals, stakeBalances);
-    const nextTx = txPlan[txPlanIndex] as any;
-    writeContract(
-      {
-        address: Addresses.LockedGold,
-        abi: lockedGoldABI,
-        ...nextTx,
-      },
-      { onSuccess: () => onTxSuccess(txPlan.length) },
-    );
+    writeContract({
+      address: Addresses.LockedGold,
+      abi: lockedGoldABI,
+      ...getNextTx(values),
+    });
   };
 
   const validate = (values: LockFormValues) => {
     if (isNullish(walletBalance) || !lockedBalances || !stakeBalances || isNullish(isVoting)) {
       return { amount: 'Form data not ready' };
     }
+    if (txPlanIndex > 0) return {};
     return validateForm(values, lockedBalances, walletBalance, stakeBalances, isVoting);
   };
 
@@ -98,20 +95,23 @@ export function LockForm({
                 Lock CELO to begin.
               </TipBox>
             )}
-            <ActionTypeField defaultAction={defaultAction} disabled={isPlanStarted} />
+            <ActionTypeField defaultAction={defaultAction} disabled={isInputDisabled} />
             <LockAmountField
               lockedBalances={lockedBalances}
               walletBalance={walletBalance}
               action={values.action}
-              disabled={isPlanStarted}
+              disabled={isInputDisabled}
             />
           </div>
-          <ButtonSection
-            pendingWithdrawals={pendingWithdrawals}
-            stakeBalances={stakeBalances}
-            txPlanIndex={txPlanIndex}
+          <MultiTxFormSubmitButton
+            txIndex={txPlanIndex}
+            numTxs={numTxs}
             isLoading={isLoading}
-          />
+            loadingText={ActionToVerb[values.action]}
+            tipText={ActionToTipText[values.action]}
+          >
+            {`${toTitleCase(values.action)}`}
+          </MultiTxFormSubmitButton>
         </Form>
       )}
     </Formik>
@@ -164,36 +164,6 @@ function LockAmountField({
       maxDescription="CELO available"
       disabled={disabled || isWithdraw}
     />
-  );
-}
-
-function ButtonSection({
-  pendingWithdrawals,
-  stakeBalances,
-  txPlanIndex,
-  isLoading,
-}: {
-  pendingWithdrawals?: PendingWithdrawal[];
-  stakeBalances?: StakingBalances;
-  txPlanIndex: number;
-  isLoading: boolean;
-}) {
-  const { values } = useFormikContext<LockFormValues>();
-  const numTxs = useMemo(() => {
-    if (!pendingWithdrawals || !stakeBalances) return 0;
-    return getLockTxPlan(values, pendingWithdrawals, stakeBalances).length;
-  }, [values, pendingWithdrawals, stakeBalances]);
-
-  return (
-    <MultiTxFormSubmitButton
-      txIndex={txPlanIndex}
-      numTxs={numTxs}
-      isLoading={isLoading}
-      loadingText={ActionToVerb[values.action]}
-      tipText={ActionToTipText[values.action]}
-    >
-      {`${toTitleCase(values.action)}`}
-    </MultiTxFormSubmitButton>
   );
 }
 

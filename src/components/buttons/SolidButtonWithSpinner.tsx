@@ -1,8 +1,8 @@
-import { ButtonHTMLAttributes, PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import { Spinner } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+type Props = React.ComponentProps<typeof SolidButton> & {
   isLoading: boolean;
   loadingText?: string;
 };
