@@ -12,7 +12,7 @@ export function AccountRegisterForm({
 }) {
   const { writeContract, isLoading } = useWriteContractWithReceipt(
     'account registration',
-    refetchAccountDetails,
+    () => refetchAccountDetails,
   );
 
   const onClickCreate = () => {

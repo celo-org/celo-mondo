@@ -1,4 +1,3 @@
-import { lockedGoldABI } from '@celo/abis';
 import { Form, Formik, FormikErrors, useFormikContext } from 'formik';
 import { useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
@@ -7,7 +6,6 @@ import { AmountField } from 'src/components/input/AmountField';
 import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
 import { useBalance } from 'src/features/account/hooks';
 import { useIsGovernanceVoting } from 'src/features/governance/useVotingStatus';
 import { getLockTxPlan } from 'src/features/locking/lockPlan';
@@ -26,6 +24,7 @@ import {
 import { StakingBalances } from 'src/features/staking/types';
 import { emptyStakeBalances, useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { useTransactionPlan, useWriteContractWithReceipt } from 'src/features/transactions/hooks';
+import { ConfirmationDetails } from 'src/features/transactions/types';
 import { fromWeiRounded, toWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
@@ -40,9 +39,11 @@ const initialValues: LockFormValues = {
 export function LockForm({
   defaultAction,
   showTip,
+  onConfirmed,
 }: {
   defaultAction?: LockActionType;
   showTip?: boolean;
+  onConfirmed?: (details: ConfirmationDetails) => void;
 }) {
   const { address } = useAccount();
   const { balance: walletBalance } = useBalance(address);
@@ -54,18 +55,24 @@ export function LockForm({
     useTransactionPlan<LockFormValues>({
       createTxPlan: (v) =>
         getLockTxPlan(v, pendingWithdrawals || [], stakeBalances || emptyStakeBalances),
-      onStepSuccess: refetch,
+      onStepSuccess: () => refetch,
+      onPlanSuccess: onConfirmed
+        ? (v, r) =>
+            onConfirmed({
+              message: `${v.action} successful`,
+              amount: v.amount,
+              receipt: r,
+              properties: [
+                { label: 'Action', value: toTitleCase(v.action) },
+                { label: 'Amount', value: `${v.amount} CELO` },
+              ],
+            })
+        : undefined,
     });
   const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
 
-  const onSubmit = (values: LockFormValues) => {
-    writeContract({
-      address: Addresses.LockedGold,
-      abi: lockedGoldABI,
-      ...getNextTx(values),
-    });
-  };
+  const onSubmit = (values: LockFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: LockFormValues) => {
     if (isNullish(walletBalance) || !lockedBalances || !stakeBalances || isNullish(isVoting)) {

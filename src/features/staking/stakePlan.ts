@@ -1,4 +1,6 @@
+import { electionABI } from '@celo/abis';
 import { MIN_INCREMENTAL_VOTE_AMOUNT, ZERO_ADDRESS } from 'src/config/consts';
+import { Addresses } from 'src/config/contracts';
 import { GroupToStake, StakeActionType, StakeFormValues } from 'src/features/staking/types';
 import { TxPlan } from 'src/features/transactions/types';
 import { ValidatorGroup } from 'src/features/validators/types';
@@ -36,6 +38,8 @@ function getStakeActionPlan(amountWei: bigint, group: Address, groups: Validator
   return [
     {
       action: StakeActionType.Stake,
+      address: Addresses.Election,
+      abi: electionABI,
       functionName: 'vote',
       args: [group, amountWei, lesser, greater],
     },
@@ -60,6 +64,8 @@ function getUnstakeActionPlan(
     const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, pendingToRevoke * -1n);
     txs.push({
       action: StakeActionType.Unstake,
+      address: Addresses.Election,
+      abi: electionABI,
       functionName: 'revokePending',
       args: [group, pendingToRevoke, lesser, greater, groupIndex],
     });
@@ -73,6 +79,8 @@ function getUnstakeActionPlan(
   const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, amountRemaining * -1n);
   txs.push({
     action: StakeActionType.Unstake,
+    address: Addresses.Election,
+    abi: electionABI,
     functionName: 'revokeActive',
     args: [group, amountRemaining, lesser, greater, groupIndex],
   });

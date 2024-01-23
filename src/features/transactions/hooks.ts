@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useToastTxSuccess } from 'src/components/notifications/TxSuccessToast';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { TxPlan } from 'src/features/transactions/types';
+import { ConfirmationDetails, TxPlan } from 'src/features/transactions/types';
 import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
+import { TransactionReceipt } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
-export function useWriteContractWithReceipt(description: string, onSuccess?: () => any) {
+export function useWriteContractWithReceipt(
+  description: string,
+  onSuccess?: (receipt: TransactionReceipt) => any,
+  showTxSuccessToast = false,
+) {
   const {
     data: hash,
     error: writeError,
@@ -20,6 +25,7 @@ export function useWriteContractWithReceipt(description: string, onSuccess?: () 
     isSuccess: isConfirmed,
     error: waitError,
     isError: isWaitError,
+    data: receipt,
   } = useWaitForTransactionReceipt({
     hash,
     confirmations: 1,
@@ -34,20 +40,26 @@ export function useWriteContractWithReceipt(description: string, onSuccess?: () 
     waitError,
     `Error confirming ${description} transaction, please ensure the transaction is valid.`,
   );
-  useToastTxSuccess(isConfirmed, hash, `${toTitleCase(description)} transaction is confirmed!`);
+  // TODO remove?
+  useToastTxSuccess({
+    isConfirmed,
+    txHash: hash,
+    message: `${toTitleCase(description)} transaction is confirmed!`,
+    enabled: showTxSuccessToast,
+  });
 
   // Run onSuccess when tx is confirmed
   // Some extra state is needed to ensure this only runs once per tx
   const [hasRunOnSuccess, setHasRunOnSuccess] = useState(false);
   useEffect(() => {
-    if (hash && isConfirmed && !hasRunOnSuccess && onSuccess) {
+    if (hash && receipt && isConfirmed && !hasRunOnSuccess && onSuccess) {
       setHasRunOnSuccess(true);
-      onSuccess();
+      onSuccess(receipt);
     }
-  }, [hash, isConfirmed, hasRunOnSuccess, onSuccess]);
+  }, [hash, receipt, isConfirmed, hasRunOnSuccess, onSuccess]);
   useEffect(() => {
-    if (!hash || !isConfirmed) setHasRunOnSuccess(false);
-  }, [hash, isConfirmed]);
+    if (!hash || !receipt || !isConfirmed) setHasRunOnSuccess(false);
+  }, [hash, receipt, isConfirmed]);
 
   return {
     hash,
@@ -66,10 +78,11 @@ export function useTransactionPlan<FormValues>({
   onPlanSuccess,
 }: {
   createTxPlan: (v: FormValues) => TxPlan;
-  onStepSuccess?: () => any;
-  onPlanSuccess?: () => any;
+  onStepSuccess?: (receipt: TransactionReceipt) => any;
+  onPlanSuccess?: (v: FormValues, receipt: TransactionReceipt) => any;
 }) {
   const [txPlan, setTxPlan] = useState<TxPlan | undefined>(undefined);
+  const [formValues, setFormValues] = useState<FormValues | undefined>(undefined);
   const [txPlanIndex, setTxPlanIndex] = useState(0);
   const isPlanStarted = txPlanIndex > 0;
 
@@ -78,6 +91,7 @@ export function useTransactionPlan<FormValues>({
       if (txPlan) return txPlan;
       const plan = createTxPlan(v);
       setTxPlan(plan);
+      setFormValues(v);
       return plan;
     },
     [txPlan, createTxPlan],
@@ -92,17 +106,29 @@ export function useTransactionPlan<FormValues>({
 
   const numTxs = useMemo(() => (txPlan ? txPlan.length : 0), [txPlan]);
 
-  const onTxSuccess = useCallback(() => {
-    logger.debug(`Executing onSuccess for tx ${txPlanIndex + 1} of ${numTxs}`);
-    if (onStepSuccess) onStepSuccess();
-    if (txPlanIndex >= numTxs - 1) {
-      setTxPlan(undefined);
-      setTxPlanIndex(0);
-      if (onPlanSuccess) onPlanSuccess();
-    } else {
-      setTxPlanIndex(txPlanIndex + 1);
-    }
-  }, [numTxs, txPlanIndex, onStepSuccess, onPlanSuccess]);
+  const onTxSuccess = useCallback(
+    (receipt: TransactionReceipt) => {
+      if (!formValues) throw new Error('onTxSuccess:formValues is undefined');
+      logger.debug(`Executing onSuccess for tx ${txPlanIndex + 1} of ${numTxs}`);
+      if (onStepSuccess) onStepSuccess(receipt);
+      if (txPlanIndex >= numTxs - 1) {
+        setTxPlan(undefined);
+        setTxPlanIndex(0);
+        if (onPlanSuccess) onPlanSuccess(formValues, receipt);
+      } else {
+        setTxPlanIndex(txPlanIndex + 1);
+      }
+    },
+    [numTxs, txPlanIndex, formValues, onStepSuccess, onPlanSuccess],
+  );
 
   return { getTxPlan, getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess };
+}
+
+export function useTransactionFlowConfirmation() {
+  const [confirmationDetails, setConfirmationDetails] = useState<ConfirmationDetails | undefined>(
+    undefined,
+  );
+  const onConfirmed = useCallback((d: ConfirmationDetails) => setConfirmationDetails(d), []);
+  return { confirmationDetails, onConfirmed };
 }

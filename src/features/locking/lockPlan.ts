@@ -1,3 +1,5 @@
+import { lockedGoldABI } from '@celo/abis';
+import { Addresses } from 'src/config/contracts';
 import { LockActionType, LockFormValues, PendingWithdrawal } from 'src/features/locking/types';
 import { StakingBalances } from 'src/features/staking/types';
 import { TxPlan } from 'src/features/transactions/types';
@@ -19,7 +21,15 @@ export function getLockTxPlan(
 
   // TODO update this to account for staking, governance, and delegation revocations first
   if (action === LockActionType.Unlock) {
-    return [{ action, functionName: 'unlock', args: [amountWei] }];
+    return [
+      {
+        action,
+        address: Addresses.LockedGold,
+        abi: lockedGoldABI,
+        functionName: 'unlock',
+        args: [amountWei],
+      },
+    ];
   } else if (action === LockActionType.Lock) {
     const txs: TxPlan = [];
     // Need relock from the pendings in reverse order
@@ -31,6 +41,8 @@ export function getLockTxPlan(
       const txAmount = bigIntMin(amountRemaining, p.value);
       txs.push({
         action,
+        address: Addresses.LockedGold,
+        abi: lockedGoldABI,
         functionName: 'relock',
         args: [p.index, txAmount],
       });
@@ -38,7 +50,13 @@ export function getLockTxPlan(
     }
     // If pending relocks didn't cover it
     if (amountRemaining > 0) {
-      txs.push({ action, functionName: 'lock', value: amountRemaining });
+      txs.push({
+        action,
+        address: Addresses.LockedGold,
+        abi: lockedGoldABI,
+        functionName: 'lock',
+        value: amountRemaining,
+      });
     }
     return txs;
   } else if (action === LockActionType.Withdraw) {
@@ -49,6 +67,8 @@ export function getLockTxPlan(
       if (p.timestamp <= now)
         txs.push({
           action,
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
           functionName: 'withdraw',
           args: [p.index],
         });

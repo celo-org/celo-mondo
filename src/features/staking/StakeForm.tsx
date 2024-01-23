@@ -1,4 +1,3 @@
-import { electionABI } from '@celo/abis';
 import { Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
 import { SyntheticEvent, useCallback, useEffect, useMemo } from 'react';
 import { IconButton } from 'src/components/buttons/IconButton';
@@ -8,7 +7,6 @@ import { AmountField } from 'src/components/input/AmountField';
 import { RadioField } from 'src/components/input/RadioField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { MIN_GROUP_SCORE_FOR_RANDOM, ZERO_ADDRESS } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
 import { LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getStakeTxPlan } from 'src/features/staking/stakePlan';
@@ -21,6 +19,7 @@ import {
 } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { useTransactionPlan, useWriteContractWithReceipt } from 'src/features/transactions/hooks';
+import { ConfirmationDetails } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
@@ -42,9 +41,11 @@ const initialValues: StakeFormValues = {
 export function StakeForm({
   defaultGroup,
   defaultAction,
+  onConfirmed,
 }: {
   defaultGroup?: Address;
   defaultAction?: StakeActionType;
+  onConfirmed: (details: ConfirmationDetails) => void;
 }) {
   const { address } = useAccount();
   const { groups } = useValidatorGroups();
@@ -54,18 +55,24 @@ export function StakeForm({
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<StakeFormValues>({
       createTxPlan: (v) => getStakeTxPlan(v, groups || [], groupToStake || {}),
-      onStepSuccess: refetch,
+      onStepSuccess: () => refetch,
+      onPlanSuccess: (v, r) =>
+        onConfirmed({
+          message: `${v.action} successful`,
+          amount: v.amount,
+          receipt: r,
+          properties: [
+            { label: 'Action', value: toTitleCase(v.action) },
+            { label: 'Group', value: findGroup(groups, v.group)?.name || 'Unknown' },
+            { label: 'Amount', value: `${v.amount} CELO` },
+          ],
+        }),
     });
+
   const { writeContract, isLoading } = useWriteContractWithReceipt('staking', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
 
-  const onSubmit = (values: StakeFormValues) => {
-    writeContract({
-      address: Addresses.Election,
-      abi: electionABI,
-      ...getNextTx(values),
-    });
-  };
+  const onSubmit = (values: StakeFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: StakeFormValues) => {
     if (!lockedBalances || !stakeBalances || !groupToStake || !groups) {

@@ -5,6 +5,8 @@ import { LockForm } from 'src/features/locking/LockForm';
 import { StakeForm } from 'src/features/staking/StakeForm';
 import { StakeActionType } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
+import { TransactionConfirmation } from 'src/features/transactions/TransactionConfirmation';
+import { useTransactionFlowConfirmation } from 'src/features/transactions/hooks';
 
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
@@ -12,38 +14,39 @@ import { useAccount } from 'wagmi';
 export function StakeFlow({
   defaultGroup,
   defaultAction,
+  closeModal,
 }: {
   defaultGroup?: Address;
   defaultAction?: StakeActionType;
+  closeModal: () => void;
 }) {
   const { address } = useAccount();
-  const { lockedBalance, isLoading: isLoadingLocked } = useLockedBalance(address);
-  const { stakeBalances, isLoading: isLoadingStaked } = useStakingBalances(address);
-  const {
-    isRegistered,
-    isLoading: isLoadingRegistration,
-    refetch: refetchAccountDetails,
-  } = useAccountDetails(address);
+  const { lockedBalance } = useLockedBalance(address);
+  const { stakeBalances } = useStakingBalances(address);
+  const { isRegistered, refetch: refetchAccountDetails } = useAccountDetails(address);
+
+  const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
 
   let Component;
-  if (
-    !address ||
-    isLoadingLocked ||
-    isLoadingStaked ||
-    isLoadingRegistration ||
-    isNullish(lockedBalance) ||
-    isNullish(stakeBalances) ||
-    isNullish(isRegistered)
-  ) {
+  if (!address || isNullish(lockedBalance) || isNullish(stakeBalances) || isNullish(isRegistered)) {
     Component = <SpinnerWithLabel className="py-20">Loading staking data...</SpinnerWithLabel>;
   } else if (!isRegistered) {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
   } else if (lockedBalance <= 0n && stakeBalances.total <= 0n) {
     Component = <LockForm showTip={true} />;
+  } else if (!confirmationDetails) {
+    Component = (
+      <StakeForm
+        defaultGroup={defaultGroup}
+        defaultAction={defaultAction}
+        onConfirmed={onConfirmed}
+      />
+    );
   } else {
-    Component = <StakeForm defaultGroup={defaultGroup} defaultAction={defaultAction} />;
+    Component = (
+      <TransactionConfirmation confirmation={confirmationDetails} closeModal={closeModal} />
+    );
   }
-  // TODO stake complete screen here
 
   return (
     <>
