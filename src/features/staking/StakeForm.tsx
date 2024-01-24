@@ -23,7 +23,7 @@ import { ConfirmationDetails } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { cleanGroupName, findGroup, getGroupStats } from 'src/features/validators/utils';
+import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { toWei } from 'src/utils/amount';
@@ -48,7 +48,7 @@ export function StakeForm({
   onConfirmed: (details: ConfirmationDetails) => void;
 }) {
   const { address } = useAccount();
-  const { groups } = useValidatorGroups();
+  const { groups, addressToGroup } = useValidatorGroups();
   const { lockedBalances } = useLockedStatus(address);
   const { stakeBalances, groupToStake, refetch } = useStakingBalances(address);
 
@@ -63,7 +63,7 @@ export function StakeForm({
           receipt: r,
           properties: [
             { label: 'Action', value: toTitleCase(v.action) },
-            { label: 'Group', value: findGroup(groups, v.group)?.name || 'Unknown' },
+            { label: 'Group', value: addressToGroup?.[v.group]?.name || 'Unknown' },
             { label: 'Amount', value: `${v.amount} CELO` },
           ],
         }),
@@ -75,11 +75,11 @@ export function StakeForm({
   const onSubmit = (values: StakeFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: StakeFormValues) => {
-    if (!lockedBalances || !stakeBalances || !groupToStake || !groups) {
+    if (!lockedBalances || !stakeBalances || !groupToStake || !addressToGroup) {
       return { amount: 'Form data not ready' };
     }
     if (txPlanIndex > 0) return {};
-    return validateForm(values, lockedBalances, stakeBalances, groupToStake, groups);
+    return validateForm(values, lockedBalances, stakeBalances, groupToStake, addressToGroup);
   };
 
   return (
@@ -100,19 +100,19 @@ export function StakeForm({
           <div className="min-h-[21.5rem] space-y-4">
             <ActionTypeField defaultAction={defaultAction} disabled={isInputDisabled} />
             <GroupField
-              groups={groups}
-              defaultGroup={defaultGroup}
-              disabled={isInputDisabled}
               fieldName="group"
               label={values.action === StakeActionType.Transfer ? 'From group' : 'Group'}
+              addressToGroup={addressToGroup}
+              defaultGroup={defaultGroup}
+              disabled={isInputDisabled}
             />
             {values.action === StakeActionType.Transfer && (
               <GroupField
-                groups={groups}
-                defaultGroup={defaultGroup}
-                disabled={isInputDisabled}
                 fieldName="transferGroup"
                 label={'To group'}
+                addressToGroup={addressToGroup}
+                defaultGroup={defaultGroup}
+                disabled={isInputDisabled}
               />
             )}
             <StakeAmountField
@@ -180,13 +180,13 @@ function StakeAmountField({
 function GroupField({
   fieldName,
   label,
-  groups,
+  addressToGroup,
   defaultGroup,
   disabled,
 }: {
   fieldName: 'group' | 'transferGroup';
   label: string;
-  groups?: ValidatorGroup[];
+  addressToGroup?: Record<Address, ValidatorGroup>;
   defaultGroup?: Address;
   disabled?: boolean;
 }) {
@@ -196,17 +196,17 @@ function GroupField({
     helpers.setValue(defaultGroup || ZERO_ADDRESS).catch((e) => logger.error(e));
   }, [defaultGroup, helpers]);
 
-  const currentGroup = useMemo(() => findGroup(groups, field.value), [groups, field.value]);
+  const currentGroup = addressToGroup?.[field.value];
 
   const sortedGroups = useMemo(() => {
-    if (!groups) return [];
-    return groups
+    if (!addressToGroup) return [];
+    return Object.values(addressToGroup)
       .map((g) => ({
         ...g,
         score: getGroupStats(g).avgScore,
       }))
       .sort((a, b) => b.score - a.score);
-  }, [groups]);
+  }, [addressToGroup]);
 
   const onClickRandom = useCallback(
     (event: SyntheticEvent) => {
@@ -287,14 +287,14 @@ function validateForm(
   lockedBalances: LockedBalances,
   stakeBalances: StakingBalances,
   groupToStake: GroupToStake,
-  groups: ValidatorGroup[],
+  addressToGroup: Record<Address, ValidatorGroup>,
 ): FormikErrors<StakeFormValues> {
   const { action, amount, group, transferGroup } = values;
 
   if (!group || group === ZERO_ADDRESS) return { group: 'Validator group required' };
 
   if (action === StakeActionType.Stake) {
-    const groupDetails = findGroup(groups, group);
+    const groupDetails = addressToGroup[group];
     if (!groupDetails) return { group: 'Group not found' };
     if (groupDetails.votes >= groupDetails.capacity) return { group: 'Group has max votes' };
   }
@@ -303,7 +303,7 @@ function validateForm(
     if (!transferGroup || transferGroup === ZERO_ADDRESS)
       return { transferGroup: 'Transfer group required' };
     if (transferGroup === group) return { transferGroup: 'Groups must be different' };
-    const groupDetails = findGroup(groups, transferGroup);
+    const groupDetails = addressToGroup[transferGroup];
     if (!groupDetails) return { group: 'Transfer group not found' };
     if (groupDetails.votes >= groupDetails.capacity)
       return { group: 'Transfer group has max votes' };

@@ -29,6 +29,7 @@ export function useValidatorGroups() {
     isLoading,
     isError,
     groups: data?.groups,
+    addressToGroup: data?.addressToGroup,
     totalLocked: data?.totalLocked,
     totalVotes: data?.totalVotes,
   };
@@ -109,7 +110,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     group.capacity = getValidatorGroupCapacity(group, validatorAddrs.length, totalLocked);
   }
 
-  return { groups: Object.values(groups), totalLocked, totalVotes };
+  return { groups: Object.values(groups), addressToGroup: groups, totalLocked, totalVotes };
 }
 
 async function fetchValidatorAddresses(publicClient: PublicClient) {

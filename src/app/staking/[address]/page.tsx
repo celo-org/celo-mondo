@@ -33,8 +33,9 @@ import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useGroupRewardHistory } from 'src/features/validators/useGroupRewardHistory';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
-import { findGroup, getGroupStats } from 'src/features/validators/utils';
+import { getGroupStats } from 'src/features/validators/utils';
 import { Color } from 'src/styles/Color';
+import { tableClasses } from 'src/styles/common';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { shortenAddress } from 'src/utils/addresses';
 import { fromWei, fromWeiRounded } from 'src/utils/amount';
@@ -48,10 +49,10 @@ const HEATMAP_SIZE = 50;
 export const dynamicParams = true;
 
 export default function Page({ params: { address } }: { params: { address: Address } }) {
-  const { groups } = useValidatorGroups();
-  const group = useMemo(() => findGroup(groups, address), [groups, address]);
+  const { addressToGroup } = useValidatorGroups();
+  const group = addressToGroup?.[address];
 
-  usePageInvariant(!groups || group, '/', 'Validator group not found');
+  usePageInvariant(!addressToGroup || group, '/', 'Validator group not found');
 
   return (
     <Section containerClassName="space-y-8 mt-4">
@@ -260,15 +261,15 @@ function Members({ group }: { group?: ValidatorGroup }) {
       <table className="mt-2 w-full">
         <thead>
           <tr>
-            <th className={styles.th}>Address</th>
-            <th className={styles.th}>Score</th>
-            <th className={styles.th}>Elected</th>
+            <th className={tableClasses.th}>Address</th>
+            <th className={tableClasses.th}>Score</th>
+            <th className={tableClasses.th}>Elected</th>
           </tr>
         </thead>
         <tbody>
           {Object.values(group?.members || {}).map((member) => (
             <tr key={member.address}>
-              <td className={styles.td}>
+              <td className={tableClasses.td}>
                 <div className="flex items-center">
                   <Identicon address={member.address} size={28} />
                   <span className="ml-2">
@@ -276,15 +277,15 @@ function Members({ group }: { group?: ValidatorGroup }) {
                   </span>
                 </div>
               </td>
-              <td className={styles.td}>{fromWeiRounded(member.score, 22, 0) + '%'}</td>
-              <td className={styles.td}>
+              <td className={tableClasses.td}>{fromWeiRounded(member.score, 22, 0) + '%'}</td>
+              <td className={tableClasses.td}>
                 {member.status === ValidatorStatus.Elected ? (
-                  <div className="badge badge-success gap-1 bg-green-500 text-sm">
+                  <div className="badge badge-success gap-1 rounded-full bg-green-500 text-sm">
                     <Checkmark width={14} height={14} />
                     Yes
                   </div>
                 ) : (
-                  <div className="badge badge-error gap-1 bg-red-400 text-sm">
+                  <div className="badge badge-error gap-1 rounded-full bg-red-400 text-sm">
                     <XIcon width={14} height={10} />
                     No
                   </div>
@@ -331,15 +332,15 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
         <table className="w-full">
           <thead>
             <tr>
-              <th className={styles.th}>Address</th>
-              <th className={styles.th}>Percent</th>
-              <th className={styles.th}>Value</th>
+              <th className={tableClasses.th}>Address</th>
+              <th className={tableClasses.th}>Percent</th>
+              <th className={tableClasses.th}>Value</th>
             </tr>
           </thead>
           <tbody>
             {chartData.map((data) => (
               <tr key={data.title}>
-                <td className={styles.td}>
+                <td className={tableClasses.td}>
                   <div className="flex items-center space-x-2">
                     <Circle fill={data.color} size={10} />
                     <span>
@@ -347,10 +348,10 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
                     </span>
                   </div>
                 </td>
-                <td className={styles.td}>
+                <td className={tableClasses.td}>
                   {((data.value / fromWei(group?.votes || 1)) * 100).toFixed(2) + '%'}
                 </td>
-                <td className={styles.td}>{formatNumberString(data.value)}</td>
+                <td className={tableClasses.td}>{formatNumberString(data.value)}</td>
               </tr>
             ))}
           </tbody>
@@ -378,11 +379,6 @@ function getStakersHeaderCount(group?: ValidatorGroup) {
   if (group.votes < 20000) return '1';
   else return '10+';
 }
-
-const styles = {
-  th: 'text-sm font-normal border-b border-taupe-300 md:min-w-[8rem] py-3 px-6 first:pl-0 last:pr-0 text-center first:text-left last:text-right',
-  td: 'text-sm border-y border-taupe-300 py-3 px-6 first:pl-0 last:pr-0 text-center first:text-left last:text-right',
-};
 
 const PIE_CHART_COLORS = [
   Color.Forest,

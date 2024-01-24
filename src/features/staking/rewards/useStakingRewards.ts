@@ -3,6 +3,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { computeStakingRewards } from 'src/features/staking/rewards/computeRewards';
 import { fetchStakeEvents } from 'src/features/staking/rewards/fetchStakeHistory';
 import { GroupToStake } from 'src/features/staking/types';
+import { toWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 
 export function useStakingRewards(address?: Address, stakes?: GroupToStake) {
@@ -12,9 +13,10 @@ export function useStakingRewards(address?: Address, stakes?: GroupToStake) {
       if (!address || !stakes) return null;
       logger.debug('Fetching staking rewards');
       const events = await fetchStakeEvents(address);
-      const rewards = computeStakingRewards(events, stakes, 'amount');
-      const totalRewards = Object.values(rewards).reduce((acc, r) => acc + r, 0);
-      return { events, rewards, totalRewards };
+      const groupToReward = computeStakingRewards(events, stakes, 'amount');
+      const totalRewards = Object.values(groupToReward).reduce((acc, r) => acc + r, 0);
+      const totalRewardsWei = toWei(totalRewards);
+      return { events, groupToReward, totalRewards, totalRewardsWei };
     },
     gcTime: Infinity,
     staleTime: 10 * 60 * 1000, // 10 minutes
@@ -26,7 +28,8 @@ export function useStakingRewards(address?: Address, stakes?: GroupToStake) {
     isLoading,
     isError,
     events: data?.events,
-    rewards: data?.rewards,
+    groupToReward: data?.groupToReward,
     totalRewards: data?.totalRewards,
+    totalRewardsWei: data?.totalRewardsWei,
   };
 }

@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { CELO, TokenId, getTokenByAddress, getTokenById } from 'src/config/tokens';
 import { fromWei } from 'src/utils/amount';
+import { isNullish } from 'src/utils/typeof';
 
 const NUMBER_FORMAT = {
   decimalSeparator: '.',
@@ -25,24 +26,23 @@ export function Amount({
   decimals?: number;
   showSymbol?: boolean;
 }) {
-  if (valueWei) {
-    value = fromWei(valueWei);
-  }
-  const valueFormatted = formatNumberString(value, decimals);
+  const valueFormatted = formatNumberString(value ?? valueWei, decimals, isNullish(value));
 
   const token =
     (tokenId ? getTokenById(tokenId) : tokenAddress ? getTokenByAddress(tokenAddress) : null) ||
     CELO;
 
   return (
-    <span className={`font-serif ${className}`}>{`${valueFormatted} ${
-      showSymbol ? token.symbol : ''
-    }`}</span>
+    <span className={`flex items-baseline space-x-1 font-serif ${className}`}>
+      <span>{valueFormatted}</span>
+      {showSymbol ? <span style={{ fontSize: '0.8em' }}>{token.symbol}</span> : null}
+    </span>
   );
 }
 
-export function formatNumberString(value?: BigNumber.Value | bigint, decimals = 0) {
-  return BigNumber(value?.toString() || '0')
+export function formatNumberString(value?: BigNumber.Value | bigint, decimals = 0, isWei = false) {
+  const valueUnits = isWei ? fromWei(value) : value;
+  return BigNumber(valueUnits?.toString() || '0')
     .decimalPlaces(decimals, BigNumber.ROUND_FLOOR)
     .toFormat(NUMBER_FORMAT);
 }
