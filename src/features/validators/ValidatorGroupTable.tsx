@@ -72,7 +72,7 @@ export function ValidatorGroupTable({
 
   return (
     <div>
-      <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-end md:justify-between">
         <div className="flex justify-between space-x-7">
           <FilterButton
             filter={Filter.All}
@@ -203,7 +203,7 @@ function useTableColumns(totalVotes: bigint) {
                 props: { defaultGroup: props.row.original.address },
               });
             }}
-            className="all:bg-white all:hover:bg-white/70"
+            className="all:btn-neutral"
           >
             Stake
           </SolidButton>

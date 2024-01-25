@@ -10,19 +10,18 @@ import { useBalance } from 'src/features/account/hooks';
 import { LockActionType, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getTotalLockedCelo, getTotalUnlockedCelo } from 'src/features/locking/utils';
+import { ActiveStakesTable } from 'src/features/staking/ActiveStakesTable';
+import { RewardsTable } from 'src/features/staking/rewards/RewardsTable';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { GroupToStake, StakingBalances } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
-import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import Lock from 'src/images/icons/lock.svg';
 import Unlock from 'src/images/icons/unlock.svg';
 import Withdraw from 'src/images/icons/withdraw.svg';
-import { tableClasses } from 'src/styles/common';
-import { shortenAddress } from 'src/utils/addresses';
 import { usePageInvariant } from 'src/utils/navigation';
 import { useAccount } from 'wagmi';
 
@@ -158,6 +157,7 @@ function AccountStat({
 function TableTabs({
   groupToStake,
   addressToGroup,
+  groupToReward,
 }: {
   groupToStake?: GroupToStake;
   addressToGroup?: Record<Address, ValidatorGroup>;
@@ -167,7 +167,7 @@ function TableTabs({
 
   return (
     <div>
-      <div className="flex space-x-10 border-b border-taupe-300 pb-4">
+      <div className="flex space-x-10 border-b border-taupe-300 pb-2">
         <TabHeaderButton isActive={tab === 'stakes'} onClick={() => setTab('stakes')}>
           <span className="text-sm">Stakes</span>
         </TabHeaderButton>
@@ -179,53 +179,12 @@ function TableTabs({
         </TabHeaderButton>
       </div>
       {tab === 'stakes' && (
-        <ActiveStakes groupToStake={groupToStake} addressToGroup={addressToGroup} />
+        <ActiveStakesTable groupToStake={groupToStake} addressToGroup={addressToGroup} />
       )}
-      {tab === 'rewards' && <div>TODO</div>}
+      {tab === 'rewards' && (
+        <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
+      )}
       {tab === 'delegations' && <div>TODO</div>}
     </div>
-  );
-}
-
-function ActiveStakes({
-  groupToStake,
-  addressToGroup,
-}: {
-  groupToStake?: GroupToStake;
-  addressToGroup?: Record<Address, ValidatorGroup>;
-}) {
-  const rows = Object.entries(groupToStake || {}) as Array<[Address, GroupToStake[Address]]>;
-
-  return (
-    <table className="mt-2 w-full">
-      <thead>
-        <tr>
-          <th className={tableClasses.th}>Name</th>
-          <th className={tableClasses.th}>Amount</th>
-          <th className={tableClasses.th}>%</th>
-          <th className={tableClasses.th}></th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map(([address, stake]) => (
-          <tr key={address}>
-            <td className={tableClasses.td}>
-              <div className="flex items-center">
-                <ValidatorGroupLogo address={address} size={28} />
-                <div className="ml-2 flex flex-col">
-                  <span>{addressToGroup?.[address]?.name || 'Unknown'}</span>
-                  <span>{shortenAddress(address)}</span>
-                </div>
-              </div>
-            </td>
-            <td className={tableClasses.td}>
-              {formatNumberString(stake.active + stake.pending, 2, true) + ' CELO'}
-            </td>
-            <td className={tableClasses.td}>0%</td>
-            <td className={tableClasses.td}>TODO</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }

@@ -12,6 +12,7 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TextLink } from 'src/components/buttons/TextLink';
 import { HeatmapLines } from 'src/components/charts/Heatmap';
+import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { ArrowIcon } from 'src/components/icons/Arrow';
 import { Checkmark } from 'src/components/icons/Checkmark';
 import { Circle } from 'src/components/icons/Circle';
@@ -214,7 +215,7 @@ function DetailsSection({ group }: { group?: ValidatorGroup }) {
 
   return (
     <div>
-      <div className="flex space-x-10 border-b border-taupe-300 pb-4">
+      <div className="flex space-x-10 border-b border-taupe-300 pb-2">
         <TabHeaderButton
           isActive={tab === 'members'}
           onClick={() => setTab('members')}
@@ -271,7 +272,7 @@ function Members({ group }: { group?: ValidatorGroup }) {
             <tr key={member.address}>
               <td className={tableClasses.td}>
                 <div className="flex items-center">
-                  <Identicon address={member.address} size={28} />
+                  <Identicon address={member.address} size={24} />
                   <span className="ml-2">
                     {isMobile ? shortenAddress(member.address) : member.address}
                   </span>
@@ -304,19 +305,12 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
 
   const chartData = useMemo(() => {
     if (!stakers) return null;
-    if (!objLength(stakers)) return [{ title: 'No Stakers', value: 1, color: Color.Grey }];
-    let sortedStakers = Object.entries(stakers).sort((a, b) => b[1] - a[1]);
-    if (sortedStakers.length > 5) {
-      const topStakers = sortedStakers.slice(0, 5);
-      const otherStakers = sortedStakers.slice(5);
-      sortedStakers = [
-        ...topStakers,
-        ['Others', otherStakers.reduce((acc, cur) => acc + cur[1], 0)],
-      ];
-    }
-    return sortedStakers.map(([address, amount], i) => {
-      return { title: address, value: amount, color: PIE_CHART_COLORS[i] };
-    });
+    if (!objLength(stakers)) return [{ label: 'No Stakers', value: 1, color: Color.Grey }];
+    const rawData = Object.entries(stakers).map(([address, amount]) => ({
+      label: address,
+      value: amount,
+    }));
+    return sortAndCombineChartData(rawData);
   }, [stakers]);
 
   if (!chartData?.length) {
@@ -339,12 +333,12 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
           </thead>
           <tbody>
             {chartData.map((data) => (
-              <tr key={data.title}>
+              <tr key={data.label}>
                 <td className={tableClasses.td}>
                   <div className="flex items-center space-x-2">
                     <Circle fill={data.color} size={10} />
                     <span>
-                      {data.title === 'Others' ? 'Other stakers' : shortenAddress(data.title)}
+                      {data.label === 'Others' ? 'Other stakers' : shortenAddress(data.label)}
                     </span>
                   </div>
                 </td>
@@ -379,12 +373,3 @@ function getStakersHeaderCount(group?: ValidatorGroup) {
   if (group.votes < 20000) return '1';
   else return '10+';
 }
-
-const PIE_CHART_COLORS = [
-  Color.Forest,
-  Color.Citrus,
-  Color.Lotus,
-  Color.Lavender,
-  Color.Sky,
-  Color.Grey,
-];

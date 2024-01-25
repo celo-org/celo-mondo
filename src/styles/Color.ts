@@ -22,3 +22,12 @@ export enum Color {
   OldGreen = '#35D07F',
   OldGold = '#FBCC5C',
 }
+
+export const CHART_COLORS = [
+  Color.Lavender,
+  Color.Forest,
+  Color.Citrus,
+  Color.Lotus,
+  Color.Sky,
+  Color.Grey,
+];

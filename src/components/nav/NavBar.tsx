@@ -36,7 +36,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
               {l.to === pathname && (
                 <div
                   className={`absolute h-0.5 w-full bg-black transition-all duration-500 ${
-                    collapsed ? '-bottom-3' : '-bottom-4'
+                    collapsed ? '-bottom-3' : '-bottom-[1.15rem]'
                   }`}
                 ></div>
               )}

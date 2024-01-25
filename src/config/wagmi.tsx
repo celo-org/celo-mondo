@@ -4,6 +4,7 @@ import {
   ledgerWallet,
   metaMaskWallet,
   omniWallet,
+  rainbowWallet,
   trustWallet,
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets';
@@ -25,7 +26,15 @@ const connectors = connectorsForWallets(
   [
     {
       groupName: 'Recommended for Celo',
-      wallets: [metaMaskWallet, walletConnectWallet, valora, omniWallet, trustWallet, ledgerWallet],
+      wallets: [
+        metaMaskWallet,
+        walletConnectWallet,
+        valora,
+        rainbowWallet,
+        omniWallet,
+        trustWallet,
+        ledgerWallet,
+      ],
     },
   ],
   { appName: config.appName, projectId: config.walletConnectProjectId },
