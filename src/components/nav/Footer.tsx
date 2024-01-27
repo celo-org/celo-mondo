@@ -39,7 +39,7 @@ function BlockNumber() {
     watch: true,
     cacheTime: 20_000,
     query: {
-      staleTime: 10_000,
+      staleTime: 10_000, // 10 seconds
       enabled: config.watchBlockNumber,
     },
   });

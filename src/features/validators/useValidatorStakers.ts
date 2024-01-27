@@ -33,7 +33,7 @@ export function useValidatorStakers(group?: Address) {
   };
 }
 
-async function fetchValidatorGroupStakers(group: Address): Promise<Record<Address, number>> {
+async function fetchValidatorGroupStakers(group: Address): Promise<AddressTo<number>> {
   // Get encoded topics
   const castVoteTopics = encodeEventTopics({
     abi: electionABI,
@@ -65,7 +65,7 @@ async function fetchValidatorGroupStakers(group: Address): Promise<Record<Addres
   await sleep(500);
   const revokePendingEvents = await queryCeloscan<TransactionLog[]>(revokePendingLogsUrl);
 
-  const stakerToVotes: Record<Address, number> = {};
+  const stakerToVotes: AddressTo<number> = {};
   reduceLogs(stakerToVotes, castVoteEvents, true);
   reduceLogs(stakerToVotes, revokeActiveEvents, false);
   reduceLogs(stakerToVotes, revokePendingEvents, false);
@@ -74,11 +74,7 @@ async function fetchValidatorGroupStakers(group: Address): Promise<Record<Addres
   return objFilter(stakerToVotes, (_, votes): votes is number => votes > 0);
 }
 
-function reduceLogs(
-  stakerToVotes: Record<Address, number>,
-  logs: TransactionLog[],
-  isAdd: boolean,
-) {
+function reduceLogs(stakerToVotes: AddressTo<number>, logs: TransactionLog[], isAdd: boolean) {
   for (const log of logs) {
     try {
       if (!log.topics || log.topics.length < 3) continue;

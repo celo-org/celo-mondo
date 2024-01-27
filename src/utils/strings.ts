@@ -4,6 +4,10 @@ export function toTitleCase(str: string) {
   });
 }
 
+export function capitalizeFirstLetter(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 // Only allows letters and numbers
 const alphanumericRgex = /[^a-zA-Z0-9]/gi;
 export function sanitizeString(str: string) {

@@ -12,8 +12,8 @@ export function RewardsTable({
   groupToReward,
   addressToGroup,
 }: {
-  groupToReward?: Record<Address, number>;
-  addressToGroup?: Record<Address, ValidatorGroup>;
+  groupToReward?: AddressTo<number>;
+  addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
   const { chartData, tableData } = useMemo(() => {
     if (!groupToReward || !addressToGroup || !objLength(groupToReward)) {
@@ -25,7 +25,7 @@ export function RewardsTable({
     const tableData = objKeys(groupToReward)
       .map((address) => {
         const reward = groupToReward[address];
-        const percentage = percent(reward, total);
+        const percentage = total ? percent(reward, total) : 0;
         return { address, reward, percentage };
       })
       .sort((a, b) => b.reward - a.reward);

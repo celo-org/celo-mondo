@@ -1,6 +1,5 @@
 import { Field, useField } from 'formik';
 import { useEffect } from 'react';
-import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
 
 export function RadioField<T extends string = string>({
@@ -19,7 +18,7 @@ export function RadioField<T extends string = string>({
   const [, , helpers] = useField<T>(name);
 
   useEffect(() => {
-    helpers.setValue(defaultValue || values[0]).catch((e) => logger.error(e));
+    helpers.setValue(defaultValue || values[0]);
   }, [defaultValue, values, helpers]);
 
   return (

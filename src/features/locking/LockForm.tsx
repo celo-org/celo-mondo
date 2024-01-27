@@ -26,7 +26,6 @@ import { emptyStakeBalances, useStakingBalances } from 'src/features/staking/use
 import { useTransactionPlan, useWriteContractWithReceipt } from 'src/features/transactions/hooks';
 import { ConfirmationDetails } from 'src/features/transactions/types';
 import { fromWeiRounded, toWei } from 'src/utils/amount';
-import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
@@ -162,7 +161,7 @@ function LockAmountField({
   const { setFieldValue } = useFormikContext<LockFormValues>();
   useEffect(() => {
     if (!isWithdraw) return;
-    setFieldValue('amount', fromWeiRounded(maxAmountWei)).catch((e) => logger.error(e));
+    setFieldValue('amount', fromWeiRounded(maxAmountWei));
   }, [maxAmountWei, isWithdraw, setFieldValue]);
 
   return (

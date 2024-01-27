@@ -8,14 +8,14 @@ export function computeStakingRewards(
   stakeEvents: StakeEvent[],
   stakes: GroupToStake,
   mode: 'amount' | 'apy' = 'amount',
-): Record<Address, number> {
+): AddressTo<number> {
   return mode === 'amount'
     ? computeRewardAmount(stakeEvents, stakes)
     : computeRewardApy(stakeEvents, stakes);
 }
 
 function computeRewardAmount(stakeEvents: StakeEvent[], stakes: GroupToStake) {
-  const groupTotals: Record<Address, bigint> = {}; // group addr to sum votes
+  const groupTotals: AddressTo<bigint> = {}; // group addr to sum votes
   for (const event of stakeEvents) {
     const { group, type, value } = event;
     if (!groupTotals[group]) groupTotals[group] = 0n;
@@ -26,7 +26,7 @@ function computeRewardAmount(stakeEvents: StakeEvent[], stakes: GroupToStake) {
     }
   }
 
-  const groupRewards: Record<Address, number> = {}; // group addr to rewards in wei
+  const groupRewards: AddressTo<number> = {}; // group addr to rewards in wei
   for (const group of objKeys(groupTotals)) {
     const currentVotes = stakes[group]?.active || 0n;
     const totalVoted = groupTotals[group];
@@ -46,7 +46,7 @@ function computeRewardApy(stakeEvents: StakeEvent[], stakes: GroupToStake) {
   const groupRewardAmounts = computeRewardAmount(stakeEvents, stakes);
 
   // Next, gather events by group
-  const groupEvents: Record<Address, StakeEvent[]> = {}; // group addr to events
+  const groupEvents: AddressTo<StakeEvent[]> = {}; // group addr to events
   for (const event of stakeEvents) {
     const group = event.group;
     if (!groupEvents[group]) groupEvents[group] = [];
@@ -54,7 +54,7 @@ function computeRewardApy(stakeEvents: StakeEvent[], stakes: GroupToStake) {
   }
 
   // Finally, use avg active amounts to compute APR and APY
-  const groupApy: Record<Address, number> = {}; // weighted avgs of active votes
+  const groupApy: AddressTo<number> = {}; // weighted avgs of active votes
   for (const group of objKeys(groupEvents)) {
     const { avgActive, totalDays } = getTimeWeightedAverageActive(groupEvents[group]);
     const rewardAmount = groupRewardAmounts[group];

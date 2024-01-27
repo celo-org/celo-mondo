@@ -9,20 +9,23 @@ import Bridge from 'src/images/icons/bridge.svg';
 import Dashboard from 'src/images/icons/dashboard.svg';
 import Governance from 'src/images/icons/governance.svg';
 import Staking from 'src/images/icons/staking.svg';
+import { useAccount } from 'wagmi';
 
-const LINKS = [
+const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
   { label: 'Governance', to: '/governance', icon: Governance },
   { label: 'Bridge', to: '/bridge', icon: Bridge },
-  { label: 'Dashboard', to: '/account', icon: Dashboard },
+  ...(isWalletConnected ? [{ label: 'Dashboard', to: '/account', icon: Dashboard }] : []),
 ];
 
 export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const pathname = usePathname();
+  const { address } = useAccount();
+
   return (
     <nav>
       <ul className="flex list-none items-center justify-center space-x-6">
-        {LINKS.map((l) => {
+        {LINKS(!!address).map((l) => {
           return (
             <div key={l.label} className="relative">
               <li
@@ -49,6 +52,8 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
 }
 
 export function MobileNavDropdown({ className }: { className?: string }) {
+  const { address } = useAccount();
+
   return (
     <nav className={className}>
       <DropdownMenu
@@ -59,7 +64,7 @@ export function MobileNavDropdown({ className }: { className?: string }) {
           </div>
         }
         menuClasses="space-y-8 py-6 px-8"
-        menuItems={LINKS.map((l) => {
+        menuItems={LINKS(!!address).map((l) => {
           return (
             <Link key={l.label} href={l.to} className="flex space-x-4 font-medium">
               <Image src={l.icon} height={20} width={20} alt="" />

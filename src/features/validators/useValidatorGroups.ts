@@ -49,7 +49,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   }
 
   // Process validator lists to create list of validator groups
-  const groups: Record<Address, ValidatorGroup> = {};
+  const groups: AddressTo<ValidatorGroup> = {};
   for (let i = 0; i < validatorAddrs.length; i++) {
     const valAddr = validatorAddrs[i];
     const valDetails = validatorDetails[i];

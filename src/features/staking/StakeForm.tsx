@@ -27,7 +27,6 @@ import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { toWei } from 'src/utils/amount';
-import { logger } from 'src/utils/logger';
 import { toTitleCase } from 'src/utils/strings';
 import { useAccount } from 'wagmi';
 
@@ -186,14 +185,14 @@ function GroupField({
 }: {
   fieldName: 'group' | 'transferGroup';
   label: string;
-  addressToGroup?: Record<Address, ValidatorGroup>;
+  addressToGroup?: AddressTo<ValidatorGroup>;
   defaultGroup?: Address;
   disabled?: boolean;
 }) {
   const [field, , helpers] = useField<Address>(fieldName);
 
   useEffect(() => {
-    helpers.setValue(defaultGroup || ZERO_ADDRESS).catch((e) => logger.error(e));
+    helpers.setValue(defaultGroup || ZERO_ADDRESS);
   }, [defaultGroup, helpers]);
 
   const currentGroup = addressToGroup?.[field.value];
@@ -214,14 +213,12 @@ function GroupField({
       if (!sortedGroups?.length) return;
       const goodGroups = sortedGroups.filter((g) => g.score >= MIN_GROUP_SCORE_FOR_RANDOM);
       const randomGroup = goodGroups[Math.floor(Math.random() * goodGroups.length)];
-      helpers.setValue(randomGroup.address).catch((e) => logger.error(e));
+      helpers.setValue(randomGroup.address);
     },
     [sortedGroups, helpers],
   );
 
-  const onClickGroup = (address: Address) => {
-    helpers.setValue(address).catch((e) => logger.error(e));
-  };
+  const onClickGroup = (address: Address) => helpers.setValue(address);
 
   return (
     <div className="relative space-y-1">
@@ -287,7 +284,7 @@ function validateForm(
   lockedBalances: LockedBalances,
   stakeBalances: StakingBalances,
   groupToStake: GroupToStake,
-  addressToGroup: Record<Address, ValidatorGroup>,
+  addressToGroup: AddressTo<ValidatorGroup>,
 ): FormikErrors<StakeFormValues> {
   const { action, amount, group, transferGroup } = values;
 

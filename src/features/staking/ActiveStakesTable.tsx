@@ -19,9 +19,13 @@ import { objKeys, objLength } from 'src/utils/objects';
 export function ActiveStakesTable({
   groupToStake,
   addressToGroup,
+  groupToIsActivatable,
+  activateStake,
 }: {
   groupToStake?: GroupToStake;
-  addressToGroup?: Record<Address, ValidatorGroup>;
+  addressToGroup?: AddressTo<ValidatorGroup>;
+  groupToIsActivatable?: AddressTo<boolean>;
+  activateStake: (g: Address) => void;
 }) {
   const { chartData, tableData } = useMemo(() => {
     if (!groupToStake || !addressToGroup || !objLength(groupToStake)) {
@@ -69,16 +73,26 @@ export function ActiveStakesTable({
           {tableData.map(({ address, stake, percentage }) => (
             <tr key={address}>
               <td className={tableClasses.td}>
-                <ValidatorGroupLogoAndName
-                  address={address}
-                  name={addressToGroup?.[address]?.name}
-                  className="md:pr-10"
-                />
+                <div className="flex items-center space-x-5">
+                  <ValidatorGroupLogoAndName
+                    address={address}
+                    name={addressToGroup?.[address]?.name}
+                  />
+                  {groupToIsActivatable?.[address] && (
+                    <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-xs text-gray-400">
+                      Pending
+                    </span>
+                  )}
+                </div>
               </td>
               <td className={tableClasses.td}>{formatNumberString(stake, 2) + ' CELO'}</td>
               <td className={clsx(tableClasses.td, 'hidden sm:table-cell')}>{percentage + '%'}</td>
               <td className={tableClasses.td}>
-                <StakeDropdown address={address} />
+                <StakeDropdown
+                  group={address}
+                  isActivatable={groupToIsActivatable?.[address]}
+                  activateStake={activateStake}
+                />
               </td>
             </tr>
           ))}
@@ -88,13 +102,20 @@ export function ActiveStakesTable({
   );
 }
 
-// TODO activation button or dropdown item
-function StakeDropdown({ address }: { address: Address }) {
+function StakeDropdown({
+  group,
+  isActivatable,
+  activateStake,
+}: {
+  group: Address;
+  isActivatable?: boolean;
+  activateStake: (g: Address) => void;
+}) {
   const setTxModal = useStore((state) => state.setTransactionModal);
   const onClickItem = (action: StakeActionType) => {
     setTxModal({
       type: TxModalType.Stake,
-      props: { defaultGroup: address, defaultAction: action },
+      props: { defaultGroup: group, defaultAction: action },
     });
   };
 
@@ -104,6 +125,17 @@ function StakeDropdown({ address }: { address: Address }) {
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[
+        ...(isActivatable
+          ? [
+              <button
+                className="underline-offset-2 hover:underline"
+                key={0}
+                onClick={() => activateStake(group)}
+              >
+                Activate
+              </button>,
+            ]
+          : []),
         <button
           className="underline-offset-2 hover:underline"
           key={1}

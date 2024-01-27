@@ -3,7 +3,7 @@ import { useToastTxSuccess } from 'src/components/notifications/TxSuccessToast';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { ConfirmationDetails, TxPlan } from 'src/features/transactions/types';
 import { logger } from 'src/utils/logger';
-import { toTitleCase } from 'src/utils/strings';
+import { capitalizeFirstLetter } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
@@ -40,11 +40,10 @@ export function useWriteContractWithReceipt(
     waitError,
     `Error confirming ${description} transaction, please ensure the transaction is valid.`,
   );
-  // TODO remove?
   useToastTxSuccess({
     isConfirmed,
     txHash: hash,
-    message: `${toTitleCase(description)} transaction is confirmed!`,
+    message: `${capitalizeFirstLetter(description)} transaction is confirmed!`,
     enabled: showTxSuccessToast,
   });
 

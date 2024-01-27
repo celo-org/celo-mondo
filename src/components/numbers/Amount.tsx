@@ -42,7 +42,16 @@ export function Amount({
 
 export function formatNumberString(value?: BigNumber.Value | bigint, decimals = 0, isWei = false) {
   const valueUnits = isWei ? fromWei(value) : value;
-  return BigNumber(valueUnits?.toString() || '0')
+  const valueBN = BigNumber(valueUnits?.toString() || '0');
+
+  const roundedDown = valueBN
     .decimalPlaces(decimals, BigNumber.ROUND_FLOOR)
     .toFormat(NUMBER_FORMAT);
+
+  if (roundedDown === '0' && valueBN.gt(0)) {
+    const epsilon = Math.pow(10, -decimals);
+    return `<${epsilon}`;
+  } else {
+    return roundedDown;
+  }
 }

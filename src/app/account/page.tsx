@@ -15,6 +15,10 @@ import { ActiveStakesTable } from 'src/features/staking/ActiveStakesTable';
 import { RewardsTable } from 'src/features/staking/rewards/RewardsTable';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { GroupToStake, StakingBalances } from 'src/features/staking/types';
+import {
+  useActivateStake,
+  usePendingStakingActivations,
+} from 'src/features/staking/useStakingActivation';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
@@ -33,8 +37,16 @@ export default function Page() {
 
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalances } = useLockedStatus(address);
-  const { stakeBalances, groupToStake } = useStakingBalances(address);
+  const { stakeBalances, groupToStake, refetch: refetchStakes } = useStakingBalances(address);
   const { totalRewardsWei, groupToReward } = useStakingRewards(address, groupToStake);
+  const { groupToIsActivatable, refetch: refetchActivations } = usePendingStakingActivations(
+    address,
+    groupToStake,
+  );
+  const { activateStake } = useActivateStake(() => {
+    refetchStakes();
+    refetchActivations();
+  });
   const { addressToGroup } = useValidatorGroups();
 
   const totalBalance = (walletBalance || 0n) + getTotalLockedCelo(lockedBalances);
@@ -60,6 +72,8 @@ export default function Page() {
         groupToStake={groupToStake}
         addressToGroup={addressToGroup}
         groupToReward={groupToReward}
+        groupToIsActivatable={groupToIsActivatable}
+        activateStake={activateStake}
       />
     </Section>
   );
@@ -162,10 +176,14 @@ function TableTabs({
   groupToStake,
   addressToGroup,
   groupToReward,
+  groupToIsActivatable,
+  activateStake,
 }: {
   groupToStake?: GroupToStake;
-  addressToGroup?: Record<Address, ValidatorGroup>;
-  groupToReward?: Record<Address, number>;
+  addressToGroup?: AddressTo<ValidatorGroup>;
+  groupToReward?: AddressTo<number>;
+  groupToIsActivatable?: AddressTo<boolean>;
+  activateStake: (g: Address) => void;
 }) {
   const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
 
@@ -183,7 +201,12 @@ function TableTabs({
         </TabHeaderButton>
       </div>
       {tab === 'stakes' && (
-        <ActiveStakesTable groupToStake={groupToStake} addressToGroup={addressToGroup} />
+        <ActiveStakesTable
+          groupToStake={groupToStake}
+          addressToGroup={addressToGroup}
+          groupToIsActivatable={groupToIsActivatable}
+          activateStake={activateStake}
+        />
       )}
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />

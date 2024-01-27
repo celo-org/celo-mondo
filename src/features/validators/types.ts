@@ -10,7 +10,7 @@ export interface ValidatorGroup {
   capacity: bigint;
   votes: bigint;
   lastSlashed: number | null; // timestamp
-  members: Record<Address, Validator>;
+  members: AddressTo<Validator>;
 }
 
 export enum ValidatorStatus {
