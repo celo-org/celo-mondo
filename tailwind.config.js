@@ -26,6 +26,7 @@ module.exports = {
       green: {
         200: '#BEEAA9',
         500: '#56DF7C', // Jade
+        600: '#20A144',
         700: '#476520', // Forest
       },
       taupe: {
@@ -39,6 +40,19 @@ module.exports = {
       sans: ['var(--font-inter)', 'sans-serif'],
       serif: ['Garamond', 'serif'],
       mono: ['Courier New', 'monospace'],
+    },
+    fontSize: {
+      xs: '0.725rem',
+      sm: '0.85rem',
+      base: '0.95rem',
+      lg: '1.1rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+      '5xl': '2.75rem',
+      '6xl': '3.25rem',
+      '7xl': '3.75rem',
     },
     extend: {
       screens: {

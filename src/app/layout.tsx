@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren<any>) {
   return (
     <html lang="en" data-theme="light">
-      <body className={`${inter.variable} font-sans`}>
+      <body className={`${inter.variable} font-sans text-base`}>
         <App>{children}</App>
       </body>
     </html>

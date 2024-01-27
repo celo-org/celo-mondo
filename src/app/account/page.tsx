@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import Image from 'next/image';
 import { useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
@@ -39,12 +40,12 @@ export default function Page() {
   const totalBalance = (walletBalance || 0n) + getTotalLockedCelo(lockedBalances);
 
   return (
-    <Section className="mt-6" containerClassName="space-y-6 md:space-y-8 px-4">
+    <Section className="mt-6" containerClassName="space-y-6 px-4">
       <h1 className="hidden font-serif text-3xl sm:block">Dashboard</h1>
-      <div className="flex items-center justify-between md:gap-x-20">
+      <div className="flex items-center justify-between md:gap-x-40">
         <div>
           <h2>Total Balance</h2>
-          <Amount valueWei={totalBalance} className="mt-1 text-4xl md:text-5xl" />
+          <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
         <LockButtons className="hidden md:flex" />
       </div>
@@ -127,6 +128,7 @@ function AccountStats({
         valueWei={stakeBalances?.total}
         subtitle="Rewards"
         subValueWei={totalRewards}
+        subValueClassName={clsx(!!totalRewards && totalRewards > 0n && 'all:text-green-600')}
       />
     </div>
   );
@@ -137,17 +139,19 @@ function AccountStat({
   valueWei,
   subtitle,
   subValueWei,
+  subValueClassName,
 }: {
   title: string;
   valueWei?: bigint;
   subtitle: string;
   subValueWei?: bigint;
+  subValueClassName?: string;
 }) {
   return (
     <div className="">
       <h3 className="text-sm">{title}</h3>
-      <Amount valueWei={valueWei} className="text-2xl md:text-3xl" />
-      <div className="flex items-center text-sm text-taupe-600">
+      <Amount valueWei={valueWei} className="-my-0.5 text-2xl md:text-3xl" />
+      <div className={`flex items-center text-sm text-taupe-600 ${subValueClassName}`}>
         <span>{`${subtitle}: ${formatNumberString(subValueWei, 2, true)}`}</span>
       </div>
     </div>
@@ -166,7 +170,7 @@ function TableTabs({
   const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
 
   return (
-    <div>
+    <div className="pt-2">
       <div className="flex space-x-10 border-b border-taupe-300 pb-2">
         <TabHeaderButton isActive={tab === 'stakes'} onClick={() => setTab('stakes')}>
           <span className="text-sm">Stakes</span>

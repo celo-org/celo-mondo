@@ -172,7 +172,7 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
   const heatmapStartDate = new Date(Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE);
 
   return (
-    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
+    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
       <StatBox header="Total staked" valueWei={group?.votes}>
         <div className="relative h-2 w-full border border-taupe-300 bg-taupe-100">
           <div
