@@ -69,7 +69,7 @@ function computeRewardApy(stakeEvents: StakeEvent[], stakes: GroupToStake) {
 export function getTimeWeightedAverageActive(events: StakeEvent[]) {
   const numEvents = events.length;
   if (numEvents === 0) throw new Error('Expected at least 1 stake event');
-  const sortedEvents = events.sort((a, b) => a.timestamp - b.timestamp);
+  const sortedEvents = [...events].sort((a, b) => a.timestamp - b.timestamp);
   let activeVotes = 0;
   let sum = 0;
   let totalDays = 0;

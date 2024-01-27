@@ -9,7 +9,7 @@ export interface ChartDataItem {
 
 export function sortAndCombineChartData(data: Array<ChartDataItem>) {
   const maxNumItems = CHART_COLORS.length - 1;
-  let sortedData = data.sort((a, b) => b.value - a.value);
+  let sortedData = [...data].sort((a, b) => b.value - a.value);
   if (sortedData.length > maxNumItems) {
     const topData = sortedData.slice(0, maxNumItems);
     const combinedData = {

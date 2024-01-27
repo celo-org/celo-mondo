@@ -16,8 +16,8 @@ export default function Index() {
 
   return (
     <>
-      <Section className="mt-6">
-        <div className="space-y-8">
+      <Section className="mt-4">
+        <div className="space-y-6">
           <HeroSection totalVotes={totalVotes} groups={groups} />
           <ListSection totalVotes={totalVotes} groups={groups} />
         </div>

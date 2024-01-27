@@ -14,7 +14,7 @@ export function ValidatorGroupLogo({ address, size }: { address: Address; size: 
           height={size}
           width={size}
           alt=""
-          className="rounded-full border border-taupe-300 p-px"
+          className="rounded-full border border-taupe-300"
         />
       ) : !address || address === ZERO_ADDRESS ? (
         <Circle size={size} className="bg-yellow-500" />

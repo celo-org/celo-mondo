@@ -92,7 +92,7 @@ function findLesserAndGreaterAfterVote(
   targetGroup: Address,
   voteWeight: bigint,
 ): { lesser: string; greater: string } {
-  const sortedGroups = groups.sort((a, b) => (b.votes > a.votes ? 1 : -1));
+  const sortedGroups = [...groups].sort((a, b) => (b.votes > a.votes ? 1 : -1));
   const selectedGroup = sortedGroups.find((g) => eqAddress(targetGroup, g.address));
   const voteTotal = (selectedGroup?.votes || 0n) + voteWeight;
   let greater = ZERO_ADDRESS;
