@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
-import { useStore } from 'src/features/store';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
@@ -298,7 +298,7 @@ function TableSortChevron({ direction }: { direction: 'n' | 's' }) {
 }
 
 function useTableColumns(totalVotes: bigint) {
-  const setTxModal = useStore((state) => state.setTransactionModal);
+  const showTxModal = useTransactionModal();
 
   return useMemo(() => {
     const columnHelper = createColumnHelper<ValidatorGroupRow>();
@@ -354,10 +354,7 @@ function useTableColumns(totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
-              setTxModal({
-                type: TxModalType.Stake,
-                props: { defaultGroup: props.row.original.address },
-              });
+              showTxModal(TxModalType.Stake, { defaultGroup: props.row.original.address });
             }}
             className="all:btn-neutral"
           >
@@ -366,7 +363,7 @@ function useTableColumns(totalVotes: bigint) {
         ),
       }),
     ];
-  }, [totalVotes, setTxModal]);
+  }, [totalVotes, showTxModal]);
 }
 
 function useTableRows({

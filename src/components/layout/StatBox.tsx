@@ -10,7 +10,7 @@ export function StatBox({
 }: PropsWithChildren<{
   className?: string;
   bodyClassName?: string;
-  valueWei?: string | bigint;
+  valueWei?: string | bigint | null;
   header?: string;
 }>) {
   const isMobile = useIsMobile();
@@ -19,8 +19,8 @@ export function StatBox({
     <div
       className={`flex flex-1 flex-col space-y-2 border border-taupe-300 p-2 sm:p-3 ${className}`}
     >
-      {header && <h3 className="text-sm">{header}</h3>}
-      {!!valueWei && (
+      {header && <h3 className="text-nowrap text-sm">{header}</h3>}
+      {valueWei !== null && (
         <Amount valueWei={valueWei} className="text-xl md:text-2xl" decimals={isMobile ? 0 : 2} />
       )}
       {children}

@@ -1,5 +1,7 @@
 'use client';
 import { useMemo } from 'react';
+import { Fade } from 'src/components/animation/Fade';
+import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
@@ -19,7 +21,7 @@ export default function Index() {
       <Section className="mt-4">
         <div className="space-y-6">
           <HeroSection totalVotes={totalVotes} groups={groups} />
-          <ListSection totalVotes={totalVotes} groups={groups} />
+          <TableSection totalVotes={totalVotes} groups={groups} />
         </div>
       </Section>
     </>
@@ -64,14 +66,14 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
           valueWei={minVotes}
           className="max-w-xs md:max-w-sm"
         />
-        <StatBox className="hidden max-w-xs md:max-w-sm lg:flex">
+        <StatBox className="hidden max-w-xs md:max-w-sm lg:flex" valueWei={null}>
           <div className="flex gap-6 divide-x">
             <div className="flex flex-col">
-              <h3 className="text-sm">Total Groups</h3>
+              <h3 className="text-nowrap text-sm">Total Groups</h3>
               <div className="mt-2 font-serif text-xl md:text-2xl">{groups?.length || 0}</div>
             </div>
             <div className="flex flex-col pl-6">
-              <h3 className="text-sm">Total Validators</h3>
+              <h3 className="text-nowrap text-sm">Total Validators</h3>
               <div className="mt-2 font-serif text-xl md:text-2xl">{numValidators}</div>
             </div>
           </div>
@@ -81,6 +83,18 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
   );
 }
 
-function ListSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: ValidatorGroup[] }) {
-  return <ValidatorGroupTable groups={groups || []} totalVotes={totalVotes || 0n} />;
+function TableSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: ValidatorGroup[] }) {
+  if (!totalVotes || !groups) {
+    return (
+      <div className="flex justify-center py-10">
+        <SpinnerWithLabel>Loading validator data</SpinnerWithLabel>
+      </div>
+    );
+  }
+
+  return (
+    <Fade show={!!(totalVotes && groups)}>
+      <ValidatorGroupTable groups={groups || []} totalVotes={totalVotes || 0n} />
+    </Fade>
+  );
 }

@@ -1,12 +1,15 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
+import { SpinnerWithLabel } from 'src/components/animation/Spinner';
+import { SolidButton } from 'src/components/buttons/SolidButton';
 import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
+import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { GroupToStake, StakeActionType } from 'src/features/staking/types';
-import { useStore } from 'src/features/store';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
@@ -27,6 +30,8 @@ export function ActiveStakesTable({
   groupToIsActivatable?: AddressTo<boolean>;
   activateStake: (g: Address) => void;
 }) {
+  const showStakeModal = useTransactionModal(TxModalType.Stake);
+
   const { chartData, tableData } = useMemo(() => {
     if (!groupToStake || !addressToGroup || !objLength(groupToStake)) {
       return { tableData: [], chartData: [PLACEHOLDER_BAR_CHART_ITEM] };
@@ -56,6 +61,26 @@ export function ActiveStakesTable({
     );
     return { chartData, tableData };
   }, [groupToStake, addressToGroup]);
+
+  if (!groupToStake || !addressToGroup || !groupToIsActivatable) {
+    return (
+      <div className="my-16 flex justify-center">
+        <SpinnerWithLabel>Loading staking data</SpinnerWithLabel>
+      </div>
+    );
+  }
+
+  if (!objLength(groupToStake)) {
+    return (
+      <HeaderAndSubheader
+        header="No active stakes"
+        subHeader={`You don’t currently have any funds staked. Stake with validators to start earning rewards.`}
+        className="my-10"
+      >
+        <SolidButton onClick={() => showStakeModal()}>Stake CELO</SolidButton>
+      </HeaderAndSubheader>
+    );
+  }
 
   return (
     <div className="mt-4 space-y-2">
@@ -111,12 +136,9 @@ function StakeDropdown({
   isActivatable?: boolean;
   activateStake: (g: Address) => void;
 }) {
-  const setTxModal = useStore((state) => state.setTransactionModal);
+  const showTxModal = useTransactionModal();
   const onClickItem = (action: StakeActionType) => {
-    setTxModal({
-      type: TxModalType.Stake,
-      props: { defaultGroup: group, defaultAction: action },
-    });
+    showTxModal(TxModalType.Stake, { defaultGroup: group, defaultAction: action });
   };
 
   return (

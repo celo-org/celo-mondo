@@ -27,7 +27,7 @@ import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { EPOCH_DURATION_MS, ZERO_ADDRESS } from 'src/config/consts';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
-import { useStore } from 'src/features/store';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
@@ -80,9 +80,9 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
     }
   };
 
-  const setTxModal = useStore((state) => state.setTransactionModal);
+  const showTxModal = useTransactionModal();
   const onClickStake = () => {
-    setTxModal({ type: TxModalType.Stake, props: { defaultGroup: address } });
+    showTxModal(TxModalType.Stake, { defaultGroup: address });
   };
 
   return (
@@ -184,7 +184,7 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
           fromWei(group?.capacity),
         )} CELO`}</div>
       </StatBox>
-      <StatBox header="Rewards distributed" className="relative">
+      <StatBox header="Rewards distributed" className="relative" valueWei={null}>
         <div className="flex justify-between text-xs">
           <span>{heatmapStartDate.toLocaleDateString()}</span>
           <span>Yesterday</span>

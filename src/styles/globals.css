@@ -62,6 +62,15 @@ input[type='number'] {
 }
 
 /* 
+Tailwind fixes
+===================
+*/
+
+.text-nowrap {
+  text-wrap: nowrap;
+}
+
+/* 
 Common animations
 =================
 */
