@@ -6,7 +6,11 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { AmountField } from 'src/components/input/AmountField';
 import { RadioField } from 'src/components/input/RadioField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
-import { MIN_GROUP_SCORE_FOR_RANDOM, ZERO_ADDRESS } from 'src/config/consts';
+import {
+  MAX_NUM_GROUPS_VOTED_FOR,
+  MIN_GROUP_SCORE_FOR_RANDOM,
+  ZERO_ADDRESS,
+} from 'src/config/consts';
 import { LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getStakeTxPlan } from 'src/features/staking/stakePlan';
@@ -27,6 +31,7 @@ import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { toWei } from 'src/utils/amount';
+import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 import { useAccount } from 'wagmi';
 
@@ -294,6 +299,8 @@ function validateForm(
     const groupDetails = addressToGroup[group];
     if (!groupDetails) return { group: 'Group not found' };
     if (groupDetails.votes >= groupDetails.capacity) return { group: 'Group has max votes' };
+    if (!groupToStake[group] && objLength(groupToStake) >= MAX_NUM_GROUPS_VOTED_FOR)
+      return { group: `Max number of groups is ${MAX_NUM_GROUPS_VOTED_FOR}` };
   }
 
   if (action === StakeActionType.Transfer) {
