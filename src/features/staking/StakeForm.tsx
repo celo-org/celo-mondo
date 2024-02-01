@@ -59,7 +59,7 @@ export function StakeForm({
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<StakeFormValues>({
       createTxPlan: (v) => getStakeTxPlan(v, groups || [], groupToStake || {}),
-      onStepSuccess: () => refetch,
+      onStepSuccess: () => refetch(),
       onPlanSuccess: (v, r) =>
         onConfirmed({
           message: `${v.action} successful`,

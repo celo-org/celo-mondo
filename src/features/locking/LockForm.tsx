@@ -54,7 +54,7 @@ export function LockForm({
     useTransactionPlan<LockFormValues>({
       createTxPlan: (v) =>
         getLockTxPlan(v, pendingWithdrawals || [], stakeBalances || emptyStakeBalances),
-      onStepSuccess: () => refetch,
+      onStepSuccess: () => refetch(),
       onPlanSuccess: onConfirmed
         ? (v, r) =>
             onConfirmed({

@@ -7,6 +7,7 @@ import { capitalizeFirstLetter } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
+// TODO force chain switch to celo mainnet before sending txs
 export function useWriteContractWithReceipt(
   description: string,
   onSuccess?: (receipt: TransactionReceipt) => any,
