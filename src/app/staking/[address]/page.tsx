@@ -57,11 +57,9 @@ export default function Page({ params: { address } }: { params: { address: Addre
 
   return (
     <Section containerClassName="space-y-8 mt-4">
-      <>
-        <HeaderSection group={group} />
-        <StatSection group={group} />
-        <DetailsSection group={group} />
-      </>
+      <HeaderSection group={group} />
+      <StatSection group={group} />
+      <DetailsSection group={group} />
     </Section>
   );
 }

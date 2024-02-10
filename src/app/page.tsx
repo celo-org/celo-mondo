@@ -5,6 +5,7 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
+import { H1 } from 'src/components/text/headers';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
@@ -13,18 +14,16 @@ import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { bigIntMin } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
 
-export default function Index() {
+export default function Page() {
   const { groups, totalVotes } = useValidatorGroups();
 
   return (
-    <>
-      <Section className="mt-4">
-        <div className="space-y-6">
-          <HeroSection totalVotes={totalVotes} groups={groups} />
-          <TableSection totalVotes={totalVotes} groups={groups} />
-        </div>
-      </Section>
-    </>
+    <Section className="mt-4">
+      <div className="space-y-6">
+        <HeroSection totalVotes={totalVotes} groups={groups} />
+        <TableSection totalVotes={totalVotes} groups={groups} />
+      </div>
+    </Section>
   );
 }
 
@@ -50,7 +49,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-serif text-3xl sm:text-4xl">Discover Validators</h1>
+        <H1>Discover Validators</H1>
         <SolidButton onClick={() => showStakeModal()} className="px-8">
           Stake
         </SolidButton>

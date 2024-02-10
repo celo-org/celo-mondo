@@ -28,8 +28,8 @@ export function Footer() {
 
 function FooterIconLink({ to, imgSrc, alt }: { to: string; imgSrc: any; alt: string }) {
   return (
-    <a className="relative h-5 w-5" href={to} target="_blank" rel="noopener noreferrer">
-      <Image src={imgSrc} alt={alt} width={25} height={25} />
+    <a className="relative h-4 w-4" href={to} target="_blank" rel="noopener noreferrer">
+      <Image src={imgSrc} alt={alt} width={22} height={22} />
     </a>
   );
 }

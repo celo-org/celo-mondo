@@ -4,6 +4,8 @@ export const links = {
   discord: 'https://discord.gg/celo',
   github: 'https://github.com/jmrossy/celo-station',
   twitter: 'https://twitter.com/CeloOrg',
+  docs: 'https://docs.celo.org',
+  forum: 'https://forum.celo.org',
   // RPCs
   forno: 'https://forno.celo.org',
   infura: 'https://celo-mainnet.infura.io/v3',

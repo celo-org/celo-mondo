@@ -16,7 +16,7 @@ import { Amount } from 'src/components/numbers/Amount';
 
 import Link from 'next/link';
 import { SolidButton } from 'src/components/buttons/SolidButton';
-import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
+import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { TxModalType } from 'src/features/transactions/types';
@@ -71,6 +71,14 @@ export function ValidatorGroupTable({
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const headerCounts = useMemo<Record<Filter, number>>(() => {
+    return {
+      [Filter.All]: groups.length,
+      [Filter.Elected]: groups.filter((g) => isElected(g)).length,
+      [Filter.Unelected]: groups.filter((g) => !isElected(g)).length,
+    };
+  }, [groups]);
+
   // Set up responsive column visibility
   const isMobile = useIsMobile();
   useEffect(() => {
@@ -84,7 +92,7 @@ export function ValidatorGroupTable({
   return (
     <div>
       <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-end md:justify-between">
-        <FilterButtons filter={filter} setFilter={setFilter} groups={groups} />
+        <TabHeaderFilters activeFilter={filter} setFilter={setFilter} counts={headerCounts} />
         <SearchField
           value={searchQuery}
           setValue={setSearchQuery}
@@ -137,51 +145,6 @@ export function ValidatorGroupTable({
         </tbody>
       </table>
     </div>
-  );
-}
-
-function FilterButtons({
-  filter,
-  setFilter,
-  groups,
-}: {
-  filter: Filter;
-  setFilter: (f: Filter) => void;
-  groups: ValidatorGroup[];
-}) {
-  return (
-    <div className="flex justify-between space-x-7">
-      {[Filter.All, Filter.Elected, Filter.Unelected].map((f) => (
-        <FilterButton
-          key={f}
-          filter={f}
-          setFilter={setFilter}
-          groups={groups}
-          isActive={filter === f}
-        />
-      ))}
-    </div>
-  );
-}
-
-function FilterButton({
-  filter,
-  setFilter,
-  groups,
-  isActive,
-}: {
-  filter: Filter;
-  setFilter: (f: Filter) => void;
-  groups: ValidatorGroup[];
-  isActive: boolean;
-}) {
-  let count = groups.length;
-  if (filter === Filter.Elected) count = groups.filter((g) => isElected(g)).length;
-  else if (filter === Filter.Unelected) count = groups.filter((g) => !isElected(g)).length;
-  return (
-    <TabHeaderButton isActive={isActive} count={count} onClick={() => setFilter(filter)}>
-      {filter}
-    </TabHeaderButton>
   );
 }
 

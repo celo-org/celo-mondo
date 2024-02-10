@@ -62,12 +62,14 @@ input[type='number'] {
 }
 
 /* 
-Tailwind fixes
-===================
+Additional utility classes
+==========================
 */
 
 .text-nowrap {
   text-wrap: nowrap;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 /* 
