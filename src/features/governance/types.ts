@@ -18,14 +18,17 @@ export enum ProposalStage {
 }
 
 export interface GovernanceProposal {
-  id: string;
+  id: number;
   timestamp: number;
   url: string;
+  proposer: Address;
+  deposit: bigint;
   stage: ProposalStage;
+  upvotes: bigint;
   votes: {
-    [VoteValue.Yes]: string;
-    [VoteValue.No]: string;
-    [VoteValue.Abstain]: string;
+    [VoteValue.Yes]: bigint;
+    [VoteValue.No]: bigint;
+    [VoteValue.Abstain]: bigint;
   };
 }
 

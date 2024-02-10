@@ -31,7 +31,7 @@ export function usePendingStakingActivations(address?: Address, groupToStake: Gr
     },
   });
 
-  // @ts-ignore Bug with viem 2.0 multicall types
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
   const activatableGroups = pendingGroups.filter((_v, i) => !!hasActivatable?.[i].result);
   const groupToIsActivatable = objMap(groupToStake, (g) => activatableGroups.includes(g));
 

@@ -19,7 +19,7 @@ export function useGroupRewardHistory(group?: Address, epochs?: number) {
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useGroupRewardHistory', group, epochs, publicClient],
     queryFn: () => {
-      if (!group || !epochs) return null;
+      if (!group || !epochs || !publicClient) return null;
       logger.debug(`Fetching reward history for group ${group}`);
       return fetchValidatorGroupRewardHistory(group, epochs, publicClient);
     },

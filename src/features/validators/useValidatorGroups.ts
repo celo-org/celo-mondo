@@ -16,6 +16,7 @@ export function useValidatorGroups() {
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useValidatorGroups', publicClient],
     queryFn: () => {
+      if (!publicClient) return null;
       logger.debug('Fetching validator groups');
       return fetchValidatorGroupInfo(publicClient);
     },
@@ -144,7 +145,7 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
 
 async function fetchValidatorDetails(publicClient: PublicClient, addresses: readonly Address[]) {
   // Fetch validator details, needed for their scores and signers
-  // @ts-ignore Bug with viem 2.0 multicall types
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
   const validatorDetailsRaw: MulticallReturnType<any> = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Validators,
@@ -169,8 +170,7 @@ async function fetchValidatorDetails(publicClient: PublicClient, addresses: read
 }
 
 async function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly Address[]) {
-  // @ts-ignore Bug with viem 2.0 multicall types
-  const results: MulticallReturnType<any> = await publicClient.multicall({
+  const results = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Accounts,
       abi: accountsABI,
@@ -186,8 +186,7 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
 }
 
 async function fetchGroupLastSlashed(publicClient: PublicClient, addresses: readonly Address[]) {
-  // @ts-ignore Bug with viem 2.0 multicall types
-  const results: MulticallReturnType<any> = await publicClient.multicall({
+  const results = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Validators,
       abi: validatorsABI,

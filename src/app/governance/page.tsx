@@ -32,7 +32,7 @@ export default function Page() {
       <Section className="mt-4">
         <ProposalList />
       </Section>
-      <div className="absolute bottom-12 right-5 hidden md:block">
+      <div className="fixed bottom-12 right-5 hidden md:block">
         <CtaModal />
       </div>
     </>
@@ -56,7 +56,8 @@ function ProposalList() {
       [Filter.Upvoting]: _proposals.filter((p) => p.stage === ProposalStage.Queued).length,
       [Filter.Voting]: _proposals.filter((p) => p.stage === ProposalStage.Referendum).length,
       [Filter.Drafts]: _proposals.filter((p) => p.stage === ProposalStage.None).length,
-      [Filter.History]: _proposals.filter((p) => p.id === 'TODO').length,
+      //TODO
+      [Filter.History]: _proposals.filter((p) => p.id === 0).length,
     };
   }, [proposals]);
 
@@ -95,9 +96,6 @@ function ProposalList() {
               <p className="text-center text-taupe-600">No proposals found</p>
             </div>
           )}
-          {filteredProposals.map((proposal) => (
-            <Proposal key={proposal.id} proposal={proposal} />
-          ))}
         </div>
       ) : (
         <div className="flex justify-center py-10">
@@ -121,7 +119,7 @@ function Proposal({ proposal }: { proposal: GovernanceProposal }) {
 
 function CtaModal() {
   return (
-    <div className="bg-diamond-texture flex w-fit flex-col space-y-2 border border-taupe-300 bg-taupe-100 bg-right-bottom py-2.5 pl-4 pr-8 md:pr-14">
+    <div className="flex w-fit flex-col space-y-2 border border-taupe-300 bg-taupe-100 bg-diamond-texture bg-right-bottom py-2.5 pl-4 pr-8 md:pr-14">
       <h2 className="font-serif text-xl">Get Involved</h2>
       <ExternalLink
         href={links.docs}
@@ -165,13 +163,17 @@ function useFilteredProposals({
 }) {
   return useMemo<GovernanceProposal[] | undefined>(() => {
     if (!proposals) return undefined;
-    const _query = searchQuery.trim().toLowerCase();
+    const query = searchQuery.trim().toLowerCase();
     return proposals
       .filter((p) => {
-        //TODO
-        return !!p && !filter;
+        if (filter === Filter.Upvoting) return p.stage === ProposalStage.Queued;
+        if (filter === Filter.Voting) return p.stage === ProposalStage.Referendum;
+        if (filter === Filter.Drafts) return p.stage === ProposalStage.None;
+        if (filter === Filter.History)
+          return p.stage === ProposalStage.Expiration || p.stage === ProposalStage.Execution;
+        return true;
       })
-      .filter((p) => !p || 'TODO')
-      .sort((a, b) => (b.votes > a.votes ? 1 : -1));
+      .filter((p) => !query || p.url.includes(query))
+      .sort((a, b) => b.timestamp - a.timestamp);
   }, [proposals, filter, searchQuery]);
 }

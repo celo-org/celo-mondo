@@ -20,7 +20,7 @@ export function useStakingBalances(address?: Address) {
   const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ['useStakingBalances', publicClient, address],
     queryFn: async () => {
-      if (!address) return null;
+      if (!address || !publicClient) return null;
       logger.debug('Fetching staking balances');
       const groupToStake = await fetchStakingBalances(publicClient, address);
       const stakes = Object.values(groupToStake);
@@ -57,7 +57,7 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
 
   const groupAddrsAndAccount = groupAddrs.map((a) => [a, address]);
 
-  // @ts-ignore Bug with viem 2.0 multicall types
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
   const pendingVotes: MulticallReturnType<any> = await publicClient.multicall({
     contracts: groupAddrsAndAccount.map(([g, a]) => ({
       address: Addresses.Election,
@@ -67,6 +67,7 @@ export async function fetchStakingBalances(publicClient: PublicClient, address: 
     })),
   });
 
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
   const activeVotes: MulticallReturnType<any> = await publicClient.multicall({
     contracts: groupAddrsAndAccount.map(([g, a]) => ({
       address: Addresses.Election,

@@ -13,7 +13,7 @@ export function useLockedStatus(address?: Address) {
   const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ['useLockedStatus', publicClient, address],
     queryFn: async () => {
-      if (!address) return null;
+      if (!address || !publicClient) return null;
       logger.debug('Fetching locked status balance and withdrawals');
       return fetchLockedStatus(publicClient, address);
     },
