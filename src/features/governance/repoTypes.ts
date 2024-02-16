@@ -1,4 +1,4 @@
-import { Proposal, ProposalStage } from 'src/features/governance/contractTypes';
+import { ProposalStage } from 'src/features/governance/contractTypes';
 import { z } from 'zod';
 
 export enum ProposalMetadataStatus {
@@ -50,5 +50,3 @@ export interface ProposalMetadata {
   author: string;
   timestampExecuted?: number;
 }
-
-export type ProposalWithMetadata = Proposal & ProposalMetadata;

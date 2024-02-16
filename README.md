@@ -18,6 +18,6 @@ For support, you can [file an issue](https://github.com/jmrossy/celo-station/iss
 
 ## Development
 
-- Install: `yarn`
-- Run locally: `yarn dev`
-- Build: `yarn build`
+1. Install: `yarn`
+2. Setup: `yarn prepare`
+3. Run locally: `yarn dev`

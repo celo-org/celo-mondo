@@ -2,20 +2,35 @@ import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
-import { Proposal, ProposalStage, VoteValue } from 'src/features/governance/contractTypes';
+import CachedMetadata from 'src/config/proposals.json';
+import {
+  FAILED_PROPOSAL_STAGES,
+  Proposal,
+  ProposalStage,
+  VoteValue,
+} from 'src/features/governance/contractTypes';
+import { ProposalMetadata } from 'src/features/governance/repoTypes';
 import { logger } from 'src/utils/logger';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
+
+export type MergedProposalData = { stage: ProposalStage } & (
+  | { proposal: Proposal; metadata?: ProposalMetadata }
+  | { proposal?: Proposal; metadata: ProposalMetadata }
+);
 
 export function useGovernanceProposals() {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useGovernanceProposals', publicClient],
-    queryFn: () => {
+    queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
-      return fetchGovernanceProposals(publicClient);
+      // Fetch on-chain data
+      const proposals = await fetchGovernanceProposals(publicClient);
+      // Then merge it with the cached
+      return mergeProposalsWithMetadata(proposals);
     },
     gcTime: Infinity,
     staleTime: 60 * 60 * 1000, // 1 hour
@@ -128,4 +143,36 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   }
 
   return proposals;
+}
+
+function mergeProposalsWithMetadata(proposals: Proposal[]): Array<MergedProposalData> {
+  const sortedMetadata = [...CachedMetadata].sort((a, b) => b.cgp - a.cgp) as ProposalMetadata[];
+  const sortedProposals = [...proposals].sort((a, b) => b.id - a.id);
+  const merged: Array<MergedProposalData> = [];
+
+  for (const proposal of sortedProposals) {
+    const metadataIndex = sortedMetadata.findIndex((m) => m.id === proposal.id);
+    if (metadataIndex >= 0) {
+      const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
+      merged.push({ stage: proposal.stage, proposal, metadata });
+    } else {
+      merged.push({ stage: proposal.stage, proposal });
+    }
+  }
+
+  // Merge in any remaining metadata
+  for (const metadata of sortedMetadata) {
+    merged.push({ stage: metadata.stage, metadata });
+  }
+
+  // Push failed proposals without metadata to the back
+  return merged.sort((a, b) => {
+    if (b.metadata && !a.metadata && isFailed(a.proposal)) return 1;
+    else if (a.metadata && !b.metadata && isFailed(b.proposal)) return -1;
+    return 0;
+  });
+}
+
+function isFailed(p?: Proposal | ProposalMetadata) {
+  return p && FAILED_PROPOSAL_STAGES.includes(p.stage);
 }

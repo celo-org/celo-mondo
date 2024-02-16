@@ -10,8 +10,11 @@ import { Section } from 'src/components/layout/Section';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { H1 } from 'src/components/text/headers';
 import { links } from 'src/config/links';
-import { Proposal, ProposalStage } from 'src/features/governance/contractTypes';
-import { useGovernanceProposals } from 'src/features/governance/useGovernanceProposals';
+import { ProposalStage } from 'src/features/governance/contractTypes';
+import {
+  MergedProposalData,
+  useGovernanceProposals,
+} from 'src/features/governance/useGovernanceProposals';
 import BookIcon from 'src/images/icons/book.svg';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import CeloIcon from 'src/images/logos/celo.svg';
@@ -56,8 +59,7 @@ function ProposalList() {
       [Filter.Upvoting]: _proposals.filter((p) => p.stage === ProposalStage.Queued).length,
       [Filter.Voting]: _proposals.filter((p) => p.stage === ProposalStage.Referendum).length,
       [Filter.Drafts]: _proposals.filter((p) => p.stage === ProposalStage.None).length,
-      //TODO
-      [Filter.History]: _proposals.filter((p) => p.id === 0).length,
+      [Filter.History]: _proposals.filter((p) => p.stage > 4).length,
     };
   }, [proposals]);
 
@@ -90,7 +92,7 @@ function ProposalList() {
             className="pb-2 all:space-x-4 md:space-x-6"
           />
           {filteredProposals.length ? (
-            filteredProposals.map((proposal) => <Proposal key={proposal.id} proposal={proposal} />)
+            filteredProposals.map((data, i) => <ProposalCard key={i} data={data} />)
           ) : (
             <div className="flex justify-center py-10">
               <p className="text-center text-taupe-600">No proposals found</p>
@@ -106,12 +108,17 @@ function ProposalList() {
   );
 }
 
-function Proposal({ proposal }: { proposal: Proposal }) {
+function ProposalCard({ data }: { data: MergedProposalData }) {
+  const { stage, proposal, metadata } = data;
+
+  const title =
+    metadata?.title || metadata?.cgp ? `Proposal CGP-${metadata.cgp}` : `Proposal #${proposal?.id}`;
+
   return (
     <div className="flex justify-between">
       <div>
-        <h3 className="font-serif text-lg">{'TODO'}</h3>
-        <p className="text-gray-600">{proposal.id}</p>
+        <h3 className="font-serif text-lg">{title}</h3>
+        <div className="text-sm">{stage}</div>
       </div>
     </div>
   );
@@ -157,11 +164,11 @@ function useFilteredProposals({
   filter,
   searchQuery,
 }: {
-  proposals?: Proposal[];
+  proposals?: MergedProposalData[];
   filter: Filter;
   searchQuery: string;
 }) {
-  return useMemo<Proposal[] | undefined>(() => {
+  return useMemo<MergedProposalData[] | undefined>(() => {
     if (!proposals) return undefined;
     const query = searchQuery.trim().toLowerCase();
     return proposals
@@ -169,11 +176,17 @@ function useFilteredProposals({
         if (filter === Filter.Upvoting) return p.stage === ProposalStage.Queued;
         if (filter === Filter.Voting) return p.stage === ProposalStage.Referendum;
         if (filter === Filter.Drafts) return p.stage === ProposalStage.None;
-        if (filter === Filter.History)
-          return p.stage === ProposalStage.Expiration || p.stage === ProposalStage.Execution;
+        if (filter === Filter.History) return p.stage > 4;
         return true;
       })
-      .filter((p) => !query || p.url.includes(query))
-      .sort((a, b) => b.timestamp - a.timestamp);
+      .filter(
+        (p) =>
+          !query ||
+          p.proposal?.proposer.includes(query) ||
+          p.proposal?.url.includes(query) ||
+          p.metadata?.title.includes(query) ||
+          p.metadata?.author.includes(query) ||
+          p.metadata?.url?.includes(query),
+      );
   }, [proposals, filter, searchQuery]);
 }

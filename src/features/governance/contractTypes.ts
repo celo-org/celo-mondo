@@ -22,6 +22,12 @@ export enum ProposalStage {
   Rejected = 8,
 }
 
+export const FAILED_PROPOSAL_STAGES = [
+  ProposalStage.Expiration,
+  ProposalStage.Rejected,
+  ProposalStage.Withdrawn,
+];
+
 export interface Proposal {
   id: number;
   timestamp: number;
