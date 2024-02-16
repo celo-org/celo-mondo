@@ -5,6 +5,11 @@ type ValidatorInfo = {
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
+  '0x89d5bd54C43dDd10905A030DE6Ff02EbB6c51654': {
+    logo: '/logos/validators/polychain.jpg',
+    url: 'https://polychain.capital',
+    twitter: 'https://twitter.com/polychain',
+  },
   '0x01b2b83fDf26aFC3Ca7062C35Bc68c8DdE56dB04': {
     logo: '/logos/validators/figment.jpg',
     url: 'https://figment.io',
@@ -33,11 +38,6 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     logo: '/logos/validators/binance.jpg',
     url: 'https://www.binance.com',
     twitter: 'https://twitter.com/binance',
-  },
-  '0x47b2dB6af05a55d42Ed0F3731735F9479ABF0673': {
-    logo: '/logos/validators/polychain.jpg',
-    url: 'https://polychain.capital',
-    twitter: 'https://twitter.com/polychain',
   },
   '0xDaDBd6Cfb29b054aDC9c4c2Ef0F21f0BBdb44871': {
     logo: '/logos/validators/bison-trails.jpg',
