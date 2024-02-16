@@ -15,9 +15,14 @@ export enum ProposalStage {
   Referendum = 3,
   Execution = 4,
   Expiration = 5,
+  // NOTE: solidity enum ends here
+  // Adding extra stages that may be used in the metadata
+  Executed = 6,
+  Withdrawn = 7,
+  Rejected = 8,
 }
 
-export interface GovernanceProposal {
+export interface Proposal {
   id: number;
   timestamp: number;
   url: string;
@@ -30,9 +35,4 @@ export interface GovernanceProposal {
     [VoteValue.No]: bigint;
     [VoteValue.Abstain]: bigint;
   };
-}
-
-export interface GovernanceProposalWithMetadata extends GovernanceProposal {
-  description: string;
-  //TODO
 }

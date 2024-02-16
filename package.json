@@ -71,8 +71,9 @@
   "scripts": {
     "clean": "rm -rf dist cache .next",
     "dev": "next dev",
-    "build": "next build",
+    "build": "yarn build:proposals && yarn build:app",
     "build:proposals": "tsx ./src/scripts/collectProposalMetadata.ts",
+    "build:app": "next build",
     "typecheck": "tsc",
     "lint": "next lint",
     "start": "next start",

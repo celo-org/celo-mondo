@@ -2,7 +2,7 @@ import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
-import { GovernanceProposal, ProposalStage, VoteValue } from 'src/features/governance/types';
+import { Proposal, ProposalStage, VoteValue } from 'src/features/governance/contractTypes';
 import { logger } from 'src/utils/logger';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
@@ -35,7 +35,7 @@ type ProposalRaw = [Address, bigint, bigint, bigint, string];
 // Yes, no, abstain
 type VoteTotalsRaw = [bigint, bigint, bigint];
 
-async function fetchGovernanceProposals(publicClient: PublicClient): Promise<GovernanceProposal[]> {
+async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
   // Get queued and dequeued proposals
   const [queued, dequeued] = await publicClient.multicall({
     contracts: [
@@ -95,7 +95,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Gov
     })),
   });
 
-  const proposals: GovernanceProposal[] = [];
+  const proposals: Proposal[] = [];
   for (let i = 0; i < allIdsAndUpvotes.length; i++) {
     const { id, upvotes } = allIdsAndUpvotes[i];
     const metadata = metadatas[i];

@@ -10,7 +10,7 @@ import { Section } from 'src/components/layout/Section';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { H1 } from 'src/components/text/headers';
 import { links } from 'src/config/links';
-import { GovernanceProposal, ProposalStage } from 'src/features/governance/types';
+import { Proposal, ProposalStage } from 'src/features/governance/contractTypes';
 import { useGovernanceProposals } from 'src/features/governance/useGovernanceProposals';
 import BookIcon from 'src/images/icons/book.svg';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
@@ -106,7 +106,7 @@ function ProposalList() {
   );
 }
 
-function Proposal({ proposal }: { proposal: GovernanceProposal }) {
+function Proposal({ proposal }: { proposal: Proposal }) {
   return (
     <div className="flex justify-between">
       <div>
@@ -157,11 +157,11 @@ function useFilteredProposals({
   filter,
   searchQuery,
 }: {
-  proposals?: GovernanceProposal[];
+  proposals?: Proposal[];
   filter: Filter;
   searchQuery: string;
 }) {
-  return useMemo<GovernanceProposal[] | undefined>(() => {
+  return useMemo<Proposal[] | undefined>(() => {
     if (!proposals) return undefined;
     const query = searchQuery.trim().toLowerCase();
     return proposals

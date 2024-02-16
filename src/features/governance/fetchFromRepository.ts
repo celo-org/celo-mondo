@@ -1,9 +1,12 @@
 import { micromark } from 'micromark';
-import { GovernanceProposal } from 'src/features/governance/types';
+import {
+  MetadataStatusToStage,
+  ProposalMetadata,
+  RawProposalMetadataSchema,
+} from 'src/features/governance/repoTypes';
 import { logger } from 'src/utils/logger';
 import { objLength } from 'src/utils/objects';
 import { parse as parseYaml } from 'yaml';
-import { z } from 'zod';
 
 // const GITHUB_OWNER = 'celo-org';
 const GITHUB_OWNER = 'jmrossy';
@@ -13,7 +16,7 @@ const GITHUB_DIRECTORY_PATH = 'CGPs';
 const GITHUB_BRANCH = 'metadata-fixes';
 const GITHUB_NAME_REGEX = /^cgp-\d+\.md$/;
 
-export async function fetchGovernanceProposalsFromRepo(): Promise<GovernanceProposal[]> {
+export async function fetchProposalsFromRepo(): Promise<ProposalMetadata[]> {
   const files = await fetchGithubDirectory(
     GITHUB_OWNER,
     GITHUB_REPO,
@@ -22,6 +25,7 @@ export async function fetchGovernanceProposalsFromRepo(): Promise<GovernanceProp
     GITHUB_NAME_REGEX,
   );
   const errorUrls = [];
+  const validProposals: ProposalMetadata[] = [];
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const content = await fetchGithubFile(file);
@@ -39,20 +43,19 @@ export async function fetchGovernanceProposalsFromRepo(): Promise<GovernanceProp
     const { frontMatter, body } = fileParts;
     logger.debug('Front matter size', objLength(frontMatter), 'body size', body.length);
 
-    const isValidBody = validateBody(body);
-    const validatedFrontMatter = validateFontMatter(frontMatter);
-    if (!validatedFrontMatter || !isValidBody) {
+    const proposalMetadata = parseFontMatter(frontMatter);
+    if (!proposalMetadata || !isValidBody(body)) {
       errorUrls.push(file.download_url);
       continue;
     }
+    validProposals.push(proposalMetadata);
   }
 
   if (errorUrls.length) {
     logger.error(`Failed to fetch or parse from ${errorUrls.length} URLs:`, errorUrls);
   }
 
-  //TODO
-  return [];
+  return validProposals;
 }
 
 interface GithubFile {
@@ -125,46 +128,28 @@ function separateYamlFrontMatter(content: string) {
   }
 }
 
-enum ProposalStatus {
-  DRAFT = 'DRAFT',
-  PROPOSED = 'PROPOSED',
-  EXECUTED = 'EXECUTED',
-  EXPIRED = 'EXPIRED',
-  REJECTED = 'REJECTED',
-  WITHDRAWN = 'WITHDRAWN',
-}
-
-// cgp: '001 - <to be assigned>'
-// title: 'Proposal 1 Title - <CGP title>'
-// date-created: '0000-00-00 - <date created on, in ISO 8601 (yyyy-mm-dd) format>'
-// author: 'Celo User(@celouser) - <a list of the authors or authors name(s) and/or username(s), or name(s) and email(s), e.g. (use with the parentheses or triangular brackets): FirstName LastName (@GitHubUsername), FirstName LastName <foo@bar.com>, FirstName (@GitHubUsername) and GitHubUsername (@GitHubUsername)>'
-// status: 'DRAFT - <DRAFT | PROPOSED | EXECUTED | EXPIRED | WITHDRAWN>'
-// discussions-to: 'https://forum.link <link to discussion on forum.celo.org> // Only link not in MD format - https://forum.link NOT [link](https://forum.link)'
-// governance-proposal-id: '001 - [if submitted]'
-// date-executed: '0000-00-00 -  <date created on, in ISO 8601 (yyyy-mm-dd) format>'
-
-const FrontMatterSchemaObject = z.object({
-  cgp: z.number().min(1),
-  title: z.string().min(1),
-  author: z.string(),
-  status: z.preprocess((v) => String(v).toUpperCase(), z.nativeEnum(ProposalStatus)),
-  'date-created': z.string().optional().or(z.null()),
-  'discussions-to': z.string().url().optional().or(z.null()),
-  'governance-proposal-id': z.number().optional().or(z.null()),
-  'date-executed': z.string().optional().or(z.null()),
-});
-
-function validateFontMatter(data: Record<string, string>) {
+function parseFontMatter(data: Record<string, string>): ProposalMetadata | null {
   try {
-    const parsed = FrontMatterSchemaObject.parse(data);
-    return parsed;
+    const parsed = RawProposalMetadataSchema.parse(data);
+    return {
+      cgp: parsed.cgp,
+      title: parsed.title,
+      author: parsed.author,
+      stage: MetadataStatusToStage[parsed.status],
+      id: parsed['governance-proposal-id'] || undefined,
+      url: parsed['discussions-to'] || undefined,
+      timestamp: parsed['date-created'] ? new Date(parsed['date-created']).getTime() : undefined,
+      timestampExecuted: parsed['date-executed']
+        ? new Date(parsed['date-executed']).getTime()
+        : undefined,
+    };
   } catch (error) {
     logger.error('Error validating front matter', error);
     return null;
   }
 }
 
-function validateBody(body: string) {
+function isValidBody(body: string) {
   try {
     // Attempt conversion from markdown to html
     micromark(body);
