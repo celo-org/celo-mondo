@@ -1,3 +1,5 @@
+import { Color } from 'src/styles/Color';
+
 export enum VoteValue {
   None = 'none',
   Abstain = 'abstain',
@@ -22,6 +24,18 @@ export enum ProposalStage {
   Rejected = 8,
 }
 
+export const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string }> = {
+  [ProposalStage.None]: { color: Color.Sky, label: 'Draft' },
+  [ProposalStage.Queued]: { color: Color.Lavender, label: 'Upvoting' },
+  [ProposalStage.Approval]: { color: Color.Lavender, label: 'Approval' },
+  [ProposalStage.Referendum]: { color: Color.Jade, label: 'Voting' },
+  [ProposalStage.Execution]: { color: Color.Jade, label: 'Passed' },
+  [ProposalStage.Expiration]: { color: Color.Red, label: 'Expired' },
+  [ProposalStage.Executed]: { color: Color.Jade, label: 'Executed' },
+  [ProposalStage.Withdrawn]: { color: Color.Red, label: 'Withdrawn' },
+  [ProposalStage.Rejected]: { color: Color.Red, label: 'Rejected' },
+};
+
 export const FAILED_PROPOSAL_STAGES = [
   ProposalStage.Expiration,
   ProposalStage.Rejected,
@@ -31,6 +45,7 @@ export const FAILED_PROPOSAL_STAGES = [
 export interface Proposal {
   id: number;
   timestamp: number;
+  expiryTimestamp?: number;
   url: string;
   proposer: Address;
   deposit: bigint;

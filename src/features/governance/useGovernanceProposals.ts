@@ -142,6 +142,11 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
     });
   }
 
+  // TODO for any proposals in the queued, approval, or execution stages, compute expiryTime
+  // This will likely require fetching events from celoscan related to the proposal
+  // to know the exact time of the stage transitions
+  // QUEUED_STAGE_EXPIRY_TIME, APPROVAL_STAGE_EXPIRY_TIME, EXECUTION_STAGE_EXPIRY_TIME
+
   return proposals;
 }
 

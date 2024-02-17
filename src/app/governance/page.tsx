@@ -10,6 +10,7 @@ import { Section } from 'src/components/layout/Section';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { H1 } from 'src/components/text/headers';
 import { links } from 'src/config/links';
+import { ProposalCard } from 'src/features/governance/ProposalCard';
 import { ProposalStage } from 'src/features/governance/contractTypes';
 import {
   MergedProposalData,
@@ -83,43 +84,33 @@ function ProposalList() {
       </div>
       <div></div>
       {filteredProposals ? (
-        <div className="divide-y divide-taupe-300">
+        <>
           <TabHeaderFilters
             activeFilter={filter}
             setFilter={setFilter}
             counts={headerCounts}
             showCount={!isMobile}
-            className="pb-2 all:space-x-4 md:space-x-6"
+            className="border-b border-taupe-300 pb-2 all:space-x-4 md:space-x-6"
           />
-          {filteredProposals.length ? (
-            filteredProposals.map((data, i) => <ProposalCard key={i} data={data} />)
-          ) : (
-            <div className="flex justify-center py-10">
-              <p className="text-center text-taupe-600">No proposals found</p>
-            </div>
-          )}
-        </div>
+          <div className="space-y-0 divide-y divide-taupe-300">
+            {filteredProposals.length ? (
+              filteredProposals.map((data, i) => (
+                <div key={i} className="py-6 first:pt-0">
+                  <ProposalCard data={data} />
+                </div>
+              ))
+            ) : (
+              <div className="flex justify-center py-10">
+                <p className="text-center text-taupe-600">No proposals found</p>
+              </div>
+            )}
+          </div>
+        </>
       ) : (
         <div className="flex justify-center py-10">
           <SpinnerWithLabel>Loading governance data</SpinnerWithLabel>
         </div>
       )}
-    </div>
-  );
-}
-
-function ProposalCard({ data }: { data: MergedProposalData }) {
-  const { stage, proposal, metadata } = data;
-
-  const title =
-    metadata?.title || metadata?.cgp ? `Proposal CGP-${metadata.cgp}` : `Proposal #${proposal?.id}`;
-
-  return (
-    <div className="flex justify-between">
-      <div>
-        <h3 className="font-serif text-lg">{title}</h3>
-        <div className="text-sm">{stage}</div>
-      </div>
     </div>
   );
 }
@@ -182,11 +173,11 @@ function useFilteredProposals({
       .filter(
         (p) =>
           !query ||
-          p.proposal?.proposer.includes(query) ||
-          p.proposal?.url.includes(query) ||
-          p.metadata?.title.includes(query) ||
-          p.metadata?.author.includes(query) ||
-          p.metadata?.url?.includes(query),
+          p.proposal?.proposer.toLowerCase().includes(query) ||
+          p.proposal?.url.toLowerCase().includes(query) ||
+          p.metadata?.title.toLowerCase().includes(query) ||
+          p.metadata?.author.toLowerCase().includes(query) ||
+          p.metadata?.url?.toLowerCase().includes(query),
       );
   }, [proposals, filter, searchQuery]);
 }

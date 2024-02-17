@@ -7,6 +7,7 @@ export enum Color {
 
   // Accents
   Yellow = '#FCFF52',
+  Red = '#F68098',
   Gypsum = '#FCF6F1',
   Sand = '#E7E3D4',
   Wood = '#655947',
