@@ -1,9 +1,16 @@
+import BigNumber from 'bignumber.js';
 import Image from 'next/image';
+import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { StageBadge } from 'src/features/governance/StageBadge';
+import { VoteToColor, VoteValue } from 'src/features/governance/contractTypes';
 import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
 import ClockIcon from 'src/images/icons/clock.svg';
-import { trimToLength } from 'src/utils/strings';
+import { fromWei } from 'src/utils/amount';
+import { bigIntSum } from 'src/utils/math';
+import { toTitleCase, trimToLength } from 'src/utils/strings';
 import { getHumanReadableTimeString } from 'src/utils/time';
+
+const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
 export function ProposalCard({ data }: { data: MergedProposalData }) {
   const { stage, proposal, metadata } = data;
@@ -21,8 +28,16 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
   const endTimeValue = endTimestamp ? getHumanReadableTimeString(endTimestamp) : undefined;
   const endTimeLabel = timestampExecuted ? 'Executed' : 'Expires';
 
+  const sum = bigIntSum(Object.values(votes || {})) || 1n;
+  const barChartData = Object.entries(votes || {}).map(([vote, amount]) => ({
+    label: toTitleCase(vote),
+    value: fromWei(amount),
+    percentage: BigNumber(amount.toString()).div(sum.toString()).times(100).toNumber(),
+    color: VoteToColor[vote as VoteValue],
+  }));
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       <div className="flex items-center space-x-3">
         {idValue && (
           <div className="rounded-full border border-taupe-300 px-2 py-0.5 text-sm font-light">
@@ -35,8 +50,20 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
         )}
       </div>
       {titleValue && <h3 className="text-xl font-medium">{titleValue}</h3>}
-      {votes && (
-        <div className="text-sm text-taupe-600">{`Votes: ${votes.yes} Yes, ${votes.no} No, ${votes.abstain} Abstain`}</div>
+      {votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
+        <div className="space-y-2.5">
+          <StackedBarChart data={barChartData} showBorder={false} height="h-1" />
+          <div className="flex items-center space-x-5">
+            {barChartData.map((item, index) => (
+              <div key={index} className="flex items-center space-x-1">
+                <div style={{ backgroundColor: item.color }} className="h-2 w-2 rounded-full"></div>
+                <div className="text-sm font-medium">{`${item.label} ${item.percentage.toFixed(
+                  1,
+                )}%`}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
       {endTimeValue && (
         <div className="flex items-center space-x-2">

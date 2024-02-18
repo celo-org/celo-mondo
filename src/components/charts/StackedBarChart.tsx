@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { ChartDataItem } from 'src/components/charts/chartData';
 import { Color } from 'src/styles/Color';
 
@@ -10,11 +11,15 @@ export const PLACEHOLDER_BAR_CHART_ITEM = {
 
 export function StackedBarChart({
   data,
+  showBorder = true,
+  height = 'h-2',
 }: {
-  data: Array<ChartDataItem & { percentage?: number; color: string }>;
+  data: Array<ChartDataItem & { color: string }>;
+  showBorder?: boolean;
+  height?: string;
 }) {
   return (
-    <div className="flex border border-taupe-300 p-px">
+    <div className={clsx('flex', showBorder && 'border border-taupe-300 p-px')}>
       {data.map((item, index) => (
         <div
           key={index}
@@ -22,7 +27,7 @@ export function StackedBarChart({
             width: `${item.percentage || 0}%`,
             backgroundColor: item.color,
           }}
-          className="tooltip h-2"
+          className={`tooltip ${height}`}
           data-tip={item.label}
         ></div>
       ))}

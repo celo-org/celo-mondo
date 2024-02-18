@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
+import { Fade } from 'src/components/animation/Fade';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
@@ -36,7 +37,7 @@ export default function Page() {
       <Section className="mt-4">
         <ProposalList />
       </Section>
-      <div className="fixed bottom-12 right-5 hidden md:block">
+      <div className="fixed bottom-10 right-5 hidden md:block">
         <CtaModal />
       </div>
     </>
@@ -65,7 +66,7 @@ function ProposalList() {
   }, [proposals]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:min-w-[38rem]">
       <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between gap-12">
           <H1>Proposals</H1>
@@ -84,7 +85,7 @@ function ProposalList() {
       </div>
       <div></div>
       {filteredProposals ? (
-        <>
+        <Fade show>
           <TabHeaderFilters
             activeFilter={filter}
             setFilter={setFilter}
@@ -92,7 +93,7 @@ function ProposalList() {
             showCount={!isMobile}
             className="border-b border-taupe-300 pb-2 all:space-x-4 md:space-x-6"
           />
-          <div className="space-y-0 divide-y divide-taupe-300">
+          <div className="mt-6 divide-y divide-taupe-300">
             {filteredProposals.length ? (
               filteredProposals.map((data, i) => (
                 <div key={i} className="py-6 first:pt-0">
@@ -105,7 +106,7 @@ function ProposalList() {
               </div>
             )}
           </div>
-        </>
+        </Fade>
       ) : (
         <div className="flex justify-center py-10">
           <SpinnerWithLabel>Loading governance data</SpinnerWithLabel>

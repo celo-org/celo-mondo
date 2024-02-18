@@ -7,6 +7,13 @@ export enum VoteValue {
   Yes = 'yes',
 }
 
+export const VoteToColor: Record<VoteValue, string> = {
+  [VoteValue.None]: Color.Grey,
+  [VoteValue.Abstain]: Color.Wood,
+  [VoteValue.No]: Color.Red,
+  [VoteValue.Yes]: Color.Mint,
+};
+
 export const OrderedVoteValue = [VoteValue.None, VoteValue.Abstain, VoteValue.No, VoteValue.Yes];
 
 // Using ints to align with solidity enum

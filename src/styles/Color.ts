@@ -13,6 +13,7 @@ export enum Color {
   Wood = '#655947',
   Lavender = '#B490FF',
   Fig = '#1E002B',
+  Mint = '#BEEAA9',
   Jade = '#56DF7C',
   Forest = '#476520',
   Citrus = '#FF9A51',
