@@ -18,7 +18,7 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
   const { id, timestamp, expiryTimestamp, votes } = proposal || {};
   const { title, timestamp: cgpTimestamp, timestampExecuted, cgp } = metadata || {};
 
-  const idValue = id ? `# ${id}` : cgp ? `CGP ${cgp}` : undefined;
+  const idValue = cgp ? `CGP ${cgp}` : id ? `# ${id}` : undefined;
   const titleValue = title ? trimToLength(title, 50) : undefined;
   const proposedTimestamp = timestamp || cgpTimestamp;
   const proposedTimeValue = proposedTimestamp

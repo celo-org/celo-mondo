@@ -24,9 +24,9 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { TxModalType } from 'src/features/transactions/types';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import Lock from 'src/images/icons/lock.svg';
-import Unlock from 'src/images/icons/unlock.svg';
-import Withdraw from 'src/images/icons/withdraw.svg';
+import LockIcon from 'src/images/icons/lock.svg';
+import UnlockIcon from 'src/images/icons/unlock.svg';
+import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { usePageInvariant } from 'src/utils/navigation';
 import { useAccount } from 'wagmi';
 
@@ -88,7 +88,7 @@ function LockButtons({ className }: { className?: string }) {
         onClick={() => showTxModal(TxModalType.Lock, { defaultAction: LockActionType.Lock })}
       >
         <div className="flex items-center space-x-1.5">
-          <Image src={Lock} width={12} height={12} alt="" />
+          <Image src={LockIcon} width={12} height={12} alt="" />
           <span>Lock</span>
         </div>
       </SolidButton>
@@ -96,7 +96,7 @@ function LockButtons({ className }: { className?: string }) {
         onClick={() => showTxModal(TxModalType.Lock, { defaultAction: LockActionType.Unlock })}
       >
         <div className="flex items-center space-x-1.5">
-          <Image src={Unlock} width={12} height={12} alt="" />
+          <Image src={UnlockIcon} width={12} height={12} alt="" />
           <span>Unlock</span>
         </div>
       </SolidButton>
@@ -104,7 +104,7 @@ function LockButtons({ className }: { className?: string }) {
         onClick={() => showTxModal(TxModalType.Lock, { defaultAction: LockActionType.Withdraw })}
       >
         <div className="flex items-center space-x-1.5">
-          <Image src={Withdraw} width={12} height={12} alt="" />
+          <Image src={WithdrawIcon} width={12} height={12} alt="" />
           <span>Withdraw</span>
         </div>
       </SolidButton>

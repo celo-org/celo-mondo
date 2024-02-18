@@ -12,6 +12,7 @@ const CONNECT_SRC_HOSTS = [
   'https://*.walletconnect.com',
   'wss://*.walletconnect.com',
   'wss://*.walletconnect.org',
+  'https://api.github.com',
   'https://raw.githubusercontent.com',
   'https://celo-mainnet.infura.io',
 ];
@@ -33,7 +34,9 @@ const cspHeader = `
   frame-ancestors 'none';
   ${!isDev ? 'block-all-mixed-content;' : ''}
   ${!isDev ? 'upgrade-insecure-requests;' : ''}
-`.replace(/\s{2,}/g, ' ').trim();
+`
+  .replace(/\s{2,}/g, ' ')
+  .trim();
 
 const securityHeaders = [
   {
@@ -59,13 +62,13 @@ const securityHeaders = [
           value: cspHeader,
         },
       ]
-    : [])
+    : []),
 ];
 
 module.exports = {
   webpack: (config) => {
-    config.externals = [...config.externals, 'pino-pretty']
-    return config
+    config.externals = [...config.externals, 'pino-pretty'];
+    return config;
   },
 
   async headers() {
@@ -74,14 +77,14 @@ module.exports = {
         source: '/(.*)',
         headers: securityHeaders,
       },
-    ]
+    ];
   },
 
   images: {
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**",
+        protocol: 'https',
+        hostname: '**',
       },
     ],
   },

@@ -12,6 +12,8 @@ export enum ProposalMetadataStatus {
 
 export const MetadataStatusToStage: Record<ProposalMetadataStatus, ProposalStage> = {
   [ProposalMetadataStatus.DRAFT]: ProposalStage.None,
+  // Note, some proposals are listed as PROPOSED but are actually completed/expired
+  // There's some logic in the proposal merging to help account for this
   [ProposalMetadataStatus.PROPOSED]: ProposalStage.Queued,
   [ProposalMetadataStatus.EXECUTED]: ProposalStage.Executed,
   [ProposalMetadataStatus.EXPIRED]: ProposalStage.Expiration,

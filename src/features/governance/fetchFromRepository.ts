@@ -8,15 +8,18 @@ import { logger } from 'src/utils/logger';
 import { objLength } from 'src/utils/objects';
 import { parse as parseYaml } from 'yaml';
 
+// TODO use official repo when fixes are merged
 // const GITHUB_OWNER = 'celo-org';
 const GITHUB_OWNER = 'jmrossy';
 const GITHUB_REPO = 'governance';
 const GITHUB_DIRECTORY_PATH = 'CGPs';
 // const GITHUB_BRANCH = 'main';
-const GITHUB_BRANCH = 'metadata-fixes';
-const GITHUB_NAME_REGEX = /^cgp-\d+\.md$/;
+const GITHUB_BRANCH = 'missing-proposal-ids';
+const GITHUB_NAME_REGEX = /^cgp-(\d+)\.md$/;
 
-export async function fetchProposalsFromRepo(): Promise<ProposalMetadata[]> {
+export async function fetchProposalsFromRepo(
+  cache: ProposalMetadata[] = [],
+): Promise<ProposalMetadata[]> {
   const files = await fetchGithubDirectory(
     GITHUB_OWNER,
     GITHUB_REPO,
@@ -26,8 +29,22 @@ export async function fetchProposalsFromRepo(): Promise<ProposalMetadata[]> {
   );
   const errorUrls = [];
   const validProposals: ProposalMetadata[] = [];
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  for (const file of files) {
+    // First extract cgp number and check cache
+    const cgpString = GITHUB_NAME_REGEX.exec(file.name)?.[1];
+    if (!cgpString) {
+      logger.error('Failed to extract CGP number from file name', file.name);
+      errorUrls.push(file.download_url);
+      continue;
+    }
+    const cgpNumber = parseInt(cgpString, 10);
+    const cachedProposal = cache.find((p) => p.cgp === cgpNumber);
+    if (cachedProposal) {
+      validProposals.push(cachedProposal);
+      continue;
+    }
+
+    // If it's not in the cache, fetch the file and parse it
     const content = await fetchGithubFile(file);
     if (!content) {
       errorUrls.push(file.download_url);

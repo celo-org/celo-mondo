@@ -43,6 +43,13 @@ export const ProposalStageToStyle: Record<ProposalStage, { color: string; label:
   [ProposalStage.Rejected]: { color: Color.Red, label: 'Rejected' },
 };
 
+export const ACTIVE_PROPOSAL_STAGES = [
+  ProposalStage.Queued,
+  ProposalStage.Approval,
+  ProposalStage.Referendum,
+  ProposalStage.Execution,
+];
+
 export const FAILED_PROPOSAL_STAGES = [
   ProposalStage.Expiration,
   ProposalStage.Rejected,

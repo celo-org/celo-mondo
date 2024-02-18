@@ -4,24 +4,23 @@ import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
-import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { SearchField } from 'src/components/input/SearchField';
 import { Section } from 'src/components/layout/Section';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { H1 } from 'src/components/text/headers';
-import { links } from 'src/config/links';
+import { useLockedBalance } from 'src/features/account/hooks';
 import { ProposalCard } from 'src/features/governance/ProposalCard';
 import { ProposalStage } from 'src/features/governance/contractTypes';
+import { GetInvolvedCtaCard, NoFundsLockedCtaCard } from 'src/features/governance/ctaCards';
 import {
   MergedProposalData,
   useGovernanceProposals,
 } from 'src/features/governance/useGovernanceProposals';
-import BookIcon from 'src/images/icons/book.svg';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
-import CeloIcon from 'src/images/logos/celo.svg';
-import DiscordIcon from 'src/images/logos/discord.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { isNullish } from 'src/utils/typeof';
+import { useAccount } from 'wagmi';
 
 enum Filter {
   All = 'All',
@@ -38,7 +37,7 @@ export default function Page() {
         <ProposalList />
       </Section>
       <div className="fixed bottom-10 right-5 hidden md:block">
-        <CtaModal />
+        <GetInvolvedCtaCard />
       </div>
     </>
   );
@@ -48,6 +47,8 @@ function ProposalList() {
   const isMobile = useIsMobile();
 
   const { proposals } = useGovernanceProposals();
+  const { address } = useAccount();
+  const { lockedBalance } = useLockedBalance(address);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filter, setFilter] = useState<Filter>(Filter.All);
@@ -66,14 +67,14 @@ function ProposalList() {
   }, [proposals]);
 
   return (
-    <div className="space-y-6 md:min-w-[38rem]">
+    <div className="space-y-5 md:min-w-[38rem]">
       <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between gap-12">
           <H1>Proposals</H1>
           <DropdownModal
             buttonClasses="md:hidden"
             button={() => <Image src={EllipsisIcon} width={24} height={24} alt="..." />}
-            modal={() => <CtaModal />}
+            modal={() => <GetInvolvedCtaCard />}
           />
         </div>
         <SearchField
@@ -83,7 +84,7 @@ function ProposalList() {
           className="w-full text-sm md:w-64"
         />
       </div>
-      <div></div>
+      {address && !isNullish(lockedBalance) && lockedBalance <= 0n && <NoFundsLockedCtaCard />}
       {filteredProposals ? (
         <Fade show>
           <TabHeaderFilters
@@ -91,7 +92,7 @@ function ProposalList() {
             setFilter={setFilter}
             counts={headerCounts}
             showCount={!isMobile}
-            className="border-b border-taupe-300 pb-2 all:space-x-4 md:space-x-6"
+            className="border-b border-taupe-300 pb-2 pt-1 all:space-x-4 md:space-x-6"
           />
           <div className="mt-6 divide-y divide-taupe-300">
             {filteredProposals.length ? (
@@ -112,41 +113,6 @@ function ProposalList() {
           <SpinnerWithLabel>Loading governance data</SpinnerWithLabel>
         </div>
       )}
-    </div>
-  );
-}
-
-function CtaModal() {
-  return (
-    <div className="flex w-fit flex-col space-y-2 border border-taupe-300 bg-taupe-100 bg-diamond-texture bg-right-bottom py-2.5 pl-4 pr-8 md:pr-14">
-      <h2 className="font-serif text-xl">Get Involved</h2>
-      <ExternalLink
-        href={links.docs}
-        className="flex items-center space-x-2 text-sm font-medium hover:underline"
-      >
-        <div className="w-4">
-          <Image src={BookIcon} alt="" />
-        </div>
-        <span>Explore the docs</span>
-      </ExternalLink>
-      <ExternalLink
-        href={links.discord}
-        className="flex items-center space-x-2 text-sm font-medium hover:underline"
-      >
-        <div className="w-4">
-          <Image src={DiscordIcon} alt="" />
-        </div>
-        <span>Join the chat</span>
-      </ExternalLink>
-      <ExternalLink
-        href={links.forum}
-        className="flex  items-center space-x-2 text-sm font-medium hover:underline"
-      >
-        <div className="w-4 p-px">
-          <Image src={CeloIcon} alt="" />
-        </div>
-        <span>Join the forum</span>
-      </ExternalLink>
     </div>
   );
 }
