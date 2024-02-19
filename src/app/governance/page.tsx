@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
-import { SpinnerWithLabel } from 'src/components/animation/Spinner';
+import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { SearchField } from 'src/components/input/SearchField';
 import { Section } from 'src/components/layout/Section';
@@ -109,9 +109,7 @@ function ProposalList() {
           </div>
         </Fade>
       ) : (
-        <div className="flex justify-center py-10">
-          <SpinnerWithLabel>Loading governance data</SpinnerWithLabel>
-        </div>
+        <FullWidthSpinner>Loading governance data</FullWidthSpinner>
       )}
     </div>
   );

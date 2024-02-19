@@ -1,8 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
+import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { Section } from 'src/components/layout/Section';
+import { links } from 'src/config/links';
 import { ProposalBadgeRow } from 'src/features/governance/ProposalCard';
 import {
   MergedProposalData,
@@ -11,6 +14,7 @@ import {
 import { useProposalContent } from 'src/features/governance/useProposalContent';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
+import styles from './styles.module.css';
 
 const ID_PARAM_REGEX = /^(cgp-)?(\d+)$/;
 
@@ -34,11 +38,14 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
   }, [proposals, id]);
 
   usePageInvariant(!proposals || proposal, '/governance', 'Proposal not found');
-  if (!proposal) return null;
+
+  if (!proposal) {
+    return <FullWidthSpinner>Loading proposals</FullWidthSpinner>;
+  }
 
   return (
     <Section containerClassName="space-y-4 mt-4">
-      <div className="flex flex-col md:flex-row">
+      <div className="flex flex-col items-stretch md:flex-row">
         <ProposalContent data={proposal} />
         <ProposalChainData data={proposal} />
       </div>
@@ -50,20 +57,49 @@ function ProposalContent({ data }: { data: MergedProposalData }) {
   const { proposal, metadata } = data;
   const title = trimToLength(metadata?.title || `Proposal #${proposal?.id}`, 80);
 
-  //TODO loading/err
-  const { content } = useProposalContent(metadata);
+  const { content, isLoading } = useProposalContent(metadata);
 
   return (
     <div className="space-y-3">
       <BackLink href="/governance">Browse proposals</BackLink>
       <h1 className="font-serif text-xl md:text-2xl">{title}</h1>
       <ProposalBadgeRow data={data} showProposer />
-      <div dangerouslySetInnerHTML={{ __html: content || '' }}></div>
+      {isLoading && !content && <FullWidthSpinner>Loading proposal content</FullWidthSpinner>}
+      {!isLoading && !content && (
+        <div className="flex flex-col items-center justify-center space-y-4 py-12">
+          <p className="text-center text-taupe-600">No CGP content found for this proposal</p>
+          <p className="text-center text-taupe-600">
+            Check the{' '}
+            <ExternalLink href={links.governance} className="underline">
+              Celo Governance repository
+            </ExternalLink>{' '}
+            for more information
+          </p>
+        </div>
+      )}
+      {content && (
+        <div
+          dangerouslySetInnerHTML={{ __html: content }}
+          className={`max-w-screen-md space-y-4 pb-4 ${styles.proposal}`}
+        ></div>
+      )}
     </div>
   );
 }
 
 function ProposalChainData({ data: { proposal } }: { data: MergedProposalData }) {
   if (!proposal) return null;
-  return <div>TODO</div>;
+  return (
+    <div className="space-y-4">
+      <div className="border border-taupe-300 p-4">
+        <h2>Vote</h2>
+      </div>
+      <div className="border border-taupe-300 p-4">
+        <h2>Results</h2>
+      </div>
+      <div className="border border-taupe-300 p-4">
+        <h2>Voters</h2>
+      </div>
+    </div>
+  );
 }

@@ -4,8 +4,8 @@
   },
   "files.exclude": {
     "**/*.js.map": true,
-    "**/*.js": {"when": "$(basename).ts"},
-    "**/*.map": {"when": "$(basename).map"},
+    "**/*.js": { "when": "$(basename).ts" },
+    "**/*.map": { "when": "$(basename).map" }
   },
   "files.watcherExclude": {
     "**/.git/objects/**": true,
@@ -18,7 +18,7 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
     },
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "[typescriptreact]": {
@@ -32,6 +32,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[css]": {
+    "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[json]": {
@@ -39,7 +40,5 @@
   },
   "editor.tabSize": 2,
   "editor.detectIndentation": false,
-  "tailwindCSS.experimental.classRegex": [
-    ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
-  ]
+  "tailwindCSS.experimental.classRegex": [["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]]
 }

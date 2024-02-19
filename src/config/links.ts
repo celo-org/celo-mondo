@@ -6,6 +6,7 @@ export const links = {
   twitter: 'https://twitter.com/CeloOrg',
   docs: 'https://docs.celo.org',
   forum: 'https://forum.celo.org',
+  governance: 'https://github.com/celo-org/governance',
   // RPCs
   forno: 'https://forno.celo.org',
   infura: 'https://celo-mainnet.infura.io/v3',

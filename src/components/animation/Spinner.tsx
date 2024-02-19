@@ -19,6 +19,17 @@ export function SpinnerWithLabel({
   );
 }
 
+export function FullWidthSpinner({
+  children,
+  className,
+}: PropsWithChildren<{ className?: string }>) {
+  return (
+    <div className={`flex justify-center py-16 ${className}`}>
+      <SpinnerWithLabel>{children}</SpinnerWithLabel>
+    </div>
+  );
+}
+
 const sizeToClass = {
   xs: 'loading-xs',
   sm: 'loading-sm',

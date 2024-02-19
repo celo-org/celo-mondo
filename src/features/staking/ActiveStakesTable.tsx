@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
-import { SpinnerWithLabel } from 'src/components/animation/Spinner';
+import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
@@ -63,11 +63,7 @@ export function ActiveStakesTable({
   }, [groupToStake, addressToGroup]);
 
   if (!groupToStake || !addressToGroup || !groupToIsActivatable) {
-    return (
-      <div className="my-16 flex justify-center">
-        <SpinnerWithLabel>Loading staking data</SpinnerWithLabel>
-      </div>
-    );
+    return <FullWidthSpinner>Loading staking data</FullWidthSpinner>;
   }
 
   if (!objLength(groupToStake)) {

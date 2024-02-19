@@ -1,7 +1,7 @@
 'use client';
 import { useMemo } from 'react';
 import { Fade } from 'src/components/animation/Fade';
-import { SpinnerWithLabel } from 'src/components/animation/Spinner';
+import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
@@ -84,11 +84,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
 
 function TableSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: ValidatorGroup[] }) {
   if (!totalVotes || !groups) {
-    return (
-      <div className="flex justify-center py-10">
-        <SpinnerWithLabel>Loading validator data</SpinnerWithLabel>
-      </div>
-    );
+    return <FullWidthSpinner>Loading validator data</FullWidthSpinner>;
   }
 
   return (
