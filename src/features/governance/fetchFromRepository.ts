@@ -1,3 +1,4 @@
+import { sanitize } from 'dompurify';
 import { micromark } from 'micromark';
 import {
   MetadataStatusToStage,
@@ -6,6 +7,7 @@ import {
 } from 'src/features/governance/repoTypes';
 import { logger } from 'src/utils/logger';
 import { objLength } from 'src/utils/objects';
+import { isNullish } from 'src/utils/typeof';
 import { parse as parseYaml } from 'yaml';
 
 // TODO use official repo when fixes are merged
@@ -18,7 +20,8 @@ const GITHUB_BRANCH = 'missing-proposal-ids';
 const GITHUB_NAME_REGEX = /^cgp-(\d+)\.md$/;
 
 export async function fetchProposalsFromRepo(
-  cache: ProposalMetadata[] = [],
+  cache: ProposalMetadata[],
+  validateMarkdown: boolean,
 ): Promise<ProposalMetadata[]> {
   const files = await fetchGithubDirectory(
     GITHUB_OWNER,
@@ -45,7 +48,7 @@ export async function fetchProposalsFromRepo(
     }
 
     // If it's not in the cache, fetch the file and parse it
-    const content = await fetchGithubFile(file);
+    const content = await fetchGithubFile(file.download_url);
     if (!content) {
       errorUrls.push(file.download_url);
       continue;
@@ -60,8 +63,9 @@ export async function fetchProposalsFromRepo(
     const { frontMatter, body } = fileParts;
     logger.debug('Front matter size', objLength(frontMatter), 'body size', body.length);
 
-    const proposalMetadata = parseFontMatter(frontMatter);
-    if (!proposalMetadata || !isValidBody(body)) {
+    const proposalMetadata = parseFontMatter(frontMatter, file.download_url);
+    const bodyValid = validateMarkdown ? !isNullish(markdownToHtml(body)) : true;
+    if (!proposalMetadata || !bodyValid) {
       errorUrls.push(file.download_url);
       continue;
     }
@@ -73,6 +77,22 @@ export async function fetchProposalsFromRepo(
   }
 
   return validProposals;
+}
+
+export async function fetchProposalContent(url: string) {
+  const content = await fetchGithubFile(url);
+  if (!content) throw new Error('Failed to fetch proposal content');
+  const fileParts = separateYamlFrontMatter(content);
+  if (!fileParts) throw new Error('Failed to parse proposal content');
+  const markup = markdownToHtml(fileParts.body);
+  if (isNullish(markup)) throw new Error('Failed to convert markdown to html');
+  if (!markup) {
+    logger.warn('Content is empty for:', url);
+    return '';
+  }
+  // Client-side only due to issue with DomPurify in SSR
+  if (typeof window !== 'undefined') return sanitize(markup);
+  else return '';
 }
 
 interface GithubFile {
@@ -117,14 +137,14 @@ async function fetchGithubDirectory(
   }
 }
 
-async function fetchGithubFile(file: GithubFile): Promise<string | null> {
+async function fetchGithubFile(url: string): Promise<string | null> {
   try {
-    logger.debug('Fetching github file', file.download_url);
-    const response = await fetch(file.download_url);
+    logger.debug('Fetching github file', url);
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
     return await response.text();
   } catch (error) {
-    logger.error('Error fetching github file', file.name, error);
+    logger.error('Error fetching github file', url, error);
     return null;
   }
 }
@@ -145,11 +165,12 @@ function separateYamlFrontMatter(content: string) {
   }
 }
 
-function parseFontMatter(data: Record<string, string>): ProposalMetadata | null {
+function parseFontMatter(data: Record<string, string>, url: string): ProposalMetadata | null {
   try {
     const parsed = RawProposalMetadataSchema.parse(data);
     return {
       cgp: parsed.cgp,
+      cgpUrl: url,
       title: parsed.title,
       author: parsed.author,
       stage: MetadataStatusToStage[parsed.status],
@@ -166,11 +187,10 @@ function parseFontMatter(data: Record<string, string>): ProposalMetadata | null 
   }
 }
 
-function isValidBody(body: string) {
+function markdownToHtml(body: string) {
   try {
     // Attempt conversion from markdown to html
-    micromark(body);
-    return true;
+    return micromark(body);
   } catch (error) {
     logger.error('Error converting markdown', error);
     return null;

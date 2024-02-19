@@ -6,15 +6,13 @@ interface Props {
   className?: string;
 }
 
-export function TextLink(props: PropsWithChildren<Props>) {
-  const { href, className } = props;
-
+export function TextLink({ href, className, children }: PropsWithChildren<Props>) {
   return (
     <Link
       className={`cursor-pointer underline-offset-2 transition-all hover:underline active:opacity-80 ${className}`}
       href={href}
     >
-      {props.children}
+      {children}
     </Link>
   );
 }

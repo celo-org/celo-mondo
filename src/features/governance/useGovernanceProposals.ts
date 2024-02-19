@@ -160,7 +160,7 @@ function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
   // fetches them at build time and stores a cache. To keep this
   // hook fast, the app should be re-built every now and then.
   const cached = CachedMetadata as ProposalMetadata[];
-  return fetchProposalsFromRepo(cached);
+  return fetchProposalsFromRepo(cached, false);
 }
 
 function mergeProposalsWithMetadata(

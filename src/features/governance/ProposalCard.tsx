@@ -1,10 +1,16 @@
 import BigNumber from 'bignumber.js';
 import Image from 'next/image';
+import Link from 'next/link';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
-import { StageBadge } from 'src/features/governance/StageBadge';
-import { VoteToColor, VoteValue } from 'src/features/governance/contractTypes';
+import {
+  ProposalStage,
+  ProposalStageToStyle,
+  VoteToColor,
+  VoteValue,
+} from 'src/features/governance/contractTypes';
 import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
 import ClockIcon from 'src/images/icons/clock.svg';
+import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
@@ -13,17 +19,13 @@ import { getHumanReadableTimeString } from 'src/utils/time';
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
 export function ProposalCard({ data }: { data: MergedProposalData }) {
-  const { stage, proposal, metadata } = data;
+  const { proposal, metadata } = data;
 
-  const { id, timestamp, expiryTimestamp, votes } = proposal || {};
-  const { title, timestamp: cgpTimestamp, timestampExecuted, cgp } = metadata || {};
+  const { id, expiryTimestamp, votes } = proposal || {};
+  const { title, timestampExecuted, cgp } = metadata || {};
 
-  const idValue = cgp ? `CGP ${cgp}` : id ? `# ${id}` : undefined;
+  const link = cgp ? `/governance/cgp-${cgp}` : `/governance/${id}`;
   const titleValue = title ? trimToLength(title, 50) : undefined;
-  const proposedTimestamp = timestamp || cgpTimestamp;
-  const proposedTimeValue = proposedTimestamp
-    ? new Date(proposedTimestamp).toLocaleDateString()
-    : undefined;
   const endTimestamp = timestampExecuted || expiryTimestamp;
   const endTimeValue = endTimestamp ? getHumanReadableTimeString(endTimestamp) : undefined;
   const endTimeLabel = timestampExecuted ? 'Executed' : 'Expires';
@@ -37,19 +39,9 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
   }));
 
   return (
-    <div className="space-y-2.5">
-      <div className="flex items-center space-x-3">
-        {idValue && (
-          <div className="rounded-full border border-taupe-300 px-2 py-0.5 text-sm font-light">
-            {idValue}
-          </div>
-        )}
-        <StageBadge stage={stage} />
-        {proposedTimeValue && (
-          <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
-        )}
-      </div>
-      {titleValue && <h3 className="text-xl font-medium">{titleValue}</h3>}
+    <Link href={link} className="space-y-2.5">
+      <ProposalBadgeRow data={data} />
+      {titleValue && <h2 className="text-xl font-medium">{titleValue}</h2>}
       {votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
         <div className="space-y-2.5">
           <StackedBarChart data={barChartData} showBorder={false} height="h-1" />
@@ -71,6 +63,62 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
           <div className="text-sm font-medium">{`${endTimeLabel} ${endTimeValue}`}</div>
         </div>
       )}
+    </Link>
+  );
+}
+
+export function ProposalBadgeRow({
+  data,
+  showProposer,
+}: {
+  data: MergedProposalData;
+  showProposer?: boolean;
+}) {
+  const { stage, proposal, metadata } = data;
+
+  const { id, timestamp, proposer } = proposal || {};
+  const { timestamp: cgpTimestamp, cgp } = metadata || {};
+
+  const proposedTimestamp = timestamp || cgpTimestamp;
+  const proposedTimeValue = proposedTimestamp
+    ? new Date(proposedTimestamp).toLocaleDateString()
+    : undefined;
+
+  return (
+    <div className="flex items-center space-x-3">
+      <IdBadge cgp={cgp} id={id} />
+      <StageBadge stage={stage} />
+      {proposedTimeValue && (
+        <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
+      )}
+      {showProposer && proposer && (
+        <>
+          <div className="text-xs opacity-50">•</div>
+          <div className="text-sm text-taupe-600">{shortenAddress(proposer)}</div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
+  if (!cgp && !id) return null;
+  const idValue = cgp ? `CGP ${cgp}` : `# ${id}`;
+  return (
+    <div className="rounded-full border border-taupe-300 px-2 py-0.5 text-sm font-light">
+      {idValue}
+    </div>
+  );
+}
+
+function StageBadge({ stage }: { stage: ProposalStage }) {
+  const { color, label } = ProposalStageToStyle[stage];
+  return (
+    <div
+      style={{ backgroundColor: color }}
+      className={'rounded-full px-2 py-0.5 text-sm font-light'}
+    >
+      {label}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 [
   {
     "cgp": 1,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0001.md",
     "title": "Enable validator elections, epoch rewards and carbon offsetting",
     "author": "@aslawson",
     "stage": 6,
@@ -10,6 +11,7 @@
   },
   {
     "cgp": 2,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0002.md",
     "title": "Unfreeze Voter Rewards",
     "author": "@aslawson",
     "stage": 6,
@@ -19,6 +21,7 @@
   },
   {
     "cgp": 3,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0003.md",
     "title": "Unfreeze Celo Gold Transfers",
     "author": "cLabs",
     "stage": 6,
@@ -28,6 +31,7 @@
   },
   {
     "cgp": 4,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0004.md",
     "title": "Rename Celo Gold to Celo Native Asset",
     "author": "@JamesCowling",
     "stage": 6,
@@ -37,6 +41,7 @@
   },
   {
     "cgp": 5,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0005.md",
     "title": "Setting Frozen Part of Reserve CELO",
     "author": "@MarkusBerlin, @rcroessmann, @aslawson",
     "stage": 5,
@@ -45,6 +50,7 @@
   },
   {
     "cgp": 6,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0006.md",
     "title": "Setting Frozen Part of Reserve CELO",
     "author": "@MarkusBerlin, @rcroessmann, @aslawson",
     "stage": 6,
@@ -54,6 +60,7 @@
   },
   {
     "cgp": 7,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0007.md",
     "title": "Enabling Celo Dollar transfers and activating the stability protocol",
     "author": "@MarkusBerlin, @rcroessmann, @aslawson",
     "stage": 6,
@@ -63,6 +70,7 @@
   },
   {
     "cgp": 8,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0008.md",
     "title": "Increase the Reserve Fraction to Increase On-chain Liquidity",
     "author": "@MarkusBerlin, @rcroessmann, @aslawson",
     "stage": 6,
@@ -72,6 +80,7 @@
   },
   {
     "cgp": 9,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0009.md",
     "title": "Extend the Governance Referendum Stage Duration",
     "author": "@aslawson",
     "stage": 6,
@@ -81,6 +90,7 @@
   },
   {
     "cgp": 10,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0010.md",
     "title": "Bump Minimum Client Version",
     "author": "@mcortesi @aslawson",
     "stage": 8,
@@ -89,6 +99,7 @@
   },
   {
     "cgp": 11,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0011.md",
     "title": "Increase the gasLimit to 13M",
     "author": "@nambrot",
     "stage": 8,
@@ -97,6 +108,7 @@
   },
   {
     "cgp": 12,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0012.md",
     "title": "Increase the gasLimit to 13M (Attempt 2)",
     "author": "@nambrot",
     "stage": 6,
@@ -106,6 +118,7 @@
   },
   {
     "cgp": 13,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0013.md",
     "title": "Celo Core Contracts Release 1",
     "author": "@nambrot",
     "stage": 6,
@@ -115,6 +128,7 @@
   },
   {
     "cgp": 14,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0014.md",
     "title": "Distribute CELO to cUSD holders",
     "author": "@Jbsibille, @ewilz",
     "stage": 6,
@@ -124,6 +138,7 @@
   },
   {
     "cgp": 15,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0015.md",
     "title": "Extend Attestation Expiration Duration",
     "author": "@aslawson",
     "stage": 6,
@@ -133,6 +148,7 @@
   },
   {
     "cgp": 16,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0016.md",
     "title": "Update baselineQuorumFactor",
     "author": "@alecps",
     "stage": 6,
@@ -142,6 +158,7 @@
   },
   {
     "cgp": 17,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0017.md",
     "title": "Activation of Celo Community Fund",
     "author": "@devme25 @patricknbaron @DeeM297",
     "stage": 6,
@@ -151,6 +168,7 @@
   },
   {
     "cgp": 18,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0018.md",
     "title": "Update referendumStageDuration",
     "author": "@alecps",
     "stage": 6,
@@ -160,6 +178,7 @@
   },
   {
     "cgp": 19,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0019.md",
     "title": "Celo Core Contracts Release 2",
     "author": "@nambrot",
     "stage": 6,
@@ -169,6 +188,7 @@
   },
   {
     "cgp": 20,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0020.md",
     "title": "Community Appreciation Gifts",
     "author": "@nambrot",
     "stage": 6,
@@ -178,6 +198,7 @@
   },
   {
     "cgp": 21,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0021.md",
     "title": "Update randomnessBlockRetentionWindow to Extend Attestation Expiration Duration",
     "author": "@anna-carroll",
     "stage": 6,
@@ -187,6 +208,7 @@
   },
   {
     "cgp": 22,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0022.md",
     "title": "Core Contracts Release 3",
     "author": "@yorhodes, @yaz",
     "stage": 6,
@@ -196,6 +218,7 @@
   },
   {
     "cgp": 23,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0023.md",
     "title": "Oracle activation for cEUR and cEUR freezing",
     "author": "@martinvol",
     "stage": 6,
@@ -205,6 +228,7 @@
   },
   {
     "cgp": 24,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0024.md",
     "title": "cEUR activation",
     "author": "@martinvol, @pedro-clabs",
     "stage": 6,
@@ -215,6 +239,7 @@
   },
   {
     "cgp": 25,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0025.md",
     "title": "Set constitutional parameters for new contracts and methods added by CR3",
     "author": "@martinvol",
     "stage": 6,
@@ -224,6 +249,7 @@
   },
   {
     "cgp": 26,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0026.md",
     "title": "cEUR freezing",
     "author": "@martinvol",
     "stage": 7,
@@ -231,6 +257,7 @@
   },
   {
     "cgp": 27,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0027.md",
     "title": "Update Grace Period",
     "author": "@yorhodes",
     "stage": 6,
@@ -240,6 +267,7 @@
   },
   {
     "cgp": 28,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0028.md",
     "title": "Initialize uptime lookback window",
     "author": "@oneeman",
     "stage": 6,
@@ -249,6 +277,7 @@
   },
   {
     "cgp": 29,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0029.md",
     "title": "Increase Validator Set Size",
     "author": "@trianglesphere",
     "stage": 6,
@@ -258,6 +287,7 @@
   },
   {
     "cgp": 30,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0030.md",
     "title": "Add voluntary carbon credits to the reserve",
     "author": "@MarkusBerlin",
     "stage": 6,
@@ -267,6 +297,7 @@
   },
   {
     "cgp": 31,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0031.md",
     "title": "Granda Mento",
     "author": "@tkporter, @albertclabs",
     "stage": 6,
@@ -275,6 +306,7 @@
   },
   {
     "cgp": 32,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0032.md",
     "title": "Celo Core Contracts Release 4",
     "author": "@yorhodes",
     "stage": 6,
@@ -284,6 +316,7 @@
   },
   {
     "cgp": 33,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0033.md",
     "title": "Activate Dynamic Voting Reward Rate Adjustment Factor",
     "author": "@tobikuhlmann",
     "stage": 6,
@@ -292,6 +325,7 @@
   },
   {
     "cgp": 34,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0034.md",
     "title": "Increase targetVotingGoldFraction from 50% to 60%",
     "author": "@tobikuhlmann",
     "stage": 6,
@@ -300,6 +334,7 @@
   },
   {
     "cgp": 35,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0035.md",
     "title": "Reduce the Epoch Rewards Community Fund share from 25% to 5%",
     "author": "@tobikuhlmann",
     "stage": 7,
@@ -307,6 +342,7 @@
   },
   {
     "cgp": 36,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0036.md",
     "title": "Increase Validator Target Rewards from 75k to 85k per year",
     "author": "@tobikuhlmann",
     "stage": 7,
@@ -314,6 +350,7 @@
   },
   {
     "cgp": 37,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0037.md",
     "title": "Celo Core Contracts Release 5",
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
@@ -323,6 +360,7 @@
   },
   {
     "cgp": 38,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0038.md",
     "title": "The Celo Ecosystem Treasury",
     "author": "Yaz Khoury (@YazzyYaz), Jarrell James, Gab Micheletti, Eric Nakagawa, Medha Kothari, Maya Zehavi, Elizabeth Barnes, Cassidy Daly, Tux",
     "stage": 6,
@@ -332,6 +370,7 @@
   },
   {
     "cgp": 39,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0039.md",
     "title": "Increase Block Target Density",
     "author": "Mariano Cortesi (@mcortesi), Or Neeman (@oneeman)",
     "stage": 6,
@@ -340,6 +379,7 @@
   },
   {
     "cgp": 40,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0040.md",
     "title": "Reduce Exchange Spreads for cUSD and cEUR",
     "author": "Roman Croessmann (@rcroessmann), Martin Volpe (@martinvol), Nadiem Sissouno (sissnad), Zviad Metreveli (@zviadm), Markus Franke (@MarkusBerlin)",
     "stage": 6,
@@ -349,6 +389,7 @@
   },
   {
     "cgp": 42,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0042.md",
     "title": "cREAL contract initialization",
     "author": "@luisgj (Bitso), @martinvol (cLabs)",
     "stage": 6,
@@ -358,6 +399,7 @@
   },
   {
     "cgp": 43,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0043.md",
     "title": "Reserve freezing to get back to target allocation",
     "author": "@martinvol, @rcroessmann",
     "stage": 0,
@@ -366,6 +408,7 @@
   },
   {
     "cgp": 44,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0044.md",
     "title": "Increasing Mento Bucket Sizes for cUSD and cEUR",
     "author": "@martinvol, @rcroessmann",
     "stage": 6,
@@ -375,6 +418,7 @@
   },
   {
     "cgp": 45,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0045.md",
     "title": "cREAL Activation",
     "author": "@luisgj (Bitso), @martinvol (cLabs)",
     "stage": 6,
@@ -384,6 +428,7 @@
   },
   {
     "cgp": 46,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0046.md",
     "title": "cREAL oracle and constitution parameter activation",
     "author": "@martinvol",
     "stage": 6,
@@ -393,6 +438,7 @@
   },
   {
     "cgp": 47,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0047.md",
     "title": "Providing dust for people who bridging asset and provide liquidity",
     "author": "Alberto Martin",
     "stage": 0,
@@ -401,6 +447,7 @@
   },
   {
     "cgp": 48,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0048.md",
     "title": "Reserve Gift Policy",
     "author": "Slobodan Sudaric (@sudarics), Martín Volpe (@martinvol)",
     "stage": 6,
@@ -410,6 +457,7 @@
   },
   {
     "cgp": 49,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0049.md",
     "title": "cREAL Liquidity Incentives",
     "author": "Mila Rioja @MilaRioja, Nikhil Raghuveera @nraghuveera",
     "stage": 0,
@@ -418,6 +466,7 @@
   },
   {
     "cgp": 50,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0050.md",
     "title": "Celo Core Contracts Release 6",
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
@@ -427,6 +476,7 @@
   },
   {
     "cgp": 51,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0051.md",
     "title": "Increasing Mento Bucket Sizes for cUSD and cEUR",
     "author": "@martinvol, @rcroessmann, @sissnad, @tobikuhlmann",
     "stage": 6,
@@ -436,6 +486,7 @@
   },
   {
     "cgp": 52,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0052.md",
     "title": "Funds for Climate Collective Treasury",
     "author": "Nirvaan Ranganathan, Craig Wilson, Slobodan Sudaric",
     "stage": 6,
@@ -445,6 +496,7 @@
   },
   {
     "cgp": 53,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0053.md",
     "title": "Increase the gasLimit to 50M and gas targetDensity to 0.7",
     "author": "Mariano Cortesi (@mcortesi5), Javier Cortejoso (@jcortejoso), Gastón Ponti (@gastonponti)",
     "stage": 6,
@@ -455,6 +507,7 @@
   },
   {
     "cgp": 54,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0054.md",
     "title": "Reopening of the Celo Community Fund",
     "author": "@Maya-R-B @ThePassiveTrust @aaronmboyd",
     "stage": 6,
@@ -462,6 +515,7 @@
   },
   {
     "cgp": 55,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0055.md",
     "title": "Celo Core Contracts Release 7",
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
@@ -471,6 +525,7 @@
   },
   {
     "cgp": 56,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0056.md",
     "title": "One-to-one stable value asset basket and 50/50 DAI-USDC-Split",
     "author": "Roman Croessmann (@rcroessmann), Markus Franke (@MarkusBerlin), Slobodan Sudaric (@sudarics)",
     "stage": 6,
@@ -480,6 +535,7 @@
   },
   {
     "cgp": 57,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0057.md",
     "title": "Adding Di Wu as oracle provider",
     "author": "Martin Volpe (@martinvol, volpe@clabs.co)",
     "stage": 6,
@@ -490,6 +546,7 @@
   },
   {
     "cgp": 58,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0058.md",
     "title": "Increasing Mento Bucket Sizes for cREAL",
     "author": "@aleksey-nov, @sissnad",
     "stage": 6,
@@ -499,6 +556,7 @@
   },
   {
     "cgp": 59,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0059.md",
     "title": "Reduce Exchange Spreads for cREAL",
     "author": "@aleksey-nov, @sissnad",
     "stage": 6,
@@ -508,6 +566,7 @@
   },
   {
     "cgp": 60,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0060.md",
     "title": "Introduce new StableCoin pegged to Colombian Peso - $cCOP",
     "author": "Juan (@juancamp1987#4903)",
     "stage": 0,
@@ -516,6 +575,7 @@
   },
   {
     "cgp": 61,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0061.md",
     "title": "Governance-Owned cUSD<->USDC Liquidity",
     "author": "cLabs & Mento",
     "stage": 0,
@@ -523,6 +583,7 @@
   },
   {
     "cgp": 62,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0062.md",
     "title": "Celo Core Contracts Release 8",
     "author": "Arthur (@0xarthurxyz), Martin Chrzanowski (@m-chrzan), Martin Volpe (@martinvol)",
     "stage": 6,
@@ -532,6 +593,7 @@
   },
   {
     "cgp": 63,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0063.md",
     "title": "Learn to Earn",
     "author": "Débora Conconi (@deboraconconi)",
     "stage": 0,
@@ -540,6 +602,7 @@
   },
   {
     "cgp": 64,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0064.md",
     "title": "Celo India DAO (Regional DAO)",
     "author": "[Chitty Babu](https://github.com/cryptochitty)(chittyb@gmail.com), [Shaun Joseph](https://github.com/shaunjoseph) (shaun0078@gmail.com), [Avina Ajit](https://www.linkedin.com/in/avina-ajit-a153b742/?originalSubdomain=in), [Elio Jordan Lopes](https://github.com/lopeselio) (lopeselio@gmail.com), [Nikki Ajit](https://www.linkedin.com/in/nikitaajit/)",
     "stage": 0,
@@ -548,6 +611,7 @@
   },
   {
     "cgp": 65,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0065.md",
     "title": "(WITHDRAWN - VOTE NO) Top-Up of Governance-Owned cUSD<->USDC Liquidity",
     "author": "Roman Croessmann(@rcroessmann)",
     "stage": 7,
@@ -557,6 +621,7 @@
   },
   {
     "cgp": 66,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0066.md",
     "title": "Increase target level of stable holdings in the reserve",
     "author": "Roman Croessman (@rcroessmann), Markus Franke (@MarkusBerlin)",
     "stage": 6,
@@ -566,6 +631,7 @@
   },
   {
     "cgp": 67,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0067.md",
     "title": "Enabling T-Systems as an oracle provider and deploy oracle payments",
     "author": "Martin Volpe (@martinvol)",
     "stage": 6,
@@ -575,6 +641,7 @@
   },
   {
     "cgp": 68,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0068.md",
     "title": "Celo Africa DAO",
     "author": "[Khadeeejah](https://github.com/Khadeeejah)",
     "stage": 6,
@@ -584,6 +651,7 @@
   },
   {
     "cgp": 69,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0069.md",
     "title": "Move Mento-Owned cUSD<->USDC Liquidity from Mobius to Curve",
     "author": "Roman Croessmann(@rcroessmann), Bogdan Dumitru (@bowd)",
     "stage": 6,
@@ -593,6 +661,7 @@
   },
   {
     "cgp": 70,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0070.md",
     "title": "Celo Tribe Web3 Social club",
     "author": "Hawwal Ogungbadero @hawwal",
     "stage": 6,
@@ -602,6 +671,7 @@
   },
   {
     "cgp": 71,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0071.md",
     "title": "Addings USDC oracles",
     "author": "Roman Croessmann (@rcroessmann)",
     "stage": 0,
@@ -610,6 +680,7 @@
   },
   {
     "cgp": 72,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0072.md",
     "title": "Prezenti (Celo Community Fund) stewardship follow-on funding request",
     "author": "Aaron Boyd (@aaronmboyd), Maya Richardson-Brown (@Maya-R-B), Wade Abel @ThePassiveTrust",
     "stage": 0,
@@ -618,6 +689,7 @@
   },
   {
     "cgp": 73,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0073.md",
     "title": "Establish and Fund Bug Bounty Program on Immunefi",
     "author": "@vissequ, @keccakdog",
     "stage": 0,
@@ -626,6 +698,7 @@
   },
   {
     "cgp": 74,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0074.md",
     "title": "Mento Upgrade 01 - MultiCollateral Support",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>",
     "stage": 6,
@@ -635,6 +708,7 @@
   },
   {
     "cgp": 75,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0075.md",
     "title": "Celo to Join Chainlink SCALE Program To Accelerate Ecosystem Growth",
     "author": "tobiju",
     "stage": 0,
@@ -643,6 +717,7 @@
   },
   {
     "cgp": 76,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0076.md",
     "title": "LatAm-W3-DAO-Proposal",
     "author": "@juancamp1987 in behalf of DAO Members",
     "stage": 1,
@@ -652,6 +727,7 @@
   },
   {
     "cgp": 77,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0077.md",
     "title": "On-Chain Carbon Offseting",
     "author": "Nirvaan Ranganathan, Helena Merk, Kenneth Kou, Nikhil Raghuveera",
     "stage": 6,
@@ -662,6 +738,7 @@
   },
   {
     "cgp": 78,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0078.md",
     "title": "Celo Core Contracts Release 9",
     "author": "Martin Volpe (@martinvol), Pavel Hornak (@pahor167)",
     "stage": 6,
@@ -672,6 +749,7 @@
   },
   {
     "cgp": 79,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0079.md",
     "title": "Mento Reserve Returning CELO",
     "author": "Roman Croessmann (@rcroessmann)",
     "stage": 6,
@@ -681,6 +759,7 @@
   },
   {
     "cgp": 80,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0080.md",
     "title": "Follow-on Funding for Climate Collective",
     "author": "Anna Lerner, Nirvaan Ranganathan, Ed Walters",
     "stage": 6,
@@ -690,6 +769,7 @@
   },
   {
     "cgp": 81,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0081.md",
     "title": "Mento Upgrade 01 Patch 1 - MultiCollateral Support",
     "author": "Bayo Sodimu <bayo@mentolabs.xyz>",
     "stage": 1,
@@ -699,6 +779,7 @@
   },
   {
     "cgp": 82,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0082.md",
     "title": "EuropeDAO-Proposal",
     "author": "@juancamp1987 in behalf of Europe DAO Members",
     "stage": 1,
@@ -708,6 +789,7 @@
   },
   {
     "cgp": 83,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0083.md",
     "title": "Establishing creatives community.[PRELIMINARY CELO X ART DAO PROPOSAL]",
     "author": "Shola @sholasparks",
     "stage": 1,
@@ -717,6 +799,7 @@
   },
   {
     "cgp": 84,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0084.md",
     "title": "Funding for Credit Collective",
     "author": "Tomer Bariach, Reuven Palatnik",
     "stage": 6,
@@ -726,6 +809,7 @@
   },
   {
     "cgp": 85,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0085.md",
     "title": "G\\$ oracle activation",
     "author": "@sirpy",
     "stage": 0,
@@ -734,6 +818,7 @@
   },
   {
     "cgp": 86,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0086.md",
     "title": "Adding USDC/EUR and USDC/BRL oracles",
     "author": "Nelson Taveras (@nvtaveras)",
     "stage": 6,
@@ -743,6 +828,7 @@
   },
   {
     "cgp": 87,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0087.md",
     "title": "Temperature Check - Celo transition to an Ethereum L2",
     "author": "productmatt",
     "stage": 6,
@@ -751,6 +837,7 @@
   },
   {
     "cgp": 88,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0088.md",
     "title": "CELO Korea",
     "author": "Hope Lee (hopelee327@gmail.com), Alex Shin (alex@shinlabs.xyz, @82partners)",
     "stage": 6,
@@ -760,6 +847,7 @@
   },
   {
     "cgp": 89,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0089.md",
     "title": "Enable G\\$ as Gas Currency",
     "author": "@sirpy",
     "stage": 0,
@@ -768,6 +856,7 @@
   },
   {
     "cgp": 90,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0090.md",
     "title": "CELO/wETH UniswapV3 Pool",
     "author": "Roman Croessmann <roman@mentolabs.xyz>",
     "stage": 6,
@@ -776,6 +865,7 @@
   },
   {
     "cgp": 91,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0091.md",
     "title": "Road to COP28",
     "author": "jeanne bloch <jeannebloch@decentralized-desires.com>",
     "stage": 8,
@@ -785,6 +875,7 @@
   },
   {
     "cgp": 92,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0092.md",
     "title": "Proposal for mobile first community in celo ecosystem and telecom",
     "author": "@jeffpulver",
     "stage": 6,
@@ -794,6 +885,7 @@
   },
   {
     "cgp": 93,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0093.md",
     "title": "ReFI DAO x CELO",
     "author": "John Ellison <je@refidao.com>",
     "stage": 1,
@@ -803,6 +895,7 @@
   },
   {
     "cgp": 94,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0094.md",
     "title": "EUROC Reserve Collateral and additional Oracle Rates",
     "author": "@nvtaveras, @rcroessmann",
     "stage": 6,
@@ -812,6 +905,7 @@
   },
   {
     "cgp": 95,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0095.md",
     "title": "Centrifuge Deployment on Celo",
     "author": "Asad Khan, Nirvaan Ranganathan",
     "stage": 6,
@@ -821,6 +915,7 @@
   },
   {
     "cgp": 96,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0096.md",
     "title": "Proposal to increase Block Gas Limit to 32M gas",
     "author": "Pavel Hornak, Subha Subramanian",
     "stage": 0,
@@ -830,6 +925,7 @@
   },
   {
     "cgp": 97,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0097.md",
     "title": "MU03 Enable more trading pairs and continue phasing out V1",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Philip Rätsch <philip@mentolabs.xyz>",
     "stage": 6,
@@ -839,6 +935,7 @@
   },
   {
     "cgp": 98,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0098.md",
     "title": "Add EUROC/XOF oracles",
     "author": "@nvtaveras",
     "stage": 6,
@@ -848,6 +945,7 @@
   },
   {
     "cgp": 99,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0099.md",
     "title": "Celo Core Contracts Release 10",
     "author": "Martin Volpe (@martinvol), Pavel Hornak (@pahor167)",
     "stage": 6,
@@ -857,6 +955,7 @@
   },
   {
     "cgp": 100,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0100.md",
     "title": "Set baseFeeOpCodeActivationBlock on GasPriceMinimum for Gingerbread hardfork",
     "author": "Martín Volpe (@martinvol), Gastón Ponti (@gastonponti), Pavel Hornak (@pahor167)",
     "stage": 6,
@@ -866,6 +965,7 @@
   },
   {
     "cgp": 101,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0101.md",
     "title": "Add New Governance Approvers Temperature Check",
     "author": "Tim Moreton (@timmoreton)",
     "stage": 0,
@@ -875,6 +975,7 @@
   },
   {
     "cgp": 102,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0102.md",
     "title": "Adding RedStone as oracle provider",
     "author": "Matt Gurbiel (@mattgurbiel, matt@redstone.finance)",
     "stage": 0,
@@ -882,6 +983,7 @@
   },
   {
     "cgp": 103,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0103.md",
     "title": "Launch eXOF stablecoin",
     "author": "Serge Kiema <sergek@dunia.africa>, Serge Ouedraogo <serge_o@dunia.africa>",
     "stage": 0,
@@ -891,6 +993,7 @@
   },
   {
     "cgp": 104,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0104.md",
     "title": "Proposal to increase Block Gas Limit to 50M gas",
     "author": "Javier Cortejoso, Subha Subramanian",
     "stage": 0,
@@ -900,6 +1003,7 @@
   },
   {
     "cgp": 105,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0105.md",
     "title": "Funding for cLabs blockchain public goods work",
     "author": "Tim Moreton (@timmoreton)",
     "stage": 0,
@@ -909,6 +1013,7 @@
   },
   {
     "cgp": 106,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0106.md",
     "title": "Funding for cLabs blockchain L2 project",
     "author": "Tim Moreton (@timmoreton)",
     "stage": 0,
@@ -918,6 +1023,7 @@
   },
   {
     "cgp": 107,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0107.md",
     "title": "Celo Dapps over Apps",
     "author": "Celo User(@supercoolkay)",
     "stage": 0,
@@ -926,6 +1032,7 @@
   },
   {
     "cgp": 108,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0108.md",
     "title": "Enable Celo buyback from FeeHandler and fee distributions",
     "author": "Martin Volpe (@martinvol)",
     "stage": 0,
@@ -935,6 +1042,7 @@
   },
   {
     "cgp": 109,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0109.md",
     "title": "MU04 - Transition to Mento V2 and update StableToken implementation",
     "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
     "stage": 6,
@@ -944,6 +1052,7 @@
   },
   {
     "cgp": 110,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0110.md",
     "title": "Mentors Collective",
     "author": "Sharon Sciammas <sharon@mentorscollective.org>",
     "stage": 1,
@@ -953,6 +1062,7 @@
   },
   {
     "cgp": 111,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0111.md",
     "title": "Strategic Grant For Accelerating Celo Ecosystem Adoption Across Africa",
     "author": "Opera MiniPay (@opera_minipay)",
     "stage": 6,
@@ -962,6 +1072,7 @@
   },
   {
     "cgp": 112,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0112.md",
     "title": "Celo Tribe University Society follow-up",
     "author": "Hawwal Ogungbadero @hawwal",
     "stage": 1,
@@ -971,6 +1082,7 @@
   },
   {
     "cgp": 113,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0113.md",
     "title": "Invest part of Reserve Collateral into low-risk reward generating protocols",
     "author": "Roman Croessmann (@rcroessmann), Markus Franke (@MarkusBerlin), Oleksiy Novykov",
     "stage": 6,
@@ -980,6 +1092,7 @@
   },
   {
     "cgp": 114,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0114.md",
     "title": "Funding payment contracts for Oracle providers",
     "author": "Denvil Jamal Clarke (@denviljclarke), Nelson Taveras (@nvtaveras)",
     "stage": 6,
@@ -989,6 +1102,7 @@
   },
   {
     "cgp": 115,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0115.md",
     "title": "Revised Celo Governance Guidelines and Public Goods Funding Strategy H1 2024",
     "author": "Luuk Weber(@LuukDAO), Monty Bryant(@MontyMerlin), Roman Croessmann (@rcroessmann), Bogdan Dumitru(@bowd)",
     "stage": 6,
@@ -998,6 +1112,7 @@
   },
   {
     "cgp": 116,
+    "cgpUrl": "https://raw.githubusercontent.com/jmrossy/governance/missing-proposal-ids/CGPs/cgp-0116.md",
     "title": "Celo Ecosystem Liquidity Operation Guild (CELO-Guild)",
     "author": "Henry He",
     "stage": 5,

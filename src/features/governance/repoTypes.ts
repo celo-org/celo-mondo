@@ -42,12 +42,13 @@ export const RawProposalMetadataSchema = z.object({
 export interface ProposalMetadata {
   // Overlapping data with Proposal interface
   stage: ProposalStage;
-  id?: number;
-  timestamp?: number;
-  url?: string;
+  id?: number; // on-chain id
+  timestamp?: number; // create time
+  url?: string; // aka discussion url
 
   // Extra metadata
-  cgp: number;
+  cgp: number; // cgp id (different than on-chain)
+  cgpUrl: string; // url in repo
   title: string;
   author: string;
   timestampExecuted?: number;

@@ -5,15 +5,14 @@ import { useMemo, useState } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 import { toast } from 'react-toastify';
 import { Spinner } from 'src/components/animation/Spinner';
+import { BackLink } from 'src/components/buttons/BackLink';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { IconButton } from 'src/components/buttons/IconButton';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
-import { TextLink } from 'src/components/buttons/TextLink';
 import { HeatmapLines } from 'src/components/charts/Heatmap';
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
-import { ArrowIcon } from 'src/components/icons/Arrow';
 import { Checkmark } from 'src/components/icons/Checkmark';
 import { Circle } from 'src/components/icons/Circle';
 import { Identicon } from 'src/components/icons/Identicon';
@@ -85,12 +84,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 
   return (
     <div>
-      <TextLink href="/" className="font-medium text-taupe-600">
-        <div className="flex items-center text-sm">
-          <ArrowIcon width={20} height={20} direction="w" fill={Color.Wood} />
-          <span>Browse Validators</span>
-        </div>
-      </TextLink>
+      <BackLink href="/">Browse validators</BackLink>
       <div className="mt-6 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-40">
         <div className="flex items-center space-x-3 sm:space-x-6">
           <ValidatorGroupLogo address={address} size={90} />

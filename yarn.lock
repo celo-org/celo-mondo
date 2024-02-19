@@ -461,6 +461,7 @@ __metadata:
     "@tanstack/eslint-plugin-query": "npm:^5.17.7"
     "@tanstack/react-query": "npm:^5.17.10"
     "@tanstack/react-table": "npm:^8.11.6"
+    "@types/dompurify": "npm:^3"
     "@types/jest": "npm:^29.5.11"
     "@types/node": "npm:^20.10.4"
     "@types/react": "npm:^18.2.45"
@@ -473,6 +474,7 @@ __metadata:
     clsx: "npm:^2.0.0"
     critters: "npm:^0.0.20"
     daisyui: "npm:^4.4.20"
+    dompurify: "npm:^3.0.8"
     eslint: "npm:^8.55.0"
     eslint-config-next: "npm:^14.1.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -2413,6 +2415,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dompurify@npm:^3":
+  version: 3.0.5
+  resolution: "@types/dompurify@npm:3.0.5"
+  dependencies:
+    "@types/trusted-types": "npm:*"
+  checksum: e544b3ce53c41215cabff3d89256ff707c7ee8e0c9a1b5034b22014725d288b16e6942cdcdeeb4221c578c3421a6a4721aa0676431f55d7abd18c07368855c5e
+  languageName: node
+  linkType: hard
+
 "@types/filesystem@npm:*":
   version: 0.0.35
   resolution: "@types/filesystem@npm:0.0.35"
@@ -2591,7 +2602,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/trusted-types@npm:^2.0.2":
+"@types/trusted-types@npm:*, @types/trusted-types@npm:^2.0.2":
   version: 2.0.7
   resolution: "@types/trusted-types@npm:2.0.7"
   checksum: 8e4202766a65877efcf5d5a41b7dd458480b36195e580a3b1085ad21e948bc417d55d6f8af1fd2a7ad008015d4117d5fdfe432731157da3c68678487174e4ba3
@@ -4955,6 +4966,13 @@ __metadata:
   dependencies:
     domelementtype: "npm:^2.3.0"
   checksum: 809b805a50a9c6884a29f38aec0a4e1b4537f40e1c861950ed47d10b049febe6b79ab72adaeeebb3cc8fc1cd33f34e97048a72a9265103426d93efafa78d3e96
+  languageName: node
+  linkType: hard
+
+"dompurify@npm:^3.0.8":
+  version: 3.0.8
+  resolution: "dompurify@npm:3.0.8"
+  checksum: 671fa18bd4bcb1a6ff2e59ecf919f807615b551e7add8834b27751d4e0f3d754a67725482d1efdd259317cadcaaccb72a8afc3aba829ac59730e760041591a1a
   languageName: node
   linkType: hard
 
