@@ -9,17 +9,21 @@ export const PLACEHOLDER_BAR_CHART_ITEM = {
   color: Color.Grey,
 };
 
+export type ColoredChartDataItem = ChartDataItem & { color: string };
+
 export function StackedBarChart({
   data,
   showBorder = true,
   height = 'h-2',
+  className,
 }: {
-  data: Array<ChartDataItem & { color: string }>;
+  data: Array<ColoredChartDataItem>;
   showBorder?: boolean;
   height?: string;
+  className?: string;
 }) {
   return (
-    <div className={clsx('flex', showBorder && 'border border-taupe-300 p-px')}>
+    <div className={clsx('flex', showBorder && 'border border-taupe-300 p-px', className)}>
       {data.map((item, index) => (
         <div
           key={index}
@@ -27,7 +31,7 @@ export function StackedBarChart({
             width: `${item.percentage || 0}%`,
             backgroundColor: item.color,
           }}
-          className={`tooltip ${height}`}
+          className={clsx(item.label && 'tooltip', height)}
           data-tip={item.label}
         ></div>
       ))}

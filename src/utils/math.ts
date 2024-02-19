@@ -8,8 +8,12 @@ export function mean(a: readonly number[]): number {
   return Number(sum(a)) / a.length;
 }
 
-export function percent(value: number, total: number): number {
-  return BigNumber(value).div(total).multipliedBy(100).decimalPlaces(2).toNumber();
+export function percent(value: number | bigint, total: number | bigint): number {
+  return BigNumber(value.toString())
+    .div(total.toString())
+    .multipliedBy(100)
+    .decimalPlaces(2)
+    .toNumber();
 }
 
 export function bigIntSum(a: readonly number[] | readonly bigint[]): bigint {

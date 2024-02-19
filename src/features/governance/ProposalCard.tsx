@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
@@ -12,7 +11,7 @@ import { MergedProposalData } from 'src/features/governance/useGovernanceProposa
 import ClockIcon from 'src/images/icons/clock.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
-import { bigIntSum } from 'src/utils/math';
+import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 
@@ -34,7 +33,7 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
   const barChartData = Object.entries(votes || {}).map(([vote, amount]) => ({
     label: toTitleCase(vote),
     value: fromWei(amount),
-    percentage: BigNumber(amount.toString()).div(sum.toString()).times(100).toNumber(),
+    percentage: percent(amount, sum),
     color: VoteToColor[vote as VoteValue],
   }));
 
