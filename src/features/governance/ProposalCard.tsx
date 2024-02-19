@@ -14,7 +14,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
-import { getHumanReadableTimeString } from 'src/utils/time';
+import { getHumanReadableDuration } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -27,7 +27,7 @@ export function ProposalCard({ data }: { data: MergedProposalData }) {
   const link = cgp ? `/governance/cgp-${cgp}` : `/governance/${id}`;
   const titleValue = title ? trimToLength(title, 50) : undefined;
   const endTimestamp = timestampExecuted || expiryTimestamp;
-  const endTimeValue = endTimestamp ? getHumanReadableTimeString(endTimestamp) : undefined;
+  const endTimeValue = endTimestamp ? getHumanReadableDuration(endTimestamp) : undefined;
   const endTimeLabel = timestampExecuted ? 'Executed' : 'Expires';
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;

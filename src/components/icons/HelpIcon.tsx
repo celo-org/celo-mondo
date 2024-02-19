@@ -1,24 +1,15 @@
 import { memo } from 'react';
 import { toast } from 'react-toastify';
 
-import Question from '../../images/icons/question-circle.svg';
+import Icon from '../../images/icons/info-circle.svg';
 import { IconButton } from '../buttons/IconButton';
 
-function _HelpIcon({ text, size = 20 }: { text: string; size?: number }) {
+function _HelpIcon({ text, size = 18 }: { text: string; size?: number }) {
   const onClick = () => {
     toast.info(text, { autoClose: 8000 });
   };
 
-  return (
-    <IconButton
-      imgSrc={Question}
-      title="Help"
-      width={size}
-      height={size}
-      onClick={onClick}
-      className="opacity-50"
-    />
-  );
+  return <IconButton imgSrc={Icon} title="Help" width={size} height={size} onClick={onClick} />;
 }
 
 export const HelpIcon = memo(_HelpIcon);

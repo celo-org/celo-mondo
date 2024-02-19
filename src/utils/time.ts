@@ -56,7 +56,11 @@ export function getHumanReadableDuration(ms: number, minSec?: number) {
     return `${minutes} min`;
   }
   const hours = Math.floor(minutes / 60);
-  return `${hours} hr`;
+  if (hours < 24) {
+    return `${hours} hours`;
+  }
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? 'day' : 'days'}`;
 }
 
 export function getDateTimeString(timestamp: number) {

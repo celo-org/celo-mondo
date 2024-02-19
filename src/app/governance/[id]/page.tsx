@@ -4,9 +4,13 @@ import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
+import { SolidButton } from 'src/components/buttons/SolidButton';
+import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { Section } from 'src/components/layout/Section';
+import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { links } from 'src/config/links';
 import { ProposalBadgeRow } from 'src/features/governance/ProposalCard';
+import { VoteValue } from 'src/features/governance/contractTypes';
 import {
   MergedProposalData,
   useGovernanceProposals,
@@ -14,6 +18,7 @@ import {
 import { useProposalContent } from 'src/features/governance/useProposalContent';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
+import { getHumanReadableDuration } from 'src/utils/time';
 import styles from './styles.module.css';
 
 const ID_PARAM_REGEX = /^(cgp-)?(\d+)$/;
@@ -62,7 +67,7 @@ function ProposalContent({ data }: { data: MergedProposalData }) {
   return (
     <div className="space-y-3">
       <BackLink href="/governance">Browse proposals</BackLink>
-      <h1 className="font-serif text-xl md:text-2xl">{title}</h1>
+      <h1 className="font-serif text-2xl md:text-2xl">{title}</h1>
       <ProposalBadgeRow data={data} showProposer />
       {isLoading && !content && <FullWidthSpinner>Loading proposal content</FullWidthSpinner>}
       {!isLoading && !content && (
@@ -89,10 +94,41 @@ function ProposalContent({ data }: { data: MergedProposalData }) {
 
 function ProposalChainData({ data: { proposal } }: { data: MergedProposalData }) {
   if (!proposal) return null;
+
   return (
     <div className="space-y-4">
-      <div className="border border-taupe-300 p-4">
-        <h2>Vote</h2>
+      <div className="space-y-3 border border-taupe-300 p-4">
+        <div className="flex items-center justify-between gap-6">
+          <h2 className="font-serif text-2xl">Vote</h2>
+          <div className="flex items-center text-sm font-medium">
+            {`Voting power: ${formatNumberString(0)} CELO `}
+            <HelpIcon text="Voting power is the amount of CELO you have locked plus/minus any you have delegated to/from you" />
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-2 md:flex-col md:items-stretch">
+          <SolidButton className="btn-neutral">{`👍 Yes`}</SolidButton>
+          <SolidButton className="btn-neutral">{`👎 No`}</SolidButton>
+          <SolidButton className="btn-neutral">{`⚪ Abstain`}</SolidButton>
+        </div>
+        {proposal.expiryTimestamp && (
+          <div>{`Voting ends in ${getHumanReadableDuration(proposal.expiryTimestamp)}`}</div>
+        )}
+        {proposal.votes && (
+          <>
+            <div className="flex items-center justify-between gap-6">
+              <h2 className="font-serif text-2xl">Result</h2>
+              <div className="flex items-center text-sm font-medium">
+                {`Support required: ${'TODO'}%`}
+                <HelpIcon text="Depending on the value/function being modified, different quorum and approval settings are required." />
+              </div>
+            </div>
+            <div>{'TODO bar charts'}</div>
+            <div>
+              <Amount valueWei={proposal.votes[VoteValue.Yes]} className="text-2xl" />
+              {'TODO stackedbar'}
+            </div>
+          </>
+        )}
       </div>
       <div className="border border-taupe-300 p-4">
         <h2>Results</h2>
