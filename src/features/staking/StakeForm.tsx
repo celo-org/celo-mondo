@@ -201,6 +201,11 @@ function GroupField({
   }, [defaultGroup, helpers]);
 
   const currentGroup = addressToGroup?.[field.value];
+  const groupName = currentGroup?.name
+    ? cleanGroupName(currentGroup.name)
+    : field.value
+      ? field.value
+      : 'Select group';
 
   const sortedGroups = useMemo(() => {
     if (!addressToGroup) return [];
@@ -237,9 +242,7 @@ function GroupField({
           <div className="flex w-full items-center justify-between">
             <div className="flex items-center space-x-2">
               <ValidatorGroupLogo address={field.value} size={28} />
-              <span className="text-black">
-                {currentGroup?.name ? cleanGroupName(currentGroup.name) : 'Select group'}
-              </span>
+              <span className="text-black">{groupName}</span>
             </div>
             <ChevronIcon direction="s" width={14} height={14} />
           </div>
