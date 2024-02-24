@@ -8,12 +8,13 @@ export function Spinner({ size, className }: { size: Size; className?: string })
 }
 
 export function SpinnerWithLabel({
-  children,
+  size = 'lg',
   className,
-}: PropsWithChildren<{ className?: string }>) {
+  children,
+}: PropsWithChildren<{ size?: Size; className?: string }>) {
   return (
     <div className={`flex flex-1 flex-col items-center ${className}`}>
-      <Spinner size="lg" />
+      <Spinner size={size} />
       <span className="mt-4 text-center text-xs text-gray-500">{children}</span>
     </div>
   );

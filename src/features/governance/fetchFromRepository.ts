@@ -1,5 +1,6 @@
 import { sanitize } from 'dompurify';
 import { micromark } from 'micromark';
+import { gfmTable, gfmTableHtml } from 'micromark-extension-gfm-table';
 import {
   MetadataStatusToStage,
   ProposalMetadata,
@@ -11,12 +12,12 @@ import { isNullish } from 'src/utils/typeof';
 import { parse as parseYaml } from 'yaml';
 
 // TODO use official repo when fixes are merged
-// const GITHUB_OWNER = 'celo-org';
-const GITHUB_OWNER = 'jmrossy';
+const GITHUB_OWNER = 'celo-org';
+// const GITHUB_OWNER = 'jmrossy';
 const GITHUB_REPO = 'governance';
 const GITHUB_DIRECTORY_PATH = 'CGPs';
-// const GITHUB_BRANCH = 'main';
-const GITHUB_BRANCH = 'missing-proposal-ids';
+const GITHUB_BRANCH = 'main';
+// const GITHUB_BRANCH = 'missing-proposal-ids';
 const GITHUB_NAME_REGEX = /^cgp-(\d+)\.md$/;
 
 export async function fetchProposalsFromRepo(
@@ -190,7 +191,10 @@ function parseFontMatter(data: Record<string, string>, url: string): ProposalMet
 function markdownToHtml(body: string) {
   try {
     // Attempt conversion from markdown to html
-    return micromark(body);
+    return micromark(body, {
+      extensions: [gfmTable()],
+      htmlExtensions: [gfmTableHtml()],
+    });
   } catch (error) {
     logger.error('Error converting markdown', error);
     return null;

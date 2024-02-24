@@ -60,9 +60,9 @@ async function fetchValidatorGroupStakers(group: Address): Promise<AddressTo<num
 
   // Avoid rate limit by querying in a staggered manner
   const castVoteEvents = await queryCeloscan<TransactionLog[]>(castVoteLogsUrl);
-  await sleep(500);
+  await sleep(250);
   const revokeActiveEvents = await queryCeloscan<TransactionLog[]>(revokeActiveLogsUrl);
-  await sleep(500);
+  await sleep(250);
   const revokePendingEvents = await queryCeloscan<TransactionLog[]>(revokePendingLogsUrl);
 
   const stakerToVotes: AddressTo<number> = {};

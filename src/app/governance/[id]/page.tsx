@@ -4,29 +4,23 @@ import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
-import { SolidButton } from 'src/components/buttons/SolidButton';
-import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
-import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { Section } from 'src/components/layout/Section';
-import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { links } from 'src/config/links';
 import { ProposalBadgeRow } from 'src/features/governance/ProposalCard';
 import {
-  ProposalStage,
-  VoteToColor,
-  VoteValue,
-  VoteValues,
-} from 'src/features/governance/contractTypes';
+  ProposalUpvoteButton,
+  ProposalVoteButtons,
+} from 'src/features/governance/ProposalVoteButtons';
+import { ProposalVoteChart } from 'src/features/governance/ProposalVoteChart';
+import { ProposalVotersTable } from 'src/features/governance/ProposalVotersTable';
+import { ProposalStage } from 'src/features/governance/contractTypes';
 import {
   MergedProposalData,
   useGovernanceProposals,
 } from 'src/features/governance/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/useProposalContent';
-import { Color } from 'src/styles/Color';
-import { fromWei } from 'src/utils/amount';
-import { bigIntSum, percent } from 'src/utils/math';
 import { usePageInvariant } from 'src/utils/navigation';
-import { toTitleCase, trimToLength } from 'src/utils/strings';
+import { trimToLength } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import styles from './styles.module.css';
 
@@ -37,7 +31,7 @@ export const dynamicParams = true;
 export default function Page({ params: { id } }: { params: { id: string } }) {
   const { proposals } = useGovernanceProposals();
 
-  const proposal = useMemo(() => {
+  const propData = useMemo(() => {
     if (!proposals || !id) return undefined;
     const matches = ID_PARAM_REGEX.exec(id);
     if (matches?.length === 2) {
@@ -51,24 +45,24 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     }
   }, [proposals, id]);
 
-  usePageInvariant(!proposals || proposal, '/governance', 'Proposal not found');
+  usePageInvariant(!proposals || propData, '/governance', 'Proposal not found');
 
-  if (!proposal) {
+  if (!propData) {
     return <FullWidthSpinner>Loading proposals</FullWidthSpinner>;
   }
 
   return (
     <Section containerClassName="space-y-4 mt-4">
       <div className="flex flex-col items-stretch md:flex-row md:gap-6">
-        <ProposalContent data={proposal} />
-        <ProposalChainData data={proposal} />
+        <ProposalContent propData={propData} />
+        <ProposalChainData propData={propData} />
       </div>
     </Section>
   );
 }
 
-function ProposalContent({ data }: { data: MergedProposalData }) {
-  const { proposal, metadata } = data;
+function ProposalContent({ propData }: { propData: MergedProposalData }) {
+  const { proposal, metadata } = propData;
   const title = trimToLength(metadata?.title || `Proposal #${proposal?.id}`, 80);
 
   const { content, isLoading } = useProposalContent(metadata);
@@ -77,7 +71,7 @@ function ProposalContent({ data }: { data: MergedProposalData }) {
     <div className="space-y-3">
       <BackLink href="/governance">Browse proposals</BackLink>
       <h1 className="font-serif text-2xl md:text-2xl">{title}</h1>
-      <ProposalBadgeRow data={data} showProposer />
+      <ProposalBadgeRow data={propData} showProposer />
       {isLoading && !content && <FullWidthSpinner>Loading proposal content</FullWidthSpinner>}
       {!isLoading && !content && (
         <div className="flex flex-col items-center justify-center space-y-4 py-12">
@@ -101,144 +95,23 @@ function ProposalContent({ data }: { data: MergedProposalData }) {
   );
 }
 
-function ProposalChainData({ data }: { data: MergedProposalData }) {
-  if (!data.proposal) return null;
-
-  const { proposal, stage } = data;
-  const { expiryTimestamp } = proposal;
+function ProposalChainData({ propData }: { propData: MergedProposalData }) {
+  const { proposal, stage } = propData;
+  const expiryTimestamp = proposal?.expiryTimestamp;
 
   return (
-    <div className="space-y-4">
+    <div className="min-w-[20rem] space-y-4">
       <div className="space-y-4 border border-taupe-300 p-3">
-        {stage === ProposalStage.Queued && <UpvoteButton />}
-        {stage === ProposalStage.Referendum && <VoteButtons />}
+        {stage === ProposalStage.Queued && <ProposalUpvoteButton />}
+        {stage === ProposalStage.Referendum && <ProposalVoteButtons />}
         {expiryTimestamp && (
           <div>{`Voting ends in ${getHumanReadableDuration(expiryTimestamp)}`}</div>
         )}
-        {stage >= ProposalStage.Referendum && <VoteChart data={data} />}
+        {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
       </div>
       <div className="border border-taupe-300 p-3">
-        <h2>Results</h2>
+        {stage >= ProposalStage.Referendum && <ProposalVotersTable propData={propData} />}
       </div>
-      <div className="border border-taupe-300 p-3">
-        <h2>Voters</h2>
-      </div>
-    </div>
-  );
-}
-
-function UpvoteButton() {
-  // todo tx modal here
-
-  return (
-    <>
-      <div className="flex items-center justify-between gap-8">
-        <h2 className="font-serif text-2xl">Upvote</h2>
-        <VotingPower />
-      </div>
-      <SolidButton className="btn-neutral">{`👍 Upvote`}</SolidButton>
-    </>
-  );
-}
-
-function VoteButtons() {
-  // todo tx modal here
-
-  return (
-    <>
-      <div className="flex items-center justify-between gap-8">
-        <h2 className="font-serif text-2xl">Vote</h2>
-        <VotingPower />
-      </div>
-      <div className="flex items-center justify-between gap-2 md:flex-col md:items-stretch">
-        <SolidButton className="btn-neutral">{`👍 Yes`}</SolidButton>
-        <SolidButton className="btn-neutral">{`👎 No`}</SolidButton>
-        <SolidButton className="btn-neutral">{`⚪ Abstain`}</SolidButton>
-      </div>
-    </>
-  );
-}
-
-function VoteChart({ data: { proposal } }: { data: MergedProposalData }) {
-  // TODO historic votes from celoscan
-  const votes = proposal?.votes;
-  const yesVotes = votes?.[VoteValue.Yes] || 0n;
-  const totalVotes = bigIntSum(Object.values(votes || {}));
-  const quorumRequired = 1000000000000000000000n;
-  const voteBarChartData = useMemo(
-    () =>
-      VoteValues.reduce(
-        (acc, v) => {
-          acc[v] = {
-            label: '',
-            value: fromWei(votes?.[v] || 0n),
-            percentage: percent(votes?.[v] || 0n, totalVotes),
-            color: VoteToColor[v],
-          };
-          return acc;
-        },
-        {} as Record<VoteValue, ColoredChartDataItem>,
-      ),
-    [votes, totalVotes],
-  );
-  const quorumBarChartData = useMemo(
-    () => [
-      {
-        label: 'Yes votes',
-        value: fromWei(yesVotes),
-        percentage: percent(yesVotes, quorumRequired),
-        color: Color.Wood,
-      },
-    ],
-    [yesVotes, quorumRequired],
-  );
-
-  if (!votes) return null;
-
-  return (
-    <>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-8">
-          <h2 className="font-serif text-2xl">Result</h2>
-          <div className="flex items-center text-sm">
-            {`Required: ${'TODO'}%`}
-            <HelpIcon text="Depending on the value or function being modified, different quorum and approval settings are required." />
-          </div>
-        </div>
-        <div className="space-y-2">
-          {Object.values(VoteValues).map((v) => (
-            <div key={v} className="relative text-xs">
-              <StackedBarChart data={[voteBarChartData[v]]} showBorder={false} height="h-7" />
-              <span className="absolute left-2 top-1/2 -translate-y-1/2">{toTitleCase(v)}</span>
-              <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-                <span className="text-gray-500">
-                  {formatNumberString(voteBarChartData[v].value)}
-                </span>
-                <span>{voteBarChartData[v].percentage?.toFixed(0) + '%'}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      {quorumRequired && (
-        <div className="space-y-2 border-t border-taupe-300 pt-2">
-          <Amount valueWei={proposal.votes[VoteValue.Yes]} className="text-2xl" decimals={0} />
-          <StackedBarChart data={quorumBarChartData} showBorder={false} />
-          <div className="flex items-center text-sm">
-            {`Quorum required: ${formatNumberString(quorumRequired, 0, true)}`}
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-function VotingPower() {
-  // TODO compute (account for delegation)
-  return (
-    <div className="flex items-center text-sm">
-      {`Voting power: ${formatNumberString(0)} CELO `}
-      <HelpIcon text="Voting power is the amount of CELO you have locked plus/minus any you have delegated to/from you" />
     </div>
   );
 }

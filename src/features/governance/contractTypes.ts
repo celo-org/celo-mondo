@@ -1,19 +1,31 @@
 import { Color } from 'src/styles/Color';
 
-export enum VoteValue {
+export enum VoteType {
   None = 'none',
   Abstain = 'abstain',
   No = 'no',
   Yes = 'yes',
 }
 
-export const VoteValues = [VoteValue.Yes, VoteValue.No, VoteValue.Abstain] as const;
+export const VoteTypes = [VoteType.Yes, VoteType.No, VoteType.Abstain] as const;
 
-export const VoteToColor: Record<VoteValue, string> = {
-  [VoteValue.None]: Color.Grey,
-  [VoteValue.Abstain]: Color.Sand,
-  [VoteValue.No]: Color.Red,
-  [VoteValue.Yes]: Color.Mint,
+export type VoteAmounts = {
+  [VoteType.Yes]: bigint;
+  [VoteType.No]: bigint;
+  [VoteType.Abstain]: bigint;
+};
+
+export const EmptyVoteAmounts: VoteAmounts = {
+  [VoteType.Yes]: 0n,
+  [VoteType.No]: 0n,
+  [VoteType.Abstain]: 0n,
+};
+
+export const VoteToColor: Record<VoteType, string> = {
+  [VoteType.None]: Color.Grey,
+  [VoteType.Abstain]: Color.Sand,
+  [VoteType.No]: Color.Red,
+  [VoteType.Yes]: Color.Mint,
 };
 
 // Using ints to align with solidity enum
@@ -65,9 +77,5 @@ export interface Proposal {
   deposit: bigint;
   stage: ProposalStage;
   upvotes: bigint;
-  votes: {
-    [VoteValue.Yes]: bigint;
-    [VoteValue.No]: bigint;
-    [VoteValue.Abstain]: bigint;
-  };
+  votes: VoteAmounts;
 }

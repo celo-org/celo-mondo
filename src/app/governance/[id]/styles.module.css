@@ -57,3 +57,8 @@
 .proposal img {
   display: none;
 }
+
+.proposal table th,
+.proposal table td {
+  padding: 0.2rem 0.5rem;
+}

@@ -12,7 +12,7 @@ import {
   ACTIVE_PROPOSAL_STAGES,
   Proposal,
   ProposalStage,
-  VoteValue,
+  VoteType,
 } from 'src/features/governance/contractTypes';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata } from 'src/features/governance/repoTypes';
@@ -20,7 +20,7 @@ import { logger } from 'src/utils/logger';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
-export type MergedProposalData = { stage: ProposalStage } & (
+export type MergedProposalData = { stage: ProposalStage; id?: number } & (
   | { proposal: Proposal; metadata?: ProposalMetadata }
   | { proposal?: Proposal; metadata: ProposalMetadata }
 );
@@ -145,9 +145,9 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
       stage,
       upvotes,
       votes: {
-        [VoteValue.Yes]: yes,
-        [VoteValue.No]: no,
-        [VoteValue.Abstain]: abstain,
+        [VoteType.Yes]: yes,
+        [VoteType.No]: no,
+        [VoteType.Abstain]: abstain,
       },
     });
   }
@@ -176,10 +176,10 @@ function mergeProposalsWithMetadata(
     if (metadataIndex >= 0) {
       // Remove the metadata element and use the on-chain stage
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
-      merged.push({ stage: proposal.stage, proposal, metadata });
+      merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
     } else {
       // No metadata found, use just the on-chain data
-      merged.push({ stage: proposal.stage, proposal });
+      merged.push({ stage: proposal.stage, id: proposal.id, proposal });
     }
   }
 
@@ -195,7 +195,7 @@ function mergeProposalsWithMetadata(
         metadata.stage = ProposalStage.None;
       }
     }
-    merged.push({ stage: metadata.stage, metadata });
+    merged.push({ stage: metadata.stage, id: metadata.id, metadata });
   }
 
   // Filter out failed proposals without a corresponding CGP

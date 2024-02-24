@@ -98,7 +98,7 @@ function ProposalList() {
             {filteredProposals.length ? (
               filteredProposals.map((data, i) => (
                 <div key={i} className="py-6 first:pt-0">
-                  <ProposalCard data={data} />
+                  <ProposalCard propData={data} />
                 </div>
               ))
             ) : (
