@@ -1,3 +1,18 @@
+.proposal {
+  max-width: min(96vw, 768px);
+  overflow: auto;
+}
+
+.proposal h1,
+.proposal h2,
+.proposal h3,
+.proposal h4,
+.proposal a,
+.proposal p {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
 .proposal h1,
 .proposal h2,
 .proposal h3,
@@ -52,6 +67,7 @@
 .proposal pre {
   padding: 0.5rem;
   background-color: rgba(0, 0, 0, 0.04);
+  overflow-x: hidden;
 }
 
 .proposal img {

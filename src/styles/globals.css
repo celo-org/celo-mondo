@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .flex-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .text-nowrap {
+    text-wrap: nowrap;
+    white-space: nowrap;
+    overflow: visible;
+  }
+}
+
 /*
 Normalization
 =============
@@ -59,17 +73,6 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type='number'] {
   -moz-appearance: textfield;
-}
-
-/* 
-Additional utility classes
-==========================
-*/
-
-.text-nowrap {
-  text-wrap: nowrap;
-  white-space: nowrap;
-  overflow: visible;
 }
 
 /* 

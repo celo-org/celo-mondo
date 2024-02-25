@@ -1,6 +1,7 @@
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { useGovernanceVotingPower } from 'src/features/governance/useVotingStatus';
 
 export function ProposalUpvoteButton() {
   // todo tx modal here
@@ -35,10 +36,10 @@ export function ProposalVoteButtons() {
 }
 
 function VotingPower() {
-  // TODO compute (account for delegation)
+  const { votingPower } = useGovernanceVotingPower();
   return (
     <div className="flex items-center text-sm">
-      {`Voting power: ${formatNumberString(0)} CELO `}
+      {`Voting power: ${formatNumberString(votingPower)} CELO `}
       <HelpIcon text="Voting power is the amount of CELO you have locked plus/minus any you have delegated to/from you" />
     </div>
   );
