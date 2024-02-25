@@ -52,8 +52,8 @@ export function useGovernanceProposals() {
   };
 }
 
-// proposer, deposit, timestamp, txLength, url
-type ProposalRaw = [Address, bigint, bigint, bigint, string];
+// proposer, deposit, timestamp, numTransactions, url, networkWeight, isApproved
+type ProposalRaw = [Address, bigint, bigint, bigint, string, bigint, boolean];
 // Yes, no, abstain
 type VoteTotalsRaw = [bigint, bigint, bigint];
 
@@ -88,7 +88,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   if (!allIdsAndUpvotes.length) return [];
 
   // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const metadatas: MulticallReturnType<any> = await publicClient.multicall({
+  const properties: MulticallReturnType<any> = await publicClient.multicall({
     contracts: allIdsAndUpvotes.map((p) => ({
       address: Addresses.Governance,
       abi: governanceABI,
@@ -120,16 +120,17 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   const proposals: Proposal[] = [];
   for (let i = 0; i < allIdsAndUpvotes.length; i++) {
     const { id, upvotes } = allIdsAndUpvotes[i];
-    const metadata = metadatas[i];
+    const props = properties[i];
     const proposalStage = stages[i];
     const vote = votes[i];
 
-    if (!metadata.result || !proposalStage.result || !vote.result) {
+    if (!props.result || !proposalStage.result || !vote.result) {
       logger.warn('Missing proposal metadata, stage, or vote totals for ID', id);
       continue;
     }
 
-    const [proposer, deposit, timestampSec, _txLength, url] = metadata.result as ProposalRaw;
+    const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
+      props.result as ProposalRaw;
     const [yes, no, abstain] = vote.result as VoteTotalsRaw;
     const stage = proposalStage.result as ProposalStage;
     const timestamp = Number(timestampSec) * 1000;
@@ -137,12 +138,15 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
 
     proposals.push({
       id: Number(id),
+      stage,
       timestamp,
       expiryTimestamp,
       proposer,
       deposit,
+      numTransactions,
+      networkWeight,
+      isApproved,
       url,
-      stage,
       upvotes,
       votes: {
         [VoteType.Yes]: yes,

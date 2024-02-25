@@ -6,11 +6,18 @@ interface Props {
   button: ReactNode;
   buttonClasses?: string;
   disabled?: boolean;
+  defaultOpen?: boolean;
 }
 
-export function Collapse({ button, buttonClasses, disabled, children }: PropsWithChildren<Props>) {
+export function Collapse({
+  button,
+  buttonClasses,
+  disabled,
+  defaultOpen,
+  children,
+}: PropsWithChildren<Props>) {
   return (
-    <Disclosure>
+    <Disclosure defaultOpen={defaultOpen}>
       {({ open }) => (
         <>
           <Disclosure.Button className={buttonClasses} disabled={disabled}>

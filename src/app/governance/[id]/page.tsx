@@ -99,6 +99,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
   const { proposal, stage } = propData;
   const expiryTimestamp = proposal?.expiryTimestamp;
 
+  if (stage === ProposalStage.None) return null;
+
   return (
     <div className="min-w-[20rem] space-y-4">
       <div className="space-y-4 border border-taupe-300 p-3">

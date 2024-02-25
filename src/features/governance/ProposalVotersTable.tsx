@@ -3,7 +3,7 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ChartDataItem, sortAndCombineChartData } from 'src/components/charts/chartData';
 import { Collapse } from 'src/components/menus/Collapse';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { VoteType } from 'src/features/governance/contractTypes';
+import { ProposalStage, VoteType } from 'src/features/governance/contractTypes';
 import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
 import { useProposalVoters } from 'src/features/governance/useProposalVoters';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
@@ -22,6 +22,7 @@ export function ProposalVotersTable({ propData }: { propData: MergedProposalData
       <Collapse
         button={<h2 className="text-left font-serif text-2xl">Voters</h2>}
         buttonClasses="w-full"
+        defaultOpen={propData.stage >= ProposalStage.Execution}
       >
         <VoterTableContent propData={propData} />
       </Collapse>

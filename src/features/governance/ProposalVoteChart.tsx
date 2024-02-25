@@ -1,10 +1,15 @@
 import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
-import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { VoteToColor, VoteType, VoteTypes } from 'src/features/governance/contractTypes';
+import {
+  ProposalStage,
+  VoteToColor,
+  VoteType,
+  VoteTypes,
+} from 'src/features/governance/contractTypes';
 import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
+import { useProposalQuorum } from 'src/features/governance/useProposalQuorum';
 import { useProposalVoteTotals } from 'src/features/governance/useProposalVoteTotals';
 import { Color } from 'src/styles/Color';
 import { fromWei } from 'src/utils/amount';
@@ -13,11 +18,10 @@ import { toTitleCase } from 'src/utils/strings';
 
 export function ProposalVoteChart({ propData }: { propData: MergedProposalData }) {
   const { isLoading, votes } = useProposalVoteTotals(propData);
+  const quorumRequired = useProposalQuorum(propData);
 
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const totalVotes = bigIntSum(Object.values(votes || {}));
-  // TODO quorum
-  const quorumRequired = 1000000000000000000000n;
 
   const voteBarChartData = useMemo(
     () =>
@@ -41,7 +45,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
       {
         label: 'Yes votes',
         value: fromWei(yesVotes),
-        percentage: percent(yesVotes, quorumRequired),
+        percentage: percent(yesVotes, quorumRequired || 1n),
         color: Color.Wood,
       },
     ],
@@ -59,13 +63,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
   return (
     <>
       <div className="space-y-2">
-        <div className="flex items-center justify-between gap-8">
-          <h2 className="font-serif text-2xl">Result</h2>
-          <div className="flex items-center text-sm">
-            {`Required: ${'TODO'}%`}
-            <HelpIcon text="Depending on the value or function being modified, different quorum and approval settings are required." />
-          </div>
-        </div>
+        <h2 className="font-serif text-2xl">Result</h2>
         <div className="space-y-1.5">
           {Object.values(VoteTypes).map((v) => (
             <div key={v} className="relative text-xs">
@@ -81,7 +79,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
           ))}
         </div>
       </div>
-      {quorumRequired && (
+      {propData.stage === ProposalStage.Referendum && quorumRequired && (
         <div className="space-y-2 border-t border-taupe-300 pt-2">
           <Amount valueWei={yesVotes} className="text-2xl" decimals={0} />
           <StackedBarChart data={quorumBarChartData} showBorder={false} />

@@ -70,12 +70,15 @@ export const FAILED_PROPOSAL_STAGES = [
 
 export interface Proposal {
   id: number;
+  stage: ProposalStage;
   timestamp: number;
   expiryTimestamp?: number;
   url: string;
   proposer: Address;
   deposit: bigint;
-  stage: ProposalStage;
+  numTransactions: bigint;
+  networkWeight: bigint;
+  isApproved: boolean;
   upvotes: bigint;
   votes: VoteAmounts;
 }
