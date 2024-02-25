@@ -22,14 +22,16 @@ import {
   StakingBalances,
 } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
-import { useTransactionPlan, useWriteContractWithReceipt } from 'src/features/transactions/hooks';
-import { ConfirmationDetails } from 'src/features/transactions/types';
+import { OnConfirmedFn } from 'src/features/transactions/types';
+import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
+import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
+import { shortenAddress } from 'src/utils/addresses';
 import { toWei } from 'src/utils/amount';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
@@ -43,13 +45,11 @@ const initialValues: StakeFormValues = {
 };
 
 export function StakeForm({
-  defaultGroup,
-  defaultAction,
+  defaultFormValues,
   onConfirmed,
 }: {
-  defaultGroup?: Address;
-  defaultAction?: StakeActionType;
-  onConfirmed: (details: ConfirmationDetails) => void;
+  defaultFormValues?: Partial<StakeFormValues>;
+  onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
   const { groups, addressToGroup } = useValidatorGroups();
@@ -90,8 +90,7 @@ export function StakeForm({
     <Formik<StakeFormValues>
       initialValues={{
         ...initialValues,
-        action: defaultAction || initialValues.action,
-        group: defaultGroup || initialValues.group,
+        ...defaultFormValues,
       }}
       onSubmit={onSubmit}
       validate={validate}
@@ -102,12 +101,12 @@ export function StakeForm({
         <Form className="mt-4 flex flex-1 flex-col justify-between">
           {/* Reserve space for group menu */}
           <div className="min-h-[21.5rem] space-y-4">
-            <ActionTypeField defaultAction={defaultAction} disabled={isInputDisabled} />
+            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <GroupField
               fieldName="group"
               label={values.action === StakeActionType.Transfer ? 'From group' : 'Group'}
               addressToGroup={addressToGroup}
-              defaultGroup={defaultGroup}
+              defaultGroup={defaultFormValues?.group}
               disabled={isInputDisabled}
             />
             {values.action === StakeActionType.Transfer && (
@@ -115,7 +114,6 @@ export function StakeForm({
                 fieldName="transferGroup"
                 label={'To group'}
                 addressToGroup={addressToGroup}
-                defaultGroup={defaultGroup}
                 disabled={isInputDisabled}
               />
             )}
@@ -203,8 +201,8 @@ function GroupField({
   const currentGroup = addressToGroup?.[field.value];
   const groupName = currentGroup?.name
     ? cleanGroupName(currentGroup.name)
-    : field.value
-      ? field.value
+    : field.value && field.value !== ZERO_ADDRESS
+      ? shortenAddress(field.value)
       : 'Select group';
 
   const sortedGroups = useMemo(() => {

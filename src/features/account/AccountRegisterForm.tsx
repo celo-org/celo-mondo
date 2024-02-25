@@ -2,7 +2,7 @@ import { accountsABI } from '@celo/abis';
 import Image from 'next/image';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { Addresses } from 'src/config/contracts';
-import { useWriteContractWithReceipt } from 'src/features/transactions/hooks';
+import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import CeloCube from 'src/images/logos/celo-cube.webp';
 
 export function AccountRegisterForm({

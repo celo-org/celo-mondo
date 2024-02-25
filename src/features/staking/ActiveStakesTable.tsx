@@ -10,7 +10,7 @@ import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { GroupToStake, StakeActionType } from 'src/features/staking/types';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import Ellipsis from 'src/images/icons/ellipsis.svg';
@@ -30,7 +30,7 @@ export function ActiveStakesTable({
   groupToIsActivatable?: AddressTo<boolean>;
   activateStake: (g: Address) => void;
 }) {
-  const showStakeModal = useTransactionModal(TxModalType.Stake);
+  const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
 
   const { chartData, tableData } = useMemo(() => {
     if (!groupToStake || !addressToGroup || !objLength(groupToStake)) {
@@ -134,7 +134,7 @@ function StakeDropdown({
 }) {
   const showTxModal = useTransactionModal();
   const onClickItem = (action: StakeActionType) => {
-    showTxModal(TxModalType.Stake, { defaultGroup: group, defaultAction: action });
+    showTxModal(TransactionFlowType.Stake, { group, action });
   };
 
   return (

@@ -7,7 +7,7 @@ import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
 import { H1 } from 'src/components/text/headers';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
@@ -44,7 +44,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
     return { minVotes, numValidators };
   }, [groups]);
 
-  const showStakeModal = useTransactionModal(TxModalType.Stake);
+  const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
 
   return (
     <div className="space-y-4">

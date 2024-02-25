@@ -3,7 +3,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { GroupToStake } from 'src/features/staking/types';
-import { useWriteContractWithReceipt } from 'src/features/transactions/hooks';
+import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { objKeys, objMap } from 'src/utils/objects';
 import { useReadContracts } from 'wagmi';
 

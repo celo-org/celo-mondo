@@ -19,7 +19,7 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
 import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
@@ -317,7 +317,7 @@ function useTableColumns(totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
-              showTxModal(TxModalType.Stake, { defaultGroup: props.row.original.address });
+              showTxModal(TransactionFlowType.Stake, { group: props.row.original.address });
             }}
             className="all:btn-neutral"
           >

@@ -170,7 +170,8 @@ async function fetchValidatorDetails(publicClient: PublicClient, addresses: read
 }
 
 async function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly Address[]) {
-  const results = await publicClient.multicall({
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
+  const results: MulticallReturnType<any> = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Accounts,
       abi: accountsABI,
@@ -186,7 +187,8 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
 }
 
 async function fetchGroupLastSlashed(publicClient: PublicClient, addresses: readonly Address[]) {
-  const results = await publicClient.multicall({
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
+  const results: MulticallReturnType<any> = await publicClient.multicall({
     contracts: addresses.map((addr) => ({
       address: Addresses.Validators,
       abi: validatorsABI,

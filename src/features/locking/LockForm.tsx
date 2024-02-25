@@ -23,8 +23,9 @@ import {
 } from 'src/features/locking/utils';
 import { StakingBalances } from 'src/features/staking/types';
 import { emptyStakeBalances, useStakingBalances } from 'src/features/staking/useStakingBalances';
-import { useTransactionPlan, useWriteContractWithReceipt } from 'src/features/transactions/hooks';
-import { ConfirmationDetails } from 'src/features/transactions/types';
+import { OnConfirmedFn } from 'src/features/transactions/types';
+import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
+import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { fromWeiRounded, toWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
 import { isNullish } from 'src/utils/typeof';
@@ -36,13 +37,13 @@ const initialValues: LockFormValues = {
 };
 
 export function LockForm({
-  defaultAction,
+  defaultFormValues,
   showTip,
   onConfirmed,
 }: {
-  defaultAction?: LockActionType;
+  defaultFormValues?: Partial<LockFormValues>;
   showTip?: boolean;
-  onConfirmed?: (details: ConfirmationDetails) => void;
+  onConfirmed?: OnConfirmedFn;
 }) {
   const { address } = useAccount();
   const { balance: walletBalance } = useBalance(address);
@@ -85,7 +86,7 @@ export function LockForm({
     <Formik<LockFormValues>
       initialValues={{
         ...initialValues,
-        action: defaultAction || initialValues.action,
+        ...defaultFormValues,
       }}
       onSubmit={onSubmit}
       validate={validate}
@@ -97,11 +98,11 @@ export function LockForm({
           <div className="space-y-5">
             {showTip && (
               <TipBox color="purple">
-                You currently have no locked CELO. Only locked funds can participate in staking.
+                You currently have no locked CELO. Staking and governance requires locked funds.
                 Lock CELO to begin.
               </TipBox>
             )}
-            <ActionTypeField defaultAction={defaultAction} disabled={isInputDisabled} />
+            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <LockAmountField
               lockedBalances={lockedBalances}
               walletBalance={walletBalance}

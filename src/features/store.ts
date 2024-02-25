@@ -1,4 +1,4 @@
-import type { TxModalType } from 'src/features/transactions/types';
+import type { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -9,10 +9,10 @@ const PERSIST_STATE_VERSION = 0;
 // Will refactor into slices as necessary
 export interface AppState {
   activeModal: {
-    type: TxModalType | null;
-    props?: object;
+    type: TransactionFlowType | null;
+    defaultFormValues?: any;
   };
-  setTransactionModal: (args: { type: TxModalType; props?: object }) => void;
+  setTransactionModal: (args: { type: TransactionFlowType; defaultFormValues?: any }) => void;
 }
 
 // TODO is a store needed?
@@ -21,9 +21,9 @@ export const useStore = create<AppState>()(
     (set) => ({
       activeModal: {
         type: null,
-        props: {},
+        defaultFormValues: {},
       },
-      setTransactionModal: (args: { type: TxModalType; props?: object }) => {
+      setTransactionModal: (args: { type: TransactionFlowType; defaultFormValues?: any }) => {
         set(() => ({ activeModal: args }));
       },
     }),

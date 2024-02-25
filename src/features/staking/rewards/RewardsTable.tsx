@@ -6,7 +6,7 @@ import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { tableClasses } from 'src/styles/common';
@@ -20,7 +20,7 @@ export function RewardsTable({
   groupToReward?: AddressTo<number>;
   addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
-  const showStakeModal = useTransactionModal(TxModalType.Stake);
+  const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
 
   const { chartData, tableData } = useMemo(() => {
     if (!groupToReward || !addressToGroup || !objLength(groupToReward)) {

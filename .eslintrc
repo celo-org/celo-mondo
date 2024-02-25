@@ -40,6 +40,16 @@
         "caughtErrorsIgnorePattern": "^_"
       }
     ],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          // Unban the {} type which is a useful shorthand for non-nullish value
+          "{}": false
+        },
+        "extendDefaults": true
+      }
+    ],
     "jsx-a11y/alt-text": ["off"]
   }
 }

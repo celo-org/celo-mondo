@@ -21,7 +21,7 @@ import {
 } from 'src/features/staking/useStakingActivation';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import LockIcon from 'src/images/icons/lock.svg';
@@ -85,7 +85,7 @@ function LockButtons({ className }: { className?: string }) {
   return (
     <div className={`space-x-2 ${className}`}>
       <SolidButton
-        onClick={() => showTxModal(TxModalType.Lock, { defaultAction: LockActionType.Lock })}
+        onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
       >
         <div className="flex items-center space-x-1.5">
           <Image src={LockIcon} width={12} height={12} alt="" />
@@ -93,7 +93,7 @@ function LockButtons({ className }: { className?: string }) {
         </div>
       </SolidButton>
       <SolidButton
-        onClick={() => showTxModal(TxModalType.Lock, { defaultAction: LockActionType.Unlock })}
+        onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
       >
         <div className="flex items-center space-x-1.5">
           <Image src={UnlockIcon} width={12} height={12} alt="" />
@@ -101,7 +101,7 @@ function LockButtons({ className }: { className?: string }) {
         </div>
       </SolidButton>
       <SolidButton
-        onClick={() => showTxModal(TxModalType.Lock, { defaultAction: LockActionType.Withdraw })}
+        onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Withdraw })}
       >
         <div className="flex items-center space-x-1.5">
           <Image src={WithdrawIcon} width={12} height={12} alt="" />

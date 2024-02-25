@@ -3,7 +3,7 @@ import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { links } from 'src/config/links';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import BookIcon from 'src/images/icons/book.svg';
 import LockIcon from 'src/images/icons/lock.svg';
 import CeloIcon from 'src/images/logos/celo.svg';
@@ -45,7 +45,7 @@ export function GetInvolvedCtaCard() {
 }
 
 export function NoFundsLockedCtaCard() {
-  const showTxModal = useTransactionModal(TxModalType.Lock);
+  const showTxModal = useTransactionModal(TransactionFlowType.Lock);
 
   return (
     <div className="flex items-center justify-between space-x-6 border border-taupe-300 bg-white bg-diamond-texture bg-right-bottom bg-no-repeat px-3 py-4 md:px-5 md:py-6">

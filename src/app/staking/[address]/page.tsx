@@ -27,7 +27,7 @@ import { EPOCH_DURATION_MS, ZERO_ADDRESS } from 'src/config/consts';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TxModalType } from 'src/features/transactions/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useGroupRewardHistory } from 'src/features/validators/useGroupRewardHistory';
@@ -79,7 +79,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 
   const showTxModal = useTransactionModal();
   const onClickStake = () => {
-    showTxModal(TxModalType.Stake, { defaultGroup: address });
+    showTxModal(TransactionFlowType.Stake, { group: address });
   };
 
   return (

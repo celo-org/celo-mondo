@@ -1,12 +1,5 @@
 import type { TransactionReceipt } from 'viem';
 
-export enum TxModalType {
-  Lock = 'lock',
-  Stake = 'stake',
-  Vote = 'vote',
-  Delegate = 'delegate',
-}
-
 export type TxPlan<A extends string = string, F extends string = string> = Array<{
   action: A;
   address: Address;
@@ -22,3 +15,5 @@ export interface ConfirmationDetails {
   receipt: TransactionReceipt;
   properties: Array<{ label: string; value: string }>;
 }
+
+export type OnConfirmedFn = (details: ConfirmationDetails) => void;
