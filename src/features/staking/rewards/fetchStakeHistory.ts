@@ -1,8 +1,7 @@
 import { electionABI } from '@celo/abis';
 import BigNumber from 'bignumber.js';
 import { Addresses } from 'src/config/contracts';
-import { links } from 'src/config/links';
-import { queryCeloscan } from 'src/features/explorers/celoscan';
+import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { StakeEvent, StakeEventType } from 'src/features/staking/types';
 import { ensure0x, eqAddress, isValidAddress } from 'src/utils/addresses';
@@ -15,18 +14,14 @@ const VOTE_ACTIVATED_TOPIC_0 = '0x45aac85f38083b18efe2d441a65b9c1ae177c78307cb5a
 // Keccak-256 ValidatorGroupActiveVoteRevoked(address,address,uint256,uint256)
 const VOTE_REVOKED_TOPIC_0 = '0xae7458f8697a680da6be36406ea0b8f40164915ac9cc40c0dad05a2ff6e8c6a8';
 
-export async function fetchStakeEvents(accountAddress: Address, fromBlockNumber?: number) {
-  const electionAddress = Addresses.Election;
-  const fromBlock = fromBlockNumber ? fromBlockNumber : 100; // Not using block 0 here because of some explorers have issues with incorrect txs in low blocks
+export async function fetchStakeEvents(accountAddress: Address) {
   const topic1 = pad(accountAddress).toLowerCase();
-  const baseUrl = `${links.celoscanApi}/api?module=logs&action=getLogs&fromBlock=${fromBlock}&toBlock=latest&address=${electionAddress}&topic1=${topic1}&topic0_1_opr=and`;
-
-  const activateLogsUrl = `${baseUrl}&topic0=${VOTE_ACTIVATED_TOPIC_0}`;
-  const activeTxLogs = await queryCeloscan<Array<TransactionLog>>(activateLogsUrl);
+  const activateLogsParams = `topic0=${VOTE_ACTIVATED_TOPIC_0}&topic1=${topic1}&topic0_1_opr=and`;
+  const activeTxLogs = await queryCeloscanLogs(Addresses.Election, activateLogsParams);
   const activateEvents = parseStakeLogs(activeTxLogs, accountAddress, StakeEventType.Activate);
 
-  const revokeLogsUrl = `${baseUrl}&topic0=${VOTE_REVOKED_TOPIC_0}`;
-  const revokeTxLogs = await queryCeloscan<Array<TransactionLog>>(revokeLogsUrl);
+  const revokeLogsParams = `topic0=${VOTE_REVOKED_TOPIC_0}&topic1=${topic1}&topic0_1_opr=and`;
+  const revokeTxLogs = await queryCeloscanLogs(Addresses.Election, revokeLogsParams);
   const revokeEvents = parseStakeLogs(revokeTxLogs, accountAddress, StakeEventType.Revoke);
   return activateEvents.concat(revokeEvents).sort((a, b) => a.timestamp - b.timestamp);
 }

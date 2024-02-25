@@ -3,8 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { PROPOSAL_V1_MAX_ID } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { links } from 'src/config/links';
-import { queryCeloscan } from 'src/features/explorers/celoscan';
+import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/contractTypes';
 import { isValidAddress } from 'src/utils/addresses';
@@ -44,13 +43,10 @@ export async function fetchProposalVoters(id: number): Promise<{
     id > PROPOSAL_V1_MAX_ID ? getV2Topics(id) : getV1Topics(id);
 
   // Prep query URLs
-  const topic1 = castVoteTopics[1];
-  const baseUrl = `${links.celoscanApi}/api?module=logs&action=getLogs&fromBlock=100&toBlock=latest&address=${Addresses.Governance}&topic1=${topic1}&topic0_1_opr=and`;
-  const castVoteLogsUrl = `${baseUrl}&topic0=${castVoteTopics[0]}`;
-  const revokeVoteLogsUrl = `${baseUrl}&topic0=${revokeVoteTopics[0]}`;
-
-  const castVoteEvents = await queryCeloscan<TransactionLog[]>(castVoteLogsUrl);
-  const revokeVoteEvents = await queryCeloscan<TransactionLog[]>(revokeVoteLogsUrl);
+  const castVoteParams = `topic0=${castVoteTopics[0]}&topic1=${castVoteTopics[1]}&topic0_1_opr=and`;
+  const revokeVoteParams = `topic0=${revokeVoteTopics[0]}&topic1=${revokeVoteTopics[1]}&topic0_1_opr=and`;
+  const castVoteEvents = await queryCeloscanLogs(Addresses.Governance, castVoteParams);
+  const revokeVoteEvents = await queryCeloscanLogs(Addresses.Governance, revokeVoteParams);
 
   const voterToVotes: AddressTo<VoteAmounts> = {};
   reduceLogs(voterToVotes, castVoteEvents, true);

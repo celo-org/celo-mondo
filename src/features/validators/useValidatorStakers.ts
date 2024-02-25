@@ -2,8 +2,7 @@ import { electionABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
-import { links } from 'src/config/links';
-import { queryCeloscan } from 'src/features/explorers/celoscan';
+import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { isValidAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
@@ -52,18 +51,16 @@ async function fetchValidatorGroupStakers(group: Address): Promise<AddressTo<num
   });
 
   // Prep query URLs
-  const topic2 = castVoteTopics[2];
-  const baseUrl = `${links.celoscanApi}/api?module=logs&action=getLogs&fromBlock=100&toBlock=latest&address=${Addresses.Election}&topic2=${topic2}&topic0_2_opr=and`;
-  const castVoteLogsUrl = `${baseUrl}&topic0=${castVoteTopics[0]}`;
-  const revokeActiveLogsUrl = `${baseUrl}&topic0=${revokeActiveTopics[0]}`;
-  const revokePendingLogsUrl = `${baseUrl}&topic0=${revokePendingTopics[0]}`;
+  const castVoteParams = `topic0=${castVoteTopics[0]}&topic2=${castVoteTopics[2]}&topic0_2_opr=and`;
+  const revokeActiveParams = `topic0=${revokeActiveTopics[0]}&topic2=${revokeActiveTopics[2]}&topic0_2_opr=and`;
+  const revokePendingParams = `topic0=${revokePendingTopics[0]}&topic2=${revokePendingTopics[2]}&topic0_2_opr=and`;
 
   // Avoid rate limit by querying in a staggered manner
-  const castVoteEvents = await queryCeloscan<TransactionLog[]>(castVoteLogsUrl);
+  const castVoteEvents = await queryCeloscanLogs(Addresses.Election, castVoteParams);
   await sleep(250);
-  const revokeActiveEvents = await queryCeloscan<TransactionLog[]>(revokeActiveLogsUrl);
+  const revokeActiveEvents = await queryCeloscanLogs(Addresses.Election, revokeActiveParams);
   await sleep(250);
-  const revokePendingEvents = await queryCeloscan<TransactionLog[]>(revokePendingLogsUrl);
+  const revokePendingEvents = await queryCeloscanLogs(Addresses.Election, revokePendingParams);
 
   const stakerToVotes: AddressTo<number> = {};
   reduceLogs(stakerToVotes, castVoteEvents, true);

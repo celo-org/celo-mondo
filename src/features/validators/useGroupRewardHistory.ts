@@ -3,9 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { EPOCH_DURATION_MS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { links } from 'src/config/links';
 import { infuraRpcUrl } from 'src/config/wagmi';
-import { queryCeloscan } from 'src/features/explorers/celoscan';
+import { queryCeloscanPath } from 'src/features/explorers/celoscan';
 import { logger } from 'src/utils/logger';
 import { PublicClient, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
 import { celo } from 'viem/chains';
@@ -43,8 +42,8 @@ async function fetchValidatorGroupRewardHistory(
 ): Promise<Array<{ blockNumber: number; reward: bigint; timestamp: number }>> {
   // Get block number of epoch to start from
   const startTimestamp = Math.floor((Date.now() - (epochs + 1) * EPOCH_DURATION_MS) / 1000);
-  const blockQueryUrl = `${links.celoscanApi}/api?module=block&action=getblocknobytime&timestamp=${startTimestamp}&closest=before`;
-  const blockNumberStr = await queryCeloscan<string>(blockQueryUrl);
+  const blockQueryPath = `/api?module=block&action=getblocknobytime&timestamp=${startTimestamp}&closest=before`;
+  const blockNumberStr = await queryCeloscanPath<string>(blockQueryPath);
   const startingBlockNumber = parseInt(blockNumberStr);
 
   // NOTE(Rossy): I initially tried using celoscan and blockscout to fetch the reward

@@ -18,15 +18,13 @@ const NUM_VOTERS_TO_SHOW = 20;
 
 export function ProposalVotersTable({ propData }: { propData: MergedProposalData }) {
   return (
-    <div className="hidden md:block">
-      <Collapse
-        button={<h2 className="text-left font-serif text-2xl">Voters</h2>}
-        buttonClasses="w-full"
-        defaultOpen={propData.stage >= ProposalStage.Execution}
-      >
-        <VoterTableContent propData={propData} />
-      </Collapse>
-    </div>
+    <Collapse
+      button={<h2 className="text-left font-serif text-2xl">Voters</h2>}
+      buttonClasses="w-full"
+      defaultOpen={propData.stage >= ProposalStage.Execution}
+    >
+      <VoterTableContent propData={propData} />
+    </Collapse>
   );
 }
 
@@ -57,6 +55,7 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
     const combinedByType = objMap(votesByType, (type) =>
       sortAndCombineChartData(votesByType[type], NUM_VOTERS_TO_SHOW),
     );
+    // Weave in type and flatten
     const combined = objKeys(combinedByType)
       .map((type) => combinedByType[type].map((v) => ({ ...v, type })))
       .flat();
@@ -79,18 +78,22 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
 
   return (
     <table>
-      {tableData.map((row) => (
-        <tr key={row.label}>
-          <td className="py-2 text-sm">{row.label}</td>
-          <td className="px-4 py-2 text-sm font-medium">{toTitleCase(row.type)}</td>
-          <td>
-            <div className="flex items-center space-x-2 rounded-full bg-taupe-300 px-2">
-              <span className="text-sm">{`${row.percentage?.toFixed(1) || 0}%`}</span>
-              <span className="text-xs text-gray-500">{`(${formatNumberString(row.value)})`}</span>
-            </div>
-          </td>
-        </tr>
-      ))}
+      <tbody>
+        {tableData.map((row) => (
+          <tr key={row.label}>
+            <td className="py-2 text-sm">{row.label}</td>
+            <td className="px-4 py-2 text-sm font-medium">{toTitleCase(row.type)}</td>
+            <td>
+              <div className="flex w-fit items-center space-x-2 rounded-full bg-taupe-300 px-2">
+                <span className="text-sm">{`${row.percentage?.toFixed(1) || 0}%`}</span>
+                <span className="text-xs text-gray-500">{`(${formatNumberString(
+                  row.value,
+                )})`}</span>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
     </table>
   );
 }

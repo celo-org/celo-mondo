@@ -7,11 +7,12 @@ import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { Section } from 'src/components/layout/Section';
 import { links } from 'src/config/links';
 import { ProposalBadgeRow } from 'src/features/governance/ProposalCard';
+import { ProposalUpvotersTable } from 'src/features/governance/ProposalUpvotersTable';
 import {
   ProposalUpvoteButton,
   ProposalVoteButtons,
 } from 'src/features/governance/ProposalVoteButtons';
-import { ProposalVoteChart } from 'src/features/governance/ProposalVoteChart';
+import { ProposalQuorumChart, ProposalVoteChart } from 'src/features/governance/ProposalVoteChart';
 import { ProposalVotersTable } from 'src/features/governance/ProposalVotersTable';
 import { ProposalStage } from 'src/features/governance/contractTypes';
 import {
@@ -110,10 +111,18 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           <div>{`Voting ends in ${getHumanReadableDuration(expiryTimestamp)}`}</div>
         )}
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
+        {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
       </div>
-      <div className="border border-taupe-300 p-3">
-        {stage >= ProposalStage.Referendum && <ProposalVotersTable propData={propData} />}
-      </div>
+      {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
+        <div className="border border-taupe-300 p-3">
+          <ProposalUpvotersTable propData={propData} />
+        </div>
+      )}
+      {stage >= ProposalStage.Referendum && (
+        <div className="border border-taupe-300 p-3">
+          <ProposalVotersTable propData={propData} />
+        </div>
+      )}
     </div>
   );
 }
