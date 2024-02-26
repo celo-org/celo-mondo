@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import Icon from '../../images/icons/info-circle.svg';
 import { IconButton } from '../buttons/IconButton';
 
-function _HelpIcon({ text, size = 16 }: { text: string; size?: number }) {
+function _HelpIcon({ text, size = 12 }: { text: string; size?: number }) {
   const onClick = () => {
     toast.info(text, { autoClose: 8000 });
   };

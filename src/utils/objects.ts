@@ -6,8 +6,8 @@ export function deepEquals(v1: any, v2: any) {
   return JSON.stringify(v1) === JSON.stringify(v2);
 }
 
-export function deepCopy(v: any) {
-  return JSON.parse(JSON.stringify(v));
+export function deepCopy<T>(v: T) {
+  return JSON.parse(JSON.stringify(v)) as T;
 }
 
 export type ValueOf<T> = T[keyof T];

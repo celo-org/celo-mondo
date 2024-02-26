@@ -5,6 +5,7 @@ import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotin
 import { VoteType } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
+import { useAccount } from 'wagmi';
 
 export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
   const showTxModal = useTransactionModal(TransactionFlowType.Upvote, { proposalId });
@@ -15,7 +16,10 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
         <h2 className="font-serif text-2xl">Upvote</h2>
         <VotingPower />
       </div>
-      <SolidButton className="btn-neutral" onClick={() => showTxModal()}>{`➕ Upvote`}</SolidButton>
+      <SolidButton
+        className="btn-neutral w-full"
+        onClick={() => showTxModal()}
+      >{`➕ Upvote`}</SolidButton>
     </>
   );
 }
@@ -51,10 +55,11 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
 }
 
 function VotingPower() {
-  const { votingPower } = useGovernanceVotingPower();
+  const { address } = useAccount();
+  const { votingPower } = useGovernanceVotingPower(address);
   return (
     <div className="flex items-center space-x-1.5 text-sm">
-      <span>{`Voting power: ${formatNumberString(votingPower)} CELO `}</span>
+      <span>{`Voting power: ${formatNumberString(votingPower, 2, true)} CELO`}</span>
       <HelpIcon text="Voting power is the amount of CELO you have locked plus/minus any you have delegated to/from you" />
     </div>
   );

@@ -89,6 +89,11 @@ export interface Proposal {
   votes: VoteAmounts;
 }
 
+export interface UpvoteRecord {
+  proposalId: number;
+  upvotes: bigint;
+}
+
 /**
  * TYPES CORRESPONDING TO REPOSITORY METADATA
  */
@@ -152,6 +157,10 @@ export interface ProposalMetadata {
 /**
  * TYPES FOR FORMS
  */
+
+export interface UpvoteFormValues {
+  proposalId: number;
+}
 
 export interface VoteFormValues {
   proposalId: number;
