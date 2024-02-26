@@ -11,7 +11,7 @@ export type TxPlan<A extends string = string, F extends string = string> = Array
 
 export interface ConfirmationDetails {
   message: string;
-  amount: bigint | number;
+  amount?: bigint | number;
   receipt: TransactionReceipt;
   properties: Array<{ label: string; value: string }>;
 }

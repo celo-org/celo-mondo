@@ -1,14 +1,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
+import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
+import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import {
   ProposalStage,
   ProposalStageToStyle,
   VoteToColor,
   VoteType,
-} from 'src/features/governance/contractTypes';
-import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
-import { useProposalVoteTotals } from 'src/features/governance/useProposalVoteTotals';
+} from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';

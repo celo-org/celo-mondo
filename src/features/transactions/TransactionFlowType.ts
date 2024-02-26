@@ -1,3 +1,4 @@
+import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
 import { StakeForm } from 'src/features/staking/StakeForm';
 import { TransactionFlowProps } from 'src/features/transactions/TransactionFlow';
@@ -28,7 +29,7 @@ export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowPr
     requiresLockedFunds: true,
   },
   [TransactionFlowType.Vote]: {
-    FormComponent: StakeForm,
+    FormComponent: VoteForm,
     header: 'Vote for proposal',
     requiresLockedFunds: true,
   },

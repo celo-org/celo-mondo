@@ -8,14 +8,14 @@ import {
 } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import CachedMetadata from 'src/config/proposals.json';
+import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import {
   ACTIVE_PROPOSAL_STAGES,
   Proposal,
+  ProposalMetadata,
   ProposalStage,
   VoteType,
-} from 'src/features/governance/contractTypes';
-import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import { ProposalMetadata } from 'src/features/governance/repoTypes';
+} from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';

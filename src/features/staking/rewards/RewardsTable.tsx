@@ -5,8 +5,8 @@ import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/char
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { tableClasses } from 'src/styles/common';

@@ -1,4 +1,4 @@
-import type { TransactionFlowType } from 'src/features/transactions/TransactionType';
+import type { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 

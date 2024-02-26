@@ -21,7 +21,7 @@ export function TransactionConfirmation({
             <Checkmark width={40} height={40} />
           </div>
           <h2 className="text-sm">{toTitleCase(confirmation.message)}</h2>
-          <Amount value={confirmation.amount} className="text-2xl" />
+          {!!confirmation.amount && <Amount value={confirmation.amount} className="text-2xl" />}
         </div>
         <div className="space-y-2 px-2">
           {confirmation.properties.map(({ label, value }) => (

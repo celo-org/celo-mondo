@@ -6,7 +6,7 @@ import { TransactionFlow, TransactionFlowProps } from 'src/features/transactions
 import {
   TransactionFlowType,
   transactionFlowProps,
-} from 'src/features/transactions/TransactionType';
+} from 'src/features/transactions/TransactionFlowType';
 import { useAccount } from 'wagmi';
 
 export function useTransactionModal(defaultType?: TransactionFlowType, defaultFormValues?: any) {

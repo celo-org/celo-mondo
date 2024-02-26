@@ -8,20 +8,23 @@ import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { links } from 'src/config/links';
-import { ProposalBadgeRow } from 'src/features/governance/ProposalCard';
-import { ProposalUpvotersTable } from 'src/features/governance/ProposalUpvotersTable';
+import { ProposalBadgeRow } from 'src/features/governance/components/ProposalCard';
+import { ProposalUpvotersTable } from 'src/features/governance/components/ProposalUpvotersTable';
 import {
   ProposalUpvoteButton,
   ProposalVoteButtons,
-} from 'src/features/governance/ProposalVoteButtons';
-import { ProposalQuorumChart, ProposalVoteChart } from 'src/features/governance/ProposalVoteChart';
-import { ProposalVotersTable } from 'src/features/governance/ProposalVotersTable';
-import { ProposalStage } from 'src/features/governance/contractTypes';
+} from 'src/features/governance/components/ProposalVoteButtons';
+import {
+  ProposalQuorumChart,
+  ProposalVoteChart,
+} from 'src/features/governance/components/ProposalVoteChart';
+import { ProposalVotersTable } from 'src/features/governance/components/ProposalVotersTable';
 import {
   MergedProposalData,
   useGovernanceProposals,
-} from 'src/features/governance/useGovernanceProposals';
-import { useProposalContent } from 'src/features/governance/useProposalContent';
+} from 'src/features/governance/hooks/useGovernanceProposals';
+import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
+import { ProposalStage } from 'src/features/governance/types';
 import { useWindowSize } from 'src/styles/mediaQueries';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
@@ -118,7 +121,7 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { proposal, stage } = propData;
+  const { id, stage, proposal } = propData;
   const expiryTimestamp = proposal?.expiryTimestamp;
 
   const windowSize = useWindowSize();
@@ -129,8 +132,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
   return (
     <div className="space-y-4 lg:min-w-[20rem]">
       <div className="space-y-4 border-taupe-300 p-3 lg:border">
-        {stage === ProposalStage.Queued && <ProposalUpvoteButton />}
-        {stage === ProposalStage.Referendum && <ProposalVoteButtons />}
+        {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={id} />}
+        {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={id} />}
         {expiryTimestamp && (
           <div>{`Voting ends in ${getHumanReadableDuration(expiryTimestamp)}`}</div>
         )}

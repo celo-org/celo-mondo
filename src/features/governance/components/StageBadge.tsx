@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { ProposalStage, ProposalStageToStyle } from 'src/features/governance/contractTypes';
+import { ProposalStage, ProposalStageToStyle } from 'src/features/governance/types';
 
 export function StageBadge({ stage, className }: { stage: ProposalStage; className?: string }) {
   const { color, label } = ProposalStageToStyle[stage];

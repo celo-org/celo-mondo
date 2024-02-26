@@ -2,7 +2,7 @@ import { governanceABI } from '@celo/abis';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { Addresses } from 'src/config/contracts';
-import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
+import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { fromFixidity } from 'src/utils/numbers';
 import { useReadContract } from 'wagmi';
 

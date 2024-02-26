@@ -7,7 +7,7 @@ import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { useBalance } from 'src/features/account/hooks';
-import { useIsGovernanceVoting } from 'src/features/governance/useVotingStatus';
+import { useIsGovernanceVoting } from 'src/features/governance/hooks/useVotingStatus';
 import { getLockTxPlan } from 'src/features/locking/lockPlan';
 import {
   LockActionType,

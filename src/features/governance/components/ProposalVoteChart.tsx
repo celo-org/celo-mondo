@@ -2,13 +2,14 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { VoteToColor, VoteType, VoteTypes } from 'src/features/governance/contractTypes';
-import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
-import { useProposalQuorum } from 'src/features/governance/useProposalQuorum';
-import { useProposalVoteTotals } from 'src/features/governance/useProposalVoteTotals';
+import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
+import { useProposalQuorum } from 'src/features/governance/hooks/useProposalQuorum';
+import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
+import { EmptyVoteAmounts, VoteToColor, VoteType, VoteTypes } from 'src/features/governance/types';
 import { Color } from 'src/styles/Color';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
+import { objKeys } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 
 export function ProposalVoteChart({ propData }: { propData: MergedProposalData }) {
@@ -18,7 +19,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
 
   const voteBarChartData = useMemo(
     () =>
-      VoteTypes.reduce(
+      objKeys(EmptyVoteAmounts).reduce(
         (acc, v) => {
           acc[v] = {
             label: '',

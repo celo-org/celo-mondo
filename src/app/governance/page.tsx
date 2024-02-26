@@ -10,13 +10,16 @@ import { Section } from 'src/components/layout/Section';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { H1 } from 'src/components/text/headers';
 import { useLockedBalance } from 'src/features/account/hooks';
-import { ProposalCard } from 'src/features/governance/ProposalCard';
-import { ProposalStage } from 'src/features/governance/contractTypes';
-import { GetInvolvedCtaCard, NoFundsLockedCtaCard } from 'src/features/governance/ctaCards';
+import { ProposalCard } from 'src/features/governance/components/ProposalCard';
+import {
+  GetInvolvedCtaCard,
+  NoFundsLockedCtaCard,
+} from 'src/features/governance/components/ctaCards';
 import {
   MergedProposalData,
   useGovernanceProposals,
-} from 'src/features/governance/useGovernanceProposals';
+} from 'src/features/governance/hooks/useGovernanceProposals';
+import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { isNullish } from 'src/utils/typeof';

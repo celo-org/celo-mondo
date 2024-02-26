@@ -5,7 +5,7 @@ import {
   MetadataStatusToStage,
   ProposalMetadata,
   RawProposalMetadataSchema,
-} from 'src/features/governance/repoTypes';
+} from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { objLength } from 'src/utils/objects';
 import { isNullish } from 'src/utils/typeof';

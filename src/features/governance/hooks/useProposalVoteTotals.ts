@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { ProposalStage } from 'src/features/governance/contractTypes';
-import { MergedProposalData } from 'src/features/governance/useGovernanceProposals';
-import { fetchProposalVoters } from 'src/features/governance/useProposalVoters';
+import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
+import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
+import { ProposalStage } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 
 export function useProposalVoteTotals(propData?: MergedProposalData) {

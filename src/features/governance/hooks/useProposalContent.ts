@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { fetchProposalContent } from 'src/features/governance/fetchFromRepository';
-import { ProposalMetadata } from 'src/features/governance/repoTypes';
+import { ProposalMetadata } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 
 export function useProposalContent(metadata?: ProposalMetadata) {

@@ -5,7 +5,7 @@ import { PROPOSAL_V1_MAX_ID } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
-import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/contractTypes';
+import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { isValidAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';

@@ -20,8 +20,8 @@ import {
   usePendingStakingActivations,
 } from 'src/features/staking/useStakingActivation';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
+import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { TransactionFlowType } from 'src/features/transactions/TransactionType';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import LockIcon from 'src/images/icons/lock.svg';

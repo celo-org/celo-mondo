@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import { ProposalStage } from 'src/features/governance/contractTypes';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import { fetchProposalVoters } from 'src/features/governance/useProposalVoters';
+import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
+import { ProposalStage } from 'src/features/governance/types';
 import { sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
 
