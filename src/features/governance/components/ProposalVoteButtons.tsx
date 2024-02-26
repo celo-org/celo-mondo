@@ -34,15 +34,15 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
       </div>
       <div className="flex items-center justify-between gap-2 md:flex-col md:items-stretch">
         <SolidButton
-          className="btn-neutral"
+          className="btn-neutral grow"
           onClick={() => onClick(VoteType.Yes)}
         >{`👍 Yes`}</SolidButton>
         <SolidButton
-          className="btn-neutral"
+          className="btn-neutral grow"
           onClick={() => onClick(VoteType.No)}
         >{`👎 No`}</SolidButton>
         <SolidButton
-          className="btn-neutral"
+          className="btn-neutral grow"
           onClick={() => onClick(VoteType.Abstain)}
         >{`⚪ Abstain`}</SolidButton>
       </div>
@@ -53,8 +53,8 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
 function VotingPower() {
   const { votingPower } = useGovernanceVotingPower();
   return (
-    <div className="flex items-center text-sm">
-      {`Voting power: ${formatNumberString(votingPower)} CELO `}
+    <div className="flex items-center space-x-1.5 text-sm">
+      <span>{`Voting power: ${formatNumberString(votingPower)} CELO `}</span>
       <HelpIcon text="Voting power is the amount of CELO you have locked plus/minus any you have delegated to/from you" />
     </div>
   );

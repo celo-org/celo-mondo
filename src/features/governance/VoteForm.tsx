@@ -1,13 +1,14 @@
 import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
+import { useGovernanceProposal } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalDequeueList } from 'src/features/governance/hooks/useProposalDequeueList';
 import { VoteFormValues, VoteType, VoteTypes } from 'src/features/governance/types';
 import { getVoteTxPlan } from 'src/features/governance/votePlan';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
-import { toTitleCase } from 'src/utils/strings';
+import { trimToLength } from 'src/utils/strings';
 import { useAccount } from 'wagmi';
 
 const initialValues: VoteFormValues = {
@@ -24,6 +25,12 @@ export function VoteForm({
 }) {
   const { address } = useAccount();
   const { dequeue } = useProposalDequeueList();
+  const propData = useGovernanceProposal(defaultFormValues?.proposalId);
+  const { proposal, metadata } = propData || {};
+  const proposedTimeValue = proposal?.timestamp
+    ? new Date(proposal.timestamp).toLocaleDateString()
+    : undefined;
+  const cgpId = metadata?.cgp ? `(CGP ${metadata.cgp})` : '';
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || []),
@@ -62,11 +69,18 @@ export function VoteForm({
     >
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between">
-          <div className="space-y-5">
-            <VoteTypeField disabled={isInputDisabled} />
+          <div className="space-y-3">
+            <h3>{`Proposal ID: #${values.proposalId} ${cgpId}`}</h3>
+            {metadata && <p className="text-sm">{trimToLength(metadata.title, 35)}</p>}
+            {proposedTimeValue && (
+              <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
+            )}
+            <div className="px-0.5 py-1">
+              <VoteTypeField defaultValue={defaultFormValues?.vote} disabled={isInputDisabled} />
+            </div>
           </div>
           <FormSubmitButton isLoading={isLoading} loadingText={'Casting vote'}>
-            {`${toTitleCase(values.vote)}`}
+            Vote
           </FormSubmitButton>
         </Form>
       )}
@@ -74,8 +88,21 @@ export function VoteForm({
   );
 }
 
-function VoteTypeField({ disabled }: { disabled?: boolean }) {
-  return <RadioField<VoteType> name="vote" values={VoteTypes} disabled={disabled} />;
+function VoteTypeField({
+  defaultValue,
+  disabled,
+}: {
+  defaultValue?: VoteType;
+  disabled?: boolean;
+}) {
+  return (
+    <RadioField<VoteType>
+      name="vote"
+      values={VoteTypes}
+      defaultValue={defaultValue}
+      disabled={disabled}
+    />
+  );
 }
 
 function validateForm(values: VoteFormValues, dequeue: number[]): FormikErrors<VoteFormValues> {

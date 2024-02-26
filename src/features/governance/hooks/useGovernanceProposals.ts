@@ -25,6 +25,12 @@ export type MergedProposalData = { stage: ProposalStage; id?: number } & (
   | { proposal?: Proposal; metadata: ProposalMetadata }
 );
 
+export function useGovernanceProposal(id?: number) {
+  const { proposals } = useGovernanceProposals();
+  if (!id || !proposals) return undefined;
+  return proposals.find((p) => p.id === id);
+}
+
 export function useGovernanceProposals() {
   const publicClient = usePublicClient();
 
