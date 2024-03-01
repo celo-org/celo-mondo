@@ -3,6 +3,7 @@ import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
 import { ProposalFormDetails } from 'src/features/governance/components/ProposalFormDetails';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
+import { useGovernanceVoteRecord } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteFormValues, VoteType, VoteTypes } from 'src/features/governance/types';
 import { getVoteTxPlan } from 'src/features/governance/votePlan';
 import { OnConfirmedFn } from 'src/features/transactions/types';
@@ -24,9 +25,14 @@ export function VoteForm({
 }) {
   const { address } = useAccount();
   const { dequeue } = useProposalDequeue();
+  const { refetch: refetchVoteRecord } = useGovernanceVoteRecord(
+    address,
+    defaultFormValues?.proposalId,
+  );
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || []),
+    onStepSuccess: () => refetchVoteRecord(),
     onPlanSuccess: (v, r) =>
       onConfirmed({
         message: `Vote successful`,

@@ -41,12 +41,12 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
   const propData = useMemo(() => {
     if (!proposals || !id) return undefined;
     const matches = ID_PARAM_REGEX.exec(id);
-    if (matches?.length === 2) {
-      const propId = parseInt(matches[1]);
-      return proposals.find((p) => p.proposal?.id === propId);
-    } else if (matches?.length === 3) {
+    if (matches?.[1] === 'cgp-') {
       const cgpId = parseInt(matches[2]);
       return proposals.find((p) => p.metadata?.cgp === cgpId);
+    } else if (matches?.[2]) {
+      const propId = parseInt(matches[2]);
+      return proposals.find((p) => p.proposal?.id === propId);
     } else {
       return undefined;
     }
@@ -75,7 +75,7 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
           <div
             className={clsx(
               'transition-all duration-300',
-              isMenuCollapsed ? 'max-h-0' : 'max-h-screen',
+              isMenuCollapsed ? 'max-h-0 lg:max-h-none' : 'max-h-screen lg:max-h-none',
             )}
           >
             <ProposalChainData propData={propData} />
@@ -99,14 +99,17 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
       <ProposalBadgeRow data={propData} showProposer />
       {isLoading && !content && <FullWidthSpinner>Loading proposal content</FullWidthSpinner>}
       {!isLoading && !content && (
-        <div className="flex flex-col items-center justify-center space-y-4 py-12">
-          <p className="text-center text-taupe-600">No CGP content found for this proposal</p>
-          <p className="text-center text-taupe-600">
-            Check the{' '}
+        <div className="flex flex-col items-start justify-center space-y-3 py-8">
+          <p className="text-taupe-600">
+            No valid CGP data found for this proposal. It may be missing or malformed.
+          </p>
+          <p className="text-taupe-600">You can still upvote and/or vote for this proposal.</p>
+          <p className="text-taupe-600">
+            See the{' '}
             <ExternalLink href={links.governance} className="underline">
               Celo Governance repository
             </ExternalLink>{' '}
-            for more information
+            for more information.
           </p>
         </div>
       )}
@@ -146,7 +149,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         </div>
       )}
       {showTables && stage >= ProposalStage.Referendum && (
-        <div className="border-taupe-300 p-3 lg:border">
+        <div className="overflow-auto border-taupe-300 p-3 lg:border">
           <ProposalVotersTable propData={propData} />
         </div>
       )}

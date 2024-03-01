@@ -10,7 +10,7 @@ import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName } from 'src/features/validators/utils';
 import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
-import { percent } from 'src/utils/math';
+import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 
@@ -47,7 +47,8 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
       const label = groupName || shortenAddress(account);
       for (const type of objKeys(voters[account])) {
         const amount = fromWei(voters[account][type]);
-        const percentage = percent(voters[account][type], totals[type]);
+        if (amount <= 0) continue;
+        const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
         votesByType[type]?.push({ label, value: amount, percentage });
       }
     }

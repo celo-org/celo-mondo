@@ -82,7 +82,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
   return (
     <div className="space-y-2 border-t border-taupe-300 pt-2">
       <Amount valueWei={yesVotes} className="text-2xl" decimals={0} />
-      <StackedBarChart data={quorumBarChartData} showBorder={false} />
+      <StackedBarChart data={quorumBarChartData} showBorder={false} className="bg-taupe-300" />
       <div className="flex items-center text-sm text-taupe-600">
         {`Quorum required: ${formatNumberString(quorumRequired, 0, true)} CELO`}
       </div>

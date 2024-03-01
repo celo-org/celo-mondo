@@ -32,7 +32,7 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
       return totals;
     },
     gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   useToastError(error, 'Error fetching proposals vote totals');
