@@ -35,7 +35,7 @@ export function VoteForm({
     onStepSuccess: () => refetchVoteRecord(),
     onPlanSuccess: (v, r) =>
       onConfirmed({
-        message: `Vote successful`,
+        message: 'Vote successful',
         receipt: r,
         properties: [
           { label: 'Vote', value: v.vote },

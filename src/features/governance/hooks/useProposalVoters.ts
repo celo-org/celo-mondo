@@ -39,20 +39,20 @@ export async function fetchProposalVoters(id: number): Promise<{
   totals: VoteAmounts;
 }> {
   // Get encoded topics
-  const { castVoteTopics, revokeVoteTopics } =
-    id > PROPOSAL_V1_MAX_ID ? getV2Topics(id) : getV1Topics(id);
-
-  // Prep query URLs
-  const castVoteParams = `topic0=${castVoteTopics[0]}&topic1=${castVoteTopics[1]}&topic0_1_opr=and`;
-  const revokeVoteParams = `topic0=${revokeVoteTopics[0]}&topic1=${revokeVoteTopics[1]}&topic0_1_opr=and`;
-  const castVoteEvents = await queryCeloscanLogs(Addresses.Governance, castVoteParams);
-  const revokeVoteEvents = await queryCeloscanLogs(Addresses.Governance, revokeVoteParams);
+  const { castVoteTopics } = id > PROPOSAL_V1_MAX_ID ? getV2Topics(id) : getV1Topics(id);
 
   const voterToVotes: AddressTo<VoteAmounts> = {};
+  const castVoteParams = `topic0=${castVoteTopics[0]}&topic1=${castVoteTopics[1]}&topic0_1_opr=and`;
+  const castVoteEvents = await queryCeloscanLogs(Addresses.Governance, castVoteParams);
   reduceLogs(voterToVotes, castVoteEvents, true);
-  reduceLogs(voterToVotes, revokeVoteEvents, false);
 
-  // Filter out stakers who have already revoked all votes
+  // Skipping revoke vote events for now for performance since they are almost never used
+  // Much more common is for a voter to re-vote, replacing the old vote
+  // const revokeVoteParams = `topic0=${revokeVoteTopics[0]}&topic1=${revokeVoteTopics[1]}&topic0_1_opr=and`;
+  // const revokeVoteEvents = await queryCeloscanLogs(Addresses.Governance, revokeVoteParams);
+  // reduceLogs(voterToVotes, revokeVoteEvents, false);
+
+  // Filter out voters with no current votes
   const voters = objFilter(
     voterToVotes,
     (_, votes): votes is VoteAmounts => bigIntSum(Object.values(votes)) > 0n,
@@ -71,7 +71,7 @@ export async function fetchProposalVoters(id: number): Promise<{
   return { voters, totals };
 }
 
-function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: TransactionLog[], isAdd: boolean) {
+function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: TransactionLog[], isCast: boolean) {
   for (const log of logs) {
     try {
       if (!log.topics || log.topics.length < 3) continue;
@@ -104,15 +104,14 @@ function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: TransactionLog[]
 
       if (!account || !isValidAddress(account)) continue;
 
-      voterToVotes[account] ||= { ...EmptyVoteAmounts };
-      if (isAdd) {
-        voterToVotes[account][VoteType.Yes] += yesVotes || 0n;
-        voterToVotes[account][VoteType.No] += noVotes || 0n;
-        voterToVotes[account][VoteType.Abstain] += abstainVotes || 0n;
+      if (isCast) {
+        voterToVotes[account] = {
+          [VoteType.Yes]: yesVotes || 0n,
+          [VoteType.No]: noVotes || 0n,
+          [VoteType.Abstain]: abstainVotes || 0n,
+        };
       } else {
-        voterToVotes[account][VoteType.Yes] -= yesVotes || 0n;
-        voterToVotes[account][VoteType.No] -= noVotes || 0n;
-        voterToVotes[account][VoteType.Abstain] -= abstainVotes || 0n;
+        voterToVotes[account] = EmptyVoteAmounts;
       }
     } catch (error) {
       logger.warn('Error decoding event log', error, log);
