@@ -40,7 +40,7 @@ export function ValidatorGroupLogoAndName({
     <div className={`flex items-center ${className}`}>
       <ValidatorGroupLogo address={address} size={size} />
       <div className="ml-2 flex flex-col">
-        <span>{name || 'Unknown'}</span>
+        <span>{name || 'Unknown Group'}</span>
         <span className="font-mono text-xs text-taupe-600">{shortenAddress(address)}</span>
       </div>
     </div>

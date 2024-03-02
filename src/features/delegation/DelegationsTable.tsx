@@ -5,61 +5,66 @@ import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/char
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { DelegationAmount } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { tableClasses } from 'src/styles/common';
-import { percent, sum } from 'src/utils/math';
+import { fromWei } from 'src/utils/amount';
+import { bigIntSum, percent } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
 
-export function RewardsTable({
-  groupToReward,
-  addressToGroup,
+// TODO pass in addressToDelegatee data here
+export function DelegationsTable({
+  delegateeToAmount,
+  addressToDelegatee,
 }: {
-  groupToReward?: AddressTo<number>;
-  addressToGroup?: AddressTo<ValidatorGroup>;
+  delegateeToAmount?: AddressTo<DelegationAmount>;
+  addressToDelegatee?: AddressTo<ValidatorGroup>;
 }) {
-  const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const showTxModal = useTransactionModal(TransactionFlowType.Delegate);
 
   const { chartData, tableData } = useMemo(() => {
-    if (!groupToReward || !addressToGroup || !objLength(groupToReward)) {
+    if (!delegateeToAmount || !objLength(delegateeToAmount)) {
       return { tableData: [], chartData: [PLACEHOLDER_BAR_CHART_ITEM] };
     }
 
-    const total = sum(Object.values(groupToReward));
+    const total = fromWei(
+      bigIntSum(Object.values(delegateeToAmount).map((amount) => amount.expected)),
+    );
 
-    const tableData = objKeys(groupToReward)
+    const tableData = objKeys(delegateeToAmount)
       .map((address) => {
-        const reward = groupToReward[address];
-        const percentage = total ? percent(reward, total) : 0;
-        const name = addressToGroup?.[address]?.name;
-        return { address, name, reward, percentage };
+        const amount = fromWei(delegateeToAmount[address].expected);
+        const percentage = total ? percent(amount, total) : 0;
+        const name = addressToDelegatee?.[address]?.name || 'Unknown Delegatee';
+        return { address, name, amount, percentage };
       })
-      .sort((a, b) => b.reward - a.reward);
+      .sort((a, b) => b.amount - a.amount);
 
     const chartData = sortAndCombineChartData(
-      tableData.map(({ address, reward, percentage }) => ({
-        label: addressToGroup[address]?.name || 'Unknown Group',
-        value: reward,
+      tableData.map(({ address, amount, percentage }) => ({
+        label: addressToDelegatee?.[address]?.name || 'Unknown Delegatee',
+        value: amount,
         percentage,
       })),
     );
     return { chartData, tableData };
-  }, [groupToReward, addressToGroup]);
+  }, [delegateeToAmount, addressToDelegatee]);
 
-  if (!groupToReward || !addressToGroup) {
-    return <FullWidthSpinner>Loading staking data</FullWidthSpinner>;
+  if (!delegateeToAmount) {
+    return <FullWidthSpinner>Loading delegation data</FullWidthSpinner>;
   }
 
-  if (!objLength(groupToReward)) {
+  if (!objLength(delegateeToAmount)) {
     return (
       <HeaderAndSubheader
-        header="No staking rewards"
-        subHeader={`You don’t currently have any rewards. Stake with validators to start earning rewards.`}
+        header="No funds delegated"
+        subHeader={`You currently have no delegations. You can delegate voting power to contribute to Celo governance.`}
         className="my-10"
       >
-        <SolidButton onClick={() => showStakeModal()}>Stake CELO</SolidButton>
+        <SolidButton onClick={() => showTxModal()}>Delegate CELO</SolidButton>
       </HeaderAndSubheader>
     );
   }
@@ -76,12 +81,12 @@ export function RewardsTable({
           </tr>
         </thead>
         <tbody>
-          {tableData.map(({ address, name, reward, percentage }) => (
+          {tableData.map(({ address, name, amount, percentage }) => (
             <tr key={address}>
               <td className={tableClasses.td}>
                 <ValidatorGroupLogoAndName address={address} name={name} />
               </td>
-              <td className={tableClasses.td}>{formatNumberString(reward, 2) + ' CELO'}</td>
+              <td className={tableClasses.td}>{formatNumberString(amount, 2) + ' CELO'}</td>
               <td className={tableClasses.td}>{percentage + '%'}</td>
             </tr>
           ))}

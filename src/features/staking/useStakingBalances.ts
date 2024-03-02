@@ -45,7 +45,7 @@ export function useStakingBalances(address?: Address) {
   };
 }
 
-export async function fetchStakingBalances(publicClient: PublicClient, address: Address) {
+async function fetchStakingBalances(publicClient: PublicClient, address: Address) {
   const groupAddrs = await publicClient.readContract({
     address: Addresses.Election,
     abi: electionABI,

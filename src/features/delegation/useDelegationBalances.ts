@@ -1,0 +1,88 @@
+import { lockedGoldABI } from '@celo/abis';
+import { useQuery } from '@tanstack/react-query';
+import { useToastError } from 'src/components/notifications/useToastError';
+import { Addresses } from 'src/config/contracts';
+import { DelegationBalances } from 'src/features/delegation/types';
+import { logger } from 'src/utils/logger';
+import { MulticallReturnType, PublicClient } from 'viem';
+import { usePublicClient } from 'wagmi';
+
+export function useDelegationBalances(address?: Address) {
+  const publicClient = usePublicClient();
+
+  const { isLoading, isError, error, data, refetch } = useQuery({
+    queryKey: ['useDelegationBalances', publicClient, address],
+    queryFn: async () => {
+      if (!address || !publicClient) return null;
+      logger.debug('Fetching delegation balances');
+      return fetchDelegationBalances(publicClient, address);
+    },
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
+
+  useToastError(error, 'Error fetching delegation balances');
+
+  return {
+    isLoading,
+    isError,
+    delegations: data,
+    refetch,
+  };
+}
+
+async function fetchDelegationBalances(
+  publicClient: PublicClient,
+  address: Address,
+): Promise<DelegationBalances> {
+  const result: DelegationBalances = {
+    percentDelegated: 0n,
+    delegateeToAmount: {},
+  };
+
+  // First fetch the list of delegatees addresses
+  const delegateeAddresses = await publicClient.readContract({
+    address: Addresses.LockedGold,
+    abi: lockedGoldABI,
+    functionName: 'getDelegateesOfDelegator',
+    args: [address],
+  });
+
+  // If there are none, stop here
+  if (!delegateeAddresses.length) return result;
+
+  // Fetch the fraction delegated
+  const delegatorPercent = await publicClient.readContract({
+    address: Addresses.LockedGold,
+    abi: lockedGoldABI,
+    functionName: 'getAccountTotalDelegatedFraction',
+    args: [address],
+  });
+  result.percentDelegated = delegatorPercent;
+
+  // Prepare a list of account, delegatee tuples
+  const accountAndDelegatee = delegateeAddresses.map((a) => [address, a]);
+
+  // @ts-ignore TODO Bug with viem 2.0 multicall types
+  const delegatedAmounts: MulticallReturnType<any> = await publicClient.multicall({
+    contracts: accountAndDelegatee.map(([acc, del]) => ({
+      address: Addresses.LockedGold,
+      abi: lockedGoldABI,
+      functionName: 'getDelegatorDelegateeExpectedAndRealAmount',
+      args: [acc, del],
+    })),
+  });
+
+  for (let i = 0; i < delegateeAddresses.length; i++) {
+    const delegateeAddress = delegateeAddresses[i];
+    const amounts = delegatedAmounts[i];
+    if (amounts.status !== 'success') throw new Error('Delegated amount call failed');
+    const [expected, real] = amounts.result as [bigint, bigint];
+    result.delegateeToAmount[delegateeAddress] = {
+      expected,
+      real,
+    };
+  }
+
+  return result;
+}

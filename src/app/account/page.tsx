@@ -8,6 +8,9 @@ import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { useBalance } from 'src/features/account/hooks';
+import { DelegationsTable } from 'src/features/delegation/DelegationsTable';
+import { DelegationAmount } from 'src/features/delegation/types';
+import { useDelegationBalances } from 'src/features/delegation/useDelegationBalances';
 import { LockActionType, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getTotalLockedCelo, getTotalUnlockedCelo } from 'src/features/locking/utils';
@@ -37,19 +40,23 @@ export default function Page() {
 
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalances } = useLockedStatus(address);
+  const { delegations } = useDelegationBalances(address);
   const { stakeBalances, groupToStake, refetch: refetchStakes } = useStakingBalances(address);
   const { totalRewardsWei, groupToReward } = useStakingRewards(address, groupToStake);
   const { groupToIsActivatable, refetch: refetchActivations } = usePendingStakingActivations(
     address,
     groupToStake,
   );
+  const { addressToGroup } = useValidatorGroups();
+
   const { activateStake } = useActivateStake(() => {
     refetchStakes();
     refetchActivations();
   });
-  const { addressToGroup } = useValidatorGroups();
 
-  const totalBalance = (walletBalance || 0n) + getTotalLockedCelo(lockedBalances);
+  const totalLocked = getTotalLockedCelo(lockedBalances);
+  const totalBalance = (walletBalance || 0n) + totalLocked;
+  const totalDelegated = (delegations?.percentDelegated || 0n) * totalLocked;
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4">
@@ -66,6 +73,7 @@ export default function Page() {
         lockedBalances={lockedBalances}
         stakeBalances={stakeBalances}
         totalRewards={totalRewardsWei}
+        totalDelegated={totalDelegated}
       />
       <LockButtons className="flex justify-between md:hidden" />
       <TableTabs
@@ -73,6 +81,7 @@ export default function Page() {
         addressToGroup={addressToGroup}
         groupToReward={groupToReward}
         groupToIsActivatable={groupToIsActivatable}
+        delegateeToAmount={delegations?.delegateeToAmount}
         activateStake={activateStake}
       />
     </Section>
@@ -117,11 +126,13 @@ function AccountStats({
   lockedBalances,
   stakeBalances,
   totalRewards,
+  totalDelegated,
 }: {
   walletBalance?: bigint;
   lockedBalances?: LockedBalances;
   stakeBalances?: StakingBalances;
   totalRewards?: bigint;
+  totalDelegated?: bigint;
 }) {
   return (
     <div className="flex items-center justify-between">
@@ -129,7 +140,7 @@ function AccountStats({
         title="Total locked"
         valueWei={lockedBalances?.locked}
         subtitle="Delegated"
-        subValueWei={0n}
+        subValueWei={totalDelegated}
       />
       <AccountStat
         title="Total unlocked"
@@ -177,12 +188,14 @@ function TableTabs({
   addressToGroup,
   groupToReward,
   groupToIsActivatable,
+  delegateeToAmount,
   activateStake,
 }: {
   groupToStake?: GroupToStake;
   addressToGroup?: AddressTo<ValidatorGroup>;
   groupToReward?: AddressTo<number>;
   groupToIsActivatable?: AddressTo<boolean>;
+  delegateeToAmount?: AddressTo<DelegationAmount>;
   activateStake: (g: Address) => void;
 }) {
   const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
@@ -211,7 +224,7 @@ function TableTabs({
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
       )}
-      {tab === 'delegations' && <div>TODO</div>}
+      {tab === 'delegations' && <DelegationsTable delegateeToAmount={delegateeToAmount} />}
     </div>
   );
 }

@@ -48,13 +48,14 @@ export function ActiveStakesTable({
       .map((address) => {
         const stake = fromWei(groupToStake[address].active + groupToStake[address].pending);
         const percentage = percent(stake, total);
-        return { address, stake, percentage };
+        const name = addressToGroup?.[address]?.name;
+        return { address, name, stake, percentage };
       })
       .sort((a, b) => b.stake - a.stake);
 
     const chartData = sortAndCombineChartData(
       tableData.map(({ address, stake, percentage }) => ({
-        label: addressToGroup[address]?.name || 'Unknown',
+        label: addressToGroup[address]?.name || 'Unknown Group',
         value: stake,
         percentage,
       })),
@@ -91,14 +92,11 @@ export function ActiveStakesTable({
           </tr>
         </thead>
         <tbody>
-          {tableData.map(({ address, stake, percentage }) => (
+          {tableData.map(({ address, name, stake, percentage }) => (
             <tr key={address}>
               <td className={tableClasses.td}>
                 <div className="flex items-center space-x-5">
-                  <ValidatorGroupLogoAndName
-                    address={address}
-                    name={addressToGroup?.[address]?.name}
-                  />
+                  <ValidatorGroupLogoAndName address={address} name={name} />
                   {groupToIsActivatable?.[address] && (
                     <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-xs text-gray-400">
                       Pending
