@@ -1,14 +1,17 @@
+import Image from 'next/image';
 import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
+import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { Delegatee, DelegationAmount } from 'src/features/delegation/types';
+import { DelegateActionType, Delegatee, DelegationAmount } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
+import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
 import { objKeys, objLength } from 'src/utils/objects';
@@ -71,6 +74,7 @@ export function DelegationsTable({
             <th className={tableClasses.th}>Name</th>
             <th className={tableClasses.th}>Amount</th>
             <th className={tableClasses.th}>%</th>
+            <th className={tableClasses.th}></th>
           </tr>
         </thead>
         <tbody>
@@ -81,10 +85,51 @@ export function DelegationsTable({
               </td>
               <td className={tableClasses.td}>{formatNumberString(amount, 2) + ' CELO'}</td>
               <td className={tableClasses.td}>{percentage + '%'}</td>
+              <td className={tableClasses.td}>
+                <OptionsDropdown delegatee={address} />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+  );
+}
+
+function OptionsDropdown({ delegatee }: { delegatee: Address }) {
+  const showTxModal = useTransactionModal();
+  const onClickItem = (action: DelegateActionType) => {
+    showTxModal(TransactionFlowType.Delegate, { delegatee, action });
+  };
+
+  return (
+    <DropdownMenu
+      buttonClasses="inline-flex btn btn-neutral min-h-0 h-6 border border-taupe-300 rounded-full items-center py-1"
+      button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
+      menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
+      menuItems={[
+        <button
+          className="underline-offset-2 hover:underline"
+          key={1}
+          onClick={() => onClickItem(DelegateActionType.Delegate)}
+        >
+          Delegate more
+        </button>,
+        <button
+          className="underline-offset-2 hover:underline"
+          key={2}
+          onClick={() => onClickItem(DelegateActionType.Undelegate)}
+        >
+          Undelegate
+        </button>,
+        <button
+          className="underline-offset-2 hover:underline"
+          key={3}
+          onClick={() => onClickItem(DelegateActionType.Transfer)}
+        >
+          Transfer
+        </button>,
+      ]}
+    />
   );
 }

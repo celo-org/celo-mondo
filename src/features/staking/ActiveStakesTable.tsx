@@ -107,7 +107,7 @@ export function ActiveStakesTable({
               <td className={tableClasses.td}>{formatNumberString(stake, 2) + ' CELO'}</td>
               <td className={clsx(tableClasses.td, 'hidden sm:table-cell')}>{percentage + '%'}</td>
               <td className={tableClasses.td}>
-                <StakeDropdown
+                <OptionsDropdown
                   group={address}
                   isActivatable={groupToIsActivatable?.[address]}
                   activateStake={activateStake}
@@ -121,7 +121,7 @@ export function ActiveStakesTable({
   );
 }
 
-function StakeDropdown({
+function OptionsDropdown({
   group,
   isActivatable,
   activateStake,
