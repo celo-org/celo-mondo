@@ -26,7 +26,7 @@ export function useDelegationBalances(address?: Address) {
   return {
     isLoading,
     isError,
-    delegations: data,
+    delegations: data || undefined,
     refetch,
   };
 }
@@ -36,7 +36,8 @@ async function fetchDelegationBalances(
   address: Address,
 ): Promise<DelegationBalances> {
   const result: DelegationBalances = {
-    percentDelegated: 0n,
+    totalPercent: 0,
+    totalAmount: 0n,
     delegateeToAmount: {},
   };
 
@@ -51,15 +52,6 @@ async function fetchDelegationBalances(
   // If there are none, stop here
   if (!delegateeAddresses.length) return result;
 
-  // Fetch the fraction delegated
-  const delegatorPercent = await publicClient.readContract({
-    address: Addresses.LockedGold,
-    abi: lockedGoldABI,
-    functionName: 'getAccountTotalDelegatedFraction',
-    args: [address],
-  });
-  result.percentDelegated = delegatorPercent;
-
   // Prepare a list of account, delegatee tuples
   const accountAndDelegatee = delegateeAddresses.map((a) => [address, a]);
 
@@ -68,7 +60,7 @@ async function fetchDelegationBalances(
     contracts: accountAndDelegatee.map(([acc, del]) => ({
       address: Addresses.LockedGold,
       abi: lockedGoldABI,
-      functionName: 'getDelegatorDelegateeExpectedAndRealAmount',
+      functionName: 'getDelegatorDelegateeInfo',
       args: [acc, del],
     })),
   });
@@ -77,11 +69,13 @@ async function fetchDelegationBalances(
     const delegateeAddress = delegateeAddresses[i];
     const amounts = delegatedAmounts[i];
     if (amounts.status !== 'success') throw new Error('Delegated amount call failed');
-    const [expected, real] = amounts.result as [bigint, bigint];
+    const [percent, amount] = amounts.result as [bigint, bigint];
     result.delegateeToAmount[delegateeAddress] = {
-      expected,
-      real,
+      percent: Number(percent),
+      amount,
     };
+    result.totalAmount += amount;
+    result.totalPercent += Number(percent);
   }
 
   return result;

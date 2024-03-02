@@ -58,6 +58,14 @@ body {
   }
 }
 
+input[type='range']::-webkit-slider-thumb {
+  border-radius: 100%;
+}
+
+input[type='range']::-moz-range-thumb {
+  border-radius: 100%;
+}
+
 /* 
 Input Overrides
 ===================

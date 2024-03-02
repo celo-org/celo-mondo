@@ -235,7 +235,7 @@ function getMaxAmount(
   } else if (action === LockActionType.Withdraw) {
     return lockedBalances?.pendingFree || 0n;
   } else {
-    throw new Error(`Invalid lock action: ${action}`);
+    return 0n;
   }
 }
 

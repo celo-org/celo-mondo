@@ -5,23 +5,20 @@ import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/char
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { DelegationAmount } from 'src/features/delegation/types';
+import { Delegatee, DelegationAmount } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
-import { ValidatorGroup } from 'src/features/validators/types';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
-import { bigIntSum, percent } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
 
-// TODO pass in addressToDelegatee data here
 export function DelegationsTable({
   delegateeToAmount,
   addressToDelegatee,
 }: {
   delegateeToAmount?: AddressTo<DelegationAmount>;
-  addressToDelegatee?: AddressTo<ValidatorGroup>;
+  addressToDelegatee?: AddressTo<Delegatee>;
 }) {
   const showTxModal = useTransactionModal(TransactionFlowType.Delegate);
 
@@ -30,14 +27,10 @@ export function DelegationsTable({
       return { tableData: [], chartData: [PLACEHOLDER_BAR_CHART_ITEM] };
     }
 
-    const total = fromWei(
-      bigIntSum(Object.values(delegateeToAmount).map((amount) => amount.expected)),
-    );
-
     const tableData = objKeys(delegateeToAmount)
       .map((address) => {
-        const amount = fromWei(delegateeToAmount[address].expected);
-        const percentage = total ? percent(amount, total) : 0;
+        const amount = fromWei(delegateeToAmount[address].amount);
+        const percentage = delegateeToAmount[address].percent;
         const name = addressToDelegatee?.[address]?.name || 'Unknown Delegatee';
         return { address, name, amount, percentage };
       })

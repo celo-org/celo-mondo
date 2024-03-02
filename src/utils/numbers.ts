@@ -13,3 +13,7 @@ export function fromFixidity(value: number | string | bigint | null | undefined)
   if (!value) return 0;
   return BigNumber(value.toString()).div(FIXIDITY_NUMBER).toNumber();
 }
+
+export function toFixidity(n: number | BigNumber | string | bigint): string {
+  return FIXIDITY_NUMBER.times(n.toString()).integerValue(BigNumber.ROUND_FLOOR).toFixed(0);
+}

@@ -1,3 +1,4 @@
+import { DelegationForm } from 'src/features/delegation/DelegationForm';
 import { UpvoteForm } from 'src/features/governance/UpvoteForm';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
@@ -35,7 +36,7 @@ export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowPr
     requiresLockedFunds: true,
   },
   [TransactionFlowType.Delegate]: {
-    FormComponent: StakeForm,
+    FormComponent: DelegationForm,
     header: 'Delegate CELO',
     requiresLockedFunds: true,
   },

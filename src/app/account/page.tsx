@@ -9,7 +9,8 @@ import { Section } from 'src/components/layout/Section';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { useBalance } from 'src/features/account/hooks';
 import { DelegationsTable } from 'src/features/delegation/DelegationsTable';
-import { DelegationAmount } from 'src/features/delegation/types';
+import { Delegatee, DelegationAmount } from 'src/features/delegation/types';
+import { useDelegatees } from 'src/features/delegation/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/useDelegationBalances';
 import { LockActionType, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
@@ -41,6 +42,7 @@ export default function Page() {
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalances } = useLockedStatus(address);
   const { delegations } = useDelegationBalances(address);
+  const { addressToDelegatee } = useDelegatees();
   const { stakeBalances, groupToStake, refetch: refetchStakes } = useStakingBalances(address);
   const { totalRewardsWei, groupToReward } = useStakingRewards(address, groupToStake);
   const { groupToIsActivatable, refetch: refetchActivations } = usePendingStakingActivations(
@@ -56,7 +58,7 @@ export default function Page() {
 
   const totalLocked = getTotalLockedCelo(lockedBalances);
   const totalBalance = (walletBalance || 0n) + totalLocked;
-  const totalDelegated = (delegations?.percentDelegated || 0n) * totalLocked;
+  const totalDelegated = (delegations?.totalPercent || 0n) * totalLocked;
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4">
@@ -82,6 +84,7 @@ export default function Page() {
         groupToReward={groupToReward}
         groupToIsActivatable={groupToIsActivatable}
         delegateeToAmount={delegations?.delegateeToAmount}
+        addressToDelegatee={addressToDelegatee}
         activateStake={activateStake}
       />
     </Section>
@@ -189,6 +192,7 @@ function TableTabs({
   groupToReward,
   groupToIsActivatable,
   delegateeToAmount,
+  addressToDelegatee,
   activateStake,
 }: {
   groupToStake?: GroupToStake;
@@ -196,6 +200,7 @@ function TableTabs({
   groupToReward?: AddressTo<number>;
   groupToIsActivatable?: AddressTo<boolean>;
   delegateeToAmount?: AddressTo<DelegationAmount>;
+  addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
 }) {
   const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
@@ -224,7 +229,12 @@ function TableTabs({
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
       )}
-      {tab === 'delegations' && <DelegationsTable delegateeToAmount={delegateeToAmount} />}
+      {tab === 'delegations' && (
+        <DelegationsTable
+          delegateeToAmount={delegateeToAmount}
+          addressToDelegatee={addressToDelegatee}
+        />
+      )}
     </div>
   );
 }

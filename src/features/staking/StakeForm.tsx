@@ -112,7 +112,7 @@ export function StakeForm({
             {values.action === StakeActionType.Transfer && (
               <GroupField
                 fieldName="transferGroup"
-                label={'To group'}
+                label="To group"
                 addressToGroup={addressToGroup}
                 disabled={isInputDisabled}
               />
@@ -230,7 +230,7 @@ function GroupField({
 
   return (
     <div className="relative space-y-1">
-      <label htmlFor="group" className="pl-0.5 text-xs font-medium">
+      <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
         {label}
       </label>
       <DropdownMenu
@@ -337,7 +337,7 @@ function getMaxAmount(
     if (!groupAddress || !groupToStake?.[groupAddress]) return 0n;
     return groupToStake[groupAddress].active + groupToStake[groupAddress].pending;
   } else {
-    throw new Error(`Invalid stake action: ${action}`);
+    return 0n;
   }
 }
 

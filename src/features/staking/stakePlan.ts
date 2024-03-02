@@ -28,7 +28,7 @@ export function getStakeTxPlan(
       ...getStakeActionPlan(amountWei, transferGroup, groups),
     ];
   } else {
-    logger.error(`Invalid lock token action type: ${action}`);
+    logger.error(`Invalid stake action type: ${action}`);
     return [];
   }
 }
