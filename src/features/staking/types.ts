@@ -38,4 +38,5 @@ export interface StakeFormValues {
   group: Address;
   // Only used in transfer actions, the new target group
   transferGroup: Address;
+  delegate: boolean;
 }

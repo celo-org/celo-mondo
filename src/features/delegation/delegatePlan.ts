@@ -1,18 +1,11 @@
 import { lockedGoldABI } from '@celo/abis';
 import { Addresses } from 'src/config/contracts';
-import {
-  DelegateActionType,
-  DelegateFormValues,
-  DelegationBalances,
-} from 'src/features/delegation/types';
+import { DelegateActionType, DelegateFormValues } from 'src/features/delegation/types';
 import { TxPlan } from 'src/features/transactions/types';
 import { logger } from 'src/utils/logger';
 import { toFixidity } from 'src/utils/numbers';
 
-export function getDelegateTxPlan(
-  values: DelegateFormValues,
-  _delegations?: DelegationBalances,
-): TxPlan {
+export function getDelegateTxPlan(values: DelegateFormValues): TxPlan {
   const { action, delegatee, percent } = values;
 
   if (action === DelegateActionType.Delegate) {

@@ -46,7 +46,7 @@ export function DelegationForm({
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<DelegateFormValues>({
-      createTxPlan: (v) => getDelegateTxPlan(v, delegations),
+      createTxPlan: (v) => getDelegateTxPlan(v),
       onStepSuccess: () => refetch(),
       onPlanSuccess: (v, r) =>
         onConfirmed({

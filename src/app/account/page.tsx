@@ -58,7 +58,7 @@ export default function Page() {
 
   const totalLocked = getTotalLockedCelo(lockedBalances);
   const totalBalance = (walletBalance || 0n) + totalLocked;
-  const totalDelegated = (delegations?.totalPercent || 0n) * totalLocked;
+  const totalDelegated = BigInt(delegations?.totalPercent || 0) * totalLocked;
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4">

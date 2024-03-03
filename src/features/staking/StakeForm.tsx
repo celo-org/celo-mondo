@@ -1,8 +1,9 @@
-import { Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
+import { Field, Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
 import { SyntheticEvent, useCallback, useEffect, useMemo } from 'react';
 import { IconButton } from 'src/components/buttons/IconButton';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
+import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { AmountField } from 'src/components/input/AmountField';
 import { RadioField } from 'src/components/input/RadioField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
@@ -11,6 +12,7 @@ import {
   MIN_GROUP_SCORE_FOR_RANDOM,
   ZERO_ADDRESS,
 } from 'src/config/consts';
+import { useDelegationBalances } from 'src/features/delegation/useDelegationBalances';
 import { LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getStakeTxPlan } from 'src/features/staking/stakePlan';
@@ -42,6 +44,7 @@ const initialValues: StakeFormValues = {
   amount: 0,
   group: ZERO_ADDRESS,
   transferGroup: ZERO_ADDRESS,
+  delegate: false,
 };
 
 export function StakeForm({
@@ -55,6 +58,7 @@ export function StakeForm({
   const { groups, addressToGroup } = useValidatorGroups();
   const { lockedBalances } = useLockedStatus(address);
   const { stakeBalances, groupToStake, refetch } = useStakingBalances(address);
+  const { delegations } = useDelegationBalances(address);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<StakeFormValues>({
@@ -123,6 +127,9 @@ export function StakeForm({
               groupToStake={groupToStake}
               disabled={isInputDisabled}
             />
+            {values.action === StakeActionType.Stake && delegations?.totalPercent === 0 && (
+              <DelegateField disabled={isInputDisabled} />
+            )}
           </div>
           <MultiTxFormSubmitButton
             txIndex={txPlanIndex}
@@ -281,6 +288,23 @@ function GroupField({
           disabled={disabled}
         />
       </div>
+    </div>
+  );
+}
+
+function DelegateField({ disabled }: { disabled?: boolean }) {
+  return (
+    <div className="flex items-center justify-between pt-1">
+      <label htmlFor="delegate" className="flex items-center space-x-2 pl-0.5 text-xs font-medium">
+        <span>Delegate voting power</span>
+        <HelpIcon text="You can allow this validator to participate in governance voting on your behalf. This delegation be changed at any time." />
+      </label>
+      <Field
+        name="delegate"
+        type="checkbox"
+        className="checkbox-secondary checkbox"
+        disabled={disabled}
+      />
     </div>
   );
 }

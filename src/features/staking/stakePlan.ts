@@ -1,6 +1,8 @@
 import { electionABI } from '@celo/abis';
 import { MIN_INCREMENTAL_VOTE_AMOUNT, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
+import { DelegateActionType } from 'src/features/delegation/types';
 import { GroupToStake, StakeActionType, StakeFormValues } from 'src/features/staking/types';
 import { TxPlan } from 'src/features/transactions/types';
 import { ValidatorGroup } from 'src/features/validators/types';
@@ -14,12 +16,23 @@ export function getStakeTxPlan(
   groups: ValidatorGroup[],
   groupToStake: GroupToStake,
 ): TxPlan {
-  const { action, amount, group, transferGroup } = values;
+  const { action, amount, group, transferGroup, delegate } = values;
   // TODO toWeiAdjusted here
   const amountWei = toWeiSafe(amount);
 
   if (action === StakeActionType.Stake) {
-    return getStakeActionPlan(amountWei, group, groups);
+    let stakePlan = getStakeActionPlan(amountWei, group, groups);
+    if (delegate) {
+      // Note: this assumes the user has 100% voting power available
+      const delegatePlan = getDelegateTxPlan({
+        action: DelegateActionType.Delegate,
+        delegatee: group,
+        percent: 100,
+        transferDelegatee: ZERO_ADDRESS,
+      });
+      stakePlan = [...stakePlan, ...delegatePlan];
+    }
+    return stakePlan;
   } else if (action === StakeActionType.Unstake) {
     return getUnstakeActionPlan(amountWei, group, groups, groupToStake);
   } else if (action === StakeActionType.Transfer) {
