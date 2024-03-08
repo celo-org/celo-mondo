@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Celo Whale",
+    "address": "0xef268b5C05452D63a17Da12f562368e88a036Ef1",
+    "logoUri": "/logos/delegatees/default.svg",
+    "date": "2024-03-08",
+    "links": {
+      "website": "https://celowhale.com",
+      "twitter": "https://twitter.com/celowhale",
+      "github": "https://twitter.com/celowhale"
+    },
+    "interests": ["Fish", "Water", "Swimming"],
+    "description": "An unknown Celo whale account. One of the largest CELO holders in the world."
+  }
+]

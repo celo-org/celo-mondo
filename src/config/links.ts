@@ -7,6 +7,7 @@ export const links = {
   docs: 'https://docs.celo.org',
   forum: 'https://forum.celo.org',
   governance: 'https://github.com/celo-org/governance',
+  delegate: 'https://github.com/jmrossy/celo-station/blob/main/src/config/delegates.json',
   // RPCs
   forno: 'https://forno.celo.org',
   infura: 'https://celo-mainnet.infura.io/v3',

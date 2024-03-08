@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { SolidButton } from 'src/components/buttons/SolidButton';
+import { CtaCard } from 'src/components/layout/CtaCard';
 import { links } from 'src/config/links';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
@@ -48,7 +49,7 @@ export function NoFundsLockedCtaCard() {
   const showTxModal = useTransactionModal(TransactionFlowType.Lock);
 
   return (
-    <div className="flex items-center justify-between space-x-6 border border-taupe-300 bg-white bg-diamond-texture bg-right-bottom bg-no-repeat px-3 py-4 md:px-5 md:py-6">
+    <CtaCard>
       <div className="space-y-2">
         <h3 className="font-serif text-xl sm:text-2xl">{`You can’t participate in governance, yet.`}</h3>
         <p className="text-sm sm:text-base">
@@ -61,6 +62,6 @@ export function NoFundsLockedCtaCard() {
           <span>Lock</span>
         </div>
       </SolidButton>
-    </div>
+    </CtaCard>
   );
 }

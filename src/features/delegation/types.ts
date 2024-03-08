@@ -1,5 +1,3 @@
-import { ValidatorGroup } from 'src/features/validators/types';
-
 // See https://github.com/celo-org/celo-monorepo/blob/release/core-contracts/10/packages/protocol/contracts/governance/LockedGold.sol#L667
 export interface DelegationAmount {
   percent: number;
@@ -28,5 +26,32 @@ export interface DelegateFormValues {
   transferDelegatee: Address;
 }
 
-// TODO
-export type Delegatee = ValidatorGroup;
+import { z } from 'zod';
+
+export const DelegateeLinksSchema = z.object({
+  website: z.string().url(),
+  twitter: z.string().url(),
+  github: z.string().url(),
+});
+
+export const DelegateeMetadataSchema = z.object({
+  name: z.string().min(1),
+  address: z.string().length(42).startsWith('0x'),
+  logoUri: z.string().min(1),
+  date: z.string().refine((value) => /^\d{4}-\d{2}-\d{2}$/.test(value), {
+    message: 'Invalid date format, use YYYY-MM-DD',
+  }),
+  links: DelegateeLinksSchema,
+  interests: z.array(z.string().min(1)),
+  description: z.string().min(1).max(1500),
+});
+
+export const DelegateeMetadataListSchema = z.array(DelegateeMetadataSchema);
+
+export type DelegateeMetadata = z.infer<typeof DelegateeMetadataSchema>;
+
+export type Delegatee = DelegateeMetadata & {
+  lockedBalance: bigint;
+  votingPower: bigint;
+  delegatedBalance: bigint;
+};

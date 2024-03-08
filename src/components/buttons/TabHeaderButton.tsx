@@ -8,7 +8,7 @@ export function TabHeaderButton({
   count,
   onClick,
   children,
-}: PropsWithChildren<{ isActive: boolean; onClick: () => void; count?: number | string }>) {
+}: PropsWithChildren<{ isActive: boolean; onClick?: () => void; count?: number | string }>) {
   const [hover, setHover] = useState(false);
   return (
     <button
