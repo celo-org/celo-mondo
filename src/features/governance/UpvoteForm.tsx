@@ -2,7 +2,10 @@ import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { ProposalFormDetails } from 'src/features/governance/components/ProposalFormDetails';
 import { useProposalQueue } from 'src/features/governance/hooks/useProposalQueue';
-import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
+import {
+  useGovernanceVotingPower,
+  useIsGovernanceUpVoting,
+} from 'src/features/governance/hooks/useVotingStatus';
 import { UpvoteFormValues, UpvoteRecord } from 'src/features/governance/types';
 import { getUpvoteTxPlan } from 'src/features/governance/votePlan';
 import { OnConfirmedFn } from 'src/features/transactions/types';
@@ -24,13 +27,14 @@ export function UpvoteForm({
 }) {
   const { address } = useAccount();
   const { queue } = useProposalQueue();
-  const { votingPower } = useGovernanceVotingPower();
+  const { isUpvoting } = useIsGovernanceUpVoting(address);
+  const { votingPower } = useGovernanceVotingPower(address);
 
   const { getNextTx, onTxSuccess } = useTransactionPlan<UpvoteFormValues>({
     createTxPlan: (v) => getUpvoteTxPlan(v, queue || [], votingPower || 0n),
     onPlanSuccess: (v, r) =>
       onConfirmed({
-        message: `Upvote successful`,
+        message: 'Upvote successful',
         receipt: r,
         properties: [{ label: 'Proposal', value: `#${v.proposalId}` }],
       }),
@@ -40,8 +44,8 @@ export function UpvoteForm({
   const onSubmit = (values: UpvoteFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: UpvoteFormValues) => {
-    if (!address || !queue || !isNullish(votingPower)) return { amount: 'Form data not ready' };
-    return validateForm(values, queue);
+    if (!address || !queue || isNullish(votingPower)) return { amount: 'Form data not ready' };
+    return validateForm(values, queue, isUpvoting);
   };
 
   return (
@@ -58,7 +62,7 @@ export function UpvoteForm({
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between">
           <div className="space-y-3">
-            <ProposalFormDetails proposalId={values.proposalId} />
+            <ProposalFormDetails proposalId={values.proposalId} votingPower={votingPower} />
           </div>
           <FormSubmitButton isLoading={isLoading} loadingText={'Upvoting'}>
             Upvote
@@ -72,6 +76,7 @@ export function UpvoteForm({
 function validateForm(
   values: UpvoteFormValues,
   queue: UpvoteRecord[],
+  isUpvoting: boolean,
 ): FormikErrors<UpvoteFormValues> {
   const { proposalId } = values;
 
@@ -79,7 +84,9 @@ function validateForm(
     return { proposalId: 'Proposal ID not eligible' };
   }
 
-  // TODO enforce that account has not already upvoted
+  if (isUpvoting) {
+    return { proposalId: 'Account already upvoting' };
+  }
 
   return {};
 }

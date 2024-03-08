@@ -8,7 +8,6 @@ import {
 } from 'src/features/governance/types';
 import { TxPlan } from 'src/features/transactions/types';
 import { logger } from 'src/utils/logger';
-import { deepCopy } from 'src/utils/objects';
 
 export function getVoteTxPlan(values: VoteFormValues, dequeued: number[]): TxPlan {
   const { proposalId, vote } = values;
@@ -50,15 +49,25 @@ export function getUpvoteTxPlan(
 }
 
 // Based on https://github.com/celo-org/developer-tooling/blob/ae51ca8851e6684d372f976dd8610ddf502a266b/packages/sdk/contractkit/src/wrappers/Governance.ts#L765
+// TODO this fails when there are queued proposals that are ready to be de-queued
+// See dequeueProposalsIfReady in governance.sol
 function lesserAndGreaterAfterUpvote(
   proposalId: number,
   queue: UpvoteRecord[],
   votingPower: bigint,
 ): { lesserID: number; greaterID: number } {
   const proposalIndex = queue.findIndex((p) => p.proposalId === proposalId);
-  const newQueue = deepCopy(queue);
-  newQueue[proposalIndex].upvotes += votingPower;
-  newQueue.sort((a, b) => (a.upvotes > b.upvotes ? 1 : -1));
+  const newQueue = [...queue];
+  newQueue[proposalIndex] = {
+    proposalId,
+    upvotes: queue[proposalIndex].upvotes + votingPower,
+  };
+  // Sort in ascending order by upvotes
+  newQueue.sort((a, b) => {
+    if (a === b) return 0;
+    if (a.upvotes > b.upvotes) return 1;
+    else return -1;
+  });
   const newIndex = newQueue.findIndex((p) => p.proposalId === proposalId);
   return {
     lesserID: newIndex === 0 ? 0 : newQueue[newIndex - 1].proposalId,

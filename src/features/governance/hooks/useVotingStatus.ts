@@ -29,6 +29,39 @@ export function useIsGovernanceVoting(address?: Address) {
   };
 }
 
+export function useIsGovernanceUpVoting(address?: Address) {
+  const { data, isError, isLoading, error } = useReadContract({
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'getUpvoteRecord',
+    args: [address || ZERO_ADDRESS],
+    query: {
+      enabled: !!address,
+      staleTime: 1 * 60 * 1000, // 1 minute
+    },
+  });
+
+  const { isUpvoting, upvoteRecord } = useMemo(() => {
+    if (!data || !data[0]) return { isUpvoting: false, upvoteRecord: undefined };
+    return {
+      isUpvoting: true,
+      upvoteRecord: {
+        proposalId: Number(data[0]),
+        upvotes: data[1],
+      },
+    };
+  }, [data]);
+
+  useToastError(error, 'Error fetching upvoting status');
+
+  return {
+    isUpvoting,
+    upvoteRecord,
+    isError,
+    isLoading,
+  };
+}
+
 export function useGovernanceVoteRecord(address?: Address, proposalId?: number) {
   const { dequeue } = useProposalDequeue();
 

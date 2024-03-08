@@ -138,7 +138,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={id} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={id} />}
         {expiryTimestamp && (
-          <div>{`Voting ends in ${getHumanReadableDuration(expiryTimestamp)}`}</div>
+          <div>{`Expires in ${getHumanReadableDuration(expiryTimestamp - Date.now())}`}</div>
         )}
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
         {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}

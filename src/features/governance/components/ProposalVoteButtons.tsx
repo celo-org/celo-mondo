@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { useQueueHasReadyProposals } from 'src/features/governance/hooks/useProposalQueue';
 import {
   useGovernanceVoteRecord,
   useGovernanceVotingPower,
@@ -12,6 +13,8 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { useAccount } from 'wagmi';
 
 export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
+  const { hasReadyProposals } = useQueueHasReadyProposals();
+
   const showTxModal = useTransactionModal(TransactionFlowType.Upvote, { proposalId });
 
   return (
@@ -23,7 +26,14 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
       <SolidButton
         className="btn-neutral w-full"
         onClick={() => showTxModal()}
+        disabled={hasReadyProposals}
       >{`➕ Upvote`}</SolidButton>
+      {hasReadyProposals && (
+        <p className="max-w-[20rem] text-xs text-gray-600">
+          Upvoting is disabled while there are queued proposals ready for approval. Please check
+          again later.
+        </p>
+      )}
     </>
   );
 }

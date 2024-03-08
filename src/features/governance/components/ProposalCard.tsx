@@ -31,7 +31,7 @@ export function ProposalCard({ propData }: { propData: MergedProposalData }) {
   const endTimeValue = timestampExecuted
     ? `Executed ${getHumanReadableTimeString(timestampExecuted)}`
     : expiryTimestamp
-      ? `Expires ${getHumanReadableDuration(expiryTimestamp)}`
+      ? `Expires ${getHumanReadableDuration(expiryTimestamp - Date.now())}`
       : undefined;
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;

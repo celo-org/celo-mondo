@@ -24,7 +24,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
           acc[v] = {
             label: '',
             value: fromWei(votes?.[v] || 0n),
-            percentage: percent(votes?.[v] || 0n, totalVotes),
+            percentage: percent(votes?.[v] || 0n, totalVotes || 1n),
             color: VoteToColor[v],
           };
           return acc;

@@ -85,7 +85,8 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   }
 
   const [queuedIds, queuedUpvotes] = queued.result;
-  const dequeuedIds = dequeued.result;
+  // Filter out queues with id of 0, not sure why they are included
+  const dequeuedIds = dequeued.result.filter((id: bigint) => !!id);
   const allIdsAndUpvotes = [
     ...queuedIds.map((id, i) => ({ id, upvotes: queuedUpvotes[i] })),
     ...dequeuedIds.map((id) => ({ id, upvotes: 0n })),
