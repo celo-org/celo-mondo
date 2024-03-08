@@ -2,6 +2,7 @@ import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { ProposalFormDetails } from 'src/features/governance/components/ProposalFormDetails';
 import { useProposalQueue } from 'src/features/governance/hooks/useProposalQueue';
+import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
 import {
   useGovernanceVotingPower,
   useIsGovernanceUpVoting,
@@ -29,9 +30,11 @@ export function UpvoteForm({
   const { queue } = useProposalQueue();
   const { isUpvoting } = useIsGovernanceUpVoting(address);
   const { votingPower } = useGovernanceVotingPower(address);
+  const { refetch: refetchUpvoters } = useProposalUpvoters();
 
   const { getNextTx, onTxSuccess } = useTransactionPlan<UpvoteFormValues>({
     createTxPlan: (v) => getUpvoteTxPlan(v, queue || [], votingPower || 0n),
+    onStepSuccess: () => refetchUpvoters(),
     onPlanSuccess: (v, r) =>
       onConfirmed({
         message: 'Upvote successful',

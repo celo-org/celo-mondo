@@ -10,7 +10,7 @@ import { objFilter } from 'src/utils/objects';
 import { decodeEventLog, encodeEventTopics } from 'viem';
 
 export function useProposalUpvoters(id?: number) {
-  const { isLoading, isError, error, data } = useQuery({
+  const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ['useProposalUpvoters', id],
     queryFn: () => {
       if (!id) return null;
@@ -27,6 +27,7 @@ export function useProposalUpvoters(id?: number) {
     isLoading,
     isError,
     upvoters: data || undefined,
+    refetch,
   };
 }
 
