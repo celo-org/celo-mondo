@@ -3,8 +3,8 @@
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { A_Blank } from 'src/components/buttons/A_Blank';
 import { BackLink } from 'src/components/buttons/BackLink';
-import { ExternalLink } from 'src/components/buttons/ExternalLink';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { links } from 'src/config/links';
@@ -106,9 +106,9 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
           <p className="text-taupe-600">You can still upvote and/or vote for this proposal.</p>
           <p className="text-taupe-600">
             See the{' '}
-            <ExternalLink href={links.governance} className="underline">
+            <A_Blank href={links.governance} className="underline">
               Celo Governance repository
-            </ExternalLink>{' '}
+            </A_Blank>{' '}
             for more information.
           </p>
         </div>

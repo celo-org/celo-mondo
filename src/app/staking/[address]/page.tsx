@@ -6,8 +6,6 @@ import { PieChart } from 'react-minimal-pie-chart';
 import { toast } from 'react-toastify';
 import { Spinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
-import { ExternalLink } from 'src/components/buttons/ExternalLink';
-import { IconButton } from 'src/components/buttons/IconButton';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
@@ -20,10 +18,10 @@ import { SlashIcon } from 'src/components/icons/Slash';
 import { XIcon } from 'src/components/icons/XIcon';
 import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
-import { Twitter } from 'src/components/logos/Twitter';
-import { Web } from 'src/components/logos/Web';
+import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { EPOCH_DURATION_MS, ZERO_ADDRESS } from 'src/config/consts';
+import { SocialLinkType } from 'src/config/types';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
@@ -65,8 +63,9 @@ export default function Page({ params: { address } }: { params: { address: Addre
 
 function HeaderSection({ group }: { group?: ValidatorGroup }) {
   const address = group?.address || ZERO_ADDRESS;
-  const webUrl = VALIDATOR_GROUPS[address]?.url;
-  const twitterUrl = VALIDATOR_GROUPS[address]?.twitter;
+  const links = Object.entries(VALIDATOR_GROUPS[address]?.links || {}) as Array<
+    [SocialLinkType, string]
+  >;
 
   const onClickAddress = useCopyHandler(group?.address);
   const onClickSlash = () => {
@@ -110,20 +109,9 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
                   </span>
                 </div>
               </OutlineButton>
-              {webUrl && (
-                <ExternalLink href={webUrl}>
-                  <IconButton>
-                    <Web height={18} width={18} />
-                  </IconButton>
-                </ExternalLink>
-              )}
-              {twitterUrl && (
-                <ExternalLink href={twitterUrl}>
-                  <IconButton>
-                    <Twitter height={18} width={18} />
-                  </IconButton>
-                </ExternalLink>
-              )}
+              {links.map(([type, href], i) => (
+                <SocialLinkLogo key={i} type={type} href={href} />
+              ))}
             </div>
           </div>
         </div>
