@@ -14,9 +14,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { SearchField } from 'src/components/input/SearchField';
+import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { SocialLinkType } from 'src/config/types';
+import { DelegateeLogoAndName } from 'src/features/delegation/DelegateeLogo';
 import { Delegatee } from 'src/features/delegation/types';
-import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { useIsMobile } from 'src/styles/mediaQueries';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
@@ -121,7 +123,11 @@ function useTableColumns() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (props) => (
-          <ValidatorGroupLogoAndName address={props.row.original.address} size={30} />
+          <DelegateeLogoAndName
+            address={props.row.original.address}
+            size={34}
+            name={props.getValue()}
+          />
         ),
       }),
       columnHelper.accessor('interests', {
@@ -135,22 +141,22 @@ function useTableColumns() {
             ))}
           </div>
         ),
+        enableSorting: false,
       }),
       columnHelper.accessor('links', {
         header: 'Social',
         cell: (props) => (
-          <div className="flex space-x-2">
-            {Object.entries(props.getValue()).map(([key, value], i) => (
-              <span key={i} className="rounded-md bg-taupe-100 px-2 py-1 text-xs">
-                {key + value}
-              </span>
+          <div className="flex space-x-3">
+            {Object.entries(props.getValue()).map(([type, href], i) => (
+              <SocialLinkLogo key={i} type={type as SocialLinkType} href={href} />
             ))}
           </div>
         ),
+        enableSorting: false,
       }),
       columnHelper.accessor('delegatedBalance', {
         header: 'Delegated',
-        cell: (props) => <div>{formatNumberString(props.getValue(), 0, true)}</div>,
+        cell: (props) => <div>{formatNumberString(props.getValue(), 0, true) + ' CELO'}</div>,
       }),
     ];
   }, []);

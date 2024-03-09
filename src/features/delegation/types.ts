@@ -41,7 +41,7 @@ export const DelegateeMetadataSchema = z.object({
   description: z.string().min(1).max(1500),
 });
 
-export const DelegateeMetadataListSchema = z.array(DelegateeMetadataSchema);
+export const DelegateeMetadataMapSchema = z.record(z.string(), DelegateeMetadataSchema);
 
 export type DelegateeMetadata = z.infer<typeof DelegateeMetadataSchema>;
 

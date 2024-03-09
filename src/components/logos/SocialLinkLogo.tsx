@@ -26,7 +26,7 @@ export function SocialLinkLogo({ href, svgProps, type, className, size = 18 }: P
   if (!Logo) throw new Error(`No logo for type ${type}`);
 
   return (
-    <A_Blank href={href} title={type} className={className}>
+    <A_Blank href={href} title={type} className={className} onClick={(e) => e.stopPropagation()}>
       <Logo {...svgProps} width={size} height={size} />
     </A_Blank>
   );
