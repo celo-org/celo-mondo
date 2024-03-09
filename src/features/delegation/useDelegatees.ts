@@ -89,6 +89,7 @@ async function fetchDelegateeStats(
 
     delegatees[address] = {
       ...metadata[i],
+      address,
       lockedBalance,
       votingPower,
       delegatedBalance,

@@ -36,7 +36,7 @@ function DelegateeTableSection() {
   );
 }
 
-export function RegisterCtaCard() {
+function RegisterCtaCard() {
   return (
     <CtaCard>
       <div className="space-y-2">
