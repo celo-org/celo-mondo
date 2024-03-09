@@ -18,9 +18,9 @@ export function Footer() {
       <div className="flex items-center space-x-1">
         <div className="text-xs text-taupe-400">
           Powered by <ExternalLink href={links.celoscan}>CeloScan</ExternalLink> and{' '}
-          <ExternalLink href="https://docs.celo.org/network/node/forno">Forno</ExternalLink> |
+          <ExternalLink href="https://docs.celo.org/network/node/forno">Forno</ExternalLink>
         </div>
-        <BlockNumber />
+        {config.watchBlockNumber && <BlockNumber />}
       </div>
     </div>
   );
@@ -40,7 +40,6 @@ function BlockNumber() {
     cacheTime: 20_000,
     query: {
       staleTime: 10_000, // 10 seconds
-      enabled: config.watchBlockNumber,
     },
   });
   return <div className="text-xs">{isError ? 'Error' : data?.toString() || '...'}</div>;

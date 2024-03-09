@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
+import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
@@ -46,6 +47,11 @@ export function ValidatorGroupTable({
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [sorting, setSorting] = useState<SortingState>([{ id: 'votes', desc: true }]);
+  const onSortingChange = (s: SortingState | ((prev: SortingState) => SortingState)) => {
+    setIsTopGroupsExpanded(true);
+    setSorting(s);
+  };
+
   const collapseTopGroups =
     !isTopGroupsExpanded &&
     groups.length > NUM_COLLAPSED_GROUPS &&
@@ -54,10 +60,6 @@ export function ValidatorGroupTable({
 
   const columns = useTableColumns(totalVotes);
   const groupRows = useTableRows({ groups, filter, searchQuery, collapseTopGroups });
-  const onSortingChange = (s: SortingState | ((prev: SortingState) => SortingState)) => {
-    setIsTopGroupsExpanded(true);
-    setSorting(s);
-  };
   const table = useReactTable<ValidatorGroupRow>({
     data: groupRows,
     columns,
@@ -248,14 +250,6 @@ function CumulativeColumn({
         style={{ width: `${width}px` }}
         className="absolute bottom-0 top-0 ml-20 border-x border-purple-200 bg-purple-200/20"
       ></div>
-    </div>
-  );
-}
-
-function TableSortChevron({ direction }: { direction: 'n' | 's' }) {
-  return (
-    <div className="absolute right-2 top-1/2 -translate-y-1/2">
-      <ChevronIcon direction={direction} width={10} height={10} />
     </div>
   );
 }

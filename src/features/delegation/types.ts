@@ -51,6 +51,7 @@ export const DelegateeMetadataListSchema = z.array(DelegateeMetadataSchema);
 export type DelegateeMetadata = z.infer<typeof DelegateeMetadataSchema>;
 
 export type Delegatee = DelegateeMetadata & {
+  address: Address;
   lockedBalance: bigint;
   votingPower: bigint;
   delegatedBalance: bigint;
