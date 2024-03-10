@@ -7,7 +7,7 @@ import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { DelegateeLogoAndName } from 'src/features/delegation/DelegateeLogo';
+import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { DelegateActionType, Delegatee, DelegationAmount } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';

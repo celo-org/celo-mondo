@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Amount } from 'src/components/numbers/Amount';
+import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { Delegatee } from 'src/features/delegation/types';
-import { useDelegateeHistory } from 'src/features/delegation/useDelegateeHistory';
 import { VotingPower } from 'src/features/governance/components/VotingPower';
 import { VoteAmounts } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
@@ -19,7 +19,7 @@ export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
   });
 
   return (
-    <div className="space-y-4 border-taupe-300 p-3 lg:mt-4 lg:border">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-8">
         <h2 className="font-serif text-2xl">Delegate</h2>
         <VotingPower />

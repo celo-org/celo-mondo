@@ -7,8 +7,8 @@ import { CtaCard } from 'src/components/layout/CtaCard';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { links } from 'src/config/links';
-import { DelegateesTable } from 'src/features/delegation/DelegateesTable';
-import { useDelegatees } from 'src/features/delegation/useDelegatees';
+import { DelegateesTable } from 'src/features/delegation/components/DelegateesTable';
+import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 
 export default function Page() {
   return (

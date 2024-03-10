@@ -6,6 +6,8 @@ import { RangeField } from 'src/components/input/RangeField';
 import { TextField } from 'src/components/input/TextField';
 import { MAX_NUM_DELEGATEES, ZERO_ADDRESS } from 'src/config/consts';
 import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
+import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
+import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import {
   DelegateActionType,
   DelegateActionValues,
@@ -13,8 +15,6 @@ import {
   Delegatee,
   DelegationBalances,
 } from 'src/features/delegation/types';
-import { useDelegatees } from 'src/features/delegation/useDelegatees';
-import { useDelegationBalances } from 'src/features/delegation/useDelegationBalances';
 import { LockedBalances } from 'src/features/locking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';

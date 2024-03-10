@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { VALIDATOR_GROUPS } from 'src/config/validators';
-import { fetchDelegateeHistory } from 'src/features/delegation/useDelegateeHistory';
+import { fetchDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
 import { objKeys, objLength } from 'src/utils/objects';

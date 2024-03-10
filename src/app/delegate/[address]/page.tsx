@@ -7,10 +7,11 @@ import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { SocialLinkType } from 'src/config/types';
-import { DelegateButton } from 'src/features/delegation/DelegateButton';
-import { DelegateeLogo } from 'src/features/delegation/DelegateeLogo';
+import { DelegateButton } from 'src/features/delegation/components/DelegateButton';
+import { DelegateeLogo } from 'src/features/delegation/components/DelegateeLogo';
+import { DelegatorsTable } from 'src/features/delegation/components/DelegatorsTable';
+import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { Delegatee } from 'src/features/delegation/types';
-import { useDelegatees } from 'src/features/delegation/useDelegatees';
 import { usePageInvariant } from 'src/utils/navigation';
 
 export const dynamicParams = true;
@@ -31,7 +32,7 @@ export default function Page({ params: { address } }: { params: { address: Addre
     <Section containerClassName="mt-4 lg:flex lg:gap-6 lg:items-start">
       <DelegateeDescription delegatee={delegatee} />
       <CollapsibleResponsiveMenu>
-        <DelegateButton delegatee={delegatee} />
+        <DelegateeDetails delegatee={delegatee} />
       </CollapsibleResponsiveMenu>
     </Section>
   );
@@ -66,6 +67,19 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
       </div>
       <h2 className="font-serif text-xl">Introduction</h2>
       <p style={{ maxWidth: 'min(96vw, 700px)', overflow: 'auto' }}>{delegatee.description}</p>
+    </div>
+  );
+}
+
+function DelegateeDetails({ delegatee }: { delegatee: Delegatee }) {
+  return (
+    <div className="space-y-4 lg:min-w-[20rem]">
+      <div className="border-taupe-300 p-3 lg:border">
+        <DelegateButton delegatee={delegatee} />
+      </div>
+      <div className="hidden border-taupe-300 p-3 lg:block lg:border">
+        <DelegatorsTable delegatee={delegatee} />
+      </div>
     </div>
   );
 }

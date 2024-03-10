@@ -24,7 +24,6 @@ import {
 } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
 import { ProposalStage } from 'src/features/governance/types';
-import { useWindowSize } from 'src/styles/mediaQueries';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
@@ -110,9 +109,6 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
   const { id, stage, proposal } = propData;
   const expiryTimestamp = proposal?.expiryTimestamp;
 
-  const windowSize = useWindowSize();
-  const showTables = windowSize?.width && windowSize.width > 1024;
-
   if (stage === ProposalStage.None) return null;
 
   return (
@@ -126,13 +122,13 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
         {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
       </div>
-      {showTables && stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
-        <div className="border-taupe-300 p-3 lg:border">
+      {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
+        <div className="hidden border-taupe-300 p-3 lg:block lg:border">
           <ProposalUpvotersTable propData={propData} />
         </div>
       )}
-      {showTables && stage >= ProposalStage.Referendum && (
-        <div className="overflow-auto border-taupe-300 p-3 lg:border">
+      {stage >= ProposalStage.Referendum && (
+        <div className="hidden overflow-auto border-taupe-300 p-3 lg:block lg:border">
           <ProposalVotersTable propData={propData} />
         </div>
       )}

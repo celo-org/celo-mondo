@@ -17,7 +17,7 @@ import { SearchField } from 'src/components/input/SearchField';
 import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
-import { DelegateeLogoAndName } from 'src/features/delegation/DelegateeLogo';
+import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { Delegatee } from 'src/features/delegation/types';
 import { useIsMobile } from 'src/styles/mediaQueries';
 

@@ -12,7 +12,7 @@ import {
   MIN_GROUP_SCORE_FOR_RANDOM,
   ZERO_ADDRESS,
 } from 'src/config/consts';
-import { useDelegationBalances } from 'src/features/delegation/useDelegationBalances';
+import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getStakeTxPlan } from 'src/features/staking/stakePlan';
