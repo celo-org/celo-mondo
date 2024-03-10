@@ -13,7 +13,7 @@ import { useDelegatees } from 'src/features/delegation/useDelegatees';
 export default function Page() {
   return (
     <>
-      <Section className="mt-4" containerClassName="space-y-5">
+      <Section className="mt-4" containerClassName="space-y-4">
         <H1>Delegate voting power</H1>
         <RegisterCtaCard />
         <DelegateeTableSection />

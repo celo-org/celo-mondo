@@ -1,12 +1,11 @@
 'use client';
 
-import clsx from 'clsx';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { BackLink } from 'src/components/buttons/BackLink';
-import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
+import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { links } from 'src/config/links';
 import { ProposalBadgeRow } from 'src/features/governance/components/ProposalCard';
 import { ProposalUpvotersTable } from 'src/features/governance/components/ProposalUpvotersTable';
@@ -54,8 +53,6 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
 
   usePageInvariant(!proposals || propData, '/governance', 'Proposal not found');
 
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
-
   if (!propData) {
     return <FullWidthSpinner>Loading proposals</FullWidthSpinner>;
   }
@@ -64,23 +61,9 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     <Section containerClassName="mt-4 lg:flex lg:flex-row lg:gap-6">
       <ProposalContent propData={propData} />
       {propData.stage !== ProposalStage.None && (
-        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white lg:static lg:bg-transparent">
-          <button
-            onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
-            className="flex-center w-full space-x-4 border-y border-taupe-300 py-2 lg:hidden"
-          >
-            <span>{isMenuCollapsed ? 'More' : 'Less'}</span>
-            <ChevronIcon direction={isMenuCollapsed ? 'n' : 's'} width={15} height={10} />
-          </button>
-          <div
-            className={clsx(
-              'transition-all duration-300',
-              isMenuCollapsed ? 'max-h-0 lg:max-h-none' : 'max-h-screen lg:max-h-none',
-            )}
-          >
-            <ProposalChainData propData={propData} />
-          </div>
-        </div>
+        <CollapsibleResponsiveMenu>
+          <ProposalChainData propData={propData} />
+        </CollapsibleResponsiveMenu>
       )}
     </Section>
   );

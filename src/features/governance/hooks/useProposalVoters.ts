@@ -73,49 +73,67 @@ export async function fetchProposalVoters(id: number): Promise<{
 
 function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: TransactionLog[], isCast: boolean) {
   for (const log of logs) {
-    try {
-      if (!log.topics || log.topics.length < 3) continue;
-      const { eventName, args } = decodeEventLog({
-        abi: governanceABI,
-        data: log.data,
-        // @ts-ignore https://github.com/wevm/viem/issues/381
-        topics: log.topics,
-        strict: false,
-      });
-
-      let account: string | undefined,
-        yesVotes: bigint | undefined,
-        noVotes: bigint | undefined,
-        abstainVotes: bigint | undefined;
-
-      if (eventName === 'ProposalVoted' || eventName === 'ProposalVoteRevoked') {
-        account = args.account;
-        yesVotes = args.value === 3n ? args.weight : 0n;
-        noVotes = args.value === 2n ? args.weight : 0n;
-        abstainVotes = args.value === 1n ? args.weight : 0n;
-      }
-
-      if (eventName === 'ProposalVotedV2' || eventName === 'ProposalVoteRevokedV2') {
-        account = args.account;
-        yesVotes = args.yesVotes;
-        noVotes = args.noVotes;
-        abstainVotes = args.abstainVotes;
-      }
-
-      if (!account || !isValidAddress(account)) continue;
-
-      if (isCast) {
-        voterToVotes[account] = {
-          [VoteType.Yes]: yesVotes || 0n,
-          [VoteType.No]: noVotes || 0n,
-          [VoteType.Abstain]: abstainVotes || 0n,
-        };
-      } else {
-        voterToVotes[account] = EmptyVoteAmounts;
-      }
-    } catch (error) {
-      logger.warn('Error decoding event log', error, log);
+    const decoded = decodeVoteEventLog(log);
+    if (!decoded) continue;
+    const { account, yesVotes, noVotes, abstainVotes } = decoded;
+    if (isCast) {
+      voterToVotes[account] = {
+        [VoteType.Yes]: yesVotes,
+        [VoteType.No]: noVotes,
+        [VoteType.Abstain]: abstainVotes,
+      };
+    } else {
+      voterToVotes[account] = EmptyVoteAmounts;
     }
+  }
+}
+
+export function decodeVoteEventLog(log: TransactionLog) {
+  try {
+    if (!log.topics || log.topics.length < 3) return null;
+    const { eventName, args } = decodeEventLog({
+      abi: governanceABI,
+      data: log.data,
+      // @ts-ignore https://github.com/wevm/viem/issues/381
+      topics: log.topics,
+      strict: false,
+    });
+
+    let proposalId: number | undefined;
+    let account: string | undefined;
+    let yesVotes: bigint = 0n;
+    let noVotes: bigint = 0n;
+    let abstainVotes: bigint = 0n;
+
+    if (eventName === 'ProposalVoted' || eventName === 'ProposalVoteRevoked') {
+      proposalId = Number(args.proposalId);
+      account = args.account;
+      yesVotes = (args.value === 3n && args.weight) || 0n;
+      noVotes = (args.value === 2n && args.weight) || 0n;
+      abstainVotes = (args.value === 1n && args.weight) || 0n;
+    } else if (eventName === 'ProposalVotedV2' || eventName === 'ProposalVoteRevokedV2') {
+      proposalId = Number(args.proposalId);
+      account = args.account;
+      yesVotes = args.yesVotes || 0n;
+      noVotes = args.noVotes || 0n;
+      abstainVotes = args.abstainVotes || 0n;
+    } else {
+      logger.warn('Invalid event name, expected ProposalVoted', eventName);
+      return null;
+    }
+
+    if (!proposalId || !account || !isValidAddress(account)) return null;
+
+    return {
+      proposalId,
+      account,
+      yesVotes,
+      noVotes,
+      abstainVotes,
+    };
+  } catch (error) {
+    logger.warn('Error decoding event log', error, log);
+    return null;
   }
 }
 

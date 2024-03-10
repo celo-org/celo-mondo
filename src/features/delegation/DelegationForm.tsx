@@ -186,16 +186,13 @@ function DelegateeField({
 
   return (
     <div className="relative flex flex-col space-y-1.5">
-      <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
-        {label}
-      </label>
+      <div className="flex justify-between">
+        <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
+          {label}
+        </label>
+        {delegateeName && <div className="text-xs font-medium">{delegateeName}</div>}
+      </div>
       <TextField name={fieldName} disabled={disabled} className="px-2 text-xs" />
-      {currentDelegatee && (
-        <div className="bg-taupe-200 p-2 text-sm">
-          {/* TODO */}
-          {delegateeName}
-        </div>
-      )}
     </div>
   );
 }
