@@ -37,7 +37,7 @@ export const DelegateeMetadataSchema = z.object({
     message: 'Invalid date format, use YYYY-MM-DD',
   }),
   links: SocialLinksSchema,
-  interests: z.array(z.string().min(1)),
+  interests: z.array(z.string().min(1)).min(1).max(5),
   description: z.string().min(1).max(1500),
 });
 

@@ -135,7 +135,7 @@ function useTableColumns() {
         cell: (props) => (
           <div className="flex flex-wrap space-x-2">
             {props.getValue().map((interest, i) => (
-              <span key={i} className="rounded-full border border-taupe-300 px-2 py-1 text-sm">
+              <span key={i} className="rounded-full border border-taupe-300 px-2 text-sm">
                 {interest}
               </span>
             ))}

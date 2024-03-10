@@ -1,12 +1,8 @@
 import clsx from 'clsx';
 import { SolidButton } from 'src/components/buttons/SolidButton';
-import { HelpIcon } from 'src/components/icons/HelpIcon';
-import { formatNumberString } from 'src/components/numbers/Amount';
+import { VotingPower } from 'src/features/governance/components/VotingPower';
 import { useQueueHasReadyProposals } from 'src/features/governance/hooks/useProposalQueue';
-import {
-  useGovernanceVoteRecord,
-  useGovernanceVotingPower,
-} from 'src/features/governance/hooks/useVotingStatus';
+import { useGovernanceVoteRecord } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
@@ -73,16 +69,5 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
         >{`⚪ Abstain`}</SolidButton>
       </div>
     </>
-  );
-}
-
-function VotingPower() {
-  const { address } = useAccount();
-  const { votingPower } = useGovernanceVotingPower(address);
-  return (
-    <div className="flex items-center space-x-1.5 text-sm">
-      <span>{`Voting power: ${formatNumberString(votingPower, 2, true)} CELO`}</span>
-      <HelpIcon text="Voting power is the amount of CELO you have locked plus/minus any you have delegated to/from you" />
-    </div>
   );
 }

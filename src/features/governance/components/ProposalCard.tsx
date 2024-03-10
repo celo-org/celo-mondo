@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
+import { ShortAddress } from 'src/components/text/ShortAddress';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import {
@@ -10,7 +11,6 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
-import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
@@ -98,7 +98,7 @@ export function ProposalBadgeRow({
       {showProposer && proposer && (
         <>
           <div className="text-xs opacity-50">•</div>
-          <div className="text-sm text-taupe-600">{shortenAddress(proposer)}</div>
+          <ShortAddress address={proposer} className="text-sm text-taupe-600" />
         </>
       )}
     </div>
