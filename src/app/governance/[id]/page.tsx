@@ -7,7 +7,7 @@ import { BackLink } from 'src/components/buttons/BackLink';
 import { Section } from 'src/components/layout/Section';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { links } from 'src/config/links';
-import { ProposalBadgeRow } from 'src/features/governance/components/ProposalCard';
+import { ProposalBadgeRow, ProposalLinkRow } from 'src/features/governance/components/ProposalCard';
 import { ProposalUpvotersTable } from 'src/features/governance/components/ProposalUpvotersTable';
 import {
   ProposalUpvoteButton,
@@ -78,10 +78,11 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
     <div className="space-y-3">
       <BackLink href="/governance">Browse proposals</BackLink>
       <h1 className="font-serif text-2xl md:text-2xl">{title}</h1>
-      <ProposalBadgeRow data={propData} showProposer />
+      <ProposalBadgeRow propData={propData} showProposer />
+      <ProposalLinkRow propData={propData} />
       {isLoading && !content && <FullWidthSpinner>Loading proposal content</FullWidthSpinner>}
       {!isLoading && !content && (
-        <div className="flex flex-col items-start justify-center space-y-3 py-8">
+        <div className="flex flex-col items-start justify-center space-y-3 py-6">
           <p className="text-taupe-600">
             No valid CGP data found for this proposal. It may be missing or malformed.
           </p>

@@ -5,7 +5,7 @@ import { ProposalMetadata } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 
 export function useProposalContent(metadata?: ProposalMetadata) {
-  const url = metadata?.cgpUrl;
+  const url = metadata?.cgpUrlRaw;
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useProposalContent', url],
     queryFn: () => {

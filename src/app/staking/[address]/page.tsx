@@ -18,7 +18,7 @@ import { SlashIcon } from 'src/components/icons/Slash';
 import { XIcon } from 'src/components/icons/XIcon';
 import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
-import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
+import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { EPOCH_DURATION_MS, ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinkType } from 'src/config/types';
@@ -110,7 +110,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
                 </div>
               </OutlineButton>
               {links.map(([type, href], i) => (
-                <SocialLinkLogo key={i} type={type} href={href} />
+                <SocialLogoLink key={i} type={type} href={href} />
               ))}
             </div>
           </div>

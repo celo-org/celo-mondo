@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { SearchField } from 'src/components/input/SearchField';
-import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
+import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
@@ -148,7 +148,7 @@ function useTableColumns() {
         cell: (props) => (
           <div className="flex space-x-3">
             {Object.entries(props.getValue()).map(([type, href], i) => (
-              <SocialLinkLogo key={i} type={type as SocialLinkType} href={href} />
+              <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
           </div>
         ),

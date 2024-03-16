@@ -1,5 +1,5 @@
 import { A_Blank } from 'src/components/buttons/A_Blank';
-import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
+import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { config } from 'src/config/config';
 import { links } from 'src/config/links';
 import { SocialLinkType } from 'src/config/types';
@@ -25,7 +25,7 @@ export function Footer() {
 }
 
 function FooterIconLink({ type, href }: { type: SocialLinkType; href: string }) {
-  return <SocialLinkLogo type={type} href={href} size={18} className="h-4 w-4" />;
+  return <SocialLogoLink type={type} href={href} size={18} className="h-4 w-4" />;
 }
 
 function BlockNumber() {

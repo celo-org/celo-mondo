@@ -3,7 +3,7 @@
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { Section } from 'src/components/layout/Section';
-import { SocialLinkLogo } from 'src/components/logos/SocialLinkLogo';
+import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { SocialLinkType } from 'src/config/types';
@@ -55,7 +55,7 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
           </div>
           <div className="mt-1 flex items-center space-x-3">
             {Object.entries(delegatee.links).map(([type, href], i) => (
-              <SocialLinkLogo key={i} type={type as SocialLinkType} href={href} />
+              <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
             {delegatee.interests.map((interest, i) => (
               <span key={i} className="rounded-full border border-taupe-300 px-2 text-sm">

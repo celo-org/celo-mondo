@@ -8,7 +8,6 @@ import { SocialLinkType } from 'src/config/types';
 
 interface Props {
   type: SocialLinkType;
-  href: string;
   svgProps?: SVGProps<SVGSVGElement>;
   size?: number;
   className?: string;
@@ -21,13 +20,21 @@ const LOGOS: Record<SocialLinkType, React.FC<any>> = {
   [SocialLinkType.Discord]: Discord,
 };
 
-export function SocialLinkLogo({ href, svgProps, type, className, size = 18 }: Props) {
+export function SocialLogo({ svgProps, type, className, size = 18 }: Props) {
   const Logo = LOGOS[type];
   if (!Logo) throw new Error(`No logo for type ${type}`);
 
   return (
-    <A_Blank href={href} title={type} className={className} onClick={(e) => e.stopPropagation()}>
+    <span title={type} className={className}>
       <Logo {...svgProps} width={size} height={size} />
+    </span>
+  );
+}
+
+export function SocialLogoLink({ href, ...rest }: Props & { href: string }) {
+  return (
+    <A_Blank href={href} onClick={(e) => e.stopPropagation()}>
+      <SocialLogo {...rest} />
     </A_Blank>
   );
 }

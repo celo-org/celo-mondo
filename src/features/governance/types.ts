@@ -148,6 +148,7 @@ export interface ProposalMetadata {
   // Extra metadata
   cgp: number; // cgp id (different than on-chain)
   cgpUrl: string; // url in repo
+  cgpUrlRaw: string; // for downloading content
   title: string;
   author: string;
   timestampExecuted?: number;
