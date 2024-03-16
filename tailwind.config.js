@@ -38,7 +38,7 @@ module.exports = {
     },
     fontFamily: {
       sans: ['var(--font-inter)', 'sans-serif'],
-      serif: ['Garamond', 'serif'],
+      serif: ['var(--font-alpina)', 'serif'],
       mono: ['Courier New', 'monospace'],
     },
     fontSize: {
@@ -70,7 +70,7 @@ module.exports = {
       },
       backgroundImage: {
         'diamond-texture': "url('/backgrounds/diamond-texture.png')",
-      }
+      },
     },
   },
 

@@ -24,5 +24,5 @@ export const config: Config = Object.freeze({
   fornoApiKey,
   celoscanApiKey,
   infuraApiKey,
-  watchBlockNumber: !isDevMode,
+  watchBlockNumber: false,
 });

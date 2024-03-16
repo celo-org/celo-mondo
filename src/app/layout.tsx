@@ -1,11 +1,9 @@
 import { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { PropsWithChildren } from 'react';
 import { links } from 'src/config/links';
+import { alpinaFont, interFont } from 'src/styles/fonts';
 import 'src/styles/globals.css';
 import { App } from './app';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   applicationName: 'Celo Station',
@@ -34,7 +32,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: PropsWithChildren<any>) {
   return (
     <html lang="en" data-theme="light">
-      <body className={`${inter.variable} font-sans text-base`}>
+      <body className={`${interFont.variable} ${alpinaFont.variable} font-sans text-base`}>
         <App>{children}</App>
       </body>
     </html>

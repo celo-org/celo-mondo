@@ -17,7 +17,7 @@
 .proposal h2,
 .proposal h3,
 .proposal h4 {
-  font-family: 'Garamond', serif;
+  font-family: var(--font-alpina), serif;
 }
 
 .proposal h1,

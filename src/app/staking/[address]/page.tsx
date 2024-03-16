@@ -339,7 +339,7 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
           label={() => formatNumberString(fromWei(group?.votes))}
           labelStyle={{
             fontSize: '10px',
-            fontFamily: "'Garamond', 'serif'",
+            fontFamily: 'var(--font-alpina), serif',
           }}
           labelPosition={0}
         />
