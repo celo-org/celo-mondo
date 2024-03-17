@@ -1,9 +1,9 @@
 import { electionABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { infuraRpcUrl } from 'src/config/config';
 import { EPOCH_DURATION_MS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { infuraRpcUrl } from 'src/config/wagmi';
 import { queryCeloscanPath } from 'src/features/explorers/celoscan';
 import { logger } from 'src/utils/logger';
 import { PublicClient, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';

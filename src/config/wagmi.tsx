@@ -11,16 +11,12 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
-import { config } from 'src/config/config';
-import { links } from 'src/config/links';
+import { config, fornoRpcUrl, infuraRpcUrl } from 'src/config/config';
 import { valora } from 'src/config/wallets';
 import { Color } from 'src/styles/Color';
 import { fallback } from 'viem';
 import { celo } from 'viem/chains';
 import { WagmiProvider, createConfig, http } from 'wagmi';
-
-export const fornoRpcUrl = `${links.forno}?apikey=${config.fornoApiKey}`;
-export const infuraRpcUrl = `${links.infura}/${config.infuraApiKey}`;
 
 const connectors = connectorsForWallets(
   [
