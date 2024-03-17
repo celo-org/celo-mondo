@@ -92,7 +92,7 @@ export function ProposalBadgeRow({
     : undefined;
 
   return (
-    <div className="flex items-center space-x-3">
+    <div className="flex items-center space-x-2">
       <IdBadge cgp={cgp} />
       <IdBadge id={id} />
       <StageBadge stage={stage} />
