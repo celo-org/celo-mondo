@@ -32,10 +32,13 @@ export async function POST(request: Request) {
   try {
     const { address, transactionHash } = activationRequest;
     logger.debug(`Attempting activation for address ${address} with tx ${transactionHash}`);
-    await activateStake(activationRequest);
-    return new Response(`Stake activation successful for ${address}`, {
-      status: 200,
-    });
+    const activationTxHash = await activateStake(activationRequest);
+    return new Response(
+      `Stake activation successful for ${address}. Tx hash: ${activationTxHash}`,
+      {
+        status: 200,
+      },
+    );
   } catch (error) {
     logger.error('Stake activation error', error);
     return new Response(`Unable to auto-activate stake: ${errorToString(error)}`, {
@@ -90,6 +93,7 @@ async function activateStake(request: StakeActivationRequest) {
     args: [group, address],
   });
   logger.debug(`Activation tx confirmed: ${activationTxHash}`);
+  return activationTxHash;
 }
 
 function getWalletClient() {
