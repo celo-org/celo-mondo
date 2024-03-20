@@ -589,6 +589,7 @@
     "author": "Mariano Cortesi (@mcortesi), Or Neeman (@oneeman)",
     "stage": 6,
     "id": 39,
+    "url": "https://forum.celo.org/t/discussion-for-cgp-0039-incre/1333",
     "timestamp": 1630886400000,
     "votes": {
       "yes": "75500934829653925858381678",
@@ -1250,6 +1251,7 @@
     "stage": 6,
     "id": 116,
     "url": "https://forum.celo.org/t/clabs-proposal-for-celo-to-transition-to-an-ethereum-l2/6109",
+    "timestamp": 1689897600000,
     "votes": {
       "yes": "56379426830837975461273849",
       "no": "631815196523211126128",
@@ -1752,5 +1754,16 @@
     "stage": 0,
     "url": "https://forum.celo.org/t/celo-africa-h1-2024-regional-dao-final/7497",
     "timestamp": 1708646400000
+  },
+  {
+    "cgp": 127,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0127.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0127.md",
+    "title": "Enable USDC as Gas Currency",
+    "author": "Martín Volpe (@martinvol), Pavel Hornak (@pahor167)",
+    "stage": 1,
+    "id": 168,
+    "url": "https://forum.celo.org/t/path-towards-making-usdc-a-gas-currency/7385/2",
+    "timestamp": 1715990400000
   }
 ]

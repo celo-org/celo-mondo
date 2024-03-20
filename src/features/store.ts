@@ -15,7 +15,6 @@ export interface AppState {
   setTransactionModal: (args: { type: TransactionFlowType; defaultFormValues?: any }) => void;
 }
 
-// TODO is a store needed?
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
