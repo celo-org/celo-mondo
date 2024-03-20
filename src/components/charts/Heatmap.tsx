@@ -7,7 +7,7 @@ export function HeatmapLines({ data }: { data: any[] }) {
         <div
           key={index}
           className={clsx(
-            'h-6 w-[3px] transition-all duration-1000',
+            'h-7 w-[4px] transition-all duration-1000',
             value ? 'bg-green-500' : 'bg-gray-300',
           )}
         />

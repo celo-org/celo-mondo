@@ -42,7 +42,7 @@ import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 
-const HEATMAP_SIZE = 50;
+const HEATMAP_SIZE = 30;
 
 export const dynamicParams = true;
 
