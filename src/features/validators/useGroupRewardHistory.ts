@@ -6,24 +6,23 @@ import { AVG_BLOCK_TIMES_MS, EPOCH_DURATION_MS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanPath } from 'src/features/explorers/celoscan';
 import { logger } from 'src/utils/logger';
-import { Block, PublicClient, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
+import { Block, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
 import { celo } from 'viem/chains';
-import { usePublicClient } from 'wagmi';
 
 const REWARD_DISTRIBUTED_ABI_FRAGMENT =
   'event EpochRewardsDistributedToVoters(address indexed group, uint256 value)';
 
 export function useGroupRewardHistory(group?: Address, epochs?: number) {
-  const publicClient = usePublicClient();
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useGroupRewardHistory', group, epochs, publicClient],
+    queryKey: ['useGroupRewardHistory', group, epochs],
     queryFn: () => {
-      if (!group || !epochs || !publicClient) return null;
+      if (!group || !epochs) return null;
       logger.debug(`Fetching reward history for group ${group}`);
-      return fetchValidatorGroupRewardHistory(group, epochs, publicClient);
+      return fetchValidatorGroupRewardHistory(group, epochs);
     },
     gcTime: Infinity,
     staleTime: 60 * 60 * 1000, // 1 hour
+    retry: false,
   });
 
   useToastError(error, 'Error fetching group reward history');
@@ -38,7 +37,6 @@ export function useGroupRewardHistory(group?: Address, epochs?: number) {
 async function fetchValidatorGroupRewardHistory(
   group: Address,
   epochs: number,
-  _publicClient: PublicClient,
 ): Promise<Array<{ blockNumber: number; reward: bigint; timestamp: number }>> {
   // Get block number of epoch to start from
   const startTimestamp = Math.floor((Date.now() - (epochs + 1) * EPOCH_DURATION_MS) / 1000);
