@@ -15,6 +15,7 @@ const CONNECT_SRC_HOSTS = [
   'https://api.github.com',
   'https://raw.githubusercontent.com',
   'https://celo-mainnet.infura.io',
+  'https://qstash.upstash.io',
 ];
 const FRAME_SRC_HOSTS = ['https://*.walletconnect.com', 'https://*.walletconnect.org'];
 const IMG_SRC_HOSTS = ['https://raw.githubusercontent.com', 'https://*.walletconnect.com'];

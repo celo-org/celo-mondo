@@ -1,20 +1,16 @@
 import { electionABI } from '@celo/abis';
 import { fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
-import { ADDRESS_REGEX, TX_HASH_REGEX, eqAddress } from 'src/utils/addresses';
+import {
+  StakeActivationRequest,
+  StakeActivationRequestSchema,
+} from 'src/features/staking/autoActivation';
+import { eqAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
 import { errorToString } from 'src/utils/strings';
 import { createPublicClient, createWalletClient, decodeEventLog, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
-import { z } from 'zod';
-
-const StakeActivationRequestSchema = z.object({
-  address: z.string().regex(ADDRESS_REGEX),
-  transactionHash: z.string().regex(TX_HASH_REGEX),
-});
-
-type StakeActivationRequest = z.infer<typeof StakeActivationRequestSchema>;
 
 export async function POST(request: Request) {
   logger.debug('Stake activation request received');
