@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { ExternalLink } from 'src/components/buttons/ExternalLink';
+import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { CtaCard } from 'src/components/layout/CtaCard';
 import { links } from 'src/config/links';
@@ -14,7 +14,7 @@ export function GetInvolvedCtaCard() {
   return (
     <div className="flex w-fit flex-col space-y-2 border border-taupe-300 bg-taupe-100 bg-diamond-texture bg-right-bottom bg-no-repeat py-2.5 pl-4 pr-8 md:pr-14">
       <h2 className="font-serif text-xl">Get Involved</h2>
-      <ExternalLink
+      <A_Blank
         href={links.docs}
         className="flex items-center space-x-2 text-sm font-medium hover:underline"
       >
@@ -22,8 +22,8 @@ export function GetInvolvedCtaCard() {
           <Image src={BookIcon} alt="" />
         </div>
         <span>Explore the docs</span>
-      </ExternalLink>
-      <ExternalLink
+      </A_Blank>
+      <A_Blank
         href={links.discord}
         className="flex items-center space-x-2 text-sm font-medium hover:underline"
       >
@@ -31,8 +31,8 @@ export function GetInvolvedCtaCard() {
           <Image src={DiscordIcon} alt="" />
         </div>
         <span>Join the chat</span>
-      </ExternalLink>
-      <ExternalLink
+      </A_Blank>
+      <A_Blank
         href={links.forum}
         className="flex  items-center space-x-2 text-sm font-medium hover:underline"
       >
@@ -40,7 +40,7 @@ export function GetInvolvedCtaCard() {
           <Image src={CeloIcon} alt="" />
         </div>
         <span>Join the forum</span>
-      </ExternalLink>
+      </A_Blank>
     </div>
   );
 }

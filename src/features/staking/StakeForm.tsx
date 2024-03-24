@@ -12,9 +12,10 @@ import {
   MIN_GROUP_SCORE_FOR_RANDOM,
   ZERO_ADDRESS,
 } from 'src/config/consts';
-import { useDelegationBalances } from 'src/features/delegation/useDelegationBalances';
+import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
+import { submitStakeActivationRequest } from 'src/features/staking/autoActivation';
 import { getStakeTxPlan } from 'src/features/staking/stakePlan';
 import {
   GroupToStake,
@@ -37,6 +38,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { toWei } from 'src/utils/amount';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
+import { TransactionReceipt } from 'viem';
 import { useAccount } from 'wagmi';
 
 const initialValues: StakeFormValues = {
@@ -60,21 +62,27 @@ export function StakeForm({
   const { stakeBalances, groupToStake, refetch } = useStakingBalances(address);
   const { delegations } = useDelegationBalances(address);
 
+  const onPlanSuccess = (v: StakeFormValues, r: TransactionReceipt) => {
+    if (v.action === StakeActionType.Stake) {
+      submitStakeActivationRequest({ address: address!, transactionHash: r.transactionHash });
+    }
+    onConfirmed({
+      message: `${v.action} successful`,
+      amount: v.amount,
+      receipt: r,
+      properties: [
+        { label: 'Action', value: toTitleCase(v.action) },
+        { label: 'Group', value: addressToGroup?.[v.group]?.name || 'Unknown' },
+        { label: 'Amount', value: `${v.amount} CELO` },
+      ],
+    });
+  };
+
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<StakeFormValues>({
       createTxPlan: (v) => getStakeTxPlan(v, groups || [], groupToStake || {}),
       onStepSuccess: () => refetch(),
-      onPlanSuccess: (v, r) =>
-        onConfirmed({
-          message: `${v.action} successful`,
-          amount: v.amount,
-          receipt: r,
-          properties: [
-            { label: 'Action', value: toTitleCase(v.action) },
-            { label: 'Group', value: addressToGroup?.[v.group]?.name || 'Unknown' },
-            { label: 'Amount', value: `${v.amount} CELO` },
-          ],
-        }),
+      onPlanSuccess,
     });
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('staking', onTxSuccess);

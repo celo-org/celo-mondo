@@ -1,4 +1,5 @@
 import { Color } from 'src/styles/Color';
+import { z } from 'zod';
 
 /**
  * TYPES CORRESPONDING TO GOVERNANCE + PROPOSAL CONTRACTS
@@ -97,9 +98,6 @@ export interface UpvoteRecord {
 /**
  * TYPES CORRESPONDING TO REPOSITORY METADATA
  */
-
-import { z } from 'zod';
-
 export enum ProposalMetadataStatus {
   DRAFT = 'DRAFT',
   PROPOSED = 'PROPOSED',
@@ -148,6 +146,7 @@ export interface ProposalMetadata {
   // Extra metadata
   cgp: number; // cgp id (different than on-chain)
   cgpUrl: string; // url in repo
+  cgpUrlRaw: string; // for downloading content
   title: string;
   author: string;
   timestampExecuted?: number;

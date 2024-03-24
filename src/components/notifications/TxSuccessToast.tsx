@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { ExternalLink } from 'src/components/buttons/ExternalLink';
+import { A_Blank } from 'src/components/buttons/A_Blank';
 import { ChainId } from 'src/config/chains';
 import { getTxExplorerUrl } from 'src/features/transactions/utils';
 import { logger } from 'src/utils/logger';
@@ -32,9 +32,9 @@ function TxSuccessToast({ message, explorerUrl }: { message: string; explorerUrl
   return (
     <div>
       {message + ' '}
-      <ExternalLink className="underline" href={explorerUrl}>
+      <A_Blank className="underline" href={explorerUrl}>
         See Details
-      </ExternalLink>
+      </A_Blank>
     </div>
   );
 }

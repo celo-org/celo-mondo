@@ -20,6 +20,8 @@ import { logger } from 'src/utils/logger';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
+const CGP_REGEX = /cgp-(\d+)/;
+
 export type MergedProposalData = { stage: ProposalStage; id?: number } & (
   | { proposal: Proposal; metadata?: ProposalMetadata }
   | { proposal?: Proposal; metadata: ProposalMetadata }
@@ -183,10 +185,23 @@ function mergeProposalsWithMetadata(
   const merged: Array<MergedProposalData> = [];
 
   for (const proposal of sortedProposals) {
-    const metadataIndex = sortedMetadata.findIndex((m) => m.id === proposal.id);
+    // First, try to match using the proposal ID
+    let metadataIndex = sortedMetadata.findIndex((m) => m.id === proposal.id);
+
+    // If no match was found, try to match using the discussion url
+    // which is sometimes set to the CGP URL
+    if (metadataIndex < 0 && proposal.url) {
+      const cgpString = CGP_REGEX.exec(proposal.url)?.[1];
+      if (cgpString) {
+        const cgpNumber = parseInt(cgpString, 10);
+        metadataIndex = sortedMetadata.findIndex((m) => m.cgp === cgpNumber);
+      }
+    }
+
     if (metadataIndex >= 0) {
-      // Remove the metadata element and use the on-chain stage
+      // Remove the metadata element
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
+      // Add it to the merged array, giving priority to on-chain stage
       merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
     } else {
       // No metadata found, use just the on-chain data

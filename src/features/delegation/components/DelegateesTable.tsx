@@ -14,9 +14,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { SearchField } from 'src/components/input/SearchField';
+import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { SocialLinkType } from 'src/config/types';
+import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { Delegatee } from 'src/features/delegation/types';
-import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { useIsMobile } from 'src/styles/mediaQueries';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
@@ -121,36 +123,40 @@ function useTableColumns() {
       columnHelper.accessor('name', {
         header: 'Name',
         cell: (props) => (
-          <ValidatorGroupLogoAndName address={props.row.original.address} size={30} />
+          <DelegateeLogoAndName
+            address={props.row.original.address}
+            size={34}
+            name={props.getValue()}
+          />
         ),
       }),
       columnHelper.accessor('interests', {
         header: 'Interests',
         cell: (props) => (
-          <div className="flex space-x-2">
+          <div className="flex flex-wrap space-x-2">
             {props.getValue().map((interest, i) => (
-              <span key={i} className="rounded-md bg-taupe-100 px-2 py-1 text-xs">
+              <span key={i} className="rounded-full border border-taupe-300 px-2 text-sm">
                 {interest}
               </span>
             ))}
           </div>
         ),
+        enableSorting: false,
       }),
       columnHelper.accessor('links', {
         header: 'Social',
         cell: (props) => (
-          <div className="flex space-x-2">
-            {Object.entries(props.getValue()).map(([key, value], i) => (
-              <span key={i} className="rounded-md bg-taupe-100 px-2 py-1 text-xs">
-                {key + value}
-              </span>
+          <div className="flex space-x-3">
+            {Object.entries(props.getValue()).map(([type, href], i) => (
+              <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
           </div>
         ),
+        enableSorting: false,
       }),
       columnHelper.accessor('delegatedBalance', {
-        header: 'Del. voting power',
-        cell: (props) => <div>{formatNumberString(props.getValue(), 0, true)}</div>,
+        header: 'Delegated',
+        cell: (props) => <div>{formatNumberString(props.getValue(), 0, true) + ' CELO'}</div>,
       }),
     ];
   }, []);
@@ -178,7 +184,7 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3 first:min-w-[3rem] last:min-w-0 md:min-w-[8rem]',
+  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-[8rem]',
   td: 'relative border-y border-taupe-300 text-nowrap',
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',

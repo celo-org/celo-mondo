@@ -2,12 +2,8 @@ import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
-import DelegateeJsonData from 'src/config/delegates.json';
-import {
-  Delegatee,
-  DelegateeMetadata,
-  DelegateeMetadataListSchema,
-} from 'src/features/delegation/types';
+import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
+import { Delegatee, DelegateeMetadata } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
 import { MulticallReturnType, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
@@ -20,8 +16,8 @@ export function useDelegatees() {
     queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching delegatees');
-      const metadata = parseDelegateeMetadata();
-      const addressToDelegatee = await fetchDelegateeStats(publicClient, metadata);
+      const cachedMetadata = Object.values(getDelegateeMetadata());
+      const addressToDelegatee = await fetchDelegateeStats(publicClient, cachedMetadata);
       const delegatees = Object.values(addressToDelegatee);
       return { addressToDelegatee, delegatees };
     },
@@ -37,15 +33,6 @@ export function useDelegatees() {
     delegatees: data?.delegatees,
     addressToDelegatee: data?.addressToDelegatee,
   };
-}
-
-function parseDelegateeMetadata(): DelegateeMetadata[] {
-  try {
-    return DelegateeMetadataListSchema.parse(DelegateeJsonData);
-  } catch (error) {
-    logger.error('Error parsing delegatee metadata', error);
-    throw new Error('Invalid delegatee metadata');
-  }
 }
 
 async function fetchDelegateeStats(

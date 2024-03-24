@@ -1,28 +1,10 @@
-import Image from 'next/image';
-import { Circle } from 'src/components/icons/Circle';
-import { Identicon } from 'src/components/icons/Identicon';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { shortenAddress } from 'src/utils/addresses';
 
 export function ValidatorGroupLogo({ address, size }: { address: Address; size: number }) {
-  return (
-    <>
-      {VALIDATOR_GROUPS[address] ? (
-        <Image
-          src={VALIDATOR_GROUPS[address].logo}
-          height={size}
-          width={size}
-          alt=""
-          className="rounded-full border border-taupe-300"
-        />
-      ) : !address || address === ZERO_ADDRESS ? (
-        <Circle size={size} className="bg-yellow-500" />
-      ) : (
-        <Identicon address={address} size={size} />
-      )}
-    </>
-  );
+  const imgSrc = VALIDATOR_GROUPS[address]?.logo;
+  return <ImageOrIdenticon imgSrc={imgSrc} address={address} size={size} />;
 }
 
 export function ValidatorGroupLogoAndName({

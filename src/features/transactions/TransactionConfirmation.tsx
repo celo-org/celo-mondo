@@ -1,4 +1,4 @@
-import { ExternalLink } from 'src/components/buttons/ExternalLink';
+import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Checkmark } from 'src/components/icons/Checkmark';
 import { Amount } from 'src/components/numbers/Amount';
@@ -32,12 +32,12 @@ export function TransactionConfirmation({
           ))}
           <div className="flex flex-row justify-between border-t border-taupe-300 pt-2">
             <div className="text-sm font-medium">Transaction</div>
-            <ExternalLink
+            <A_Blank
               href={getTxExplorerUrl(confirmation.receipt.transactionHash)}
               className="text-sm font-medium text-blue-500"
             >
               View in explorer
-            </ExternalLink>
+            </A_Blank>
           </div>
         </div>
       </div>

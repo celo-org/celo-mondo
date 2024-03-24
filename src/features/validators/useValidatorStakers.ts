@@ -82,22 +82,23 @@ function reduceLogs(stakerToVotes: AddressTo<number>, logs: TransactionLog[], is
         topics: log.topics,
         strict: false,
       });
+
       if (
         eventName !== 'ValidatorGroupVoteCast' &&
         eventName !== 'ValidatorGroupPendingVoteRevoked' &&
         eventName !== 'ValidatorGroupActiveVoteRevoked'
       )
         continue;
+
       const { account: staker, value: valueWei } = args;
       if (!valueWei || !staker || !isValidAddress(staker)) continue;
+
       const value = fromWei(valueWei);
-      if (isAdd) {
-        stakerToVotes[staker] = (stakerToVotes[staker] ?? 0) + value;
-      } else {
-        stakerToVotes[staker] = (stakerToVotes[staker] ?? 0) - value;
-      }
+      stakerToVotes[staker] ||= 0;
+      if (isAdd) stakerToVotes[staker] += value;
+      else stakerToVotes[staker] -= value;
     } catch (error) {
-      logger.warn('Error decoding event log', error, log);
+      logger.warn('Error decoding staking event log', error, log);
     }
   }
 }

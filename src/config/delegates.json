@@ -1,15 +1,144 @@
-[
-  {
-    "name": "Celo Whale",
-    "address": "0xef268b5C05452D63a17Da12f562368e88a036Ef1",
-    "logoUri": "/logos/delegatees/default.svg",
-    "date": "2024-03-08",
+{
+  "0xFaa0b40645Ee5E8D9AE38393e8cDF8e5baA71d13": {
+    "name": "Staking Fund",
+    "address": "0xFaa0b40645Ee5E8D9AE38393e8cDF8e5baA71d13",
+    "logoUri": "/logos/validators/staking-fund.jpg",
+    "date": "2024-01-01",
     "links": {
-      "website": "https://celowhale.com",
-      "twitter": "https://twitter.com/celowhale",
-      "github": "https://twitter.com/celowhale"
+      "website": "https://staking.fund",
+      "twitter": "https://twitter.com/stakingfund"
     },
-    "interests": ["Fish", "Water", "Swimming"],
-    "description": "An unknown Celo whale account. One of the largest CELO holders in the world."
+    "interests": ["Proof-of-Stake", "Infrastructure"],
+    "description": "Staking Fund operates block producing validation nodes on Proof-of-Stake protocols.  We've been actively engaging in the validating role for numerous novel Proof-of-Stake protocols since 2018 and proving our commitment to secure decentralized blockchain networks with high availability and zero slashing."
+  },
+  "0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf": {
+    "name": "Chain Vibes",
+    "address": "0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf",
+    "logoUri": "/logos/validators/chain-vibes.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://chainvibes.com/decloud.html",
+      "twitter": "https://twitter.com/chain_vibes"
+    },
+    "interests": ["Transparency", "Accountability", "Good Vibes"],
+    "description": "Chain vibes is a validator group. We are transparent about our on-chain governance decision making as well as our commission change rate schedule. Our whole live is about IT engineering, now we take this opportunity to keep the vibe in the chain"
+  },
+  "0x0339Df3FE4f5ccC864EAE8491E5c8AEc4611A631": {
+    "name": "Tessellated",
+    "address": "0x0339Df3FE4f5ccC864EAE8491E5c8AEc4611A631",
+    "logoUri": "/logos/validators/tessellated.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://tessellated.io",
+      "twitter": "https://twitter.com/tessellated_io"
+    },
+    "interests": ["Proof-of-Stake", "Infrastructure"],
+    "description": "Tessellated is an independent and technically capable validator. Tessellated has validated and contributed to networks since 2018."
+  },
+  "0xc8A81D473992c7c6D3F469A8263F24914625709d": {
+    "name": "Moonli",
+    "address": "0xc8A81D473992c7c6D3F469A8263F24914625709d",
+    "logoUri": "/logos/validators/moonli-me.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://moonli.me",
+      "twitter": "https://twitter.com/moonli_me"
+    },
+    "interests": ["Staking", "Decentralization"],
+    "description": "Moonli is an an independent staking service provider for blockchain projects. Independent means that it is run by blockchain geeks for blockchain and crypto enthusiasts just like you. No VCs or institutional support. We indeed care about keeping the stake decentralized. We pride ourselves as a boutique validator supporting networks that create real value. We have been in the staking business since 2019 and run validators on Ethereum-, Substrate- and Tendermint-based chains."
+  },
+  "0x067e453918f2c44D937b05a7eE9DBFB804C54ADd": {
+    "name": "Usopp",
+    "address": "0x067e453918f2c44D937b05a7eE9DBFB804C54ADd",
+    "logoUri": "/logos/validators/usopp.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://www.usopp.club"
+    },
+    "interests": ["Social Good", "Reliability"],
+    "description": "Usopp is one of the genesis validators who launched the Celo blockchain on 22nd of April 2020. We have been following the Celo project since its early days in 2018. It was a privilege to witness the amazing journey of the network development from Alfajores to Baklava and the growing nascent community. The Stake-Off competition brought together a set of highly competitive but remarkably helpful and cooperatives groups of validators. Those sleepless nights of the competition have paid off really well as we are one of the 65 Genesis Validators and the grateful producer of the first block of the chain :D"
+  },
+  "0xE141831c2c1198d79B9Ff61cD97C3bAca7F071E0": {
+    "name": "Swift Staking",
+    "address": "0xE141831c2c1198d79B9Ff61cD97C3bAca7F071E0",
+    "logoUri": "/logos/validators/swift-staking.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://www.swiftstaking.com",
+      "twitter": "https://twitter.com/swiftstaking"
+    },
+    "interests": ["The Graph", "Blockchain Infrastructure", "Trust"],
+    "description": "Swift staking is a validator group.  Our company is founded on the key principles of enterprise-level security, high availability, and 100% customer satisfaction. These are the reasons why stakers trust us."
+  },
+  "0x481EAdE762d6D0b49580189B78709c9347b395bf": {
+    "name": "Happy Celo",
+    "address": "0x481EAdE762d6D0b49580189B78709c9347b395bf",
+    "logoUri": "/logos/validators/happy-celo.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://www.happycelo.com",
+      "twitter": "https://twitter.com/HappyCelo_com"
+    },
+    "interests": ["Security", "High Availability", "Monitoring"],
+    "description": "Happy Celo is your trusted Celo Validator. We have decided to use a combination of our own infrastructure and cloud services (AWS, DigitalOcean). Even-though we could have run the entire Celo infrastructure on AWS alone in our opinion it makes sense to use atleast one of the other cloud providers (Google Cloud Platform, Microsoft Azure, Digital Ocean, Linode) or your own infrastructure in case AWS will have multi region or global failure. Each set of nodes is geo-redundant by being hosted in different regions by different providers. Our own servers are hosted by a hosting provider certified in accordance with DIN ISO/IEC 27001. It also offers state of the art DDoS protection and multiple 100 GBit/s peering points on the backbone with guaranteed bandwidth of 1GBit/s."
+  },
+  "0x71dcC67baEECd9308e341359f70B782D9C3565b8": {
+    "name": "Virtual Hive",
+    "address": "0x71dcC67baEECd9308e341359f70B782D9C3565b8",
+    "logoUri": "/logos/validators/virtual-hive.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://virtualhive.io",
+      "twitter": "https://twitter.com/VirtualHiveio"
+    },
+    "interests": ["Web3 Infrastructure", "Reliability", "Sustainability"],
+    "description": "Virtual Hive is an organization focusing on providing infrastructure for cutting-edge technology in the web3 sector. We are passionate about new technologies, innovative economic mechanics and incentives. Our intrinsic desire to explore the unknown combined with our background in conventional enterprise best practices pave the path of our journey."
+  },
+  "0xB33e9e01E561a1Da60f7Cb42508500e571afb6Eb": {
+    "name": "Validator Capital",
+    "address": "0xB33e9e01E561a1Da60f7Cb42508500e571afb6Eb",
+    "logoUri": "/logos/validators/validator-capital.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://www.validator.capital",
+      "twitter": "https://twitter.com/ValidatorCap"
+    },
+    "interests": ["Web3 Investment", "De-Fi"],
+    "description": "Validator Capital is a Celo validator group and an active governance participant."
+  },
+  "0x061E9958028dcAa66fd8B255AD95194203b6c4Da": {
+    "name": "Easy2Stake",
+    "address": "0x061E9958028dcAa66fd8B255AD95194203b6c4Da",
+    "logoUri": "/logos/validators/easy2stake.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://www.easy2stake.com",
+      "twitter": "https://twitter.com/easy2stake"
+    },
+    "interests": ["Proof-of-Stake", "High Availability", "Infrastructure"],
+    "description": "Easy2Stake is a validator group on 10+ proof-of-stake chains. Our infrastructure was built with maximum security and performance at the forefront.  We provide secure, reliable, and non-custodial infrastructure so you can earn rewards."
+  },
+  "0xB87f2354E34B26ba6406Ac60EA99DCD8cd5e63Bf": {
+    "name": "The Passive Trust",
+    "address": "0xB87f2354E34B26ba6406Ac60EA99DCD8cd5e63Bf",
+    "logoUri": "/logos/validators/tpt.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://thepassivetrust.com",
+      "twitter": "https://twitter.com/0xTPT"
+    },
+    "interests": ["Privacy", "Prosperity", "Change"],
+    "description": "The Passive Trust provides validation and moderation services to several web3 projects. We look at where the world will be in ten years, not two."
+  },
+  "0xc24baeac0Fd189637112B7e33d22FfF2730aF993": {
+    "name": "Plus V",
+    "address": "0xc24baeac0Fd189637112B7e33d22FfF2730aF993",
+    "logoUri": "/logos/validators/plus-v.jpg",
+    "date": "2024-01-01",
+    "links": {
+      "website": "https://plusv.io"
+    },
+    "interests": ["Staking", "Security", "Passive Income"],
+    "description": "Staking is a process of delegating your cryptocurrency to us. Our valdiators are responsible for validating transactions on the blockchain. In exchange for the participation in the network, you will receive a portion of the transaction fees and block rewards that are generated on the network. This means that at the end of each validating cycle (or epoch), your stake increases, generating you passive income."
   }
-]
+}

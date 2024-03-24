@@ -1,6 +1,9 @@
 import { logger } from 'src/utils/logger';
 import { getAddress, isAddress } from 'viem';
 
+export const ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
+export const TX_HASH_REGEX = /^0x[a-fA-F0-9]{64}$/;
+
 export function isValidAddress(address: string): address is Address {
   // Need to catch because ethers' isAddress throws in some cases (bad checksum)
   try {

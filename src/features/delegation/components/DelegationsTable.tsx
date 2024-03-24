@@ -7,10 +7,10 @@ import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { DelegateActionType, Delegatee, DelegationAmount } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
-import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
@@ -81,7 +81,7 @@ export function DelegationsTable({
           {tableData.map(({ address, name, amount, percentage }) => (
             <tr key={address}>
               <td className={tableClasses.td}>
-                <ValidatorGroupLogoAndName address={address} name={name} />
+                <DelegateeLogoAndName address={address} name={name} />
               </td>
               <td className={tableClasses.td}>{formatNumberString(amount, 2) + ' CELO'}</td>
               <td className={tableClasses.td}>{percentage + '%'}</td>

@@ -11,14 +11,11 @@ import { objLength } from 'src/utils/objects';
 import { isNullish } from 'src/utils/typeof';
 import { parse as parseYaml } from 'yaml';
 
-// TODO use official repo when fixes are merged
 const GITHUB_OWNER = 'celo-org';
-// const GITHUB_OWNER = 'jmrossy';
 const GITHUB_REPO = 'governance';
 const GITHUB_DIRECTORY_PATH = 'CGPs';
 const GITHUB_BRANCH = 'main';
-// const GITHUB_BRANCH = 'missing-proposal-ids';
-const GITHUB_NAME_REGEX = /^cgp-(\d+)\.md$/;
+const CGP_FILENAME_REGEX = /^cgp-(\d+)\.md$/;
 
 export async function fetchProposalsFromRepo(
   cache: ProposalMetadata[],
@@ -29,19 +26,21 @@ export async function fetchProposalsFromRepo(
     GITHUB_REPO,
     GITHUB_DIRECTORY_PATH,
     GITHUB_BRANCH,
-    GITHUB_NAME_REGEX,
+    CGP_FILENAME_REGEX,
   );
   const errorUrls = [];
   const validProposals: ProposalMetadata[] = [];
   for (const file of files) {
     // First extract cgp number and check cache
-    const cgpString = GITHUB_NAME_REGEX.exec(file.name)?.[1];
+    const cgpString = CGP_FILENAME_REGEX.exec(file.name)?.[1];
     if (!cgpString) {
       logger.error('Failed to extract CGP number from file name', file.name);
       errorUrls.push(file.download_url);
       continue;
     }
     const cgpNumber = parseInt(cgpString, 10);
+
+    // If it's in the cache, use it
     const cachedProposal = cache.find((p) => p.cgp === cgpNumber);
     if (cachedProposal) {
       validProposals.push(cachedProposal);
@@ -64,7 +63,7 @@ export async function fetchProposalsFromRepo(
     const { frontMatter, body } = fileParts;
     logger.debug('Front matter size', objLength(frontMatter), 'body size', body.length);
 
-    const proposalMetadata = parseFontMatter(frontMatter, file.download_url);
+    const proposalMetadata = parseFontMatter(frontMatter, file);
     const bodyValid = validateMarkdown ? !isNullish(markdownToHtml(body)) : true;
     if (!proposalMetadata || !bodyValid) {
       errorUrls.push(file.download_url);
@@ -166,12 +165,13 @@ function separateYamlFrontMatter(content: string) {
   }
 }
 
-function parseFontMatter(data: Record<string, string>, url: string): ProposalMetadata | null {
+function parseFontMatter(data: Record<string, string>, file: GithubFile): ProposalMetadata | null {
   try {
     const parsed = RawProposalMetadataSchema.parse(data);
     return {
       cgp: parsed.cgp,
-      cgpUrl: url,
+      cgpUrl: file.html_url,
+      cgpUrlRaw: file.download_url,
       title: parsed.title,
       author: parsed.author,
       stage: MetadataStatusToStage[parsed.status],

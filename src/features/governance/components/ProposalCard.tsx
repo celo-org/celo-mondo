@@ -1,6 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
+import { SocialLogo } from 'src/components/logos/SocialLogo';
+import { ShortAddress } from 'src/components/text/ShortAddress';
+import { SocialLinkType } from 'src/config/types';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import {
@@ -10,7 +14,6 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
-import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
@@ -44,7 +47,7 @@ export function ProposalCard({ propData }: { propData: MergedProposalData }) {
 
   return (
     <Link href={link} className="space-y-2.5">
-      <ProposalBadgeRow data={propData} />
+      <ProposalBadgeRow propData={propData} />
       {titleValue && <h2 className="text-xl font-medium">{titleValue}</h2>}
       {votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
         <div className="space-y-2.5">
@@ -72,13 +75,13 @@ export function ProposalCard({ propData }: { propData: MergedProposalData }) {
 }
 
 export function ProposalBadgeRow({
-  data,
+  propData,
   showProposer,
 }: {
-  data: MergedProposalData;
+  propData: MergedProposalData;
   showProposer?: boolean;
 }) {
-  const { stage, proposal, metadata } = data;
+  const { stage, proposal, metadata } = propData;
 
   const { id, timestamp, proposer } = proposal || {};
   const { timestamp: cgpTimestamp, cgp } = metadata || {};
@@ -89,8 +92,9 @@ export function ProposalBadgeRow({
     : undefined;
 
   return (
-    <div className="flex items-center space-x-3">
-      <IdBadge cgp={cgp} id={id} />
+    <div className="flex items-center space-x-2">
+      <IdBadge cgp={cgp} />
+      <IdBadge id={id} />
       <StageBadge stage={stage} />
       {proposedTimeValue && (
         <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
@@ -98,8 +102,35 @@ export function ProposalBadgeRow({
       {showProposer && proposer && (
         <>
           <div className="text-xs opacity-50">•</div>
-          <div className="text-sm text-taupe-600">{shortenAddress(proposer)}</div>
+          <ShortAddress address={proposer} className="text-sm text-taupe-600" />
         </>
+      )}
+    </div>
+  );
+}
+
+export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) {
+  const { proposal, metadata } = propData;
+  const discussionUrl = metadata?.url || proposal?.url;
+  const cgpUrl = metadata?.cgpUrl;
+
+  if (!discussionUrl) return null;
+
+  const discussionHost = new URL(discussionUrl).hostname;
+
+  return (
+    <div className="flex items-center gap-4 pt-2">
+      <A_Blank
+        href={discussionUrl}
+        className="flex grow items-center gap-2 border border-taupe-300 px-3 py-3"
+      >
+        <SocialLogo type={SocialLinkType.Website} size={18} />
+        <span className="grow text-sm font-medium hover:underline">{`View discussion on ${discussionHost}`}</span>
+      </A_Blank>
+      {cgpUrl && (
+        <A_Blank href={cgpUrl} className="border border-taupe-300 px-3 py-3">
+          <SocialLogo type={SocialLinkType.Github} size={20} />
+        </A_Blank>
       )}
     </div>
   );

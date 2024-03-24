@@ -14,7 +14,7 @@ import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 
-const NUM_VOTERS_TO_SHOW = 20;
+const NUM_TO_SHOW = 20;
 
 export function ProposalVotersTable({ propData }: { propData: MergedProposalData }) {
   return (
@@ -54,7 +54,7 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
     }
     // Use the sortAndCombine utility to collapse down to limited number
     const combinedByType = objMap(votesByType, (type) =>
-      sortAndCombineChartData(votesByType[type], NUM_VOTERS_TO_SHOW),
+      sortAndCombineChartData(votesByType[type], NUM_TO_SHOW),
     );
     // Weave in type and flatten
     const combined = objKeys(combinedByType)
@@ -62,7 +62,7 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
       .flat();
     // Sort by value and take the top NUM_VOTERS_TO_SHOW
     const sorted = combined.sort((a, b) => b.value - a.value);
-    return sorted.slice(0, NUM_VOTERS_TO_SHOW);
+    return sorted.slice(0, NUM_TO_SHOW);
   }, [voters, totals, addressToGroup]);
 
   if (isLoading) {
