@@ -16,6 +16,11 @@ const CONNECT_SRC_HOSTS = [
   'https://raw.githubusercontent.com',
   'https://celo-mainnet.infura.io',
   'https://qstash.upstash.io',
+
+  // Wormhole RPCs
+  'https://rpc.ankr.com',
+  'https://bscrpc.com',
+  'https://base.publicnode.com',
 ];
 const FRAME_SRC_HOSTS = ['https://*.walletconnect.com', 'https://*.walletconnect.org'];
 const IMG_SRC_HOSTS = ['https://raw.githubusercontent.com', 'https://*.walletconnect.com'];
