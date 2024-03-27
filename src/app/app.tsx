@@ -1,7 +1,7 @@
 'use client';
 import { Analytics } from '@vercel/analytics/react';
 import { PropsWithChildren } from 'react';
-import { ToastContainer, Zoom, toast } from 'react-toastify';
+import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
 import { Footer } from 'src/components/nav/Footer';
@@ -19,7 +19,7 @@ export function App({ children }: PropsWithChildren<any>) {
         <WagmiContext>
           <BodyLayout>{children}</BodyLayout>
           <TransactionModal />
-          <ToastContainer transition={Zoom} position={toast.POSITION.BOTTOM_RIGHT} />
+          <ToastContainer transition={Zoom} position="bottom-right" />
         </WagmiContext>
       </SafeHydrate>
       <Analytics />
