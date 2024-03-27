@@ -81,9 +81,9 @@ export function ProposalBadgeRow({
   propData: MergedProposalData;
   showProposer?: boolean;
 }) {
-  const { stage, proposal, metadata } = propData;
+  const { stage, proposal, metadata, id } = propData;
 
-  const { id, timestamp, proposer } = proposal || {};
+  const { timestamp, proposer } = proposal || {};
   const { timestamp: cgpTimestamp, cgp } = metadata || {};
 
   const proposedTimestamp = timestamp || cgpTimestamp;

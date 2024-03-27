@@ -8,6 +8,7 @@ import {
 } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import CachedMetadata from 'src/config/proposals.json';
+import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import {
   ACTIVE_PROPOSAL_STAGES,
@@ -17,7 +18,7 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
-import { MulticallReturnType, PublicClient } from 'viem';
+import { MulticallReturnType, PublicClient, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 const CGP_REGEX = /cgp-(\d+)/;
@@ -44,8 +45,9 @@ export function useGovernanceProposals() {
       // Fetch on-chain data
       const proposals = await fetchGovernanceProposals(publicClient);
       const metadata = await fetchGovernanceMetadata();
+      const executedIds = await fetchExecutedProposalIds();
       // Then merge it with the cached
-      return mergeProposalsWithMetadata(proposals, metadata);
+      return mergeProposalsWithMetadata(proposals, metadata, executedIds);
     },
     gcTime: Infinity,
     staleTime: 60 * 60 * 1000, // 1 hour
@@ -176,9 +178,22 @@ function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
   return fetchProposalsFromRepo(cached, false);
 }
 
+// The governance metadata is often left unchanged after a proposal is executed
+// so this query is used to double-check the status of proposals
+async function fetchExecutedProposalIds(): Promise<number[]> {
+  const topics = encodeEventTopics({
+    abi: governanceABI,
+    eventName: 'ProposalExecuted',
+  });
+
+  const events = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
+  return events.map((e) => parseInt(e.topics[1], 16));
+}
+
 function mergeProposalsWithMetadata(
   proposals: Proposal[],
   metadata: ProposalMetadata[],
+  executedIds: number[],
 ): Array<MergedProposalData> {
   const sortedProposals = [...proposals].sort((a, b) => b.id - a.id);
   const sortedMetadata = [...metadata].sort((a, b) => b.cgp - a.cgp);
@@ -211,22 +226,24 @@ function mergeProposalsWithMetadata(
 
   // Merge in any remaining metadata, cleaning it first
   for (const metadata of sortedMetadata) {
-    if (metadata.stage === ProposalStage.Queued) {
+    if (metadata.id && executedIds.includes(metadata.id)) {
+      metadata.stage = ProposalStage.Executed;
+    } else if (metadata.stage === ProposalStage.Queued) {
       if (metadata.id) {
-        // Any proposals marked 'PROPOSED' in the metadata but not found on-chain
-        // Are either executed or expired. It's uncertain so they're marked as expired
+        // Any proposals marked 'PROPOSED' (aka queued) in the metadata but
+        // not found on-chain are likely expired.
         metadata.stage = ProposalStage.Expiration;
       } else {
-        // If there's no ID, it's a draft
+        // If there's no ID, it's a draft and the metadata is incorrect
         metadata.stage = ProposalStage.None;
       }
     }
     merged.push({ stage: metadata.stage, id: metadata.id, metadata });
   }
 
-  // Filter out failed proposals without a corresponding CGP
   return (
     merged
+      // Filter out failed proposals without a corresponding CGP
       .filter((p) => p.metadata?.cgp || p.proposal?.stage !== ProposalStage.Expiration)
       // Sort by active proposals then by CGP number
       .sort((a, b) => {
