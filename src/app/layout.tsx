@@ -5,6 +5,8 @@ import { alpinaFont, interFont } from 'src/styles/fonts';
 import 'src/styles/globals.css';
 import { App } from './app';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   applicationName: 'Celo Station',
   metadataBase: new URL(links.home),
