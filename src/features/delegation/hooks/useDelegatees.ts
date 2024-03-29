@@ -5,7 +5,7 @@ import { Addresses } from 'src/config/contracts';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
 import { Delegatee, DelegateeMetadata } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
-import { MulticallReturnType, PublicClient } from 'viem';
+import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 export function useDelegatees() {
@@ -39,24 +39,28 @@ async function fetchDelegateeStats(
   publicClient: PublicClient,
   metadata: DelegateeMetadata[],
 ): Promise<AddressTo<Delegatee>> {
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const lockedBalanceResults: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: metadata.map((d) => ({
-      address: Addresses.LockedGold,
-      abi: lockedGoldABI,
-      functionName: 'getAccountTotalLockedGold',
-      args: [d.address],
-    })),
+  const lockedBalanceResults = await publicClient.multicall({
+    contracts: metadata.map(
+      (d) =>
+        ({
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'getAccountTotalLockedGold',
+          args: [d.address],
+        }) as const,
+    ),
   });
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const votingPowerResults: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: metadata.map((d) => ({
-      address: Addresses.LockedGold,
-      abi: lockedGoldABI,
-      functionName: 'getAccountTotalGovernanceVotingPower',
-      args: [d.address],
-    })),
+  const votingPowerResults = await publicClient.multicall({
+    contracts: metadata.map(
+      (d) =>
+        ({
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'getAccountTotalGovernanceVotingPower',
+          args: [d.address],
+        }) as const,
+    ),
   });
 
   // Process validator lists to create list of validator groups

@@ -4,7 +4,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { DelegationBalances } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
-import { MulticallReturnType, PublicClient } from 'viem';
+import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 export function useDelegationBalances(address?: Address) {
@@ -55,14 +55,16 @@ async function fetchDelegationBalances(
   // Prepare a list of account, delegatee tuples
   const accountAndDelegatee = delegateeAddresses.map((a) => [address, a]);
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const delegatedAmounts: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: accountAndDelegatee.map(([acc, del]) => ({
-      address: Addresses.LockedGold,
-      abi: lockedGoldABI,
-      functionName: 'getDelegatorDelegateeInfo',
-      args: [acc, del],
-    })),
+  const delegatedAmounts = await publicClient.multicall({
+    contracts: accountAndDelegatee.map(
+      ([acc, del]) =>
+        ({
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'getDelegatorDelegateeInfo',
+          args: [acc, del],
+        }) as const,
+    ),
   });
 
   for (let i = 0; i < delegateeAddresses.length; i++) {

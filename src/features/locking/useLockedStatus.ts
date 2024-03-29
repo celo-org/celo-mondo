@@ -43,13 +43,13 @@ async function fetchLockedStatus(
         abi: lockedGoldABI,
         functionName: 'getAccountTotalLockedGold',
         args: [address],
-      },
+      } as const,
       {
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'getPendingWithdrawals',
         args: [address],
-      },
+      } as const,
     ],
   });
   if (totalLockedResp.status !== 'success' || pendingWithdrawalsResp.status !== 'success') {

@@ -67,7 +67,6 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
 
   const proposalIndex = proposalId ? dequeue?.indexOf(proposalId) : undefined;
 
-  // @ts-ignore TODO Bug with viem 2.0 types
   const { data, isError, isLoading, error, refetch } = useReadContract({
     address: Addresses.Governance,
     abi: governanceABI,
@@ -77,7 +76,7 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
       enabled: address && !isNullish(proposalIndex),
       staleTime: 1 * 60 * 1000, // 1 minute
     },
-  });
+  } as const);
 
   useToastError(error, 'Error fetching voting record');
 
@@ -99,7 +98,6 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
 }
 
 export function useGovernanceVotingPower(address?: Address) {
-  // @ts-ignore TODO Bug with viem 2.0 types
   const { data, isError, isLoading, error } = useReadContract({
     address: Addresses.LockedGold,
     abi: lockedGoldABI,
@@ -109,7 +107,7 @@ export function useGovernanceVotingPower(address?: Address) {
       enabled: !!address,
       staleTime: 1 * 60 * 1000, // 1 minute
     },
-  });
+  } as const);
 
   useToastError(error, 'Error fetching voting power');
 

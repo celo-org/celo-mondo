@@ -6,7 +6,7 @@ import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
-import { MulticallReturnType, PublicClient } from 'viem';
+import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 
@@ -121,12 +121,12 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
         address: Addresses.Validators,
         abi: validatorsABI,
         functionName: 'getRegisteredValidators',
-      },
+      } as const,
       {
         address: Addresses.Election,
         abi: electionABI,
         functionName: 'getCurrentValidatorSigners',
-      },
+      } as const,
     ],
   });
   if (validatorAddrsResp.status !== 'success' || !validatorAddrsResp.result?.length) {
@@ -145,14 +145,16 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
 
 async function fetchValidatorDetails(publicClient: PublicClient, addresses: readonly Address[]) {
   // Fetch validator details, needed for their scores and signers
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const validatorDetailsRaw: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: addresses.map((addr) => ({
-      address: Addresses.Validators,
-      abi: validatorsABI,
-      functionName: 'getValidator',
-      args: [addr],
-    })),
+  const validatorDetailsRaw = await publicClient.multicall({
+    contracts: addresses.map(
+      (addr) =>
+        ({
+          address: Addresses.Validators,
+          abi: validatorsABI,
+          functionName: 'getValidator',
+          args: [addr],
+        }) as const,
+    ),
   });
 
   // https://viem.sh/docs/faq.html#why-is-a-contract-function-return-type-returning-an-array-instead-of-an-object
@@ -170,14 +172,16 @@ async function fetchValidatorDetails(publicClient: PublicClient, addresses: read
 }
 
 async function fetchNamesForAccounts(publicClient: PublicClient, addresses: readonly Address[]) {
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const results: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: addresses.map((addr) => ({
-      address: Addresses.Accounts,
-      abi: accountsABI,
-      functionName: 'getName',
-      args: [addr],
-    })),
+  const results = await publicClient.multicall({
+    contracts: addresses.map(
+      (addr) =>
+        ({
+          address: Addresses.Accounts,
+          abi: accountsABI,
+          functionName: 'getName',
+          args: [addr],
+        }) as const,
+    ),
     allowFailure: true,
   });
   return results.map((n) => {
@@ -187,14 +191,16 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
 }
 
 async function fetchGroupLastSlashed(publicClient: PublicClient, addresses: readonly Address[]) {
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const results: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: addresses.map((addr) => ({
-      address: Addresses.Validators,
-      abi: validatorsABI,
-      functionName: 'getValidatorGroup',
-      args: [addr],
-    })),
+  const results = await publicClient.multicall({
+    contracts: addresses.map(
+      (addr) =>
+        ({
+          address: Addresses.Validators,
+          abi: validatorsABI,
+          functionName: 'getValidatorGroup',
+          args: [addr],
+        }) as const,
+    ),
     allowFailure: true,
   });
   return results.map((n) => {
@@ -213,12 +219,12 @@ async function fetchVotesAndTotalLocked(publicClient: PublicClient) {
         address: Addresses.Election,
         abi: electionABI,
         functionName: 'getTotalVotesForEligibleValidatorGroups',
-      },
+      } as const,
       {
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'getTotalLockedGold',
-      },
+      } as const,
     ],
   });
 

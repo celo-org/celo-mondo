@@ -5,7 +5,7 @@ import { Addresses } from 'src/config/contracts';
 import { GroupToStake } from 'src/features/staking/types';
 import { logger } from 'src/utils/logger';
 import { objKeys } from 'src/utils/objects';
-import { MulticallReturnType, PublicClient } from 'viem';
+import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 export const emptyStakeBalances = {
@@ -57,24 +57,28 @@ async function fetchStakingBalances(publicClient: PublicClient, address: Address
 
   const groupAddrsAndAccount = groupAddrs.map((a) => [a, address]);
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const pendingVotes: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: groupAddrsAndAccount.map(([g, a]) => ({
-      address: Addresses.Election,
-      abi: electionABI,
-      functionName: 'getPendingVotesForGroupByAccount',
-      args: [g, a],
-    })),
+  const pendingVotes = await publicClient.multicall({
+    contracts: groupAddrsAndAccount.map(
+      ([g, a]) =>
+        ({
+          address: Addresses.Election,
+          abi: electionABI,
+          functionName: 'getPendingVotesForGroupByAccount',
+          args: [g, a],
+        }) as const,
+    ),
   });
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const activeVotes: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: groupAddrsAndAccount.map(([g, a]) => ({
-      address: Addresses.Election,
-      abi: electionABI,
-      functionName: 'getActiveVotesForGroupByAccount',
-      args: [g, a],
-    })),
+  const activeVotes = await publicClient.multicall({
+    contracts: groupAddrsAndAccount.map(
+      ([g, a]) =>
+        ({
+          address: Addresses.Election,
+          abi: electionABI,
+          functionName: 'getActiveVotesForGroupByAccount',
+          args: [g, a],
+        }) as const,
+    ),
   });
 
   const votes: GroupToStake = {};
@@ -109,12 +113,15 @@ export async function checkHasActivatable(
 
   const groupAddrsAndAccount = groupsWithPending.map((a) => [address, a]);
   const hasActivatable = await publicClient.multicall({
-    contracts: groupAddrsAndAccount.map(([g, a]) => ({
-      address: Addresses.Election,
-      abi: electionABI,
-      functionName: 'hasActivatablePendingVotes',
-      args: [g, a],
-    })),
+    contracts: groupAddrsAndAccount.map(
+      ([g, a]) =>
+        ({
+          address: Addresses.Election,
+          abi: electionABI,
+          functionName: 'hasActivatablePendingVotes',
+          args: [g, a],
+        }) as const,
+    ),
   });
 
   const groupsToActivate = groupsWithPending.filter((v, i) => !!hasActivatable[i]);

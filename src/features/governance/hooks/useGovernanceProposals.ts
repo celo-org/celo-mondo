@@ -18,7 +18,7 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
-import { MulticallReturnType, PublicClient, encodeEventTopics } from 'viem';
+import { PublicClient, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 const CGP_REGEX = /cgp-(\d+)/;
@@ -75,12 +75,12 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
         address: Addresses.Governance,
         abi: governanceABI,
         functionName: 'getQueue',
-      },
+      } as const,
       {
         address: Addresses.Governance,
         abi: governanceABI,
         functionName: 'getDequeue',
-      },
+      } as const,
     ],
   });
 
@@ -98,34 +98,40 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
 
   if (!allIdsAndUpvotes.length) return [];
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const properties: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: allIdsAndUpvotes.map((p) => ({
-      address: Addresses.Governance,
-      abi: governanceABI,
-      functionName: 'getProposal',
-      args: [p.id],
-    })),
+  const properties = await publicClient.multicall({
+    contracts: allIdsAndUpvotes.map(
+      (p) =>
+        ({
+          address: Addresses.Governance,
+          abi: governanceABI,
+          functionName: 'getProposal',
+          args: [p.id],
+        }) as const,
+    ),
   });
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const stages: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: allIdsAndUpvotes.map((p) => ({
-      address: Addresses.Governance,
-      abi: governanceABI,
-      functionName: 'getProposalStage',
-      args: [p.id],
-    })),
+  const stages = await publicClient.multicall({
+    contracts: allIdsAndUpvotes.map(
+      (p) =>
+        ({
+          address: Addresses.Governance,
+          abi: governanceABI,
+          functionName: 'getProposalStage',
+          args: [p.id],
+        }) as const,
+    ),
   });
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
-  const votes: MulticallReturnType<any> = await publicClient.multicall({
-    contracts: allIdsAndUpvotes.map((p) => ({
-      address: Addresses.Governance,
-      abi: governanceABI,
-      functionName: 'getVoteTotals',
-      args: [p.id],
-    })),
+  const votes = await publicClient.multicall({
+    contracts: allIdsAndUpvotes.map(
+      (p) =>
+        ({
+          address: Addresses.Governance,
+          abi: governanceABI,
+          functionName: 'getVoteTotals',
+          args: [p.id],
+        }) as const,
+    ),
   });
 
   const proposals: Proposal[] = [];

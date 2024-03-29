@@ -17,12 +17,15 @@ export function usePendingStakingActivations(address?: Address, groupToStake: Gr
     error,
     refetch,
   } = useReadContracts({
-    contracts: pendingGroups.map((g) => ({
-      address: Addresses.Election,
-      abi: electionABI,
-      functionName: 'hasActivatablePendingVotes',
-      args: [address || ZERO_ADDRESS, g],
-    })),
+    contracts: pendingGroups.map(
+      (g) =>
+        ({
+          address: Addresses.Election,
+          abi: electionABI,
+          functionName: 'hasActivatablePendingVotes',
+          args: [address || ZERO_ADDRESS, g],
+        }) as const,
+    ),
     allowFailure: true,
     query: {
       enabled: !!address && pendingGroups.length > 0,
@@ -31,7 +34,6 @@ export function usePendingStakingActivations(address?: Address, groupToStake: Gr
     },
   });
 
-  // @ts-ignore TODO Bug with viem 2.0 multicall types
   const activatableGroups = pendingGroups.filter((_v, i) => !!hasActivatable?.[i].result);
   const groupToIsActivatable = objMap(groupToStake, (g) => activatableGroups.includes(g));
 
