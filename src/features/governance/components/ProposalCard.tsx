@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
@@ -21,7 +22,15 @@ import { getHumanReadableDuration, getHumanReadableTimeString } from 'src/utils/
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
-export function ProposalCard({ propData }: { propData: MergedProposalData }) {
+export function ProposalCard({
+  propData,
+  isCompact,
+  className,
+}: {
+  propData: MergedProposalData;
+  isCompact?: boolean;
+  className?: string;
+}) {
   const { id, proposal, metadata } = propData;
 
   const { expiryTimestamp } = proposal || {};
@@ -46,10 +55,10 @@ export function ProposalCard({ propData }: { propData: MergedProposalData }) {
   }));
 
   return (
-    <Link href={link} className="space-y-2.5">
+    <Link href={link} className={clsx('space-y-2.5', className)}>
       <ProposalBadgeRow propData={propData} />
-      {titleValue && <h2 className="text-xl font-medium">{titleValue}</h2>}
-      {votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
+      {titleValue && <h2 className={clsx('font-medium', !isCompact && 'text-lg')}>{titleValue}</h2>}
+      {!isCompact && votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
         <div className="space-y-2.5">
           <StackedBarChart data={barChartData} showBorder={false} height="h-1" />
           <div className="flex items-center space-x-5">
@@ -64,7 +73,7 @@ export function ProposalCard({ propData }: { propData: MergedProposalData }) {
           </div>
         </div>
       )}
-      {endTimeValue && (
+      {!isCompact && endTimeValue && (
         <div className="flex items-center space-x-2">
           <Image src={ClockIcon} alt="" width={16} height={16} />
           <div className="text-sm font-medium">{`${endTimeValue}`}</div>
@@ -140,19 +149,14 @@ function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
   if (!cgp && !id) return null;
   const idValue = cgp ? `CGP ${cgp}` : `# ${id}`;
   return (
-    <div className="rounded-full border border-taupe-300 px-2 py-0.5 text-sm font-light">
-      {idValue}
-    </div>
+    <div className="rounded-full border border-taupe-300 px-2 text-sm font-light">{idValue}</div>
   );
 }
 
 function StageBadge({ stage }: { stage: ProposalStage }) {
   const { color, label } = ProposalStageToStyle[stage];
   return (
-    <div
-      style={{ backgroundColor: color }}
-      className={'rounded-full px-2 py-0.5 text-sm font-light'}
-    >
+    <div style={{ backgroundColor: color }} className={'rounded-full px-2 text-sm font-light'}>
       {label}
     </div>
   );

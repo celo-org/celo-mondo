@@ -1,6 +1,6 @@
 'use client';
 
-import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { FullWidthSpinner, SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { Section } from 'src/components/layout/Section';
 import { SocialLogoLink } from 'src/components/logos/SocialLogo';
@@ -10,9 +10,15 @@ import { SocialLinkType } from 'src/config/types';
 import { DelegateButton } from 'src/features/delegation/components/DelegateButton';
 import { DelegateeLogo } from 'src/features/delegation/components/DelegateeLogo';
 import { DelegatorsTable } from 'src/features/delegation/components/DelegatorsTable';
+import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { Delegatee } from 'src/features/delegation/types';
+import { ProposalCard } from 'src/features/governance/components/ProposalCard';
+import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
+import { VoteTypeToIcon } from 'src/features/governance/types';
+import { getLargestVoteType } from 'src/features/governance/utils';
 import { usePageInvariant } from 'src/utils/navigation';
+import { objLength } from 'src/utils/objects';
 
 export const dynamicParams = true;
 
@@ -45,7 +51,7 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
     <div className="space-y-4">
       <BackLink href="/delegate">Browse delegates</BackLink>
       <div className="flex items-center gap-1">
-        <DelegateeLogo address={delegatee.address} size={86} />
+        <DelegateeLogo address={delegatee.address} size={90} />
         <div className="ml-4 flex flex-col">
           <h1 className="font-serif text-2xl md:text-3xl">{delegatee.name}</h1>
           <div className="flex items-center space-x-2">
@@ -53,7 +59,7 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
             <span className="text-sm text-taupe-600">•</span>
             <span className="text-sm text-taupe-600">{`Since ${dateString}`}</span>
           </div>
-          <div className="mt-1 flex items-center space-x-3">
+          <div className="mt-1.5 flex items-center space-x-3">
             {Object.entries(delegatee.links).map(([type, href], i) => (
               <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
@@ -66,7 +72,41 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
         </div>
       </div>
       <h2 className="font-serif text-xl">Introduction</h2>
-      <p style={{ maxWidth: 'min(96vw, 700px)', overflow: 'auto' }}>{delegatee.description}</p>
+      <p style={{ maxWidth: 'min(96vw, 700px)' }} className="overflow-auto leading-relaxed">
+        {delegatee.description}
+      </p>
+      <GovernanceParticipation delegatee={delegatee} />
+    </div>
+  );
+}
+
+function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
+  const { proposalToVotes, isLoading: isLoadingHistory } = useDelegateeHistory(delegatee.address);
+  const { proposals, isLoading: isLoadingProposals } = useGovernanceProposals();
+
+  const isLoading = isLoadingHistory || isLoadingProposals;
+  const hasVotes = proposalToVotes && objLength(proposalToVotes) > 0;
+
+  return (
+    <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1">
+      <h2 className="font-serif text-xl">Governance Participation</h2>
+      {isLoading ? (
+        <SpinnerWithLabel className="py-10">Loading governance history</SpinnerWithLabel>
+      ) : proposals && hasVotes ? (
+        Object.entries(proposalToVotes).map(([id, votes], i) => {
+          const proposal = proposals.find((p) => p.id === parseInt(id));
+          if (!proposal) return null;
+          const { type } = getLargestVoteType(votes);
+          return (
+            <div key={i} className="pt-2.5">
+              <ProposalCard propData={proposal} isCompact={true} />
+              <div className="mt-1.5 text-sm">{`Voted ${type} ${VoteTypeToIcon[type]}`}</div>
+            </div>
+          );
+        })
+      ) : (
+        <p className="text-gray-600">This delegate has not voted for governance proposals yet</p>
+      )}
     </div>
   );
 }

@@ -97,10 +97,10 @@ function ProposalList() {
             showCount={!isMobile}
             className="border-b border-taupe-300 pb-2 pt-1 all:space-x-4 md:space-x-6"
           />
-          <div className="mt-6 divide-y divide-taupe-300">
+          <div className="mt-5 divide-y divide-taupe-300">
             {filteredProposals.length ? (
               filteredProposals.map((data, i) => (
-                <div key={i} className="py-6 first:pt-0">
+                <div key={i} className="py-5 first:pt-0">
                   <ProposalCard propData={data} />
                 </div>
               ))

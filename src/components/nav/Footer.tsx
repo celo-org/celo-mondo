@@ -7,7 +7,7 @@ import { useBlockNumber } from 'wagmi';
 
 export function Footer() {
   return (
-    <div className="flex w-full justify-between px-3 py-3 sm:px-5">
+    <div className="mt-2 flex w-full justify-between px-3 py-3 sm:px-5">
       <div className="inline-flex items-start justify-start gap-4">
         <FooterIconLink href={links.github} type={SocialLinkType.Github} />
         <FooterIconLink href={links.twitter} type={SocialLinkType.Twitter} />

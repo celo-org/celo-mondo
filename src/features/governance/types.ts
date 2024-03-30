@@ -16,6 +16,13 @@ export const VoteTypes: VoteType[] = [VoteType.Yes, VoteType.No, VoteType.Abstai
 // Used to go from VoteValue enum to Governance Contract's enum
 export const OrderedVoteValue = [VoteType.None, VoteType.Abstain, VoteType.No, VoteType.Yes];
 
+export const VoteTypeToIcon = {
+  [VoteType.None]: '⚪',
+  [VoteType.Abstain]: '⚪',
+  [VoteType.No]: '👎',
+  [VoteType.Yes]: '👍',
+};
+
 export type VoteAmounts = {
   [VoteType.Yes]: bigint;
   [VoteType.No]: bigint;
