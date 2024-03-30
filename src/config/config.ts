@@ -1,9 +1,11 @@
+import { ChainId } from 'src/config/chains';
 import { links } from 'src/config/links';
 
 interface Config {
   debug: boolean;
   version: string | null;
   appName: string;
+  chainId: number;
   walletConnectProjectId: string;
   fornoApiKey: string;
   celoscanApiKey: string;
@@ -27,6 +29,7 @@ export const config: Config = Object.freeze({
   debug: isDevMode,
   version,
   appName: 'Celo Station',
+  chainId: ChainId.Celo,
   walletConnectProjectId,
   fornoApiKey,
   celoscanApiKey,

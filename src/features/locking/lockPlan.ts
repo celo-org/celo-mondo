@@ -1,4 +1,5 @@
 import { lockedGoldABI } from '@celo/abis';
+import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import { LockActionType, LockFormValues, PendingWithdrawal } from 'src/features/locking/types';
 import { StakingBalances } from 'src/features/staking/types';
@@ -24,6 +25,7 @@ export function getLockTxPlan(
     return [
       {
         action,
+        chainId: config.chainId,
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'unlock',
@@ -41,6 +43,7 @@ export function getLockTxPlan(
       const txAmount = bigIntMin(amountRemaining, p.value);
       txs.push({
         action,
+        chainId: config.chainId,
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'relock',
@@ -52,6 +55,7 @@ export function getLockTxPlan(
     if (amountRemaining > 0) {
       txs.push({
         action,
+        chainId: config.chainId,
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'lock',
@@ -67,6 +71,7 @@ export function getLockTxPlan(
       if (p.timestamp <= now)
         txs.push({
           action,
+          chainId: config.chainId,
           address: Addresses.LockedGold,
           abi: lockedGoldABI,
           functionName: 'withdraw',

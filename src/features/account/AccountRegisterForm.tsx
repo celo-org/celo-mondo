@@ -1,6 +1,7 @@
 import { accountsABI } from '@celo/abis';
 import Image from 'next/image';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
+import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import CeloCube from 'src/images/logos/celo-cube.webp';
@@ -20,6 +21,7 @@ export function AccountRegisterForm({
       address: Addresses.Accounts,
       abi: accountsABI,
       functionName: 'createAccount',
+      chainId: config.chainId,
     });
   };
 

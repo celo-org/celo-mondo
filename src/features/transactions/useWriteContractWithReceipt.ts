@@ -5,7 +5,9 @@ import { capitalizeFirstLetter } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 
-// TODO force chain switch to celo mainnet before sending txs
+// Special case handling for this common error to provide a more specific error message
+const CHAIN_MISMATCH_ERROR = 'does not match the target chain';
+
 export function useWriteContractWithReceipt(
   description: string,
   onSuccess?: (receipt: TransactionReceipt) => any,
@@ -33,7 +35,9 @@ export function useWriteContractWithReceipt(
 
   useToastError(
     writeError,
-    `Error sending ${description} transaction, please check your wallet balance & settings.`,
+    writeError?.message?.includes(CHAIN_MISMATCH_ERROR)
+      ? 'Your wallet is not connected to Celo, please switch your active chain'
+      : `Error sending ${description} transaction, please check your wallet balance & settings.`,
   );
   useToastError(
     waitError,

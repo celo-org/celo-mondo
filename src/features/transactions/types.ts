@@ -2,6 +2,7 @@ import type { TransactionReceipt } from 'viem';
 
 export type TxPlan<A extends string = string, F extends string = string> = Array<{
   action: A;
+  chainId: number;
   address: Address;
   abi: any;
   functionName: F;

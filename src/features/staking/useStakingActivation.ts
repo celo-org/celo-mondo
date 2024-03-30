@@ -1,5 +1,6 @@
 import { electionABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { config } from 'src/config/config';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { GroupToStake } from 'src/features/staking/types';
@@ -54,6 +55,7 @@ export function useActivateStake(refetchStakeData: () => any) {
   const activateStake = (group: Address) => {
     writeContract({
       address: Addresses.Election,
+      chainId: config.chainId,
       abi: electionABI,
       functionName: 'activate',
       args: [group],

@@ -1,4 +1,5 @@
 import { lockedGoldABI } from '@celo/abis';
+import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import { DelegateActionType, DelegateFormValues } from 'src/features/delegation/types';
 import { TxPlan } from 'src/features/transactions/types';
@@ -27,6 +28,7 @@ function getDelegateActionPlan(delegatee: Address, percent: number): TxPlan {
   return [
     {
       action: DelegateActionType.Delegate,
+      chainId: config.chainId,
       address: Addresses.LockedGold,
       abi: lockedGoldABI,
       functionName: 'delegateGovernanceVotes',
@@ -39,6 +41,7 @@ function getUndelegateActionPlan(delegatee: Address, percent: number) {
   return [
     {
       action: DelegateActionType.Delegate,
+      chainId: config.chainId,
       address: Addresses.LockedGold,
       abi: lockedGoldABI,
       functionName: 'revokeDelegatedGovernanceVotes',

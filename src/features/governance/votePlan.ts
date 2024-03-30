@@ -1,4 +1,5 @@
 import { governanceABI } from '@celo/abis';
+import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import {
   OrderedVoteValue,
@@ -22,6 +23,7 @@ export function getVoteTxPlan(values: VoteFormValues, dequeued: number[]): TxPla
   return [
     {
       action: 'vote',
+      chainId: config.chainId,
       address: Addresses.Governance,
       abi: governanceABI,
       functionName: 'vote',
@@ -40,6 +42,7 @@ export function getUpvoteTxPlan(
   return [
     {
       action: 'upvote',
+      chainId: config.chainId,
       address: Addresses.Governance,
       abi: governanceABI,
       functionName: 'upvote',

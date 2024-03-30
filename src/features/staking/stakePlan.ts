@@ -1,4 +1,5 @@
 import { electionABI } from '@celo/abis';
+import { config } from 'src/config/config';
 import { MIN_INCREMENTAL_VOTE_AMOUNT, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
@@ -51,6 +52,7 @@ function getStakeActionPlan(amountWei: bigint, group: Address, groups: Validator
   return [
     {
       action: StakeActionType.Stake,
+      chainId: config.chainId,
       address: Addresses.Election,
       abi: electionABI,
       functionName: 'vote',
@@ -77,6 +79,7 @@ function getUnstakeActionPlan(
     const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, pendingToRevoke * -1n);
     txs.push({
       action: StakeActionType.Unstake,
+      chainId: config.chainId,
       address: Addresses.Election,
       abi: electionABI,
       functionName: 'revokePending',
@@ -92,6 +95,7 @@ function getUnstakeActionPlan(
   const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, amountRemaining * -1n);
   txs.push({
     action: StakeActionType.Unstake,
+    chainId: config.chainId,
     address: Addresses.Election,
     abi: electionABI,
     functionName: 'revokeActive',
