@@ -64,7 +64,10 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
               <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
             {delegatee.interests.map((interest, i) => (
-              <span key={i} className="rounded-full border border-taupe-300 px-2 text-sm">
+              <span
+                key={i}
+                className="hidden rounded-full border border-taupe-300 px-2 text-sm sm:block"
+              >
                 {interest}
               </span>
             ))}

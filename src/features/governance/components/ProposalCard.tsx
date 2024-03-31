@@ -110,8 +110,8 @@ export function ProposalBadgeRow({
       )}
       {showProposer && proposer && (
         <>
-          <div className="text-xs opacity-50">•</div>
-          <ShortAddress address={proposer} className="text-sm text-taupe-600" />
+          <div className="hidden text-xs opacity-50 sm:block">•</div>
+          <ShortAddress address={proposer} className="hidden text-sm text-taupe-600 sm:block" />
         </>
       )}
     </div>
