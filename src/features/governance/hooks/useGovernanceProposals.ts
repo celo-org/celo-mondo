@@ -5,6 +5,7 @@ import {
   APPROVAL_STAGE_EXPIRY_TIME,
   EXECUTION_STAGE_EXPIRY_TIME,
   QUEUED_STAGE_EXPIRY_TIME,
+  REFERENDUM_STAGE_EXPIRY_TIME,
 } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import CachedMetadata from 'src/config/proposals.json';
@@ -272,8 +273,10 @@ function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
     return timestamp + QUEUED_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Approval) {
     return timestamp + APPROVAL_STAGE_EXPIRY_TIME;
+  } else if (stage === ProposalStage.Referendum) {
+    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Execution) {
-    return timestamp + EXECUTION_STAGE_EXPIRY_TIME;
+    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
   } else {
     return undefined;
   }

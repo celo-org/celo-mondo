@@ -42,7 +42,7 @@ export function ProposalCard({
   const titleValue = title ? trimToLength(title, 50) : undefined;
   const endTimeValue = timestampExecuted
     ? `Executed ${getHumanReadableTimeString(timestampExecuted)}`
-    : expiryTimestamp
+    : expiryTimestamp && expiryTimestamp > 0
       ? `Expires ${getHumanReadableDuration(expiryTimestamp - Date.now())}`
       : undefined;
 

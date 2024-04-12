@@ -117,11 +117,11 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       <div className="space-y-4 border-taupe-300 p-3 lg:border">
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={id} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={id} />}
-        {expiryTimestamp && (
-          <div>{`Expires in ${getHumanReadableDuration(expiryTimestamp - Date.now())}`}</div>
-        )}
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
         {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
+        {expiryTimestamp && expiryTimestamp > 0 && (
+          <div className="text-taupe-600">{`Expires in ${getHumanReadableDuration(expiryTimestamp - Date.now())}`}</div>
+        )}
       </div>
       {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
         <div className="hidden border-taupe-300 p-3 lg:block lg:border">

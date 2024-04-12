@@ -19,6 +19,7 @@ export const PROPOSAL_V1_MAX_ID = 110; // Proposals before this use old vote eve
 export const QUEUED_STAGE_EXPIRY_TIME = 2_419_200_000; // 4 weeks
 export const DEQUEUE_FREQUENCY = 86_400_000; // 1 day
 export const APPROVAL_STAGE_EXPIRY_TIME = 86_400_000; // 1 day
+export const REFERENDUM_STAGE_EXPIRY_TIME = 604_800_000; // 7 days
 export const EXECUTION_STAGE_EXPIRY_TIME = 259_200_000; // 3 days
 
 // Delegation
