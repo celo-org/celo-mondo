@@ -1764,6 +1764,49 @@
     "stage": 1,
     "id": 168,
     "url": "https://forum.celo.org/t/path-towards-making-usdc-a-gas-currency/7385/2",
-    "timestamp": 1715990400000
+    "timestamp": 1715990400000,
+    "timestampExecuted": 1711411200000
+  },
+  {
+    "cgp": 128,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0128.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0128.md",
+    "title": "Enable USDT as Gas Currency",
+    "author": "Martín Volpe (@martinvol), Pavel Hornak (@pahor167), Subha Subramanian",
+    "stage": 1,
+    "id": 169,
+    "url": "https://forum.celo.org/t/draft-making-usdt-a-gas-fee-currency-on-celo/7686",
+    "timestamp": 1711584000000
+  },
+  {
+    "cgp": 129,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0129.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0129.md",
+    "title": "RWA-focused Accelerator with Outlier Ventures",
+    "author": "John Goldschmidt (@Johnlikes), Aron van Ammers (@aronvanammers)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/draft-celo-public-goods-grant-request-update-rwa-focused-accelerator-with-outlier-ventures/",
+    "timestamp": 1712102400000
+  },
+  {
+    "cgp": 130,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0130.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0130.md",
+    "title": "Red Beard Ventures x CELO Accelerator",
+    "author": "Red Beard Ventures & CELO Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/draft-celo-accelerator-program-x-red-beard-ventures",
+    "timestamp": 1712188800000
+  },
+  {
+    "cgp": 131,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0131.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0131.md",
+    "title": "Update maxDelegateesCount to Improve Governance Flexibility",
+    "author": "Pavel Hornak (@pahor167)",
+    "stage": 0,
+    "id": 170,
+    "url": "https://forum.celo.org/t/celo-protocol-upgrades-gingerbread-hard-fork-and-contracts-release-10/6612",
+    "timestamp": 1710201600000
   }
 ]
