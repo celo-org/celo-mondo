@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { FullWidthSpinner, SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { Section } from 'src/components/layout/Section';
@@ -18,7 +19,6 @@ import { useGovernanceProposals } from 'src/features/governance/hooks/useGoverna
 import { VoteTypeToIcon } from 'src/features/governance/types';
 import { getLargestVoteType } from 'src/features/governance/utils';
 import { usePageInvariant } from 'src/utils/navigation';
-import { objLength } from 'src/utils/objects';
 
 export const dynamicParams = true;
 
@@ -27,8 +27,6 @@ export default function Page({ params: { address } }: { params: { address: Addre
   const delegatee = addressToDelegatee?.[address];
 
   usePageInvariant(!addressToDelegatee || delegatee, '/delegate', 'Delegate not found');
-
-  // const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
 
   if (!addressToDelegatee || !delegatee) {
     return <FullWidthSpinner>Loading delegate data</FullWidthSpinner>;
@@ -88,7 +86,14 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
   const { proposals, isLoading: isLoadingProposals } = useGovernanceProposals();
 
   const isLoading = isLoadingHistory || isLoadingProposals;
-  const hasVotes = proposalToVotes && objLength(proposalToVotes) > 0;
+  const sortedIds = useMemo(
+    () =>
+      Object.keys(proposalToVotes || {})
+        .map((p) => parseInt(p))
+        .sort((a, b) => b - a),
+    [proposalToVotes],
+  );
+  const hasVotes = proposalToVotes && sortedIds.length > 0;
 
   return (
     <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1">
@@ -96,8 +101,9 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
       {isLoading ? (
         <SpinnerWithLabel className="py-10">Loading governance history</SpinnerWithLabel>
       ) : proposals && hasVotes ? (
-        Object.entries(proposalToVotes).map(([id, votes], i) => {
-          const proposal = proposals.find((p) => p.id === parseInt(id));
+        sortedIds.map((id, i) => {
+          const votes = proposalToVotes[id];
+          const proposal = proposals.find((p) => p.id === id);
           if (!proposal) return null;
           const { type } = getLargestVoteType(votes);
           return (

@@ -9,7 +9,7 @@ export function RangeField({
 }: {
   name: string;
   label: string;
-  maxValue: number;
+  maxValue: number | string;
   maxDescription: string;
   disabled?: boolean;
 }) {

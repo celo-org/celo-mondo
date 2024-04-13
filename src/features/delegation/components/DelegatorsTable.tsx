@@ -47,12 +47,12 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
   }
 
   return (
-    <table>
+    <table className="w-full">
       <tbody>
         {tableData.map((row) => (
           <tr key={row.label}>
             <td className="py-2 text-sm">{row.label}</td>
-            <td className="text-sm">{`${formatNumberString(row.value)} CELO`}</td>
+            <td className="text-right text-sm">{`${formatNumberString(row.value)} CELO`}</td>
           </tr>
         ))}
       </tbody>

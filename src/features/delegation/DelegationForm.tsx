@@ -87,17 +87,22 @@ export function DelegationForm({
     >
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between">
-          <div className="space-y-4">
+          <div
+            className={values.action === DelegateActionType.Transfer ? 'space-y-3' : 'space-y-5'}
+          >
             <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
-            <DelegateeField
-              fieldName="delegatee"
-              label={
-                values.action === DelegateActionType.Transfer ? 'From delegatee' : 'Delegate to'
-              }
-              addressToDelegatee={addressToDelegatee}
-              defaultValue={defaultFormValues?.delegatee}
-              disabled={isInputDisabled}
-            />
+            <div className="space-y-1">
+              <DelegateeField
+                fieldName="delegatee"
+                label={
+                  values.action === DelegateActionType.Transfer ? 'From delegatee' : 'Delegate to'
+                }
+                addressToDelegatee={addressToDelegatee}
+                defaultValue={defaultFormValues?.delegatee}
+                disabled={isInputDisabled}
+              />
+              <CurrentPercentField delegations={delegations} />
+            </div>
             {values.action === DelegateActionType.Transfer && (
               <DelegateeField
                 fieldName="transferDelegatee"
@@ -140,29 +145,6 @@ function ActionTypeField({
   );
 }
 
-function PercentField({
-  delegations,
-  disabled,
-}: {
-  lockedBalances?: LockedBalances;
-  delegations?: DelegationBalances;
-  disabled?: boolean;
-}) {
-  const { values } = useFormikContext<DelegateFormValues>();
-  const { action, delegatee } = values;
-  const maxPercent = getMaxPercent(action, delegatee, delegations);
-
-  return (
-    <RangeField
-      name="percent"
-      label={`${values.percent}% voting power`}
-      maxValue={maxPercent}
-      maxDescription="Available:"
-      disabled={disabled}
-    />
-  );
-}
-
 function DelegateeField({
   fieldName,
   label,
@@ -197,6 +179,42 @@ function DelegateeField({
   );
 }
 
+function CurrentPercentField({ delegations }: { delegations?: DelegationBalances }) {
+  const { values } = useFormikContext<DelegateFormValues>();
+
+  const currentPercent = delegations?.delegateeToAmount[values.delegatee]?.percent || 0;
+
+  return (
+    <div className="flex items-center justify-between bg-purple-100 px-1 py-0.5">
+      <label className="text-xs">Current delegation:</label>
+      <span className="text-xs">{`${currentPercent}%`}</span>
+    </div>
+  );
+}
+
+function PercentField({
+  delegations,
+  disabled,
+}: {
+  lockedBalances?: LockedBalances;
+  delegations?: DelegationBalances;
+  disabled?: boolean;
+}) {
+  const { values } = useFormikContext<DelegateFormValues>();
+  const { action, delegatee } = values;
+  const maxPercent = getMaxPercent(action, delegatee, delegations);
+
+  return (
+    <RangeField
+      name="percent"
+      label={`${values.percent}% voting power`}
+      maxValue={`${maxPercent}%`}
+      maxDescription="Available:"
+      disabled={disabled}
+    />
+  );
+}
+
 function validateForm(
   values: DelegateFormValues,
   delegations: DelegationBalances,
@@ -208,8 +226,11 @@ function validateForm(
 
   if (action === DelegateActionType.Delegate) {
     if (!isValidAddress(delegatee)) return { delegatee: 'Invalid address' };
-    if (!delegateeToAmount[delegatee] && objLength(delegateeToAmount) >= MAX_NUM_DELEGATEES)
+    const currentAmount = delegateeToAmount[delegatee];
+    if (!currentAmount && objLength(delegateeToAmount) >= MAX_NUM_DELEGATEES)
       return { delegatee: `Max number of delegatees is ${MAX_NUM_DELEGATEES}` };
+    if (currentAmount?.percent && percent <= currentAmount.percent)
+      return { delegatee: 'New delegation % must be more than current' };
   }
 
   if (action === DelegateActionType.Transfer) {
@@ -233,11 +254,12 @@ function getMaxPercent(
   delegatee: Address,
   delegations?: DelegationBalances,
 ) {
+  const currentPercent = delegations?.delegateeToAmount[delegatee]?.percent || 0;
   if (action === DelegateActionType.Delegate) {
-    return 100 - (delegations?.totalPercent || 0);
+    return 100 - (delegations?.totalPercent || 0) + currentPercent;
   } else if (action === DelegateActionType.Undelegate || action === DelegateActionType.Transfer) {
-    if (!delegatee || !delegations?.delegateeToAmount[delegatee]) return 0;
-    return delegations.delegateeToAmount[delegatee].percent;
+    if (!delegatee || !currentPercent) return 0;
+    return currentPercent;
   } else {
     return 0;
   }

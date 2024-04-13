@@ -45,10 +45,10 @@ async function fetchDelegators(delegateAddress: Address): Promise<AddressTo<bigi
   });
 
   const delegateParams = `topic0=${delegateTopics[0]}&topic2=${delegateTopics[2]}&topic0_2_opr=and`;
-  const delegateEvents = await queryCeloscanLogs(Addresses.Governance, delegateParams);
+  const delegateEvents = await queryCeloscanLogs(Addresses.LockedGold, delegateParams);
 
   const revokeParams = `topic0=${revokeTopics[0]}&topic2=${revokeTopics[2]}&topic0_2_opr=and`;
-  const revokeEvents = await queryCeloscanLogs(Addresses.Governance, revokeParams);
+  const revokeEvents = await queryCeloscanLogs(Addresses.LockedGold, revokeParams);
 
   const delegatorToAmount: AddressTo<bigint> = {};
   reduceLogs(delegatorToAmount, delegateEvents, true);

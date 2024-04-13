@@ -4,6 +4,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { DelegationBalances } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
+import { fromFixidity } from 'src/utils/numbers';
 import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
@@ -52,17 +53,14 @@ async function fetchDelegationBalances(
   // If there are none, stop here
   if (!delegateeAddresses.length) return result;
 
-  // Prepare a list of account, delegatee tuples
-  const accountAndDelegatee = delegateeAddresses.map((a) => [address, a]);
-
   const delegatedAmounts = await publicClient.multicall({
-    contracts: accountAndDelegatee.map(
-      ([acc, del]) =>
+    contracts: delegateeAddresses.map(
+      (del) =>
         ({
           address: Addresses.LockedGold,
           abi: lockedGoldABI,
           functionName: 'getDelegatorDelegateeInfo',
-          args: [acc, del],
+          args: [address, del],
         }) as const,
     ),
   });
@@ -71,13 +69,14 @@ async function fetchDelegationBalances(
     const delegateeAddress = delegateeAddresses[i];
     const amounts = delegatedAmounts[i];
     if (amounts.status !== 'success') throw new Error('Delegated amount call failed');
-    const [percent, amount] = amounts.result as [bigint, bigint];
+    const [fixidityPercent, amount] = amounts.result as [bigint, bigint];
+    const percent = fromFixidity(fixidityPercent) * 100;
     result.delegateeToAmount[delegateeAddress] = {
-      percent: Number(percent),
+      percent,
       amount,
     };
     result.totalAmount += amount;
-    result.totalPercent += Number(percent);
+    result.totalPercent += percent;
   }
 
   return result;
