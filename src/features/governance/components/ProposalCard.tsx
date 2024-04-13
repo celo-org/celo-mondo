@@ -6,14 +6,10 @@ import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { SocialLogo } from 'src/components/logos/SocialLogo';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { SocialLinkType } from 'src/config/types';
+import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
-import {
-  ProposalStage,
-  ProposalStageToStyle,
-  VoteToColor,
-  VoteType,
-} from 'src/features/governance/types';
+import { VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
@@ -92,7 +88,7 @@ export function ProposalBadgeRow({
 }) {
   const { stage, proposal, metadata, id } = propData;
 
-  const { timestamp, proposer } = proposal || {};
+  const { timestamp, proposer, isApproved } = proposal || {};
   const { timestamp: cgpTimestamp, cgp } = metadata || {};
 
   const proposedTimestamp = timestamp || cgpTimestamp;
@@ -104,7 +100,7 @@ export function ProposalBadgeRow({
     <div className="flex items-center space-x-2">
       <IdBadge cgp={cgp} />
       <IdBadge id={id} />
-      <StageBadge stage={stage} />
+      <StageBadge stage={stage} isApproved={isApproved} />
       {proposedTimeValue && (
         <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
       )}
@@ -150,14 +146,5 @@ function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
   const idValue = cgp ? `CGP ${cgp}` : `# ${id}`;
   return (
     <div className="rounded-full border border-taupe-300 px-2 text-sm font-light">{idValue}</div>
-  );
-}
-
-function StageBadge({ stage }: { stage: ProposalStage }) {
-  const { color, label } = ProposalStageToStyle[stage];
-  return (
-    <div style={{ backgroundColor: color }} className={'rounded-full px-2 text-sm font-light'}>
-      {label}
-    </div>
   );
 }
