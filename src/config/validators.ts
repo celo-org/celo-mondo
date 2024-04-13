@@ -34,6 +34,13 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       twitter: 'https://twitter.com/a16z',
     },
   },
+  '0xE09632da4dEAFb3DA2Cd6939F31c98607fCCdBC5': {
+    logo: '/logos/validators/clabs.jpg',
+    links: {
+      website: 'https://clabs.co',
+      twitter: 'https://twitter.com/clabs',
+    },
+  },
   '0xbf55dF76204f00AcF296F76cF4Aaf86A866a5eb0': {
     logo: '/logos/validators/manta.jpg',
     links: {
