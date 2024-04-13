@@ -1,7 +1,3 @@
-# **WORK IN PROGRESS**
-
-Everything is still very much in flux.
-
 # Celo Station
 
 Celo Station is a [DApp](https://en.wikipedia.org/wiki/Decentralized_application) for participating in staking and governance on [Celo](https://celo.org).
@@ -21,3 +17,5 @@ For support, you can [file an issue](https://github.com/jmrossy/celo-station/iss
 1. Install: `yarn`
 2. Setup: `yarn prepare`
 3. Run locally: `yarn dev`
+
+For more information about the architecture and internals of this app, see [DEVELOPER.md](./DEVELOPER.md).
