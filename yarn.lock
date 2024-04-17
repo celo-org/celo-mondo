@@ -456,7 +456,7 @@ __metadata:
     "@metamask/jazzicon": "https://github.com/jmrossy/jazzicon#7a8df28974b4e81129bfbe3cab76308b889032a6"
     "@metamask/post-message-stream": "npm:6.1.2"
     "@metamask/providers": "npm:10.2.1"
-    "@rainbow-me/rainbowkit": "npm:2.0.2"
+    "@rainbow-me/rainbowkit": "npm:2.0.5"
     "@tanstack/eslint-plugin-query": "npm:^5.28.6"
     "@tanstack/react-query": "npm:^5.28.9"
     "@tanstack/react-table": "npm:^8.15.0"
@@ -497,8 +497,8 @@ __metadata:
     ts-node: "npm:^10.9.2"
     tsx: "npm:^4.7.1"
     typescript: "npm:^5.4.3"
-    viem: "npm:2.9.3"
-    wagmi: "npm:2.5.13"
+    viem: "npm:2.9.21"
+    wagmi: "npm:2.5.20"
     yaml: "npm:^2.4.1"
     zod: "npm:^3.22.4"
   languageName: unknown
@@ -1925,9 +1925,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rainbow-me/rainbowkit@npm:2.0.2":
-  version: 2.0.2
-  resolution: "@rainbow-me/rainbowkit@npm:2.0.2"
+"@rainbow-me/rainbowkit@npm:2.0.5":
+  version: 2.0.5
+  resolution: "@rainbow-me/rainbowkit@npm:2.0.5"
   dependencies:
     "@vanilla-extract/css": "npm:1.14.0"
     "@vanilla-extract/dynamic": "npm:2.1.0"
@@ -1941,7 +1941,7 @@ __metadata:
     react-dom: ">=17"
     viem: 2.x
     wagmi: 2.x
-  checksum: 10/0e881737ca0c3c6ac315c4d2f159870a2c0cfdd5e779a816e7d1d876936144bf545dd7b13e0fa0792d5ac79fe102ec6b4f5f0d4d31678adebcb73bb70296bcfa
+  checksum: 10/c0777caa8706a6f55b470c47992c580130ad0989e752917abd106749260755e8b7fb7139ad50b7b0ef9f86abc620411bbb89363258cc67328c14d0438d65e516
   languageName: node
   linkType: hard
 
@@ -2948,9 +2948,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wagmi/connectors@npm:4.1.19":
-  version: 4.1.19
-  resolution: "@wagmi/connectors@npm:4.1.19"
+"@wagmi/connectors@npm:4.1.26":
+  version: 4.1.26
+  resolution: "@wagmi/connectors@npm:4.1.26"
   dependencies:
     "@coinbase/wallet-sdk": "npm:3.9.1"
     "@metamask/sdk": "npm:0.14.3"
@@ -2959,19 +2959,19 @@ __metadata:
     "@walletconnect/ethereum-provider": "npm:2.11.2"
     "@walletconnect/modal": "npm:2.6.2"
   peerDependencies:
-    "@wagmi/core": 2.6.10
+    "@wagmi/core": 2.6.17
     typescript: ">=5.0.4"
     viem: 2.x
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/354e706dd10657502d99ce86e9f394ee9bc80ae3518fb04eac4aca1ca7cb7b1cc573fb0a3c68c75893387eadeba8a6276dd19a11c60dd9e4c8e62e1f150a4899
+  checksum: 10/f430cf1cef1b4e5b1386a60ef95574add9f1c55bcf42e6b861c8c4502fe046cd31fd1fff8e802756b636d8ce55ea2f100bd7eab4c06ca049ec60332cd0616006
   languageName: node
   linkType: hard
 
-"@wagmi/core@npm:2.6.10":
-  version: 2.6.10
-  resolution: "@wagmi/core@npm:2.6.10"
+"@wagmi/core@npm:2.6.17":
+  version: 2.6.17
+  resolution: "@wagmi/core@npm:2.6.17"
   dependencies:
     eventemitter3: "npm:5.0.1"
     mipd: "npm:0.0.5"
@@ -2985,7 +2985,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10/8503bdf787f16e4c49cf649d25e6978023c772c5fd3dc7cb8615ca9aca27c41a1902922a345c9568ec0a7d6037f8438e2acac5d7ce5ec8e16dfe502c9bf35b4a
+  checksum: 10/c1693806d29f2c42ee227d9469ef218513c7eb60ee254a0e682b917ca69b26c3de280b5ee5d6530fe1c23bef4f5a6140b3a776ea7ae8f8d93cab5b23cba991c8
   languageName: node
   linkType: hard
 
@@ -11152,9 +11152,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:2.9.3":
-  version: 2.9.3
-  resolution: "viem@npm:2.9.3"
+"viem@npm:2.9.21":
+  version: 2.9.21
+  resolution: "viem@npm:2.9.21"
   dependencies:
     "@adraffy/ens-normalize": "npm:1.10.0"
     "@noble/curves": "npm:1.2.0"
@@ -11169,7 +11169,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/5ce0922c3161f10d9515a478fd9410ff70523c8caa64d9b16efd825a7b430a191ac8b575cd0294777d0dde7586144f2c5632d93ddfc52639999d3cb6e5aad6a4
+  checksum: 10/a9b829028fc9995bd81f05c234e1664fba0b3a92f47298f5c959ae02ca6558a81daee014f9ec4acb9d108f78f8f203e467d87ec63691bd3cfce1c6f3a239e6eb
   languageName: node
   linkType: hard
 
@@ -11201,12 +11201,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wagmi@npm:2.5.13":
-  version: 2.5.13
-  resolution: "wagmi@npm:2.5.13"
+"wagmi@npm:2.5.20":
+  version: 2.5.20
+  resolution: "wagmi@npm:2.5.20"
   dependencies:
-    "@wagmi/connectors": "npm:4.1.19"
-    "@wagmi/core": "npm:2.6.10"
+    "@wagmi/connectors": "npm:4.1.26"
+    "@wagmi/core": "npm:2.6.17"
     use-sync-external-store: "npm:1.2.0"
   peerDependencies:
     "@tanstack/react-query": ">=5.0.0"
@@ -11216,7 +11216,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10/c26e36d788ec9077de68d1a99a96c8f3a33a529fc931b0f3bab88d305690e6c366ced4d0108084ab86005670bd2868810f2604682cbae604024de2023cc9764f
+  checksum: 10/cd6bf546c3934a3bddcb8dfb2051fb9620b41bf31531ab067f26d4854c60380e1b38cc2c94d3e0583bde1cb0316d2a63215a1e56ac172177959d31a951e7991b
   languageName: node
   linkType: hard
 

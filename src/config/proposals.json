@@ -1804,7 +1804,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0131.md",
     "title": "Update maxDelegateesCount to Improve Governance Flexibility",
     "author": "Pavel Hornak (@pahor167)",
-    "stage": 0,
+    "stage": 1,
     "id": 170,
     "url": "https://forum.celo.org/t/celo-protocol-upgrades-gingerbread-hard-fork-and-contracts-release-10/6612",
     "timestamp": 1710201600000
