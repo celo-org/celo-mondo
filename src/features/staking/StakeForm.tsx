@@ -380,5 +380,6 @@ const ActionToVerb: Partial<Record<StakeActionType, string>> = {
 };
 
 const ActionToTipText: Partial<Record<StakeActionType, string>> = {
+  [StakeActionType.Stake]: 'One to stake and another to delegate.',
   [StakeActionType.Transfer]: 'Transfers require unstaking and then restaking.',
 };

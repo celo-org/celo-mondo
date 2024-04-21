@@ -244,7 +244,7 @@ function validateForm(
 
   if (!percent || percent <= 0 || percent > 100) return { percent: 'Invalid percent' };
   const maxPercent = getMaxPercent(action, delegatee, delegations);
-  if (percent > maxPercent) return { percent: 'Percent exceeds max' };
+  if (percent > maxPercent) return { percent: `Percent exceeds max (${maxPercent}%)` };
 
   return {};
 }
