@@ -94,7 +94,6 @@ export function decodeVoteEventLog(log: TransactionLog) {
     const { eventName, args } = decodeEventLog({
       abi: governanceABI,
       data: log.data,
-      // @ts-ignore https://github.com/wevm/viem/issues/381
       topics: log.topics,
       strict: false,
     });

@@ -89,7 +89,6 @@ async function fetchValidatorGroupRewardHistory(
       const { eventName, args } = decodeEventLog({
         abi: electionABI,
         data: log.data,
-        // @ts-ignore https://github.com/wevm/viem/issues/381
         topics: log.topics,
         strict: false,
       });

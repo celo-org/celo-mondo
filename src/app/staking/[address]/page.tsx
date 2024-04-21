@@ -9,7 +9,7 @@ import { BackLink } from 'src/components/buttons/BackLink';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
-import { HeatmapLines } from 'src/components/charts/Heatmap';
+import { HeatmapSquares } from 'src/components/charts/Heatmap';
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { Checkmark } from 'src/components/icons/Checkmark';
 import { Circle } from 'src/components/icons/Circle';
@@ -20,15 +20,16 @@ import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
 import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { EPOCH_DURATION_MS, ZERO_ADDRESS } from 'src/config/consts';
+import { ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinkType } from 'src/config/types';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
+import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
+import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeuedProposalIds';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
-import { useGroupRewardHistory } from 'src/features/validators/useGroupRewardHistory';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
 import { getGroupStats } from 'src/features/validators/utils';
@@ -41,8 +42,6 @@ import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
-
-const HEATMAP_SIZE = 30;
 
 export const dynamicParams = true;
 
@@ -124,22 +123,15 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 }
 
 function StatSection({ group }: { group?: ValidatorGroup }) {
-  const { rewardHistory, isLoading } = useGroupRewardHistory(group?.address, HEATMAP_SIZE);
+  return (
+    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-8">
+      <CapacityStatBox group={group} />
+      <GovernanceStatBox group={group} />
+    </div>
+  );
+}
 
-  const data = useMemo(() => {
-    const hasReward = Array(HEATMAP_SIZE).fill(false);
-    if (!rewardHistory?.length) return hasReward;
-    const startTimestamp = Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE;
-    for (let i = 0; i < rewardHistory.length; i++) {
-      if (rewardHistory[i].timestamp < startTimestamp) continue;
-      const epochIndex = Math.floor(
-        (rewardHistory[i].timestamp - startTimestamp) / EPOCH_DURATION_MS,
-      );
-      hasReward[epochIndex] = true;
-    }
-    return hasReward;
-  }, [rewardHistory]);
-
+function CapacityStatBox({ group }: { group?: ValidatorGroup }) {
   const capacityPercent = Math.min(
     BigNumber(group?.votes?.toString() || 0)
       .div(group?.capacity?.toString() || 1)
@@ -149,46 +141,95 @@ function StatSection({ group }: { group?: ValidatorGroup }) {
     100,
   );
 
-  const heatmapStartDate = new Date(Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE);
-
   return (
-    <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-      <StatBox header="Total staked" valueWei={group?.votes}>
-        <div className="relative h-2 w-full border border-taupe-300 bg-taupe-100">
-          <div
-            className="absolute bottom-0 left-0 top-0 bg-purple-500"
-            style={{ width: `${capacityPercent}%` }}
-          ></div>
-        </div>
-        <div className="text-xs text-taupe-600">{`Maximum: ${formatNumberString(
-          fromWei(group?.capacity),
-        )} CELO`}</div>
-      </StatBox>
-      <StatBox header="Rewards distributed" className="relative" valueWei={null}>
-        <div className="flex justify-between text-xs">
-          <span>{heatmapStartDate.toLocaleDateString()}</span>
-          <span>Yesterday</span>
-        </div>
-        <HeatmapLines data={data} />
-        <div className="ml-px flex space-x-6">
-          <div className="flex items-center">
-            <div className="h-2 w-2 bg-green-500"></div>
-            <label className="ml-2 text-xs">Reward Paid</label>
-          </div>
-          <div className="flex items-center">
-            <div className="h-2 w-2 bg-gray-300"></div>
-            <label className="ml-2 text-xs">No Reward</label>
-          </div>
-        </div>
-        {isLoading && (
-          <div className="absolute right-2 top-0">
-            <Spinner size="xs" />
-          </div>
-        )}
-      </StatBox>
-    </div>
+    <StatBox header="Total staked" valueWei={group?.votes}>
+      <div className="relative h-2 w-full border border-taupe-300 bg-taupe-100">
+        <div
+          className="absolute bottom-0 left-0 top-0 bg-purple-500"
+          style={{ width: `${capacityPercent}%` }}
+        ></div>
+      </div>
+      <div className="text-xs text-taupe-600">{`Maximum: ${formatNumberString(
+        fromWei(group?.capacity),
+      )} CELO`}</div>
+    </StatBox>
   );
 }
+
+function GovernanceStatBox({ group }: { group?: ValidatorGroup }) {
+  const { proposalToVotes, isLoading: isLoadingHistory } = useDelegateeHistory(group?.address);
+  const { approvedProposals, isLoading: isLoadingCount } = useDequeuedProposalIds();
+  const isLoading = isLoadingHistory || isLoadingCount;
+
+  const { chartData, numVoted } = useMemo(() => {
+    if (!proposalToVotes || !approvedProposals)
+      return { chartData: Array(150).fill(false), numVoted: 0 };
+    const chartData: boolean[] = [];
+    for (const id of approvedProposals) {
+      if (proposalToVotes[id]) chartData.push(true);
+      else chartData.push(false);
+    }
+    return { chartData, numVoted: objLength(proposalToVotes) };
+  }, [proposalToVotes, approvedProposals]);
+
+  return (
+    <StatBox header="Governance participation" className="relative" valueWei={null}>
+      <HeatmapSquares data={chartData} className="max-w-2xl" />
+      {isLoading && (
+        <div className="absolute right-2 top-0">
+          <Spinner size="xs" />
+        </div>
+      )}
+      <div className="text-xs text-taupe-600">{`Voted on ${numVoted} / ${approvedProposals?.length || 0} proposals`}</div>
+    </StatBox>
+  );
+}
+
+// Disabled because all data sources for these rewards events have been flake
+// function RewardsStatBox({ group }: { group?: ValidatorGroup }) {
+//   const { rewardHistory, isLoading } = useGroupRewardHistory(group?.address, HEATMAP_SIZE);
+
+//   const data = useMemo(() => {
+//     const hasReward = Array(HEATMAP_SIZE).fill(false);
+//     if (!rewardHistory?.length) return hasReward;
+//     const startTimestamp = Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE;
+//     for (let i = 0; i < rewardHistory.length; i++) {
+//       if (rewardHistory[i].timestamp < startTimestamp) continue;
+//       const epochIndex = Math.floor(
+//         (rewardHistory[i].timestamp - startTimestamp) / EPOCH_DURATION_MS,
+//       );
+//       hasReward[epochIndex] = true;
+//     }
+//     return hasReward;
+//   }, [rewardHistory]);
+
+//   const heatmapStartDate = new Date(Date.now() - EPOCH_DURATION_MS * HEATMAP_SIZE);
+
+//   return (
+//     <StatBox header="Rewards distributed" className="relative" valueWei={null}>
+//       <div className="flex justify-between text-xs">
+//         <span>{heatmapStartDate.toLocaleDateString()}</span>
+//         <span>Yesterday</span>
+//       </div>
+//       <HeatmapLines data={data} />
+//       <div className="ml-px flex space-x-6">
+//         <div className="flex items-center">
+//           <div className="h-2 w-2 bg-green-500"></div>
+//           <label className="ml-2 text-xs">Reward Paid</label>
+//         </div>
+//         <div className="flex items-center">
+//           <div className="h-2 w-2 bg-gray-300"></div>
+//           <label className="ml-2 text-xs">No Reward</label>
+//         </div>
+//       </div>
+//       {isLoading && (
+//         <div className="absolute right-2 top-0">
+//           <Spinner size="xs" />
+//         </div>
+//       )}
+//     </StatBox>
+//   );
+// }
 
 function DetailsSection({ group }: { group?: ValidatorGroup }) {
   const [tab, setTab] = useState<'members' | 'stakers'>('members');

@@ -14,6 +14,6 @@ export interface TransactionLog {
   logIndex: HexString;
   transactionIndex: HexString;
   transactionHash: HexString;
-  topics: Array<HexString>;
+  topics: [HexString, ...Array<HexString>];
   timeStamp: HexString;
 }

@@ -65,7 +65,6 @@ function reduceLogs(delegatorToAmount: AddressTo<bigint>, logs: TransactionLog[]
       const { eventName, args } = decodeEventLog({
         abi: lockedGoldABI,
         data: log.data,
-        // @ts-ignore https://github.com/wevm/viem/issues/381
         topics: log.topics,
         strict: false,
       });
