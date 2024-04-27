@@ -2,8 +2,7 @@ import { governanceABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { DEQUEUE_FREQUENCY } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
-import { ProposalStage, UpvoteRecord } from 'src/features/governance/types';
+import { UpvoteRecord } from 'src/features/governance/types';
 import { useReadContract } from 'wagmi';
 
 // Returns the upvote records for queued governance proposals
@@ -57,17 +56,22 @@ export function useProposalDequeue() {
 
 // Checks if the queue has proposals that are ready to be dequeued
 // This is important because currently, upvote txs don't work in this scenario
-export function useQueueHasReadyProposals() {
-  const { proposals, isLoading } = useGovernanceProposals();
+// because the act of upvoting would trigger a dequeue
+export function useIsDequeueReady() {
+  const { data, isLoading } = useReadContract({
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'lastDequeue',
+    query: {
+      staleTime: 1 * 60 * 1000, // 1 minute
+    },
+  });
 
-  const readyQueuedProposals = proposals?.filter(
-    (p) =>
-      p.proposal?.stage === ProposalStage.Queued &&
-      Date.now() - p.proposal?.timestamp > DEQUEUE_FREQUENCY,
-  );
+  // Fallback to true if data isn't ready to prevent flash of upvote button
+  const isDequeueReady = data ? Date.now() - Number(data) * 1000 > DEQUEUE_FREQUENCY : true;
 
   return {
+    isDequeueReady,
     isLoading,
-    hasReadyProposals: !!readyQueuedProposals?.length,
   };
 }

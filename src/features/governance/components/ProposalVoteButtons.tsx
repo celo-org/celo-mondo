@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { VotingPower } from 'src/features/governance/components/VotingPower';
-import { useQueueHasReadyProposals } from 'src/features/governance/hooks/useProposalQueue';
+import { useIsDequeueReady } from 'src/features/governance/hooks/useProposalQueue';
 import { useGovernanceVoteRecord } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
@@ -9,7 +9,7 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { useAccount } from 'wagmi';
 
 export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
-  const { hasReadyProposals } = useQueueHasReadyProposals();
+  const { isDequeueReady } = useIsDequeueReady();
 
   const showTxModal = useTransactionModal(TransactionFlowType.Upvote, { proposalId });
 
@@ -22,12 +22,11 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
       <SolidButton
         className="btn-neutral w-full"
         onClick={() => showTxModal()}
-        disabled={hasReadyProposals}
+        disabled={isDequeueReady}
       >{`➕ Upvote`}</SolidButton>
-      {hasReadyProposals && (
+      {isDequeueReady && (
         <p className="max-w-[20rem] text-xs text-gray-600">
-          Upvoting is disabled while there are queued proposals ready for approval. Please check
-          again later.
+          Upvoting is disabled while there are queued proposals ready for approval.
         </p>
       )}
     </>

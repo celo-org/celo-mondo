@@ -67,13 +67,16 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
 
   const proposalIndex = proposalId ? dequeue?.indexOf(proposalId) : undefined;
 
+  // Note, due to a bug in the contract, if a de-queued proposal is deleted,
+  // the users's previous vote record could end up applied to a new proposal.
+  // See https://github.com/celo-org/celo-monorepo/blob/release/core-contracts/10/packages/protocol/contracts/governance/Governance.sol#L742
   const { data, isError, isLoading, error, refetch } = useReadContract({
     address: Addresses.Governance,
     abi: governanceABI,
     functionName: 'getVoteRecord',
     args: [address || ZERO_ADDRESS, BigInt(proposalIndex || 0)],
     query: {
-      enabled: address && !isNullish(proposalIndex),
+      enabled: address && !isNullish(proposalIndex) && proposalIndex >= 0,
       staleTime: 1 * 60 * 1000, // 1 minute
     },
   } as const);

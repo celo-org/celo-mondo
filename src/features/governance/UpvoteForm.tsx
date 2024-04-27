@@ -88,7 +88,9 @@ function validateForm(
   }
 
   if (isUpvoting) {
-    return { proposalId: 'Account already upvoting' };
+    // TODO consider re-enabling this check but first
+    // we must handle case where previous upvote proposal is done
+    // return { proposalId: 'Account already upvoting' };
   }
 
   return {};
