@@ -1658,10 +1658,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0117.md",
     "title": "Celo Core Contracts Release 11",
     "author": "Martin Volpe (@martinvol), Pavel Hornak (@pahor167)",
-    "stage": 1,
+    "stage": 6,
     "id": 159,
     "url": "https://forum.celo.org/t/core-contracts-release-11/",
-    "timestamp": 1708560000000
+    "timestamp": 1708560000000,
+    "votes": {
+      "yes": "16494991113306971925386684",
+      "no": "6190813532940406996206",
+      "abstain": "2524391976942269727694"
+    }
   },
   {
     "cgp": 118,
@@ -1669,9 +1674,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0118.md",
     "title": "Minting 10m cUSD from Mento Reserve in six tranches",
     "author": "LuukDAO (@LuukDAO)",
-    "stage": 0,
+    "stage": 6,
+    "id": 158,
     "url": "https://forum.celo.org/t/minting-10m-cusd-from-mento-reserve-in-six-tranches/7458/1",
-    "timestamp": 1708646400000
+    "timestamp": 1708646400000,
+    "votes": {
+      "yes": "14171271613376179113716389",
+      "no": "0",
+      "abstain": "524678290526206162806"
+    }
   },
   {
     "cgp": 119,
@@ -1679,10 +1690,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0119.md",
     "title": "Celo Camp 2024-Grant The MiniPay Launchpad and Startup Pathway Program | CeloPG-Celo Project Incubation",
     "author": "Upright Ventures (@upright)",
-    "stage": 0,
-    "id": 119,
+    "stage": 6,
+    "id": 160,
     "url": "https://forum.celo.org/t/celo-camp-2024-grant-the-minipay-launchpad-and-startup-pathway-program-final/7210/1",
-    "timestamp": 1708646400000
+    "timestamp": 1708646400000,
+    "votes": {
+      "yes": "4868477493955072361382684",
+      "no": "0",
+      "abstain": "25403172173324990591122"
+    }
   },
   {
     "cgp": 120,
@@ -1690,9 +1706,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0120.md",
     "title": "Celo Europe H1 2024 | Regional DAO  | CeloPG: Regional DAO",
     "author": "Joan de Ramón (@joan_ethichub), Luuk Weber, Niko da Costa Gomez",
-    "stage": 0,
+    "stage": 6,
+    "id": 161,
     "url": "https://forum.celo.org/t/celo-europe-h1-2024-regional-dao-final/7450",
-    "timestamp": 1708041600000
+    "timestamp": 1708041600000,
+    "votes": {
+      "yes": "3746380104100576142999953",
+      "no": "317878057251413628096662",
+      "abstain": "246722298524481809695486"
+    }
   },
   {
     "cgp": 121,
@@ -1700,9 +1722,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0121.md",
     "title": "Prezenti H1 2024 | Celo Grants  | CPG Funding Request - Grants & RPFs",
     "author": "Wade @0xzoz , Maya @Maya-R-B , Aaron @aaronmboyd",
-    "stage": 0,
+    "stage": 6,
+    "id": 162,
     "url": "https://forum.celo.org/t/final-prezenti-h1-2024-celo-grants",
-    "timestamp": 1709596800000
+    "timestamp": 1709596800000,
+    "votes": {
+      "yes": "4778179052006970099487870",
+      "no": "0",
+      "abstain": "759078837434842414093"
+    }
   },
   {
     "cgp": 122,
@@ -1710,9 +1738,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0122.md",
     "title": "Mento Reserve: Add Tether Collateral and Migrate 20m Curve Pool",
     "author": "Roman Croessmann (@rcroessmann)",
-    "stage": 0,
+    "stage": 6,
+    "id": 164,
     "url": "https://forum.celo.org/t/adding-usdt-and-eurt-to-the-mento-reserve/7490",
-    "timestamp": 1709683200000
+    "timestamp": 1709683200000,
+    "votes": {
+      "yes": "7938743655619884228438005",
+      "no": "0",
+      "abstain": "1001089448307891111"
+    }
   },
   {
     "cgp": 123,
@@ -1720,10 +1754,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0123.md",
     "title": "MU05 - Add native USDC pools to Mento v2",
     "author": "Nelson Taveras <nelson.taveras@mentolabs.xyz>, Philip Rätsch <philip.raetsch@mentolabs.xyz>",
-    "stage": 0,
+    "stage": 6,
     "id": 163,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu05-native-usdc-integration/7545",
-    "timestamp": 1709769600000
+    "timestamp": 1709769600000,
+    "votes": {
+      "yes": "7937039044917774523956878",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 124,
@@ -1731,9 +1770,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0124.md",
     "title": "Celo Thailand DAO H1 2024",
     "author": "Varin Pulpol, Parnaigon Yangpaksi",
-    "stage": 0,
+    "stage": 6,
+    "id": 165,
     "url": "https://forum.celo.org/t/celo-thailand-h1-2024-regional-dao-draft/7402",
-    "timestamp": 1709856000000
+    "timestamp": 1709856000000,
+    "votes": {
+      "yes": "5666397360437098304697369",
+      "no": "64249674078632646829510",
+      "abstain": "61883316969554991520513"
+    }
   },
   {
     "cgp": 125,
@@ -1741,9 +1786,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0125.md",
     "title": "Celo India H1 2024| Regional DAO",
     "author": "Chitty Babu, Shaun Joseph (@shaun), Kandasamy Rahunandan, Kundan (@Qaphqa)",
-    "stage": 0,
+    "stage": 8,
+    "id": 166,
     "url": "https://forum.celo.org/t/proposal-for-community-development-in-india-indiadao-community-management",
-    "timestamp": 1709856000000
+    "timestamp": 1709856000000,
+    "votes": {
+      "yes": "921231764617807186842207",
+      "no": "64249674078632646829511",
+      "abstain": "226392076721316438081032"
+    }
   },
   {
     "cgp": 126,
@@ -1751,9 +1802,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0126.md",
     "title": "Celo Africa H1 2024 | Regional DAO",
     "author": "Daniel Kimotho, Umar Sebyala, Chimezie Chuta, Cynthia Kamau",
-    "stage": 0,
+    "stage": 6,
+    "id": 167,
     "url": "https://forum.celo.org/t/celo-africa-h1-2024-regional-dao-final/7497",
-    "timestamp": 1708646400000
+    "timestamp": 1708646400000,
+    "votes": {
+      "yes": "7623118063758565471856454",
+      "no": "84309590816251390398718",
+      "abstain": "225181328662541909708169"
+    }
   },
   {
     "cgp": 127,
@@ -1761,11 +1818,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0127.md",
     "title": "Enable USDC as Gas Currency",
     "author": "Martín Volpe (@martinvol), Pavel Hornak (@pahor167)",
-    "stage": 1,
+    "stage": 6,
     "id": 168,
     "url": "https://forum.celo.org/t/path-towards-making-usdc-a-gas-currency/7385/2",
     "timestamp": 1715990400000,
-    "timestampExecuted": 1711411200000
+    "timestampExecuted": 1711411200000,
+    "votes": {
+      "yes": "12717106535247549899139657",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 128,
@@ -1773,10 +1835,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0128.md",
     "title": "Enable USDT as Gas Currency",
     "author": "Martín Volpe (@martinvol), Pavel Hornak (@pahor167), Subha Subramanian",
-    "stage": 1,
+    "stage": 6,
     "id": 169,
     "url": "https://forum.celo.org/t/draft-making-usdt-a-gas-fee-currency-on-celo/7686",
-    "timestamp": 1711584000000
+    "timestamp": 1711584000000,
+    "votes": {
+      "yes": "20871591224847564431581415",
+      "no": "0",
+      "abstain": "93851135431871948739"
+    }
   },
   {
     "cgp": 129,
@@ -1784,9 +1851,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0129.md",
     "title": "RWA-focused Accelerator with Outlier Ventures",
     "author": "John Goldschmidt (@Johnlikes), Aron van Ammers (@aronvanammers)",
-    "stage": 0,
+    "stage": 6,
+    "id": 170,
     "url": "https://forum.celo.org/t/draft-celo-public-goods-grant-request-update-rwa-focused-accelerator-with-outlier-ventures/",
-    "timestamp": 1712102400000
+    "timestamp": 1712102400000,
+    "votes": {
+      "yes": "7693952097966476098050655",
+      "no": "45308413410112909141897",
+      "abstain": "75170045754774757793478"
+    }
   },
   {
     "cgp": 130,
@@ -1794,9 +1867,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0130.md",
     "title": "Red Beard Ventures x CELO Accelerator",
     "author": "Red Beard Ventures & CELO Team",
-    "stage": 0,
+    "stage": 6,
+    "id": 172,
     "url": "https://forum.celo.org/t/draft-celo-accelerator-program-x-red-beard-ventures",
-    "timestamp": 1712188800000
+    "timestamp": 1712188800000,
+    "votes": {
+      "yes": "6338809842244723758210394",
+      "no": "45308413410112909141897",
+      "abstain": "96417447823484799668579"
+    }
   },
   {
     "cgp": 131,
@@ -1805,8 +1884,19 @@
     "title": "Update maxDelegateesCount to Improve Governance Flexibility",
     "author": "Pavel Hornak (@pahor167)",
     "stage": 1,
-    "id": 170,
+    "id": 171,
     "url": "https://forum.celo.org/t/celo-protocol-upgrades-gingerbread-hard-fork-and-contracts-release-10/6612",
     "timestamp": 1710201600000
+  },
+  {
+    "cgp": 132,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0132.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0132.md",
+    "title": "Proposal for Funding Stabila - Driving Stablecoin Adoption on Celo",
+    "author": "Kevin Tharayil (@KevinTharayil)",
+    "stage": 1,
+    "id": 173,
+    "url": "https://forum.celo.org/t/final-proposal-for-funding-stabila-driving-stablecoin-adoption-on-celo/7810",
+    "timestamp": 1714089600000
   }
 ]
