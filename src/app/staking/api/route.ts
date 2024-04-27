@@ -8,7 +8,7 @@ import {
 import { eqAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
 import { errorToString } from 'src/utils/strings';
-import { createPublicClient, createWalletClient, decodeEventLog, http } from 'viem';
+import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
 
@@ -45,11 +45,12 @@ export async function POST(request: Request) {
 
 async function activateStake(request: StakeActivationRequest) {
   const address = request.address as HexString;
+  const group = request.group as HexString;
   const transactionHash = request.transactionHash as HexString;
 
   const client = createPublicClient({ chain: celo, transport: http(fornoRpcUrl) });
 
-  const transaction = await client.getTransactionReceipt({ hash: transactionHash });
+  const transaction = await client.getTransaction({ hash: transactionHash });
   if (!eqAddress(transaction.from, address))
     throw new Error('Tx sender and request address do not match');
   if (!transaction.to || !eqAddress(transaction.to, Addresses.Election))
@@ -59,18 +60,19 @@ async function activateStake(request: StakeActivationRequest) {
   const timePassed = Date.now() - Number(block.timestamp) * 1000;
   if (timePassed > 3 * 24 * 60 * 60 * 1000) throw new Error('Transaction is too old');
 
-  const log = transaction.logs[0];
-  const { eventName, args } = decodeEventLog({
-    abi: electionABI,
-    data: log.data,
-    topics: log.topics,
-    strict: true,
-  });
-  if (eventName !== 'ValidatorGroupVoteCast') throw new Error('Transaction is not a stake vote');
-  if (!eqAddress(args.account, address))
-    throw new Error('Transaction staker does not match request');
+  // Used to validate tx logs but that's not strictly needed
+  // and fetching them for old txs was causing problems
+  // const log = transaction.logs[0];
+  // const { eventName, args } = decodeEventLog({
+  //   abi: electionABI,
+  //   data: log.data,
+  //   topics: log.topics,
+  //   strict: true,
+  // });
+  // if (eventName !== 'ValidatorGroupVoteCast') throw new Error('Transaction is not a stake vote');
+  // if (!eqAddress(args.account, address))
+  //   throw new Error('Transaction staker does not match request');
 
-  const group = args.group;
   const hasActivatable = await client.readContract({
     address: Addresses.Election,
     abi: electionABI,

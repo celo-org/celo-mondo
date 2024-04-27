@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 export const StakeActivationRequestSchema = z.object({
   address: z.string().regex(ADDRESS_REGEX),
+  group: z.string().regex(ADDRESS_REGEX),
   transactionHash: z.string().regex(TX_HASH_REGEX),
 });
 

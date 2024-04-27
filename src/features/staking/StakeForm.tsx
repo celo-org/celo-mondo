@@ -64,7 +64,11 @@ export function StakeForm({
 
   const onPlanSuccess = (v: StakeFormValues, r: TransactionReceipt) => {
     if (v.action === StakeActionType.Stake) {
-      submitStakeActivationRequest({ address: address!, transactionHash: r.transactionHash });
+      submitStakeActivationRequest({
+        address: address!,
+        group: v.group,
+        transactionHash: r.transactionHash,
+      });
     }
     onConfirmed({
       message: `${v.action} successful`,
