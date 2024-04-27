@@ -3,12 +3,16 @@ import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
 import { ProposalFormDetails } from 'src/features/governance/components/ProposalFormDetails';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
-import { useGovernanceVoteRecord } from 'src/features/governance/hooks/useVotingStatus';
+import {
+  useGovernanceVoteRecord,
+  useGovernanceVotingPower,
+} from 'src/features/governance/hooks/useVotingStatus';
 import { VoteFormValues, VoteType, VoteTypes } from 'src/features/governance/types';
 import { getVoteTxPlan } from 'src/features/governance/votePlan';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
+import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
 const initialValues: VoteFormValues = {
@@ -24,6 +28,7 @@ export function VoteForm({
   onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
+  const { votingPower } = useGovernanceVotingPower(address);
   const { dequeue } = useProposalDequeue();
   const { refetch: refetchVoteRecord } = useGovernanceVoteRecord(
     address,
@@ -49,8 +54,8 @@ export function VoteForm({
   const onSubmit = (values: VoteFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: VoteFormValues) => {
-    if (!address || !dequeue) return { amount: 'Form data not ready' };
-    return validateForm(values, dequeue);
+    if (!address || !dequeue || isNullish(votingPower)) return { amount: 'Form data not ready' };
+    return validateForm(values, dequeue, votingPower);
   };
 
   return (
@@ -98,7 +103,11 @@ function VoteTypeField({
   );
 }
 
-function validateForm(values: VoteFormValues, dequeue: number[]): FormikErrors<VoteFormValues> {
+function validateForm(
+  values: VoteFormValues,
+  dequeue: number[],
+  votingPower: bigint,
+): FormikErrors<VoteFormValues> {
   const { vote, proposalId } = values;
 
   if (!vote || !VoteTypes.includes(vote)) {
@@ -107,6 +116,10 @@ function validateForm(values: VoteFormValues, dequeue: number[]): FormikErrors<V
 
   if (!dequeue?.includes(proposalId)) {
     return { proposalId: 'Proposal ID not eligible' };
+  }
+
+  if (votingPower <= 0n) {
+    return { vote: 'No voting power available' };
   }
 
   return {};
