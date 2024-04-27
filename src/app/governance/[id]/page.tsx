@@ -78,7 +78,7 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
     <div className="space-y-3">
       <BackLink href="/governance">Browse proposals</BackLink>
       <h1 className="font-serif text-2xl md:text-2xl">{title}</h1>
-      <ProposalBadgeRow propData={propData} showProposer />
+      <ProposalBadgeRow propData={propData} showProposer showExecutedTime />
       <ProposalLinkRow propData={propData} />
       {isLoading && !content && <FullWidthSpinner>Loading proposal content</FullWidthSpinner>}
       {!isLoading && !content && (

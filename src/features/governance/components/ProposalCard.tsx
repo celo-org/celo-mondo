@@ -82,18 +82,23 @@ export function ProposalCard({
 export function ProposalBadgeRow({
   propData,
   showProposer,
+  showExecutedTime,
 }: {
   propData: MergedProposalData;
   showProposer?: boolean;
+  showExecutedTime?: boolean;
 }) {
   const { stage, proposal, metadata, id } = propData;
 
   const { timestamp, proposer, isApproved } = proposal || {};
-  const { timestamp: cgpTimestamp, cgp } = metadata || {};
+  const { timestamp: cgpTimestamp, cgp, timestampExecuted } = metadata || {};
 
   const proposedTimestamp = timestamp || cgpTimestamp;
   const proposedTimeValue = proposedTimestamp
     ? new Date(proposedTimestamp).toLocaleDateString()
+    : undefined;
+  const executedTimeValue = timestampExecuted
+    ? new Date(timestampExecuted).toLocaleDateString()
     : undefined;
 
   return (
@@ -108,6 +113,13 @@ export function ProposalBadgeRow({
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
           <ShortAddress address={proposer} className="hidden text-sm text-taupe-600 sm:block" />
+        </>
+      )}
+      {/* Show one of proposer or executedTimeValue but not both, too crowded */}
+      {showExecutedTime && executedTimeValue && !proposer && (
+        <>
+          <div className="hidden text-xs opacity-50 sm:block">•</div>
+          <div className="hidden text-sm text-taupe-600 sm:block">{`Executed ${executedTimeValue}`}</div>
         </>
       )}
     </div>
