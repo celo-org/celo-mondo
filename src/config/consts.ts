@@ -24,3 +24,6 @@ export const EXECUTION_STAGE_EXPIRY_TIME = 259_200_000; // 3 days
 
 // Delegation
 export const MAX_NUM_DELEGATEES = 10;
+
+// Wallets
+export const WALLET_CONNECT_CONNECTOR_ID = 'walletConnect';

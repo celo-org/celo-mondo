@@ -1,7 +1,6 @@
 import { RainbowKitProvider, connectorsForWallets, lightTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import {
-  ledgerWallet,
   metaMaskWallet,
   omniWallet,
   rainbowWallet,
@@ -29,7 +28,6 @@ const connectors = connectorsForWallets(
         rainbowWallet,
         omniWallet,
         trustWallet,
-        ledgerWallet,
       ],
     },
   ],

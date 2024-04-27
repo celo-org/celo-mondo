@@ -43,7 +43,7 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-// Note, this retrieves the address's info from the Accounts contract
+// Note, this retrieves the address' info from the Accounts contract
 // It has nothing to do with wallets or backend services
 export function useAccountDetails(address?: Address) {
   const {

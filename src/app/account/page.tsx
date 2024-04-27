@@ -37,7 +37,7 @@ import { useAccount } from 'wagmi';
 export default function Page() {
   const account = useAccount();
   const address = account?.address;
-  usePageInvariant(!!address, '/', 'No account connected');
+  usePageInvariant(!!address, '/');
 
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalances } = useLockedStatus(address);

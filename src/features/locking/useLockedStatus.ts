@@ -2,6 +2,7 @@ import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
+import { useAccountDetails } from 'src/features/account/hooks';
 import { LockedStatus, PendingWithdrawal } from 'src/features/locking/types';
 import { logger } from 'src/utils/logger';
 import { PublicClient } from 'viem';
@@ -10,10 +11,12 @@ import { usePublicClient } from 'wagmi';
 export function useLockedStatus(address?: Address) {
   const publicClient = usePublicClient();
 
+  const { isRegistered } = useAccountDetails(address);
+
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useLockedStatus', publicClient, address],
+    queryKey: ['useLockedStatus', publicClient, address, isRegistered],
     queryFn: async () => {
-      if (!address || !publicClient) return null;
+      if (!address || !isRegistered || !publicClient) return null;
       logger.debug('Fetching locked status balance and withdrawals');
       return fetchLockedStatus(publicClient, address);
     },

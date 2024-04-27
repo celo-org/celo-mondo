@@ -68,7 +68,7 @@ export function ActiveStakesTable({
     return <FullWidthSpinner>Loading staking data</FullWidthSpinner>;
   }
 
-  if (!objLength(groupToStake)) {
+  if (!tableData.length) {
     return (
       <HeaderAndSubheader
         header="No active stakes"

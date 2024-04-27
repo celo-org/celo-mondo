@@ -9,13 +9,24 @@ import { useStakingRewards } from 'src/features/staking/rewards/useStakingReward
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
+import { logger } from 'src/utils/logger';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance } from '../account/hooks';
 
 export function WalletDropdown() {
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
-  const { disconnect } = useDisconnect();
+  const { disconnectAsync } = useDisconnect();
+
+  const onDisconnect = async () => {
+    try {
+      await disconnectAsync();
+    } catch (err) {
+      logger.error('Error disconnecting wallet', err);
+      // Sometimes a page reload helps handle disconnection issues
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="relative flex justify-end">
@@ -29,7 +40,7 @@ export function WalletDropdown() {
           )}
           buttonClasses={`${OutlineButtonClassName} pl-1.5 pr-3 all:py-1`}
           modal={({ close }) => (
-            <DropdownContent address={address} disconnect={disconnect} close={close} />
+            <DropdownContent address={address} disconnect={onDisconnect} close={close} />
           )}
           modalClasses="p-4"
         />
@@ -46,7 +57,7 @@ function DropdownContent({
   close,
 }: {
   address: Address;
-  disconnect: () => void;
+  disconnect: () => any;
   close: () => void;
 }) {
   const { balance: walletBalance } = useBalance(address);
