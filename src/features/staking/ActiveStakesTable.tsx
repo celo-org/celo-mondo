@@ -51,7 +51,8 @@ export function ActiveStakesTable({
         const name = addressToGroup?.[address]?.name;
         return { address, name, stake, percentage };
       })
-      .sort((a, b) => b.stake - a.stake);
+      .sort((a, b) => b.stake - a.stake)
+      .filter((d) => d.stake >= 0.01);
 
     const chartData = sortAndCombineChartData(
       tableData.map(({ address, stake, percentage }) => ({
