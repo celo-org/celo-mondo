@@ -1,5 +1,4 @@
 import { toast } from 'react-toastify';
-import { config } from 'src/config/config';
 import { links } from 'src/config/links';
 import { ADDRESS_REGEX, TX_HASH_REGEX } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
@@ -16,15 +15,9 @@ export type StakeActivationRequest = z.infer<typeof StakeActivationRequestSchema
 export async function submitStakeActivationRequest(request: StakeActivationRequest) {
   try {
     logger.debug('Submitting stake activation request');
-    const upstashBase = new URL(links.upstash);
-    upstashBase.pathname += `/${links.home}/staking/api`;
-    const response = await fetch(upstashBase, {
+    const response = await fetch(`/${links.home}/staking/api/schedule`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.upstashKey}`,
-        'Upstash-Delay': '1d',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(request),
     });
     if (!response.ok) {
