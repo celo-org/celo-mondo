@@ -18,7 +18,7 @@ const CONNECT_SRC_HOSTS = [
   'https://qstash.upstash.io',
 ];
 const FRAME_SRC_HOSTS = ['https://*.walletconnect.com', 'https://*.walletconnect.org'];
-const IMG_SRC_HOSTS = ['https://raw.githubusercontent.com', 'https://*.walletconnect.com'];
+const IMG_SRC_HOSTS = ['https://*.walletconnect.com'];
 
 const cspHeader = `
   default-src 'self';
@@ -82,12 +82,10 @@ module.exports = {
   },
 
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
+    remotePatterns: IMG_SRC_HOSTS.map((h) => ({
+      protocol: 'https',
+      hostname: h,
+    })),
   },
 
   env: {
