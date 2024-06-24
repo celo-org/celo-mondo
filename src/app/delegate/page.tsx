@@ -41,7 +41,10 @@ function RegisterCtaCard() {
     <CtaCard>
       <div className="space-y-2">
         <h3 className="font-serif text-xl sm:text-2xl">Passionate about Celo governance?</h3>
-        <p className="text-sm sm:text-base">Add your information on Github to be listed here.</p>
+        <p className="text-sm sm:text-base">
+          If you would like to be included in this list, open a pull-request to add your information
+          on Github.
+        </p>
       </div>
       <A_Blank href={links.delegate} className="btn btn-primary rounded-full border-taupe-300">
         Register as a delegate
