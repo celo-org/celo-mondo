@@ -49,7 +49,7 @@ export default function Page() {
 
 function BridgeLink({ name, operator, href, logo }: Bridge) {
   return (
-    <div className="flex items-center justify-between space-y-2 border border-taupe-300 bg-white p-4 sm:gap-32 sm:p-5">
+    <div className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:gap-32 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
         <div className="flex flex-col">
@@ -57,8 +57,8 @@ function BridgeLink({ name, operator, href, logo }: Bridge) {
           <h3 className="text-sm">{`By ${operator}`}</h3>
         </div>
       </div>
-      <SolidButton>
-        <A_Blank className="flex items-center space-x-2 py-1" href={href}>
+      <SolidButton className="all:p-0">
+        <A_Blank className="flex items-center space-x-2 px-5 py-3.5" href={href}>
           <span>Bridge</span>
           <ChevronIcon direction="e" width={12} height={12} />
         </A_Blank>
