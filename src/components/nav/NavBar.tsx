@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
-// import Bridge from 'src/images/icons/bridge.svg';
+import Bridge from 'src/images/icons/bridge.svg';
 import Dashboard from 'src/images/icons/dashboard.svg';
 import Delegate from 'src/images/icons/delegate.svg';
 import Governance from 'src/images/icons/governance.svg';
@@ -16,7 +16,7 @@ const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
   { label: 'Governance', to: '/governance', icon: Governance },
   { label: 'Delegate', to: '/delegate', icon: Delegate },
-  // { label: 'Bridge', to: '/bridge', icon: Bridge },
+  { label: 'Bridge', to: '/bridge', icon: Bridge },
   ...(isWalletConnected ? [{ label: 'Dashboard', to: '/account', icon: Dashboard }] : []),
 ];
 
