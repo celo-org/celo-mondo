@@ -1990,7 +1990,8 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0139.md",
     "title": "Mento Spin-off and Launch of the MENTO token",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>, Oleksiy Novykov <oleksiy.novykov@mentolabs.xyz>",
-    "stage": 0,
+    "stage": 1,
+    "id": 180,
     "url": "https://forum.celo.org/t/mento-spin-off-and-launch-of-the-mento-token/7747",
     "timestamp": 1716422400000
   }
