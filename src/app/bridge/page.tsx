@@ -39,7 +39,7 @@ export default function Page() {
         <BridgeLink key={bridge.name} {...bridge} />
       ))}
       <p className="text-center text-sm text-taupe-600">
-        These bridges are independent, third-party service providers
+        These bridges are independent, third-party service providers.
         <br />
         Celo assumes no responsibility for their operation.
       </p>
