@@ -6,11 +6,11 @@
     "title": "Enable validator elections, epoch rewards and carbon offsetting",
     "author": "@aslawson",
     "stage": 6,
-    "id": 2,
+    "id": 1,
     "timestamp": 1587945600000,
     "timestampExecuted": 1588377600000,
     "votes": {
-      "yes": "47269167708371578826000184",
+      "yes": "12639600494367763082000064",
       "no": "0",
       "abstain": "0"
     }
@@ -645,14 +645,14 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0044.md",
     "title": "Increasing Mento Bucket Sizes for cUSD and cEUR",
     "author": "@martinvol, @rcroessmann",
-    "stage": 6,
-    "id": 55,
+    "stage": 8,
+    "id": 45,
     "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
     "timestamp": 1635379200000,
     "votes": {
-      "yes": "57221052290761445296211634",
-      "no": "276379329980356359107",
-      "abstain": "75855429510460100287215"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -1455,11 +1455,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0101.md",
     "title": "Add New Governance Approvers Temperature Check",
     "author": "Tim Moreton (@timmoreton)",
-    "stage": 0,
+    "stage": 6,
     "id": 140,
     "url": "https://forum.celo.org/t/we-need-to-talk-about-governance/6409/4?u=tim",
     "timestamp": 1695686400000,
-    "timestampExecuted": 1697760000000
+    "timestampExecuted": 1697760000000,
+    "votes": {
+      "yes": "23681338095798088557121542",
+      "no": "0",
+      "abstain": "812300000000000054"
+    }
   },
   {
     "cgp": 102,
@@ -1477,10 +1482,15 @@
     "title": "Launch eXOF stablecoin",
     "author": "Serge Kiema <sergek@dunia.africa>, Serge Ouedraogo <serge_o@dunia.africa>",
     "stage": 6,
-    "id": 140,
+    "id": 139,
     "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261/1",
     "timestamp": 1695945600000,
-    "timestampExecuted": 1697760000000
+    "timestampExecuted": 1697760000000,
+    "votes": {
+      "yes": "19577902831175322676273011",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 104,
@@ -1492,7 +1502,12 @@
     "id": 137,
     "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-50m-gas-coming-soon/6633",
     "timestamp": 1696204800000,
-    "timestampExecuted": 1696896000000
+    "timestampExecuted": 1696896000000,
+    "votes": {
+      "yes": "27426900149175988655344188",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 105,
@@ -1503,7 +1518,12 @@
     "stage": 8,
     "id": 141,
     "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work/6569",
-    "timestamp": 1697673600000
+    "timestamp": 1697673600000,
+    "votes": {
+      "yes": "3064828185443169755437748",
+      "no": "0",
+      "abstain": "14813906063415175811408"
+    }
   },
   {
     "cgp": 106,
@@ -1515,7 +1535,12 @@
     "id": 142,
     "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work/6569/19",
     "timestamp": 1698710400000,
-    "timestampExecuted": 1699747200000
+    "timestampExecuted": 1699747200000,
+    "votes": {
+      "yes": "16514230117506574997997841",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 107,
@@ -1537,7 +1562,12 @@
     "id": 143,
     "url": "https://forum.celo.org/t/core-devs-call-on-cip-ultragreen-celo/5387",
     "timestamp": 1699315200000,
-    "timestampExecuted": 1702857600000
+    "timestampExecuted": 1702857600000,
+    "votes": {
+      "yes": "17577366744406636842983771",
+      "no": "0",
+      "abstain": "595429"
+    }
   },
   {
     "cgp": 109,
@@ -1565,7 +1595,12 @@
     "stage": 8,
     "id": 146,
     "url": "https://forum.celo.org/t/mentors-collective-hello-world/6884/",
-    "timestamp": 1702252800000
+    "timestamp": 1702252800000,
+    "votes": {
+      "yes": "627563961200135020572469",
+      "no": "637823624016922163423449",
+      "abstain": "645441880415723474772262"
+    }
   },
   {
     "cgp": 111,
@@ -1926,10 +1961,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0132.md",
     "title": "Proposal for Funding Stabila - Driving Stablecoin Adoption on Celo",
     "author": "Kevin Tharayil (@KevinTharayil)",
-    "stage": 1,
+    "stage": 5,
     "id": 173,
     "url": "https://forum.celo.org/t/final-proposal-for-funding-stabila-driving-stablecoin-adoption-on-celo/7810",
-    "timestamp": 1714089600000
+    "timestamp": 1714089600000,
+    "votes": {
+      "yes": "13352572718004564022826739",
+      "no": "199993080818103341960279",
+      "abstain": "119152064836338536867928"
+    }
   },
   {
     "cgp": 133,
@@ -1937,10 +1977,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0133.md",
     "title": "Cel2 Proposal Temperature Check - Using Optimism Stack for Cel2",
     "author": "Mariano Cortesi (@mcortesi), cLabs Blockchain & Primitives teams",
-    "stage": 1,
+    "stage": 6,
     "id": 174,
     "url": "https://forum.celo.org/t/clabs-proposes-migrating-celo-to-an-ethereum-l2-leveraging-the-op-stack/7902",
-    "timestamp": 1714694400000
+    "timestamp": 1714694400000,
+    "timestampExecuted": 1715385600000,
+    "votes": {
+      "yes": "14635284525328223075766231",
+      "no": "0",
+      "abstain": "20483577109080076360924"
+    }
   },
   {
     "cgp": 134,
@@ -1948,10 +1994,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0134.md",
     "title": "Validators rewards - changes in epoch parameters",
     "author": "@Thylacine @Patrick @Dee>",
-    "stage": 1,
+    "stage": 6,
     "id": 178,
     "url": "https://forum.celo.org/t/draft-validators-rewards-change-in-epoch-parameters/7702",
-    "timestamp": 1714780800000
+    "timestamp": 1714780800000,
+    "timestampExecuted": 1716422400000,
+    "votes": {
+      "yes": "16673407295919743146853538",
+      "no": "90657478041096101",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 135,
@@ -1959,9 +2011,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0135.md",
     "title": "Kenyan Shilling & USDT/USD Oracle Rates",
     "author": "@nvtaveras, @bayological",
-    "stage": 0,
+    "stage": 6,
     "id": 175,
-    "timestamp": 1715126400000
+    "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin/7964",
+    "timestamp": 1715126400000,
+    "timestampExecuted": 1715731200000,
+    "votes": {
+      "yes": "11422612948555883068019171",
+      "no": "125769437707",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 136,
@@ -1969,10 +2028,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0136.md",
     "title": "Launch of Kenyan Shilling (cKES) Stablecoin",
     "author": "@bayological",
-    "stage": 0,
+    "stage": 6,
     "id": 177,
     "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin/7964",
-    "timestamp": 1715558400000
+    "timestamp": 1715558400000,
+    "timestampExecuted": 1716249600000,
+    "votes": {
+      "yes": "8178148794427832545745502",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 138,
@@ -1980,9 +2045,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0138.md",
     "title": "MU06 - Native USDT integration on Mento v2",
     "author": "@philbow61, @nvtaveras",
-    "stage": 0,
+    "stage": 6,
+    "id": 179,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu06-native-usdt-integration/",
-    "timestamp": 1716422400000
+    "timestamp": 1716422400000,
+    "timestampExecuted": 1717027200000,
+    "votes": {
+      "yes": "16740285818376325019199998",
+      "no": "0",
+      "abstain": "1543562661322890294632"
+    }
   },
   {
     "cgp": 139,
@@ -1990,9 +2062,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0139.md",
     "title": "Mento Spin-off and Launch of the MENTO token",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>, Oleksiy Novykov <oleksiy.novykov@mentolabs.xyz>",
-    "stage": 1,
+    "stage": 6,
     "id": 180,
     "url": "https://forum.celo.org/t/mento-spin-off-and-launch-of-the-mento-token/7747",
-    "timestamp": 1716422400000
+    "timestamp": 1716422400000,
+    "timestampExecuted": 1717113600000,
+    "votes": {
+      "yes": "15637180923411949481583775",
+      "no": "803071079695202545884267",
+      "abstain": "158521938162827452501095"
+    }
   }
 ]

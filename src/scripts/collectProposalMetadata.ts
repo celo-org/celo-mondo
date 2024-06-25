@@ -13,7 +13,7 @@ BigInt.prototype.toJSON = function () {
 };
 
 const PROPOSALS_OUT_PATH = path.resolve(__dirname, '../config/proposals.json');
-const MIN_PROPOSAL_ID_VOTES_FETCH = 150;
+const MIN_PROPOSAL_ID_VOTES_FETCH = 160;
 
 async function main() {
   let cachedProposals: ProposalMetadata[] = [];
