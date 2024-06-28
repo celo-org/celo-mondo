@@ -1,5 +1,5 @@
 export const links = {
-  home: 'https://celo-station.vercel.app',
+  home: 'https://mondo.celo.org',
   celo: 'https://celo.org',
   discord: 'https://discord.gg/celo',
   github: 'https://github.com/jmrossy/celo-station',
