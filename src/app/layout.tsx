@@ -8,17 +8,17 @@ import { App } from './app';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  applicationName: 'Celo Station',
+  applicationName: 'Celo Mondo',
   metadataBase: new URL(links.home),
   title: {
-    default: 'Celo Station | Staking & Governance for Celo',
-    template: '%s | Celo Station | Staking & Governance for Celo',
+    default: 'Celo Mondo | Staking & Governance for Celo',
+    template: '%s | Celo Mondo | Staking & Governance for Celo',
   },
   description:
     'Participate in Celo staking and governance. Start earning automatic rewards on your CELO!',
   keywords: ['celo', 'staking', 'governance', 'delegation', 'station'],
   openGraph: {
-    title: 'Celo Station',
+    title: 'Celo Mondo',
     description: 'Staking & Governance for Celo',
     images: [`/logos/celo-station.png`],
   },

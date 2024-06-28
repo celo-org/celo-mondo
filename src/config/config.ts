@@ -28,7 +28,7 @@ export const infuraRpcUrl = `${links.infura}/${infuraApiKey}`;
 export const config: Config = Object.freeze({
   debug: isDevMode,
   version,
-  appName: 'Celo Station',
+  appName: 'Celo Mondo',
   chainId: ChainId.Celo,
   walletConnectProjectId,
   fornoApiKey,
