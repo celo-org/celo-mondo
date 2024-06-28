@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   description:
     'Participate in Celo staking and governance. Start earning automatic rewards on your CELO!',
-  keywords: ['celo', 'staking', 'governance', 'delegation', 'station'],
+  keywords: ['celo', 'staking', 'governance', 'delegation', 'mondo'],
   openGraph: {
     title: 'Celo Mondo',
     description: 'Staking & Governance for Celo',
