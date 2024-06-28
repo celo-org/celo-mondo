@@ -27,7 +27,7 @@ export const useStore = create<AppState>()(
       },
     }),
     {
-      name: 'celo-station-state',
+      name: 'celo-mondo-state',
       partialize: (_state) => ({}),
       version: PERSIST_STATE_VERSION,
     },

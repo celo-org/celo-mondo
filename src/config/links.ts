@@ -1,13 +1,13 @@
 export const links = {
-  home: 'https://celo-station.vercel.app',
+  home: 'https://mondo.celo.org',
   celo: 'https://celo.org',
   discord: 'https://discord.gg/celo',
-  github: 'https://github.com/jmrossy/celo-station',
+  github: 'https://github.com/celo-org/celo-mondo',
   twitter: 'https://twitter.com/CeloOrg',
   docs: 'https://docs.celo.org',
   forum: 'https://forum.celo.org',
   governance: 'https://github.com/celo-org/governance',
-  delegate: 'https://github.com/jmrossy/celo-station/blob/main/src/config/delegates.json',
+  delegate: 'https://github.com/celo-org/celo-mondo/blob/main/src/config/delegates.json',
   // RPCs
   forno: 'https://forno.celo.org',
   infura: 'https://celo-mainnet.infura.io/v3',
