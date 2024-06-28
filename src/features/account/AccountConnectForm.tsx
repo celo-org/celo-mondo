@@ -15,7 +15,7 @@ export function AccountConnectForm() {
             <Image className="opacity-80" src={Avatar} alt="Wallet" width={20} height={20} />
           </div>
         </div>
-        <h2 className="font-medium">Welcome to Celo Station</h2>
+        <h2 className="font-medium">Welcome to Celo Mondo</h2>
         <p className="max-w-xs text-center text-sm">
           To make a transaction, you must first connect your wallet.
         </p>

@@ -12,7 +12,7 @@ A description of the problem.
 
 ## Environment
 
-- Celo Station app version
+- Celo Mondo app version
 - Operating System
 - Browser
 - Wallet

@@ -456,9 +456,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@celo-station/celo-station-web@workspace:.":
+"@celo-mondo/celo-mondo-web@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@celo-station/celo-station-web@workspace:."
+  resolution: "@celo-mondo/celo-mondo-web@workspace:."
   dependencies:
     "@celo/abis": "npm:^11.0.0"
     "@headlessui/react": "npm:^1.7.18"

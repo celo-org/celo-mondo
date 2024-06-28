@@ -1,18 +1,19 @@
 {
-  "name": "@celo-station/celo-station-web",
+  "name": "@celo-mondo/celo-mondo-web",
   "version": "1.0.0",
   "description": "Staking and Governance Tools for Celo",
   "keywords": [
     "Celo",
     "Staking",
-    "Governance"
+    "Governance",
+    "Delgation"
   ],
   "author": "J M Rossy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jmrossy/celo-station"
+    "url": "https://github.com/celo-org/celo-mondo"
   },
-  "homepage": "https://github.com/jmrossy/celo-station",
+  "homepage": "https://github.com/celo-org/celo-mondo",
   "dependencies": {
     "@celo/abis": "^11.0.0",
     "@headlessui/react": "^1.7.18",
