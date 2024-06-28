@@ -38,11 +38,11 @@ export default function Page() {
       {BRIDGES.map((bridge) => (
         <BridgeLink key={bridge.name} {...bridge} />
       ))}
-      <p className="text-center text-sm text-taupe-600">
+      {/* <p className="text-center text-sm text-taupe-600">
         These bridges are independent, third-party service providers.
         <br />
         Celo assumes no responsibility for their operation.
-      </p>
+      </p> */}
     </Section>
   );
 }
