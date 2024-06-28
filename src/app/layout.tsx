@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Celo Mondo',
     description: 'Staking & Governance for Celo',
-    images: [`/logos/celo-station.png`],
+    images: [`/logos/celo.png`],
   },
   twitter: {
     card: 'summary_large_image',

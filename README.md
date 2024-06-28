@@ -10,7 +10,7 @@ For information about how Celo's Proof-of-Stake protocol works, or other aspects
 
 ## Support
 
-For support, you can [file an issue](https://github.com/jmrossy/celo-station/issues/new) on this repository or join the [Celo Discord](https://discord.gg/celo)
+For support, you can [file an issue](https://github.com/celo-org/celo-mondo/issues/new) on this repository or join the [Celo Discord](https://discord.gg/celo)
 
 ## Development
 
