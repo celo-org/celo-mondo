@@ -31,7 +31,7 @@ export function AccountRegisterForm({
         <div className="bounce-and-spin flex items-center justify-center">
           <Image className="" src={CeloCube} alt="Loading..." width={80} height={80} />
         </div>
-        <h2 className="font-medium">Welcome to Celo Station</h2>
+        <h2 className="font-medium">Welcome to Celo Mondo</h2>
         <p className="max-w-xs text-center text-sm">
           Before you can lock, stake, or govern, you must first register with the Celo Accounts
           contract.
