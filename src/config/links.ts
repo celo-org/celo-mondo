@@ -3,7 +3,7 @@ export const links = {
   celo: 'https://celo.org',
   discord: 'https://discord.gg/celo',
   github: 'https://github.com/celo-org/celo-mondo',
-  twitter: 'https://twitter.com/CeloOrg',
+  twitter: 'https://twitter.com/celo',
   docs: 'https://docs.celo.org',
   forum: 'https://forum.celo.org',
   governance: 'https://github.com/celo-org/governance',
