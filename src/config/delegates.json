@@ -1,5 +1,17 @@
 {
-  "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9": {
+  "0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a": {
+    "name": "0xj4an",
+    "address": "0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a",
+    "logoUri": "/logos/validators/refi-col.jpg",
+    "date": "2024-08-03",
+    "links": {
+      "website": "https://linktr.ee/0xj4an_work",
+      "twitter": "https://twitter.com/0xj4an"
+    },
+    "interests": ["Community", "Transparency", "Accountability", "Good Vibes"],
+    "description": "XXXXXXX"
+  },
+    "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9": {
     "name": "ReFiCol4🌎",
     "address": "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9",
     "logoUri": "/logos/validators/refi-col.jpg",
