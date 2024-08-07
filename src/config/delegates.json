@@ -1,4 +1,15 @@
 {
+  "0xC20F4412fa84b33e0f3657113736F229a811A285": {
+    "name": "iamoracle",
+    "address": "0xC20F4412fa84b33e0f3657113736F229a811A285",
+    "logoUri": "/logos/delegatees/iamoracle.jpeg",
+    "date": "2024-08-03",
+    "links": {
+      "twitter": "https://twitter.com/_iamoracle"
+    },
+    "interests": ["Community", "Transparency", "Accountability", "Good Vibes"],
+    "description": "Hey, I am a member of the Celo Guardians (formerly known as 'CGP Editors'). I help maintain the history of governance proposals and am an active contributor to the Celo community."
+  },
   "0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a": {
     "name": "0xj4an",
     "address": "0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a",
