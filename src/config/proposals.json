@@ -2072,5 +2072,59 @@
       "no": "803071079695202545884267",
       "abstain": "158521938162827452501095"
     }
+  },
+  {
+    "cgp": 140,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0140.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0140.md",
+    "title": "Celo L2 off-chain data availability layer, powered by EigenLayer and EigenDA",
+    "author": "cLabs Blockchain & Primitives teams",
+    "stage": 6,
+    "id": 181,
+    "url": "https://forum.celo.org/t/clabs-proposes-off-chain-data-availability-layer-powered-by-eigenlayer-and-eigenda/8236",
+    "timestamp": 1719446400000,
+    "timestampExecuted": 1720483200000,
+    "votes": {
+      "yes": "24995728387484444499725236",
+      "no": "2526567736694",
+      "abstain": "25722869814645787237"
+    }
+  },
+  {
+    "cgp": 141,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0141.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0141.md",
+    "title": "CeloPG H2 2024 Budget",
+    "author": "Luuk Weber (LuukDAO) & Monty Bryant",
+    "stage": 6,
+    "id": 182,
+    "url": "https://forum.celo.org/t/celopg-h2-2024-budget/8231",
+    "timestamp": 1719360000000,
+    "timestampExecuted": 1720828800000,
+    "votes": {
+      "yes": "17906941892797620833679016",
+      "no": "1555631167899194003374",
+      "abstain": "64556262437625045255704"
+    }
+  },
+  {
+    "cgp": 142,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0142.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0142.md",
+    "title": "Allocate $1M of Mento’s Current Reserve Holdings to Glo Dollar to fund Celo Public Goods at no cost",
+    "author": "Garm Lucassen (Glo Dollar)",
+    "stage": 1,
+    "url": "https://forum.celo.org/t/draft-allocate-1m-of-mento-s-current-reserve-holdings-to-glo-dollar-to-fund-celo-public-goods-at-no-cost/7927",
+    "timestamp": 1721779200000
+  },
+  {
+    "cgp": 143,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0143.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0143.md",
+    "title": "Enable Account Abstraction (ERC 4337) On Celo’s upcoming L2 leveraging Biconomy’s AA infrastructure",
+    "author": "Himanshu Garg",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
+    "timestamp": 1722470400000
   }
 ]
