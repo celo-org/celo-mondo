@@ -66,22 +66,24 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
   const quorumRequired = useProposalQuorum(propData);
 
   const yesVotes = votes?.[VoteType.Yes] || 0n;
+  const abstainVotes = votes?.[VoteType.Abstain] || 0n;
+  const quorumMeetingVotes = yesVotes + abstainVotes;
 
   const quorumBarChartData = useMemo(
     () => [
       {
         label: 'Yes votes',
-        value: fromWei(yesVotes),
-        percentage: percent(yesVotes, quorumRequired || 1n),
+        value: fromWei(quorumMeetingVotes),
+        percentage: percent(quorumMeetingVotes, quorumRequired || 1n),
         color: Color.Wood,
       },
     ],
-    [yesVotes, quorumRequired],
+    [quorumMeetingVotes, quorumRequired],
   );
 
   return (
     <div className="space-y-2 border-t border-taupe-300 pt-2">
-      <Amount valueWei={yesVotes} className="text-2xl" decimals={0} />
+      <Amount valueWei={quorumMeetingVotes} className="text-2xl" decimals={0} />
       <StackedBarChart data={quorumBarChartData} showBorder={false} className="bg-taupe-300" />
       <div className="flex items-center text-sm text-taupe-600">
         {`Quorum required: ${formatNumberString(quorumRequired, 0, true)} CELO`}

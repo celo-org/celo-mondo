@@ -2114,6 +2114,7 @@
     "title": "Allocate $1M of Mento’s Current Reserve Holdings to Glo Dollar to fund Celo Public Goods at no cost",
     "author": "Garm Lucassen (Glo Dollar)",
     "stage": 1,
+    "id": 183,
     "url": "https://forum.celo.org/t/draft-allocate-1m-of-mento-s-current-reserve-holdings-to-glo-dollar-to-fund-celo-public-goods-at-no-cost/7927",
     "timestamp": 1721779200000
   },
@@ -2126,5 +2127,15 @@
     "stage": 0,
     "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
     "timestamp": 1722470400000
+  },
+  {
+    "cgp": 144,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0144.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0144.md",
+    "title": "Artemis Proposal to Build Public Goods Data Dashboards for Celo Ecosystem and Community",
+    "author": "Anthony Yim (@andromedae88)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
+    "timestamp": 1722902400000
   }
 ]
