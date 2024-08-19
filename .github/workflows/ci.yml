@@ -68,7 +68,8 @@ jobs:
           yarn run prettier
           CHANGES=$(git status -s)
           if [[ ! -z $CHANGES ]]; then
-            echo "Changes found: $CHANGES"
+            echo "Changes found"
+            git diff
             exit 1
           fi
 
