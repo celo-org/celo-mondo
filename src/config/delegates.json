@@ -11,6 +11,17 @@
     "interests": [ "Proof-of-Stake","High Availability","Infrastructure","Web3 Investment"],
     "description": "Stake Capital is a trusted and experienced blockchain investment firm, actively contributing to the blockchain ecosystem since 2016. With expertise in venture capital, incubation, acceleration, and validation, we ensure robust participation in governance through our mainnet validation for top projects and our involvement in testnets for emerging infrastructures. Our commitment to excellence and transparency makes us a reliable partner to delegate your voting power, helping to secure and innovate within the Celo network."
   },
+  "0x720c293071a9e084c3A8c82F42c98065Be546FcC": {
+    "name": "XiaoLou",
+    "address": "0x720c293071a9e084c3A8c82F42c98065Be546FcC",
+    "logoUri": "/logos/delegatees/XiaoLou.jpeg",
+    "date": "2024-08-16",
+    "links": {
+      "twitter": "https://twitter.com/xlzy905"
+    },
+    "interests": ["Technology", "Development", "Community", "Innovation"],
+    "description": "Hello, Celo Community! I am an experienced web3 developer deeply committed to the Celo ecosystem. With a strong background in blockchain technology and a passion for innovative solutions, I've been actively contributing to various web3 projects. I firmly believe in Celo's vision of creating a more accessible and inclusive financial system. My goal is to contribute to Celo's growth while ensuring that our decisions align with the best interests of both the technology and the community it serves."
+  },
   "0x31cd90C2788f3e390d2Bb72871f5aD3F1a4B22a1": {
     "name": "LuukDAO",
     "address": "0x31cd90C2788f3e390d2Bb72871f5aD3F1a4B22a1",
@@ -31,12 +42,7 @@
     "links": {
       "twitter": "https://twitter.com/_iamoracle"
     },
-    "interests": [
-      "Community",
-      "Transparency",
-      "Accountability",
-      "Good Vibes"
-    ],
+    "interests": [ "Community", "Transparency", "Accountability", "Good Vibes" ],
     "description": "Hello, Community! I am a developer, a 6x Hackathon winner (of which 4 are Celo-organized) and a founder within the Celo Ecosystem. I have previously served as a DevRel Community Moderator, and I have been supporting developers across the ecosystem. I am willing to use my experience to help review technical proposals and vote accordingly in the governance process."
   },
   "0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a": {
@@ -48,12 +54,7 @@
       "website": "https://linktr.ee/0xj4an_work",
       "twitter": "https://twitter.com/0xj4an"
     },
-    "interests": [
-      "Community",
-      "Transparency",
-      "Accountability",
-      "Good Vibes"
-    ],
+    "interests": [ "Community", "Transparency", "Accountability", "Good Vibes" ],
     "description": "Hey, I am a member of the Celo Guardians (formerly known as 'CGP Editors'). I help maintain the history of governance proposals and am an active contributor to the Celo community."
   },
   "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9": {
@@ -237,11 +238,7 @@
       "website": "https://thepassivetrust.com",
       "twitter": "https://twitter.com/0xTPT"
     },
-    "interests": [
-      "Privacy",
-      "Prosperity",
-      "Change"
-    ],
+    "interests": [ "Privacy",   "Prosperity",      "Change"    ],
     "description": "The Passive Trust provides validation and moderation services to several web3 projects. We look at where the world will be in ten years, not two."
   },
   "0xc24baeac0Fd189637112B7e33d22FfF2730aF993": {
@@ -252,11 +249,7 @@
     "links": {
       "website": "https://plusv.io"
     },
-    "interests": [
-      "Staking",
-      "Security",
-      "Passive Income"
-    ],
+    "interests": [ "Staking",  "Security",  "Passive Income"],
     "description": "Staking is a process of delegating your cryptocurrency to us. Our valdiators are responsible for validating transactions on the blockchain. In exchange for the participation in the network, you will receive a portion of the transaction fees and block rewards that are generated on the network. This means that at the end of each validating cycle (or epoch), your stake increases, generating you passive income."
   }
 }
