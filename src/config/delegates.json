@@ -1,4 +1,15 @@
 {
+    "0x657D07095b082BB71ebD93F549f407A97f49094F":{
+    "name": "0xMims",
+    "address": "0x657D07095b082BB71ebD93F549f407A97f49094F",
+    "logoUri": "/logos/delegatees/0xMims.jpeg",
+    "date": "2024-08-21",
+    "links": {
+      "twitter": "https://twitter.com/0xMims"
+    },
+    "interests": ["DAO Design", "Fitness", "Language Learning", "Cooking"],
+    "description": "I’ve been committed to the crypto ecosystem for about three years now. I had my start with FranklinDAO/Penn Blockchain on its research committee. Since graduating a few months ago, I’ve been honored to be welcomed into the Blockworks team on their protocol services wing. I am currently representing Blockworks across multiple DAOs and we perform applied research to help push DAOs into new directions. To be explicit though, my interest in Celo is personal, not occupational, and I seek to help expand Celo’s regeneration initiative and help enforce its public-goods identity. While I have no prior forum history, I certainly have the background and history that would describe me as a long-term participant."
+  },
   "0x720c293071a9e084c3A8c82F42c98065Be546FcC": {
     "name": "XiaoLou",
     "address": "0x720c293071a9e084c3A8c82F42c98065Be546FcC",
