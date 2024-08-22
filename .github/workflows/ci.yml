@@ -63,20 +63,21 @@ jobs:
             .yarn/cache
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
-      - name: prettier
+      - name: prettier run
         run: |
           yarn run prettier
+      - name: Comment with diff as suggested change               
+        uses: parkerbxyz/suggest-changes@v1.0.5   
+        with: 
+          comment: "The following changes were found while running prettier. Commit them for a ✅" 
+      - name: prettier results
+        run: 
           CHANGES=$(git status -s)
           if [[ ! -z $CHANGES ]]; then
             echo "Changes found"
             git diff
             exit 1
           fi
-      - name: Comment with diff as suggested change               
-        uses: parkerbxyz/suggest-changes@v1.0.5   
-        with: 
-          comment: "The following changes were found while running prettier. Commit them for a ✅" 
-
   lint:
     runs-on: ubuntu-latest
     needs: [install]
