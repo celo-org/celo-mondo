@@ -42,7 +42,7 @@
     "links": {
       "twitter": "https://twitter.com/_iamoracle"
     },
-    "interests": [ "Community", "Transparency", "Accountability", "Good Vibes" ],
+    "interests": ["Community", "Transparency", "Accountability", "Good Vibes"],
     "description": "Hello, Community! I am a developer, a 6x Hackathon winner (of which 4 are Celo-organized) and a founder within the Celo Ecosystem. I have previously served as a DevRel Community Moderator, and I have been supporting developers across the ecosystem. I am willing to use my experience to help review technical proposals and vote accordingly in the governance process."
   },
   "0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a": {
@@ -54,7 +54,7 @@
       "website": "https://linktr.ee/0xj4an_work",
       "twitter": "https://twitter.com/0xj4an"
     },
-    "interests": [ "Community", "Transparency", "Accountability", "Good Vibes" ],
+    "interests": ["Community", "Transparency", "Accountability", "Good Vibes"],
     "description": "Hey, I am a member of the Celo Guardians (formerly known as 'CGP Editors'). I help maintain the history of governance proposals and am an active contributor to the Celo community."
   },
   "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9": {
@@ -66,13 +66,7 @@
       "website": "https://linktr.ee/reficolombia",
       "twitter": "https://twitter.com/reficolombia"
     },
-    "interests": [
-      "ReFi",
-      "Community",
-      "Transparency",
-      "Accountability",
-      "Good Vibes"
-    ],
+    "interests": ["ReFi", "Community", "Transparency", "Accountability", "Good Vibes"],
     "description": "Our mission is clear, we commit to allocating all of our validator gains towards empowering the ReFi movement in Colombia and supporting individuals in need. Our dedication goes beyond securing the network; we are determined to leverage all of our gains to support the ReFi movement in Colombia.🇨🇴"
   },
   "0xFaa0b40645Ee5E8D9AE38393e8cDF8e5baA71d13": {
@@ -175,11 +169,7 @@
       "website": "https://www.happycelo.com",
       "twitter": "https://twitter.com/HappyCelo_com"
     },
-    "interests": [
-      "Security",
-      "High Availability",
-      "Monitoring"
-    ],
+    "interests": ["Security", "High Availability", "Monitoring"],
     "description": "Happy Celo is your trusted Celo Validator. We have decided to use a combination of our own infrastructure and cloud services (AWS, DigitalOcean). Even-though we could have run the entire Celo infrastructure on AWS alone in our opinion it makes sense to use atleast one of the other cloud providers (Google Cloud Platform, Microsoft Azure, Digital Ocean, Linode) or your own infrastructure in case AWS will have multi region or global failure. Each set of nodes is geo-redundant by being hosted in different regions by different providers. Our own servers are hosted by a hosting provider certified in accordance with DIN ISO/IEC 27001. It also offers state of the art DDoS protection and multiple 100 GBit/s peering points on the backbone with guaranteed bandwidth of 1GBit/s."
   },
   "0x71dcC67baEECd9308e341359f70B782D9C3565b8": {
@@ -191,11 +181,7 @@
       "website": "https://virtualhive.io",
       "twitter": "https://twitter.com/VirtualHiveio"
     },
-    "interests": [
-      "Web3 Infrastructure",
-      "Reliability",
-      "Sustainability"
-    ],
+    "interests": ["Web3 Infrastructure", "Reliability", "Sustainability"],
     "description": "Virtual Hive is an organization focusing on providing infrastructure for cutting-edge technology in the web3 sector. We are passionate about new technologies, innovative economic mechanics and incentives. Our intrinsic desire to explore the unknown combined with our background in conventional enterprise best practices pave the path of our journey."
   },
   "0xB33e9e01E561a1Da60f7Cb42508500e571afb6Eb": {
@@ -207,10 +193,7 @@
       "website": "https://www.validator.capital",
       "twitter": "https://twitter.com/ValidatorCap"
     },
-    "interests": [
-      "Web3 Investment",
-      "De-Fi"
-    ],
+    "interests": ["Web3 Investment", "De-Fi"],
     "description": "Validator Capital is a Celo validator group and an active governance participant."
   },
   "0x061E9958028dcAa66fd8B255AD95194203b6c4Da": {
@@ -238,7 +221,7 @@
       "website": "https://thepassivetrust.com",
       "twitter": "https://twitter.com/0xTPT"
     },
-    "interests": [ "Privacy",   "Prosperity",      "Change"    ],
+    "interests": ["Privacy", "Prosperity", "Change"],
     "description": "The Passive Trust provides validation and moderation services to several web3 projects. We look at where the world will be in ten years, not two."
   },
   "0xc24baeac0Fd189637112B7e33d22FfF2730aF993": {
@@ -249,7 +232,7 @@
     "links": {
       "website": "https://plusv.io"
     },
-    "interests": [ "Staking",  "Security",  "Passive Income"],
+    "interests": ["Staking", "Security", "Passive Income"],
     "description": "Staking is a process of delegating your cryptocurrency to us. Our valdiators are responsible for validating transactions on the blockchain. In exchange for the participation in the network, you will receive a portion of the transaction fees and block rewards that are generated on the network. This means that at the end of each validating cycle (or epoch), your stake increases, generating you passive income."
   }
 }
