@@ -10,6 +10,17 @@
     },
     "interests": [ "Proof-of-Stake","High Availability","Infrastructure","Web3 Investment"],
     "description": "Stake Capital is a trusted and experienced blockchain investment firm, actively contributing to the blockchain ecosystem since 2016. With expertise in venture capital, incubation, acceleration, and validation, we ensure robust participation in governance through our mainnet validation for top projects and our involvement in testnets for emerging infrastructures. Our commitment to excellence and transparency makes us a reliable partner to delegate your voting power, helping to secure and innovate within the Celo network."
+  }, 
+  "0x657D07095b082BB71ebD93F549f407A97f49094F": {
+    "name": "0xMims",
+    "address": "0x657D07095b082BB71ebD93F549f407A97f49094F",
+    "logoUri": "/logos/delegatees/0xMims.jpg",
+    "date": "2024-08-21",
+    "links": {
+      "twitter": "https://twitter.com/0xMims"
+    },
+    "interests": ["DAO Design", "Fitness", "Language Learning", "Cooking"],
+    "description": "I’ve been committed to the crypto ecosystem for about three years now. I had my start with FranklinDAO/Penn Blockchain on its research committee. Since graduating a few months ago, I’ve been honored to be welcomed into the Blockworks team on their protocol services wing. I am currently representing Blockworks across multiple DAOs and we perform applied research to help push DAOs into new directions. To be explicit though, my interest in Celo is personal, not occupational, and I seek to help expand Celo’s regeneration initiative and help enforce its public-goods identity. While I have no prior forum history, I certainly have the background and history that would describe me as a long-term participant."
   },
   "0x720c293071a9e084c3A8c82F42c98065Be546FcC": {
     "name": "XiaoLou",
@@ -25,7 +36,7 @@
   "0x31cd90C2788f3e390d2Bb72871f5aD3F1a4B22a1": {
     "name": "LuukDAO",
     "address": "0x31cd90C2788f3e390d2Bb72871f5aD3F1a4B22a1",
-    "logoUri": "/logos/delegatees/Luukdao.jpeg",
+    "logoUri": "/logos/delegatees/LuukDAO.jpg",
     "date": "2024-08-12",
     "links": {
       "website": "https://forum.celo.org/t/steward-thread-luukdao/7460",
