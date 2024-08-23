@@ -89,10 +89,7 @@
       "website": "https://staking.fund",
       "twitter": "https://twitter.com/stakingfund"
     },
-    "interests": [
-      "Proof-of-Stake",
-      "Infrastructure"
-    ],
+    "interests": ["Proof-of-Stake", "Infrastructure"],
     "description": "Staking Fund operates block producing validation nodes on Proof-of-Stake protocols.  We've been actively engaging in the validating role for numerous novel Proof-of-Stake protocols since 2018 and proving our commitment to secure decentralized blockchain networks with high availability and zero slashing."
   },
   "0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf": {
@@ -104,11 +101,7 @@
       "website": "https://chainvibes.com/decloud.html",
       "twitter": "https://twitter.com/chain_vibes"
     },
-    "interests": [
-      "Transparency",
-      "Accountability",
-      "Good Vibes"
-    ],
+    "interests": ["Transparency", "Accountability", "Good Vibes"],
     "description": "Chain vibes is a validator group. We are transparent about our on-chain governance decision making as well as our commission change rate schedule. Our whole live is about IT engineering, now we take this opportunity to keep the vibe in the chain"
   },
   "0x0339Df3FE4f5ccC864EAE8491E5c8AEc4611A631": {
@@ -120,10 +113,7 @@
       "website": "https://tessellated.io",
       "twitter": "https://twitter.com/tessellated_io"
     },
-    "interests": [
-      "Proof-of-Stake",
-      "Infrastructure"
-    ],
+    "interests": ["Proof-of-Stake", "Infrastructure"],
     "description": "Tessellated is an independent and technically capable validator. Tessellated has validated and contributed to networks since 2018."
   },
   "0xc8A81D473992c7c6D3F469A8263F24914625709d": {
@@ -135,10 +125,7 @@
       "website": "https://moonli.me",
       "twitter": "https://twitter.com/moonli_me"
     },
-    "interests": [
-      "Staking",
-      "Decentralization"
-    ],
+    "interests": ["Staking", "Decentralization"],
     "description": "Moonli is an an independent staking service provider for blockchain projects. Independent means that it is run by blockchain geeks for blockchain and crypto enthusiasts just like you. No VCs or institutional support. We indeed care about keeping the stake decentralized. We pride ourselves as a boutique validator supporting networks that create real value. We have been in the staking business since 2019 and run validators on Ethereum-, Substrate- and Tendermint-based chains."
   },
   "0x067e453918f2c44D937b05a7eE9DBFB804C54ADd": {
@@ -149,10 +136,7 @@
     "links": {
       "website": "https://www.usopp.club"
     },
-    "interests": [
-      "Social Good",
-      "Reliability"
-    ],
+    "interests": ["Social Good", "Reliability"],
     "description": "Usopp is one of the genesis validators who launched the Celo blockchain on 22nd of April 2020. We have been following the Celo project since its early days in 2018. It was a privilege to witness the amazing journey of the network development from Alfajores to Baklava and the growing nascent community. The Stake-Off competition brought together a set of highly competitive but remarkably helpful and cooperatives groups of validators. Those sleepless nights of the competition have paid off really well as we are one of the 65 Genesis Validators and the grateful producer of the first block of the chain :D"
   },
   "0xE141831c2c1198d79B9Ff61cD97C3bAca7F071E0": {
@@ -164,11 +148,7 @@
       "website": "https://www.swiftstaking.com",
       "twitter": "https://twitter.com/swiftstaking"
     },
-    "interests": [
-      "The Graph",
-      "Blockchain Infrastructure",
-      "Trust"
-    ],
+    "interests": ["The Graph", "Blockchain Infrastructure", "Trust"],
     "description": "Swift staking is a validator group.  Our company is founded on the key principles of enterprise-level security, high availability, and 100% customer satisfaction. These are the reasons why stakers trust us."
   },
   "0x481EAdE762d6D0b49580189B78709c9347b395bf": {
@@ -216,11 +196,7 @@
       "website": "https://www.easy2stake.com",
       "twitter": "https://twitter.com/easy2stake"
     },
-    "interests": [
-      "Proof-of-Stake",
-      "High Availability",
-      "Infrastructure"
-    ],
+    "interests": ["Proof-of-Stake", "High Availability", "Infrastructure"],
     "description": "Easy2Stake is a validator group on 10+ proof-of-stake chains. Our infrastructure was built with maximum security and performance at the forefront.  We provide secure, reliable, and non-custodial infrastructure so you can earn rewards."
   },
   "0xB87f2354E34B26ba6406Ac60EA99DCD8cd5e63Bf": {
