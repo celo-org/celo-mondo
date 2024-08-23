@@ -1,4 +1,16 @@
 {
+  "0x3c3Eb5C41720D555F81eD554e901edD0a6aF228C": {
+    "name": "Stake Capital",
+    "address": "0x3c3Eb5C41720D555F81eD554e901edD0a6aF228C",
+    "logoUri": "/logos/delegatees/stakecapital.jpg",
+    "date": "2024-08-08",
+    "links": {
+      "website": "https://www.stake.capital/",
+      "twitter": "https://x.com/StakeCapital"
+    },
+    "interests": ["Proof-of-Stake", "High Availability", "Infrastructure", "Web3 Investment"],
+    "description": "Stake Capital is a trusted and experienced blockchain investment firm, actively contributing to the blockchain ecosystem since 2016. With expertise in venture capital, incubation, acceleration, and validation, we ensure robust participation in governance through our mainnet validation for top projects and our involvement in testnets for emerging infrastructures. Our commitment to excellence and transparency makes us a reliable partner to delegate your voting power, helping to secure and innovate within the Celo network."
+  },
   "0x657D07095b082BB71ebD93F549f407A97f49094F": {
     "name": "0xMims",
     "address": "0x657D07095b082BB71ebD93F549f407A97f49094F",
