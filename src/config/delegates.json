@@ -1,4 +1,16 @@
 {
+  "0x3dbf55729ABcf55F3b4F7CEbfe88B7d59BE3F23F": {
+    "name": "Pedro Oliveira",
+    "address": "0x3dbf55729ABcf55F3b4F7CEbfe88B7d59BE3F23F",
+    "logoUri": "/logos/delegatees/pcbo.png",
+    "date": "2024-09-09",
+    "links": {
+      "website": "https://forum.celo.org/u/pcbo/summary",
+      "twitter": "https://x.com/pcbo"
+    },
+    "interests": ["SocialFi", "Reputation", "Identity", "Public Goods", "Superchain"],
+    "description": "Considering my Celo Public Goods 2024 H2 Steward role is coming to an end, I want to continue to give-back to the Celo community now as a outspoken Delegate. I believe that I bring an unique POV as a Delegate based on my experience as a multi-startup founder, unique HR Tech builder background, bear-market survivor builder making the rounds over at Talent Protocol to build a new better reputation engine for professional work."
+  },
   "0x3c3Eb5C41720D555F81eD554e901edD0a6aF228C": {
     "name": "Stake Capital",
     "address": "0x3c3Eb5C41720D555F81eD554e901edD0a6aF228C",
