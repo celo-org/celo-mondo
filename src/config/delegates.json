@@ -1,4 +1,15 @@
 {
+  "0x3e737AD3234a127066043D5Df2ABF7adDEC79c2b": {
+    "name": "0xGoldo",
+    "address": "0x3e737AD3234a127066043D5Df2ABF7adDEC79c2b",
+    "logoUri": "/logos/delegatees/0xGoldo.jpg",
+    "date": "2024-09-08",
+    "links": {
+      "website": "https://forum.celo.org/u/0xgoldo/summary"
+    },
+    "interests": ["Community", "Defi", "Decentralization", "Transparency"],
+    "description": "Hi Celorians! I am a member of the Celo Guardians team (formerly known as 'CGP Editors'), the decentralized working group that is helping to mantain and organize the Celo Governance. I am also part of the Moderators team, a role that require myself to be involved and up to date around everything happening on Celo and his ecosystem. As a Celo Delegate, my motivation is rooted in the desire to support a decentralized, inclusive, and environmentally conscious financial ecosystem. I believe in Celo’s mission to bring prosperity to all by leveraging blockchain technology, particularly in providing financial tools to underserved communities globally."
+  },
   "0x8b37a5Af68D315cf5A64097D96621F64b5502a22": {
     "name": "Areta",
     "address": "0x8b37a5Af68D315cf5A64097D96621F64b5502a22",
