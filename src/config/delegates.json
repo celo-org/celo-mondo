@@ -26,7 +26,8 @@
   "0x2D7d6Ec6198ADFD5850D00BD601958F6E316b05E": {
     "name": "Sov",
     "address": "0x2D7d6Ec6198ADFD5850D00BD601958F6E316b05E",
-    "logoUri": "/logos/delegatees/"Sov Signal.jpg",
+-    "logoUri": "/logos/delegatees/"Sov Signal.jpg",
++   "logoUri": "/logos/delegatees/SovSignal.jpg",
     "date": "2024-08-31",
     "links": {
       "website": "https://forum.celo.org/u/sov/summary",
