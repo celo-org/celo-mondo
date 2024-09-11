@@ -1325,6 +1325,7 @@
     "id": 123,
     "url": "https://forum.celo.org/t/proposal-for-60-000-funding-to-support-a-mobile-first-community-in-celo-ecosystem/6313",
     "timestamp": 1691452800000,
+    "timestampExecuted": 1693267200000,
     "votes": {
       "yes": "7269953581442468028056097",
       "no": "2031955343939578305866879",
@@ -1337,7 +1338,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0093.md",
     "title": "ReFI DAO x CELO",
     "author": "John Ellison <je@refidao.com>",
-    "stage": 1,
+    "stage": 8,
     "id": 126,
     "url": "https://forum.celo.org/t/proposal-refi-dao-x-celo-onboarding-the-next-generation-of-talent-and-capital/6243/1",
     "timestamp": 1691625600000
@@ -1352,6 +1353,7 @@
     "id": 127,
     "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261",
     "timestamp": 1692230400000,
+    "timestampExecuted": 1692921600000,
     "votes": {
       "yes": "42025709584766985646215114",
       "no": "0",
@@ -1368,6 +1370,7 @@
     "id": 130,
     "url": "https://forum.celo.org/t/centrifuge-deployment-on-celo/6405",
     "timestamp": 1692662400000,
+    "timestampExecuted": 1693872000000,
     "votes": {
       "yes": "28793309039170175595470594",
       "no": "70730114863751422033247",
@@ -1380,10 +1383,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0096.md",
     "title": "Proposal to increase Block Gas Limit to 32M gas",
     "author": "Pavel Hornak, Subha Subramanian",
-    "stage": 0,
-    "id": 131,
+    "stage": 6,
+    "id": 132,
     "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-32m-gas/6431",
-    "timestamp": 1692835200000
+    "timestamp": 1692835200000,
+    "timestampExecuted": 1694390400000,
+    "votes": {
+      "yes": "20710446923463444255580080",
+      "no": "0",
+      "abstain": "583378875745603636938815"
+    }
   },
   {
     "cgp": 97,
@@ -1395,6 +1404,7 @@
     "id": 133,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu03-enable-more-trading-pairs-and-continue-phasing-out-v1/6462",
     "timestamp": 1693440000000,
+    "timestampExecuted": 1694476800000,
     "votes": {
       "yes": "34230276888250510846954997",
       "no": "0",
@@ -1411,6 +1421,7 @@
     "id": 134,
     "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261",
     "timestamp": 1694476800000,
+    "timestampExecuted": 1695081600000,
     "votes": {
       "yes": "22159710438470755103488231",
       "no": "2402932129668",
@@ -1427,6 +1438,7 @@
     "id": 135,
     "url": "https://forum.celo.org/t/contracts-release-10-proposal-on-chain/6563",
     "timestamp": 1694649600000,
+    "timestampExecuted": 1695340800000,
     "votes": {
       "yes": "42859415387690776131628163",
       "no": "0",
@@ -1443,6 +1455,7 @@
     "id": 136,
     "url": "https://forum.celo.org/t/contract-release-10-proposal-on-chain/6563",
     "timestamp": 1694736000000,
+    "timestampExecuted": 1695427200000,
     "votes": {
       "yes": "22062838572949541958208931",
       "no": "1098541139263776927857",
@@ -1472,8 +1485,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0102.md",
     "title": "Adding RedStone as oracle provider",
     "author": "Matt Gurbiel (@mattgurbiel, matt@redstone.finance)",
-    "stage": 0,
-    "timestamp": 1695859200000
+    "stage": 6,
+    "id": 145,
+    "timestamp": 1695859200000,
+    "timestampExecuted": 1703030400000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 103,
@@ -1548,9 +1568,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0107.md",
     "title": "Celo Dapps over Apps",
     "author": "Celo User(@supercoolkay)",
-    "stage": 0,
+    "stage": 8,
+    "id": 149,
     "url": "https://forum.celo.org/t/proposal-celo-dapps-over-apps/6743  ",
-    "timestamp": 1699315200000
+    "timestamp": 1699315200000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 108,
@@ -1915,6 +1941,7 @@
     "id": 170,
     "url": "https://forum.celo.org/t/draft-celo-public-goods-grant-request-update-rwa-focused-accelerator-with-outlier-ventures/",
     "timestamp": 1712102400000,
+    "timestampExecuted": 1712880000000,
     "votes": {
       "yes": "7693952097966476098050655",
       "no": "45308413410112909141897",
@@ -2068,9 +2095,9 @@
     "timestamp": 1716422400000,
     "timestampExecuted": 1717113600000,
     "votes": {
-      "yes": "15637180923411949481583775",
-      "no": "803071079695202545884267",
-      "abstain": "158521938162827452501095"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2085,9 +2112,9 @@
     "timestamp": 1719446400000,
     "timestampExecuted": 1720483200000,
     "votes": {
-      "yes": "24995728387484444499725236",
-      "no": "2526567736694",
-      "abstain": "25722869814645787237"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2102,9 +2129,9 @@
     "timestamp": 1719360000000,
     "timestampExecuted": 1720828800000,
     "votes": {
-      "yes": "17906941892797620833679016",
-      "no": "1555631167899194003374",
-      "abstain": "64556262437625045255704"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2113,10 +2140,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0142.md",
     "title": "Allocate $1M of Mento’s Current Reserve Holdings to Glo Dollar to fund Celo Public Goods at no cost",
     "author": "Garm Lucassen (Glo Dollar)",
-    "stage": 1,
+    "stage": 6,
     "id": 183,
     "url": "https://forum.celo.org/t/draft-allocate-1m-of-mento-s-current-reserve-holdings-to-glo-dollar-to-fund-celo-public-goods-at-no-cost/7927",
-    "timestamp": 1721779200000
+    "timestamp": 1721779200000,
+    "timestampExecuted": 1723507200000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 143,
@@ -2124,9 +2157,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0143.md",
     "title": "Enable Account Abstraction (ERC 4337) On Celo’s upcoming L2 leveraging Biconomy’s AA infrastructure",
     "author": "Himanshu Garg",
-    "stage": 0,
+    "stage": 8,
+    "id": 186,
     "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
-    "timestamp": 1722470400000
+    "timestamp": 1722470400000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 144,
@@ -2134,8 +2173,51 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0144.md",
     "title": "Artemis Proposal to Build Public Goods Data Dashboards for Celo Ecosystem and Community",
     "author": "Anthony Yim (@andromedae88)",
-    "stage": 0,
+    "stage": 8,
+    "id": 184,
     "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
+    "timestamp": 1722902400000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 145,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0145.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0145.md",
+    "title": "Increase minimum gas threshold to 25000000000 gwei",
+    "author": "Martín Volpe (@martinvol)",
+    "stage": 0,
     "timestamp": 1722902400000
+  },
+  {
+    "cgp": 146,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0146.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0146.md",
+    "title": "MU07 - ChainlinkRelayer Oracle Upgrade",
+    "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
+    "stage": 6,
+    "id": 187,
+    "url": "https://forum.celo.org/t/mu07-chainlink-price-feed-integration/8850",
+    "timestamp": 1724630400000,
+    "timestampExecuted": 1725408000000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 147,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0147.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0147.md",
+    "title": "Launch of PUSO Stablecoin",
+    "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
+    "stage": 1,
+    "id": 188,
+    "url": "https://forum.celo.org/t/launch-of-puso-the-philippines-first-community-led-stablecoin/8786/10?u=philbow61",
+    "timestamp": 1724889600000
   }
 ]
