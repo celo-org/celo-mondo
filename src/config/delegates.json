@@ -32,7 +32,11 @@
       "website": "https://forum.celo.org/u/sov/summary",
       "twitter": "https://x.com/SovereignSignal;"
     },
-    "interests": ["Ecosystem Development", "Strategic Partnerships", "Grants and Incentives Programs"],
+    "interests": [
+      "Ecosystem Development",
+      "Strategic Partnerships",
+      "Grants and Incentives Programs"
+    ],
     "description": "Experienced Web3 grants and ecosystem builder, bringing cross-DAO insights to Celo governance"
   },
   "0xa88df1011E9aF811e7dc67396133f69a3CAFf072": {
