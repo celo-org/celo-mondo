@@ -11,7 +11,7 @@
     "interests": ["Proof-of-Stake", "High Availability", "Infrastructure", "Web3 Investment"],
     "description": "Stake Capital is a trusted and experienced blockchain investment firm, actively contributing to the blockchain ecosystem since 2016. With expertise in venture capital, incubation, acceleration, and validation, we ensure robust participation in governance through our mainnet validation for top projects and our involvement in testnets for emerging infrastructures. Our commitment to excellence and transparency makes us a reliable partner to delegate your voting power, helping to secure and innovate within the Celo network."
   },
-   "0xa88df1011E9aF811e7dc67396133f69a3CAFf072": {
+  "0xa88df1011E9aF811e7dc67396133f69a3CAFf072": {
     "name": "Oliseh Genesis",
     "address": "0xa88df1011E9aF811e7dc67396133f69a3CAFf072",
     "logoUri": "/logos/delegatees/oliseh.jpg",
@@ -19,7 +19,7 @@
     "links": {
       "website": ""
     },
-    "interests": ["Discovery", "Engaged", "Calm" , "Love"],
+    "interests": ["Discovery", "Engaged", "Calm", "Love"],
     "description": "Oliseh is unbaised , belives in Celo and more so a passive builder. Got into the Celo ecosystem through Celo Africa Dao but everyday building new products for the ecosystem"
   },
   "0x657D07095b082BB71ebD93F549f407A97f49094F": {
