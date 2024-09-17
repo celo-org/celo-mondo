@@ -110,7 +110,10 @@ async function fetchValidatorGroupRewardHistory(
 // Estimates are sufficient for this purpose
 // The alternative is to query for each block's details to get the timestamp
 // but that was causing problems for Infura. Batch requests also did not work.
-function estimateBlockTimestamp(blockNumber: number, latestBlock: Block) {
+function estimateBlockTimestamp(
+  blockNumber: number,
+  latestBlock: Pick<Block, 'number' | 'timestamp'>,
+) {
   const latestNumber = Number(latestBlock.number);
   const latestTimestamp = Number(latestBlock.timestamp) * 1000;
   const timeDifference = (latestNumber - blockNumber) * AVG_BLOCK_TIMES_MS;

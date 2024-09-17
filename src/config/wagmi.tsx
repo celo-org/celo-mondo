@@ -1,17 +1,20 @@
 import { RainbowKitProvider, connectorsForWallets, lightTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import {
+  braveWallet,
+  injectedWallet,
   metaMaskWallet,
   omniWallet,
   rainbowWallet,
+  safeWallet,
   trustWallet,
+  valoraWallet,
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import { config, fornoRpcUrl, infuraRpcUrl } from 'src/config/config';
-import { valora } from 'src/config/wallets';
 import { Color } from 'src/styles/Color';
 import { fallback } from 'viem';
 import { celo } from 'viem/chains';
@@ -22,12 +25,15 @@ const connectors = connectorsForWallets(
     {
       groupName: 'Recommended for Celo',
       wallets: [
+        valoraWallet,
         metaMaskWallet,
-        walletConnectWallet,
-        valora,
         rainbowWallet,
         omniWallet,
         trustWallet,
+        braveWallet,
+        safeWallet,
+        walletConnectWallet,
+        injectedWallet,
       ],
     },
   ],
