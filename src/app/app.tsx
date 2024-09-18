@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
 import { Footer } from 'src/components/nav/Footer';
 import { Header } from 'src/components/nav/Header';
+import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
@@ -17,7 +18,9 @@ export function App({ children }: PropsWithChildren<any>) {
     <ErrorBoundary>
       <SafeHydrate>
         <WagmiContext>
-          <BodyLayout>{children}</BodyLayout>
+          <LegalRestrict>
+            <BodyLayout>{children}</BodyLayout>
+          </LegalRestrict>
           <TransactionModal />
           <ToastContainer transition={Zoom} position="bottom-right" />
         </WagmiContext>

@@ -1,0 +1,53 @@
+import { OFAC_SANCTIONS_LIST_URL, SANCTIONED_ADDRESSES } from '@celo/compliance';
+import { PropsWithChildren, useEffect } from 'react';
+import { readFromCache, writeToCache } from 'src/utils/localSave';
+import { useAccount, useDisconnect } from 'wagmi';
+
+export function LegalRestrict(props: PropsWithChildren) {
+  usePolice();
+  return props.children;
+}
+
+function usePolice() {
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
+
+  useEffect(() => {
+    if (isConnected && address) {
+      isSanctionedAddress(address).then((isSanctioned) => {
+        if (isSanctioned) {
+          disconnect();
+        }
+      });
+      fetch('/police').then((response) => {
+        if (response.status === 451) {
+          disconnect();
+        }
+      });
+    }
+  }, [isConnected, address, disconnect]);
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+
+export async function isSanctionedAddress(address: string): Promise<boolean> {
+  const cache = readFromCache(OFAC_SANCTIONS_LIST_URL);
+  if (cache && cache.ts + DAY > Date.now()) {
+    return cache.data.includes(address.toLowerCase());
+  }
+
+  const sanctionedAddresses: string[] = await fetch(OFAC_SANCTIONS_LIST_URL)
+    .then((x) => x.json())
+    .catch(() => SANCTIONED_ADDRESSES); // fallback if github is down or something.
+
+  if (process.env.NODE_ENV !== 'production' && process.env.TEST_SANCTIONED_ADDRESS) {
+    sanctionedAddresses.push(process.env.TEST_SANCTIONED_ADDRESS);
+  }
+
+  writeToCache(
+    OFAC_SANCTIONS_LIST_URL,
+    sanctionedAddresses.map((x) => x.toLowerCase()),
+  );
+
+  return isSanctionedAddress(address);
+}
