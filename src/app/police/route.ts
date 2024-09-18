@@ -27,7 +27,7 @@ const RESTRICED_SUBREGION: Record<string, Set<string>> = {
   UA: new Set([crimea, luhansk, donetska]),
 };
 
-export function isForbiddenLand(iso3166Country: string, iso3166Region: string) {
+function isForbiddenLand(iso3166Country: string, iso3166Region: string) {
   const iso3166CountryUppercase = iso3166Country?.toUpperCase();
   return (
     RESTRICTED_COUNTRIES.has(iso3166CountryUppercase) ||

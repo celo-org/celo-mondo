@@ -17,11 +17,13 @@ function usePolice() {
       isSanctionedAddress(address).then((isSanctioned) => {
         if (isSanctioned) {
           disconnect();
+          alert('The Address is under OFAC Sanctions');
         }
       });
       fetch('/police').then((response) => {
         if (response.status === 451) {
           disconnect();
+          alert('The Region is under Sanction');
         }
       });
     }
