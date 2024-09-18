@@ -15,8 +15,7 @@ export function GET(request: NextRequest) {
 
   return new NextResponse(null, { status: 202 });
 }
-// TODO allow Poland after testing
-const RESTRICTED_COUNTRIES = new Set(['KP', 'IR', 'CU', 'SY', 'PL']);
+const RESTRICTED_COUNTRIES = new Set(['KP', 'IR', 'CU', 'SY']);
 
 // https://www.iso.org/obp/ui/#iso:code:3166:UA although listed with UA prefix. the header/api recieved that and just used the number
 const crimea = '43';
