@@ -4,9 +4,9 @@ import { Octokit } from 'octokit';
 import path from 'path';
 import { fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
-import { DelegateeMetadata } from 'src/features/delegation/types';
+import { DelegateeMetadata, EIP712Delegatee } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
-import { createPublicClient, http } from 'viem';
+import { Hex, createPublicClient, http, verifyTypedData } from 'viem';
 import { celo } from 'viem/chains';
 
 type RegisterDelegateRequest = {
@@ -18,8 +18,22 @@ type RegisterDelegateRequest = {
   verificationUrl: string;
   interests: string;
   description: string;
-  signature: string;
+  signature: Hex;
 };
+
+function verifySigner(req: RegisterDelegateRequest) {
+  return verifyTypedData({
+    // domain: EIP712Domain,
+    ...EIP712Delegatee,
+    address: req.address,
+    signature: req.signature,
+    message: {
+      address: req.address,
+      name: req.name,
+      verificationUrl: req.verificationUrl,
+    },
+  });
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +47,7 @@ export async function POST(request: Request) {
     const data = await request.formData();
 
     const address = data.get('address') as Address;
-    // const signature = data.get('signature');
+    const signature = data.get('signature') as Hex;
     const name = data.get('name') as string;
     const websiteUrl = data.get('websiteUrl') as string;
     const twitterUrl = data.get('twitterUrl') as string;
@@ -51,12 +65,18 @@ export async function POST(request: Request) {
       verificationUrl,
       interests,
       description,
-      signature: '',
+      signature,
     };
 
     if (!(await isAddressAnAccount(address))) {
       return new Response('Address is not an account', {
         status: 400,
+      });
+    }
+    const sigverification = await verifySigner(body);
+    if (!sigverification) {
+      return new Response('Signature does not match data', {
+        status: 401,
       });
     }
   } catch (error) {

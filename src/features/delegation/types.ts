@@ -1,4 +1,5 @@
 import { SocialLinksSchema } from 'src/config/types';
+import { celo } from 'viem/chains';
 import { z } from 'zod';
 
 // See https://github.com/celo-org/celo-monorepo/blob/release/core-contracts/10/packages/protocol/contracts/governance/LockedGold.sol#L667
@@ -68,3 +69,20 @@ export type Delegatee = DelegateeMetadata & {
   votingPower: bigint;
   delegatedBalance: bigint;
 };
+
+export const EIP712Delegatee = {
+  types: {
+    Delegatee: [
+      { name: 'name', type: 'string' },
+      { name: 'address', type: 'address' },
+      { name: 'verificationUrl', type: 'string' },
+    ],
+  },
+  primaryType: 'Delegatee',
+} as const;
+
+export const EIP712Domain = {
+  name: 'Celo Delegatee',
+  version: '1',
+  chainId: celo.id,
+} as const;
