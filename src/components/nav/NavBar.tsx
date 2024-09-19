@@ -28,17 +28,19 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
     <nav>
       <ul className="flex list-none items-center justify-center space-x-6">
         {LINKS(!!address).map((l) => {
+          const isSelected = l.to === pathname || (l.to !== '/' && pathname.startsWith(l.to));
+
           return (
             <div key={l.label} className="relative">
               <li
                 className={clsx(
                   'flex items-center justify-center transition-all hover:opacity-100',
-                  l.to === pathname ? 'font-semibold opacity-100' : 'font-medium opacity-60',
+                  isSelected ? 'font-semibold opacity-100' : 'font-medium opacity-60',
                 )}
               >
                 <Link href={l.to}>{l.label}</Link>
               </li>
-              {l.to === pathname && (
+              {isSelected && (
                 <div
                   className={`absolute h-0.5 w-full bg-black transition-all duration-500 ${
                     collapsed ? '-bottom-3' : '-bottom-[1.15rem]'

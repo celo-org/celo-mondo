@@ -29,6 +29,16 @@ export interface DelegateFormValues {
   transferDelegatee: Address;
 }
 
+export interface RegisterDelegateFormValues {
+  name: string;
+  address: Address;
+  websiteUrl: string;
+  twitterUrl?: string;
+  interests: string;
+  description: string;
+  verificationUrl: string;
+}
+
 export const DelegateeMetadataSchema = z.object({
   name: z.string().min(1),
   address: z.string().length(42).startsWith('0x'),
@@ -39,6 +49,13 @@ export const DelegateeMetadataSchema = z.object({
   links: SocialLinksSchema,
   interests: z.array(z.string().min(1)).min(1).max(5),
   description: z.string().min(1).max(1500),
+});
+
+export const RegisterDelegateFormValuesSchema = DelegateeMetadataSchema.omit({
+  logoUri: true,
+  date: true,
+}).extend({
+  verificationUrl: z.string().min(1).url(),
 });
 
 export const DelegateeMetadataMapSchema = z.record(z.string(), DelegateeMetadataSchema);

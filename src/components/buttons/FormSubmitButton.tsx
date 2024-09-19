@@ -18,6 +18,8 @@ export function FormSubmitButton({ children, ...props }: Props) {
 
   // Automatically clear error state after a timeout
   const clearErrors = useCallback(async () => {
+    console.log('Clearing errors');
+    
     setErrors({});
     await setTouched({});
     // eslint-disable-next-line react-hooks/exhaustive-deps

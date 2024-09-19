@@ -31,6 +31,7 @@
     "micromark": "^4.0.0",
     "micromark-extension-gfm-table": "^2.0.0",
     "next": "14.1.4",
+    "octokit": "^4.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-minimal-pie-chart": "^8.4.0",
@@ -88,5 +89,5 @@
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build:app"
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.4.1"
 }
