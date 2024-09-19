@@ -1988,14 +1988,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0132.md",
     "title": "Proposal for Funding Stabila - Driving Stablecoin Adoption on Celo",
     "author": "Kevin Tharayil (@KevinTharayil)",
-    "stage": 5,
-    "id": 173,
+    "stage": 6,
+    "id": 176,
     "url": "https://forum.celo.org/t/final-proposal-for-funding-stabila-driving-stablecoin-adoption-on-celo/7810",
     "timestamp": 1714089600000,
+    "timestampExecuted": 1715904000000,
     "votes": {
-      "yes": "13352572718004564022826739",
-      "no": "199993080818103341960279",
-      "abstain": "119152064836338536867928"
+      "yes": "13900081646743131204940936",
+      "no": "177123734397638981301695",
+      "abstain": "115470039848008913828587"
     }
   },
   {
@@ -2219,5 +2220,15 @@
     "id": 188,
     "url": "https://forum.celo.org/t/launch-of-puso-the-philippines-first-community-led-stablecoin/8786/10?u=philbow61",
     "timestamp": 1724889600000
+  },
+  {
+    "cgp": 149,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0149.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0149.md",
+    "title": "Decrease `constitution` parameter for `GoldToken.increaseAllowance`",
+    "author": "Martin Chrzanowski (@m-chrzan)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/decrease-constitution-parameter-for-goldtoken-increaseallowance/9002",
+    "timestamp": 1725926400000
   }
 ]
