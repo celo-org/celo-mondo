@@ -5,6 +5,7 @@ import { useTimeout } from 'src/utils/asyncHooks';
 
 type Props = React.ComponentProps<typeof SolidButtonWithSpinner>;
 
+// TODO rename? since lint doesn't like console.log
 export function FormSubmitButton({ children, ...props }: Props) {
   const { errors, setErrors, touched, setTouched } = useFormikContext();
 
@@ -18,8 +19,6 @@ export function FormSubmitButton({ children, ...props }: Props) {
 
   // Automatically clear error state after a timeout
   const clearErrors = useCallback(async () => {
-    console.log('Clearing errors');
-    
     setErrors({});
     await setTouched({});
     // eslint-disable-next-line react-hooks/exhaustive-deps

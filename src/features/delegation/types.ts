@@ -1,4 +1,5 @@
 import { SocialLinksSchema } from 'src/config/types';
+import { Hex } from 'viem';
 import { celo } from 'viem/chains';
 import { z } from 'zod';
 
@@ -38,6 +39,13 @@ export interface RegisterDelegateFormValues {
   interests: string;
   description: string;
   verificationUrl: string;
+  image: File | null;
+}
+
+// TODO introduce a request type
+export interface RegisterDelegateRequest extends RegisterDelegateFormValues {
+  image: File | null;
+  signature?: Hex;
 }
 
 export const DelegateeMetadataSchema = z.object({
@@ -86,3 +94,23 @@ export const EIP712Domain = {
   version: '1',
   chainId: celo.id,
 } as const;
+
+export enum RegisterDelegateResponseStatus {
+  Success = 'success',
+  Error = 'error',
+}
+
+export type RegisterDelegateSuccessResponse = {
+  status: RegisterDelegateResponseStatus.Success;
+  pullRequestUrl: string;
+};
+
+export type RegisterDelegateErrorResponse = {
+  status: RegisterDelegateResponseStatus.Error;
+  message: string;
+  errors?: Record<string, string>;
+};
+
+export type RegisterDelegateResponse =
+  | RegisterDelegateSuccessResponse
+  | RegisterDelegateErrorResponse;
