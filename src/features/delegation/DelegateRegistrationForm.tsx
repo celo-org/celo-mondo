@@ -1,14 +1,20 @@
 import { Form, Formik } from 'formik';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { TextField } from 'src/components/input/TextField';
 import { useSignedData } from 'src/features/delegation/hooks/useSIgnedData';
-import { RegisterDelegateFormValues, RegisterDelegateResponse, RegisterDelegateResponseStatus } from 'src/features/delegation/types';
+import {
+  RegisterDelegateFormValues,
+  RegisterDelegateResponse,
+  RegisterDelegateResponseStatus,
+} from 'src/features/delegation/types';
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
 import { useAccount } from 'wagmi';
 
+// TODO remove default values
 // @ts-ignore TODO fix this
 const initialValues: RegisterDelegateFormValues = {
   name: 'name',
@@ -16,7 +22,7 @@ const initialValues: RegisterDelegateFormValues = {
   twitterUrl: 'https://x.com/celo',
   websiteUrl: '',
   interests: 'some, interests',
-  verificationUrl: '',
+  verificationUrl: 'https://x.com/verification-url',
 };
 
 export function DelegateRegistrationForm({
@@ -26,6 +32,7 @@ export function DelegateRegistrationForm({
 }) {
   const { address } = useAccount();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
   const [pullRequestUrl, setPullRequestUrl] = useState<string | null>(null);
   const signForm = useSignedData();
 
@@ -53,11 +60,16 @@ export function DelegateRegistrationForm({
 
   if (pullRequestUrl) {
     return (
-      <p>
-        {/* TODO rephrase */}
-        Your delegate registration has been submitted. You can track the status of your pull request
-        <Link href={pullRequestUrl}>here</Link>
-      </p>
+      <>
+        <p>
+          Your delegate registration has been submitted successfully and a{' '}
+          <Link className={'text-blue-500 hover:underline'} href={pullRequestUrl}>
+            pull request
+          </Link>{' '}
+          has been created.
+        </p>
+        <p>It will be reviewed soon. Thank you for your interest in Celo governance.</p>
+      </>
     );
   }
 
@@ -69,8 +81,12 @@ export function DelegateRegistrationForm({
       }}
       onSubmit={async (values) => {
         setIsSubmitting(true);
+        setIsSigning(true);
 
         const signature = await signForm(values);
+
+        setIsSigning(false);
+
         const request = new FormData();
 
         request.append('image', imageFile as Blob);
@@ -97,18 +113,18 @@ export function DelegateRegistrationForm({
           });
 
           if (httpResponse.ok) {
-            const response = await httpResponse.json() as RegisterDelegateResponse;
+            const response = (await httpResponse.json()) as RegisterDelegateResponse;
 
             if (response.status === RegisterDelegateResponseStatus.Success) {
               setPullRequestUrl(response.pullRequestUrl);
             } else {
-              // Display error
+              toast.error(response.message);
             }
           } else {
-            // TODO useState for form submission error
+            toast.error('Error while registering delegatee');
           }
         } catch (err) {
-          // TODO useState for form submission error
+          toast.error(`Error while registering delegatee: ${(err as Error).message}`);
         }
 
         setIsSubmitting(false);
@@ -119,25 +135,22 @@ export function DelegateRegistrationForm({
     >
       {({ errors }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between">
-          <div className={'space-y-2'}>
-            <div className="relative flex flex-col space-y-1.5">
-              <div className="flex justify-between">
-                <label htmlFor={'address'} className="pl-0.5 text-xs font-medium">
-                  Address
-                </label>
-              </div>
-              <p>{defaultFormValues?.address}</p>
+          <div className={'space-y-3'}>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'address'} className="text-xs font-semibold">
+                Address
+              </label>
+              <p className={'font-bold'}>{defaultFormValues?.address}</p>
               <p className={'text-xs'}>
-                Your connected wallet address is provided automatically and cannot be changed, if
-                you want to use different address please raise a PR
+                Your connected wallet address is provided automatically and cannot be changed. If
+                you want to use different address, open a pull request manually on{' '}
+                <Link href="https://github.com/celo-org/celo-mondo">Github</Link>.
               </p>
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'address'} className="pl-0.5 text-xs font-medium">
-                  Name
-                </label>
-              </div>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'address'} className="text-xs font-semibold">
+                Name
+              </label>
               <TextField
                 name="name"
                 placeholder="Your name"
@@ -145,68 +158,60 @@ export function DelegateRegistrationForm({
               />
               {errors.name && <p className={'text-xs text-red-500'}>{errors.name}</p>}
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'interests'} className="pl-0.5 text-xs font-medium">
-                  Interests
-                </label>
-              </div>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'interests'} className="text-xs font-semibold">
+                Interests
+              </label>
               <TextField
                 name="interests"
                 placeholder="Blockchain, NFTs"
                 defaultValue={defaultFormValues?.interests}
               />
               {errors.interests && <p className={'text-xs text-red-500'}>{errors.interests}</p>}
-              <p className={'text-xs'}>Provide a comma separated list of your interests</p>
+              <p className={'text-xs'}>
+                Provide a comma separated list of your interests, at least one is required.
+              </p>
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'description'} className="pl-0.5 text-xs font-medium">
-                  Description
-                </label>
-              </div>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'description'} className="text-xs font-semibold">
+                Description
+              </label>
               <TextField
                 name="description"
                 placeholder="Your description"
                 defaultValue={defaultFormValues?.description}
               />
               {errors.description && <p className={'text-xs text-red-500'}>{errors.description}</p>}
-              <p className={'text-xs'}>Provide a short description of yourself</p>
+              <p className={'text-xs'}>Provide a short description of yourself.</p>
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'twitterUrl'} className="pl-0.5 text-xs font-medium">
-                  Twitter
-                </label>
-              </div>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'twitterUrl'} className="text-xs font-semibold">
+                Twitter
+              </label>
               <TextField
                 name="twitterUrl"
                 placeholder="https://x.com/celo"
                 defaultValue={defaultFormValues?.twitterUrl}
               />
               {errors.twitterUrl && <p className={'text-xs text-red-500'}>{errors.twitterUrl}</p>}
-              <p className={'text-xs'}>Provide a link to your X (Twitter) profile</p>
+              <p className={'text-xs'}>Provide a link to your X (formerly Twitter) profile.</p>
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'websiteUrl'} className="pl-0.5 text-xs font-medium">
-                  Website
-                </label>
-              </div>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'websiteUrl'} className="text-xs font-semibold">
+                Website
+              </label>
               <TextField
                 name="websiteUrl"
                 placeholder="https://celo.org/"
                 defaultValue={defaultFormValues?.websiteUrl}
               />
               {errors.websiteUrl && <p className={'text-xs text-red-500'}>{errors.websiteUrl}</p>}
-              <p className={'text-xs'}>Provide a link to your website</p>
+              <p className={'text-xs'}>Provide a link to your website.</p>
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'verificationUrl'} className="pl-0.5 text-xs font-medium">
-                  Verification Link
-                </label>
-              </div>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'verificationUrl'} className="text-xs font-semibold">
+                Verification Link
+              </label>
               <TextField
                 name="verificationUrl"
                 placeholder="https://celo.org/"
@@ -215,23 +220,39 @@ export function DelegateRegistrationForm({
               {errors.verificationUrl && (
                 <p className={'text-xs text-red-500'}>{errors.verificationUrl}</p>
               )}
-              <p className={'text-xs'}>TODO add a descriptive text on why is it needed</p>
+              <p className={'text-xs'}>
+                Provide a URL to proof authenticity of your delegate registration, it can be a link
+                to a tweet, a forum post etc.
+              </p>
             </div>
-            <div className="relative flex flex-col">
-              <div className="flex justify-between">
-                <label htmlFor={'websiteUrl'} className="pl-0.5 text-xs font-medium">
-                  Image
-                </label>
+            <div className={'flex flex-col space-y-0.5'}>
+              <label htmlFor={'websiteUrl'} className="text-xs font-semibold">
+                Image
+              </label>
+              <div className={'flex items-center'}>
+                {imageUrl && (
+                  <div className="mr-5">
+                    <ImageOrIdenticon imgSrc={imageUrl} address={address!} size={90} />
+                  </div>
+                )}
+                <input type="file" name="image" onChange={handleFileChange} />
               </div>
-              <input type="file" name="image" onChange={handleFileChange} />
-              {imageUrl && <ImageOrIdenticon imgSrc={imageUrl} address={address!} size={90} />}
               {errors.image! && <p className={'text-xs text-red-500'}>{errors.image!}</p>}
-              <p className={'text-xs'}>Provide an image to use as your delegate logo</p>
+              <p className={'text-xs'}>Provide an image to use as your delegate logo.</p>
+            </div>
+            <div className="space-y-2">
+              <SolidButtonWithSpinner
+                type="submit"
+                isLoading={isSubmitting}
+                loadingText={isSigning ? 'Signing' : 'Submitting'}
+              >
+                Sign and submit
+              </SolidButtonWithSpinner>
+              <p className={'text-xs'}>
+                Upon submission, you'll be first asked to sign a message with your wallet.
+              </p>
             </div>
           </div>
-          <SolidButtonWithSpinner type="submit" isLoading={isSubmitting}>
-            Register Delegatee
-          </SolidButtonWithSpinner>
         </Form>
       )}
     </Formik>

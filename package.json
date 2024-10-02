@@ -37,6 +37,7 @@
     "react-minimal-pie-chart": "^8.4.0",
     "react-toastify": "^10.0.5",
     "viem": "2.12.1",
+    "vitest": "^2.1.1",
     "wagmi": "2.9.6",
     "yaml": "^2.4.2",
     "zod": "^3.23.8"
@@ -89,5 +90,5 @@
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build:app"
   },
-  "packageManager": "yarn@4.4.1"
+  "packageManager": "yarn@4.5.0"
 }

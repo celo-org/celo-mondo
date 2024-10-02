@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createDelegationPR } from 'src/features/delegation/createDelegationPR';
 import {
   RegisterDelegateResponse,
   RegisterDelegateResponseStatus,
 } from 'src/features/delegation/types';
+import { createDelegationPR } from 'src/features/delegation/utils';
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
 import { logger } from 'src/utils/logger';
 import { Hex } from 'viem';
@@ -25,7 +25,6 @@ export const dynamic = 'force-dynamic';
 export async function POST(httpRequest: Request) {
   let registrationRequest: RegisterDelegateRequest;
 
-  logger.debug('Request received');
   try {
     const data = await httpRequest.formData();
 
@@ -51,9 +50,9 @@ export async function POST(httpRequest: Request) {
       signature,
     };
 
-    const validationResult = await validateRegistrationRequest(registrationRequest);
+    const validationResult = await validateRegistrationRequest(registrationRequest, true);
 
-    if (validationResult.length) {
+    if (Object.keys(validationResult).length) {
       return wrapResponseInJson(
         {
           status: RegisterDelegateResponseStatus.Error,
@@ -81,7 +80,7 @@ export async function POST(httpRequest: Request) {
       pullRequestUrl: url,
     });
   } catch (err) {
-    logger.error('Error creating PR', err);
+    logger.error('Error creating PR: ', err);
 
     return wrapResponseInJson(
       {

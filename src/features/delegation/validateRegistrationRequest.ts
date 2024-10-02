@@ -1,20 +1,17 @@
-import { accountsABI } from '@celo/abis';
-import { fornoRpcUrl } from 'src/config/config';
-import { Addresses } from 'src/config/contracts';
 import {
   EIP712Delegatee,
   RegisterDelegateFormValuesSchema,
   RegisterDelegateRequest,
 } from 'src/features/delegation/types';
-import { createPublicClient, http, isAddress, verifyTypedData } from 'viem';
-import { celo } from 'viem/chains';
+import { isAddressAnAccount } from 'src/features/delegation/utils';
+import { isAddress, verifyTypedData } from 'viem';
 
-// TODO maybe inject the client as a param instead of hardcoding it here?
 export const validateRegistrationRequest = async (
   request: RegisterDelegateRequest,
   verifySignature = false,
 ) => {
   const values = toSchemaConformantValues(request);
+
   const parseResult = RegisterDelegateFormValuesSchema.safeParse(values);
   let errors: Record<string, string> = {};
 
@@ -26,10 +23,14 @@ export const validateRegistrationRequest = async (
 
     if (errors['links.twitter']) {
       errors.twitterUrl = errors['links.twitter'];
+
+      delete errors['links.twitter'];
     }
 
     if (errors['links.website']) {
       errors.websiteUrl = errors['links.website'];
+
+      delete errors['links.website'];
     }
   }
 
@@ -106,16 +107,5 @@ function verifySigner(request: RegisterDelegateRequest) {
       name: request.name,
       verificationUrl: request.verificationUrl,
     },
-  });
-}
-
-async function isAddressAnAccount(address: HexString) {
-  const client = createPublicClient({ chain: celo, transport: http(fornoRpcUrl) });
-
-  return await client.readContract({
-    address: Addresses.Accounts,
-    abi: accountsABI,
-    functionName: 'isAccount',
-    args: [address],
   });
 }

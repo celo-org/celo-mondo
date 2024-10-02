@@ -34,7 +34,7 @@ export interface DelegateFormValues {
 export interface RegisterDelegateFormValues {
   name: string;
   address: Address;
-  websiteUrl: string;
+  websiteUrl?: string;
   twitterUrl?: string;
   interests: string;
   description: string;
@@ -42,7 +42,6 @@ export interface RegisterDelegateFormValues {
   image: File | null;
 }
 
-// TODO introduce a request type
 export interface RegisterDelegateRequest extends RegisterDelegateFormValues {
   image: File | null;
   signature?: Hex;

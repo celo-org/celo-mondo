@@ -1,15 +1,36 @@
-import { Octokit } from 'octokit';
+import { accountsABI } from '@celo/abis';
+import { App } from 'octokit';
 import path from 'path';
+import { fornoRpcUrl } from 'src/config/config';
+import { Addresses } from 'src/config/contracts';
 import { DelegateeMetadata, RegisterDelegateRequest } from 'src/features/delegation/types';
+import { createPublicClient, http } from 'viem';
+import { celo } from 'viem/chains';
+
+export async function isAddressAnAccount(address: HexString) {
+  const client = createPublicClient({ chain: celo, transport: http(fornoRpcUrl) });
+
+  return await client.readContract({
+    address: Addresses.Accounts,
+    abi: accountsABI,
+    functionName: 'isAccount',
+    args: [address],
+  });
+}
 
 export async function createDelegationPR(request: RegisterDelegateRequest) {
-  const GITHUB_TOKEN = process.env['GITHUB_TOKEN'] as string;
+  const GITHUB_APP_ID = process.env['GITHUB_APP_ID'] as string;
+  const GITHUB_PRIVATE_KEY = process.env['GITHUB_PRIVATE_KEY'] as string;
+  const GITHUB_INSTALLATION_ID = parseInt(process.env['GITHUB_INSTALLATION_ID'] as string);
+
+  const app = new App({
+    appId: GITHUB_APP_ID,
+    privateKey: GITHUB_PRIVATE_KEY,
+  });
+
   const GITHUB_REPO_OWNER = process.env['GITHUB_REPO_OWNER'] as string;
   const GITHUB_REPO_NAME = process.env['GITHUB_REPO_NAME'] as string;
-
-  const octokit = new Octokit({
-    auth: GITHUB_TOKEN,
-  });
+  const octokit = await app.getInstallationOctokit(GITHUB_INSTALLATION_ID);
 
   const mainBranch = await octokit.rest.repos.getBranch({
     owner: GITHUB_REPO_OWNER,
@@ -19,12 +40,12 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
 
   const branchName = `json-${request.address}-${Date.now()}`;
   const metadataPath = `delegatees/${request.address}.json`;
-  // TODO validate the file first, check for correct mimetype, extension etc
   const imagePath = `public/logos/delegatees/${request.address}${path.extname(request.image!.name)}`;
   const delegateeMetadata: DelegateeMetadata = {
     name: request.name,
     address: request.address,
     logoUri: imagePath,
+    // TODO fix the date format
     date: Date.now().toString(),
     links: {
       website: request.websiteUrl,
@@ -52,6 +73,7 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
       ref: newRefResponse.data.object.sha,
     });
 
+    // @ts-ignore TODO fix
     metadataFileSha = file.data.sha;
   } catch (err) {
     // @ts-ignore TODO check the status code in type safe way
@@ -68,6 +90,7 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
       ref: newRefResponse.data.object.sha,
     });
 
+    // @ts-ignore TODO fix
     imageFileSha = file.data.sha;
   } catch (err) {
     // @ts-ignore TODO check the status code in type safe way
