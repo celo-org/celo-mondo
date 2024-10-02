@@ -25,7 +25,7 @@ export function useDelegatees() {
     staleTime: 60 * 60 * 1000, // 1 hour
   });
 
-  useToastError(error, 'Error fetching delegate data');
+  useToastError(error, `Error fetching delegate data, ${error?.message}`);
 
   return {
     isLoading,
