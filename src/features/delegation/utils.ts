@@ -40,7 +40,7 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
   });
 
   const branchName = `json-${request.address}-${Date.now()}`;
-  const metadataPath = `delegatees/${request.address}.json`;
+  const metadataPath = `src/config/delegatees/${request.address}.json`;
   const imagePath = `public/logos/delegatees/${request.address}${path.extname(request.image!.name)}`;
   const delegateeMetadata = delegateeRegistrationRequestToMetadata(request, new Date());
 
