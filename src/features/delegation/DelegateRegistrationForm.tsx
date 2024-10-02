@@ -249,7 +249,7 @@ export function DelegateRegistrationForm({
                 Sign and submit
               </SolidButtonWithSpinner>
               <p className={'text-xs'}>
-                Upon submission, you'll be first asked to sign a message with your wallet.
+                Upon submission, you will be first asked to sign a message with your wallet.
               </p>
             </div>
           </div>
