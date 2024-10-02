@@ -3,7 +3,8 @@ import { App } from 'octokit';
 import path from 'path';
 import { fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
-import { DelegateeMetadata, RegisterDelegateRequest } from 'src/features/delegation/types';
+import { delegateeRegistrationRequestToMetadata } from 'src/features/delegation/delegateeMetadata';
+import { RegisterDelegateRequest } from 'src/features/delegation/types';
 import { createPublicClient, http } from 'viem';
 import { celo } from 'viem/chains';
 
@@ -41,19 +42,7 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
   const branchName = `json-${request.address}-${Date.now()}`;
   const metadataPath = `delegatees/${request.address}.json`;
   const imagePath = `public/logos/delegatees/${request.address}${path.extname(request.image!.name)}`;
-  const delegateeMetadata: DelegateeMetadata = {
-    name: request.name,
-    address: request.address,
-    logoUri: imagePath,
-    // TODO fix the date format
-    date: Date.now().toString(),
-    links: {
-      website: request.websiteUrl,
-      twitter: request.twitterUrl,
-    },
-    interests: request.interests.split(',').map((i) => i.trim()),
-    description: request.description.trim(),
-  };
+  const delegateeMetadata = delegateeRegistrationRequestToMetadata(request, new Date());
 
   const newRefResponse = await octokit.rest.git.createRef({
     owner: GITHUB_REPO_OWNER,
