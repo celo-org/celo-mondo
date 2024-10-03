@@ -1,5 +1,5 @@
 import { accountsABI } from '@celo/abis';
-import { App } from 'octokit';
+import { App, Octokit } from 'octokit';
 import path from 'path';
 import { fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
@@ -18,6 +18,33 @@ export async function isAddressAnAccount(address: HexString) {
     args: [address],
   });
 }
+
+const fetchFileShaIfExists = async (
+  octokit: Octokit,
+  repoOwner: string,
+  repoName: string,
+  branchRef: string,
+  filePath: string,
+): Promise<string | null> => {
+  try {
+    const file = await octokit.rest.repos.getContent({
+      owner: repoOwner,
+      repo: repoName,
+      path: filePath,
+      ref: branchRef,
+    });
+
+    return file.data.sha;
+  } catch (err) {
+    const notFound = err instanceof Error && 'status' in err && err.status === 404;
+
+    if (!notFound) {
+      throw err;
+    }
+  }
+
+  return null;
+};
 
 export async function createDelegationPR(request: RegisterDelegateRequest) {
   const GITHUB_APP_ID = process.env['GITHUB_APP_ID'] as string;
@@ -51,62 +78,43 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
     sha: mainBranch.data.commit.sha,
   });
 
-  let metadataFileSha: string | undefined = undefined;
-  let imageFileSha: string | undefined = undefined;
+  const [metadataFileSha, imageFileSha] = await Promise.all([
+    fetchFileShaIfExists(
+      octokit,
+      GITHUB_REPO_OWNER,
+      GITHUB_REPO_NAME,
+      newRefResponse.data.ref,
+      metadataPath,
+    ),
+    fetchFileShaIfExists(
+      octokit,
+      GITHUB_REPO_OWNER,
+      GITHUB_REPO_NAME,
+      newRefResponse.data.ref,
+      imagePath,
+    ),
+  ]);
 
-  try {
-    const file = await octokit.rest.repos.getContent({
+  await Promise.all([
+    octokit.rest.repos.createOrUpdateFileContents({
       owner: GITHUB_REPO_OWNER,
       repo: GITHUB_REPO_NAME,
       path: metadataPath,
-      ref: newRefResponse.data.object.sha,
-    });
-
-    // @ts-ignore TODO fix
-    metadataFileSha = file.data.sha;
-  } catch (err) {
-    // @ts-ignore TODO check the status code in type safe way
-    if (err.status !== 404) {
-      throw err;
-    }
-  }
-
-  try {
-    const file = await octokit.rest.repos.getContent({
+      message: `Adding delegatee ${request.address} metadata`,
+      content: Buffer.from(JSON.stringify(delegateeMetadata, null, 4)).toString('base64'),
+      sha: metadataFileSha || undefined,
+      branch: branchName,
+    }),
+    octokit.rest.repos.createOrUpdateFileContents({
       owner: GITHUB_REPO_OWNER,
       repo: GITHUB_REPO_NAME,
       path: imagePath,
-      ref: newRefResponse.data.object.sha,
-    });
-
-    // @ts-ignore TODO fix
-    imageFileSha = file.data.sha;
-  } catch (err) {
-    // @ts-ignore TODO check the status code in type safe way
-    if (err.status !== 404) {
-      throw err;
-    }
-  }
-
-  await octokit.rest.repos.createOrUpdateFileContents({
-    owner: GITHUB_REPO_OWNER,
-    repo: GITHUB_REPO_NAME,
-    path: metadataPath,
-    message: `Adding delegatee ${request.address} metadata`,
-    content: Buffer.from(JSON.stringify(delegateeMetadata, null, 4)).toString('base64'),
-    sha: metadataFileSha,
-    branch: branchName,
-  });
-
-  await octokit.rest.repos.createOrUpdateFileContents({
-    owner: GITHUB_REPO_OWNER,
-    repo: GITHUB_REPO_NAME,
-    path: imagePath,
-    message: `Adding delegatee ${request.address} image`,
-    content: Buffer.from(await request.image!.arrayBuffer()).toString('base64'),
-    sha: imageFileSha,
-    branch: branchName,
-  });
+      message: `Adding delegatee ${request.address} image`,
+      content: Buffer.from(await request.image!.arrayBuffer()).toString('base64'),
+      sha: imageFileSha || undefined,
+      branch: branchName,
+    }),
+  ]);
 
   const createPRResponse = await octokit.rest.pulls.create({
     owner: GITHUB_REPO_OWNER,
