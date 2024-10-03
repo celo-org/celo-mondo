@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import * as utils from 'src/features/delegation/utils';
 import { getValidRequest } from 'src/test/delegatee-registration-utils';
-import { vi } from 'vitest';
+import { expect, it, vi } from 'vitest';
 import { POST } from './route';
 
 const getRequest = (formData: FormData): Request => {
@@ -67,7 +67,7 @@ it('successfuly calls PR creation', async () => {
         },
         "interests": "blockchain, NFTs",
         "name": "Delegatee name",
-        "signature": "0xe37dfb7abd8d7668057189d980fed5ccc08716ab45cabd70638305b91366c8693fb307fc39b5d8c46cebafee318bffa4a4df9d80f7a40b121613cdcb6cc582051c",
+        "signature": "0x52a3c23ef6c6817691872b77615ef30927453d641acd8c607de458d39e581bcd5411f723102640897af151644086abf4f3a9baf216d684d784194aef2c6730be1c",
         "twitterUrl": "https://example.com/x",
         "verificationUrl": "https://example.com/verification",
         "websiteUrl": "https://example.com",

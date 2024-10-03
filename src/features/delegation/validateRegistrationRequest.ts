@@ -4,7 +4,7 @@ import {
   RegisterDelegateRequest,
 } from 'src/features/delegation/types';
 import { isAddressAnAccount } from 'src/features/delegation/utils';
-import { isAddress, verifyTypedData } from 'viem';
+import { isAddress, sha256, verifyTypedData } from 'viem';
 
 export const validateRegistrationRequest = async (
   request: RegisterDelegateRequest,
@@ -92,9 +92,13 @@ function toSchemaConformantValues(request: RegisterDelegateRequest) {
   return values;
 }
 
-function verifySigner(request: RegisterDelegateRequest) {
+const verifySigner = async (request: RegisterDelegateRequest) => {
   if (!request.signature) {
     throw new Error('Signature required');
+  }
+
+  if (!request.image) {
+    throw new Error('Image required');
   }
 
   return verifyTypedData({
@@ -102,10 +106,14 @@ function verifySigner(request: RegisterDelegateRequest) {
     address: request.address,
     signature: request.signature,
     message: {
-      // TODO add remaining fields
       address: request.address,
       name: request.name,
       verificationUrl: request.verificationUrl,
+      websiteUrl: request.websiteUrl || '',
+      twitterUrl: request.twitterUrl || '',
+      interests: request.interests,
+      description: request.description,
+      imageSha: sha256(new Uint8Array(await request.image.arrayBuffer())),
     },
   });
-}
+};

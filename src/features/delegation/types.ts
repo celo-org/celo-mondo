@@ -80,9 +80,14 @@ export type Delegatee = DelegateeMetadata & {
 export const EIP712Delegatee = {
   types: {
     Delegatee: [
-      { name: 'name', type: 'string' },
       { name: 'address', type: 'address' },
+      { name: 'name', type: 'string' },
       { name: 'verificationUrl', type: 'string' },
+      { name: 'websiteUrl', type: 'string' },
+      { name: 'twitterUrl', type: 'string' },
+      { name: 'interests', type: 'string' },
+      { name: 'description', type: 'string' },
+      { name: 'imageSha', type: 'string' },
     ],
   },
   primaryType: 'Delegatee',

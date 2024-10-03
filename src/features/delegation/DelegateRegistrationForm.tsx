@@ -12,6 +12,7 @@ import {
   RegisterDelegateResponseStatus,
 } from 'src/features/delegation/types';
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
+import { logger } from 'src/utils/logger';
 import { useAccount } from 'wagmi';
 
 const initialValues: RegisterDelegateFormValues = {
@@ -81,13 +82,25 @@ export function DelegateRegistrationForm({
         ...initialValues,
       }}
       onSubmit={async (values) => {
+        let signature: HexString;
+
         setIsSubmitting(true);
         setIsSigning(true);
 
-        const signature = await signForm({
-          ...values,
-          address: address!
-        });
+        try {
+          signature = await signForm({
+            ...values,
+            address: address!,
+            image: imageFile
+          });
+        } catch (err) {
+          setIsSubmitting(false);
+
+          toast.error('Error while signing message');
+          logger.error(err);
+
+          return;
+        }
 
         setIsSigning(false);
 

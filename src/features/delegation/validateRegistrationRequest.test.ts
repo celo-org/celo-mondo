@@ -2,7 +2,7 @@ import { RegisterDelegateRequest } from 'src/features/delegation/types';
 import * as utils from 'src/features/delegation/utils';
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
 import { getValidRequest } from 'src/test/delegatee-registration-utils';
-import { vi } from 'vitest';
+import { expect, it, vi } from 'vitest';
 
 it('validates successfully', async () => {
   const request = await getValidRequest();
@@ -88,6 +88,7 @@ it('validates wrong URLs', async () => {
 
   expect(await validateRegistrationRequest(request, true)).toMatchInlineSnapshot(`
     {
+      "signature": "Invalid signature",
       "twitterUrl": "Invalid url",
       "websiteUrl": "Invalid url",
     }
@@ -106,6 +107,7 @@ it('validates invalid image', async () => {
   expect(await validateRegistrationRequest(request, true)).toMatchInlineSnapshot(`
     {
       "image": "Invalid image",
+      "signature": "Invalid signature",
     }
   `);
 });

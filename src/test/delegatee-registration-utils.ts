@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { EIP712Delegatee, RegisterDelegateRequest } from 'src/features/delegation/types';
-import { createWalletClient, http } from 'viem';
+import { createWalletClient, http, sha256 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
 
@@ -27,12 +27,24 @@ export const getValidRequest = async (): Promise<RegisterDelegateRequest> => {
     transport: http(),
   });
 
+  const requestWithoutSignature = {
+    address: TEST_ACCOUNT_ADDRESS as Address,
+    description,
+    image: new File([imageFile], 'clabs.jpg', { type: 'image/jpeg' }),
+    interests,
+    name,
+    twitterUrl,
+    verificationUrl,
+    websiteUrl: websiteUrl as string,
+  } as RegisterDelegateRequest;
+
   const signature = await walletClient.signTypedData({
     ...EIP712Delegatee,
     message: {
-      address: TEST_ACCOUNT_ADDRESS,
-      name,
-      verificationUrl,
+      ...requestWithoutSignature,
+      imageSha: sha256(new Uint8Array(imageFile)),
+      websiteUrl: requestWithoutSignature.websiteUrl || '',
+      twitterUrl: requestWithoutSignature.twitterUrl || '',
     },
   });
 
