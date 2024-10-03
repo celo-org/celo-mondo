@@ -43,6 +43,10 @@ export function delegateeRegistrationRequestToMetadata(
   };
 }
 
+export function metadataToJSONString(metadata: DelegateeMetadata): string {
+  return JSON.stringify(metadata, null, 2) + '\n';
+}
+
 function parseDelegateeMetadata(): AddressTo<DelegateeMetadata> {
   try {
     return DelegateeMetadataMapSchema.parse(DelegateeJsonData);

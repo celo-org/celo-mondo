@@ -3,7 +3,10 @@ import { App, Octokit } from 'octokit';
 import path from 'path';
 import { fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
-import { delegateeRegistrationRequestToMetadata } from 'src/features/delegation/delegateeMetadata';
+import {
+  delegateeRegistrationRequestToMetadata,
+  metadataToJSONString,
+} from 'src/features/delegation/delegateeMetadata';
 import { RegisterDelegateRequest } from 'src/features/delegation/types';
 import { createPublicClient, http } from 'viem';
 import { celo } from 'viem/chains';
@@ -101,7 +104,7 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
       repo: GITHUB_REPO_NAME,
       path: metadataPath,
       message: `Adding delegatee ${request.address} metadata`,
-      content: Buffer.from(JSON.stringify(delegateeMetadata, null, 4)).toString('base64'),
+      content: Buffer.from(metadataToJSONString(delegateeMetadata)).toString('base64'),
       sha: metadataFileSha || undefined,
       branch: branchName,
     }),
