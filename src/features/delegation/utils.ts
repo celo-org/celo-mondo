@@ -121,7 +121,6 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
     repo: GITHUB_REPO_NAME,
     head: branchName,
     base: 'main',
-    // TODO escape the name
     title: `Adding delegate ${request.name}`,
     body: `Adding delegate \`${request.name}\` with address [${request.address}](https://celoscan.io/address/${request.address}).
       

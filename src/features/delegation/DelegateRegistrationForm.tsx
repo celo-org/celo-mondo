@@ -14,15 +14,15 @@ import {
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
 import { useAccount } from 'wagmi';
 
-// TODO remove default values
-// @ts-ignore TODO fix this
 const initialValues: RegisterDelegateFormValues = {
-  name: 'name',
-  description: 'description',
-  twitterUrl: 'https://x.com/celo',
+  address: '0x',
+  name: '',
+  description: '',
+  twitterUrl: '',
   websiteUrl: '',
-  interests: 'some, interests',
-  verificationUrl: 'https://x.com/verification-url',
+  interests: '',
+  verificationUrl: '',
+  image: null,
 };
 
 export function DelegateRegistrationForm({
@@ -39,6 +39,7 @@ export function DelegateRegistrationForm({
   const validate = async (values: RegisterDelegateFormValues, image: File | null) => {
     return await validateRegistrationRequest({
       ...values,
+      address: address!,
       image,
     });
   };
@@ -62,7 +63,7 @@ export function DelegateRegistrationForm({
     return (
       <>
         <p>
-          Your delegate registration has been submitted successfully and a{' '}
+          Your delegatee registration has been submitted successfully and a{' '}
           <Link className={'text-blue-500 hover:underline'} href={pullRequestUrl}>
             pull request
           </Link>{' '}
@@ -83,7 +84,10 @@ export function DelegateRegistrationForm({
         setIsSubmitting(true);
         setIsSigning(true);
 
-        const signature = await signForm(values);
+        const signature = await signForm({
+          ...values,
+          address: address!
+        });
 
         setIsSigning(false);
 
@@ -221,7 +225,7 @@ export function DelegateRegistrationForm({
                 <p className={'text-xs text-red-500'}>{errors.verificationUrl}</p>
               )}
               <p className={'text-xs'}>
-                Provide a URL to proof authenticity of your delegate registration, it can be a link
+                Provide a URL to proof authenticity of your delegatee registration, it can be a link
                 to a tweet, a forum post etc.
               </p>
             </div>
