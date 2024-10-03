@@ -41,7 +41,7 @@ function RegisterCtaCard() {
       <div className="space-y-2">
         <h3 className="font-serif text-xl sm:text-2xl">Passionate about Celo governance?</h3>
         <p className="text-sm sm:text-base">
-          If you would like to be included in this list, fill a form by clicking the button.
+          If you would like to be included in this list, fill out <Link href="/delegate/register" className={'text-blue-500 hover:underline'}>the registration form</Link>.
         </p>
       </div>
       <Link href="/delegate/register" className="btn btn-primary rounded-full border-taupe-300">
