@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
+import { logger } from 'src/utils/logger';
 
 export function GET(request: NextRequest) {
   const headerList = headers();
@@ -7,7 +8,7 @@ export function GET(request: NextRequest) {
   const country = request.geo?.country || (headerList.get('x-vercel-ip-country') as string);
   const region = request.geo?.region || (headerList.get('x-vercel-ip-country-region') as string);
 
-  console.info('country', country, region);
+  logger.info('country', country, region);
 
   if (isForbiddenLand(country, region)) {
     return new NextResponse(null, { status: 451 });

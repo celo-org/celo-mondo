@@ -32,6 +32,7 @@
     "micromark": "^4.0.0",
     "micromark-extension-gfm-table": "^2.0.0",
     "next": "14.2.10",
+    "octokit": "^4.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-minimal-pie-chart": "^8.4.0",
@@ -44,7 +45,6 @@
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.28.6",
     "@types/dompurify": "^3",
-    "@types/jest": "^29.5.12",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.73",
     "@types/react-dom": "^18.2.22",
@@ -58,7 +58,6 @@
     "eslint-config-next": "^14.1.4",
     "eslint-config-prettier": "^9.1.0",
     "husky": "^9.0.11",
-    "jest": "^29.7.0",
     "lint-staged": "^15.2.2",
     "postcss": "^8.4.38",
     "prettier": "^3.3.3",
@@ -68,7 +67,8 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsx": "^4.7.1",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.3",
+    "vitest": "^2.1.1"
   },
   "resolutions": {
     "bignumber.js": "9.1.2",
@@ -79,15 +79,19 @@
     "prepare": "husky",
     "clean": "rm -rf dist cache .next",
     "dev": "next dev",
-    "build": "yarn build:proposals && yarn build:app",
+    "build": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
+    "build:delegatees-json": "tsx ./src/scripts/combineDelegateesMetadata.ts",
     "build:proposals": "tsx ./src/scripts/collectProposalMetadata.ts",
     "build:app": "next build",
     "typecheck": "tsc",
     "lint": "next lint",
     "start": "next start",
-    "test": "jest",
+    "test": "vitest",
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build:app"
   },
-  "packageManager": "yarn@4.1.1"
+  "packageManager": "yarn@4.1.1",
+  "engines": {
+    "node": "20"
+  }
 }

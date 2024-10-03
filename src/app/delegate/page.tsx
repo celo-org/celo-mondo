@@ -1,12 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { Fade } from 'src/components/animation/Fade';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
-import { A_Blank } from 'src/components/buttons/A_Blank';
 import { CtaCard } from 'src/components/layout/CtaCard';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
-import { links } from 'src/config/links';
 import { DelegateesTable } from 'src/features/delegation/components/DelegateesTable';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 
@@ -42,13 +41,16 @@ function RegisterCtaCard() {
       <div className="space-y-2">
         <h3 className="font-serif text-xl sm:text-2xl">Passionate about Celo governance?</h3>
         <p className="text-sm sm:text-base">
-          If you would like to be included in this list, open a pull-request to add your information
-          on Github.
+          If you would like to be included in this list, fill out{' '}
+          <Link href="/delegate/register" className={'text-blue-500 hover:underline'}>
+            the registration form
+          </Link>
+          .
         </p>
       </div>
-      <A_Blank href={links.delegate} className="btn btn-primary rounded-full border-taupe-300">
-        Register as a delegate
-      </A_Blank>
+      <Link href="/delegate/register" className="btn btn-primary rounded-full border-taupe-300">
+        Register as a delegatee
+      </Link>
     </CtaCard>
   );
 }
