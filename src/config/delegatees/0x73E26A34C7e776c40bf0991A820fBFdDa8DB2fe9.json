@@ -1,0 +1,13 @@
+{
+    "name": "Leszek",
+    "address": "0x73E26A34C7e776c40bf0991A820fBFdDa8DB2fe9",
+    "logoUri": "/logos/delegatees/0x73E26A34C7e776c40bf0991A820fBFdDa8DB2fe9.jpg",
+    "date": "2024-10-03",
+    "links": {
+        "website": "https://example.com"
+    },
+    "interests": [
+        "blockchain"
+    ],
+    "description": "Just testing"
+}
