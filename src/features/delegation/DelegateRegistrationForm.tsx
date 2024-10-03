@@ -91,7 +91,7 @@ export function DelegateRegistrationForm({
           signature = await signForm({
             ...values,
             address: address!,
-            image: imageFile
+            image: imageFile,
           });
         } catch (err) {
           setIsSubmitting(false);
