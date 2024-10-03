@@ -1,6 +1,3 @@
-/**
- * @jest-environment node
- */
 import fs from 'fs';
 import path from 'path';
 import * as utils from 'src/features/delegation/utils';
