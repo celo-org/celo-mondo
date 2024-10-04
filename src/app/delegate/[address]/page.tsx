@@ -122,7 +122,7 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
 
 function DelegateeDetails({ delegatee }: { delegatee: Delegatee }) {
   return (
-    <div className="space-y-4 lg:min-w-[20rem]">
+    <div className="space-y-4 lg:w-[330px] lg:min-w-[20rem]">
       <div className="border-taupe-300 p-3 lg:border">
         <DelegateButton delegatee={delegatee} />
       </div>

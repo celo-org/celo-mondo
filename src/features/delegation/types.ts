@@ -74,7 +74,8 @@ export type Delegatee = DelegateeMetadata & {
   address: Address;
   lockedBalance: bigint;
   votingPower: bigint;
-  delegatedBalance: bigint;
+  delegatedToBalance: bigint;
+  delegatedByPercent: number;
 };
 
 export const EIP712Delegatee = {

@@ -5,6 +5,7 @@ import { Addresses } from 'src/config/contracts';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
 import { Delegatee, DelegateeMetadata } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
+import { fromFixidity } from 'src/utils/numbers';
 import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
@@ -63,6 +64,18 @@ async function fetchDelegateeStats(
     ),
   });
 
+  const delegatedFractionResults = await publicClient.multicall({
+    contracts: metadata.map(
+      (d) =>
+        ({
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'getAccountTotalDelegatedFraction',
+          args: [d.address],
+        }) as const,
+    ),
+  });
+
   // Process validator lists to create list of validator groups
   const delegatees: AddressTo<Delegatee> = {};
   for (let i = 0; i < metadata.length; i++) {
@@ -70,20 +83,27 @@ async function fetchDelegateeStats(
 
     const lockedBalanceRes = lockedBalanceResults[i];
     const votingPowerRes = votingPowerResults[i];
+    const delegatedFractionRes = delegatedFractionResults[i];
 
-    if (lockedBalanceRes.status !== 'success' || votingPowerRes.status !== 'success')
+    if (
+      lockedBalanceRes.status !== 'success' ||
+      votingPowerRes.status !== 'success' ||
+      delegatedFractionRes.status !== 'success'
+    )
       throw new Error('Error fetching delegatee stats');
 
     const lockedBalance = lockedBalanceRes.result as bigint;
     const votingPower = votingPowerRes.result as bigint;
-    const delegatedBalance = votingPower - lockedBalance;
+    const votingPowerMinusLockedBalance = votingPower - lockedBalance;
+    const delegatedByPercent = fromFixidity(delegatedFractionRes.result as bigint) * 100;
 
     delegatees[address] = {
       ...metadata[i],
       address,
       lockedBalance,
       votingPower,
-      delegatedBalance,
+      delegatedToBalance: votingPowerMinusLockedBalance > 0 ? votingPowerMinusLockedBalance : 0n,
+      delegatedByPercent,
     };
   }
 
