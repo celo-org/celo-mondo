@@ -76,33 +76,43 @@ async function fetchDelegateeStats(
     ),
   });
 
+  const delegatedToResults = await publicClient.multicall({
+    contracts: metadata.map(
+      (d) =>
+        ({
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'totalDelegatedCelo',
+          args: [d.address],
+        }) as const,
+    ),
+  });
+
   // Process validator lists to create list of validator groups
   const delegatees: AddressTo<Delegatee> = {};
   for (let i = 0; i < metadata.length; i++) {
     const address = metadata[i].address as Address;
 
-    const lockedBalanceRes = lockedBalanceResults[i];
     const votingPowerRes = votingPowerResults[i];
     const delegatedFractionRes = delegatedFractionResults[i];
+    const delegatedToRes = delegatedToResults[i];
 
     if (
-      lockedBalanceRes.status !== 'success' ||
       votingPowerRes.status !== 'success' ||
-      delegatedFractionRes.status !== 'success'
+      delegatedFractionRes.status !== 'success' ||
+      delegatedToRes.status !== 'success'
     )
       throw new Error('Error fetching delegatee stats');
 
-    const lockedBalance = lockedBalanceRes.result as bigint;
     const votingPower = votingPowerRes.result as bigint;
-    const votingPowerMinusLockedBalance = votingPower - lockedBalance;
     const delegatedByPercent = fromFixidity(delegatedFractionRes.result as bigint) * 100;
+    const delegatedToBalance = delegatedToRes.result as bigint;
 
     delegatees[address] = {
       ...metadata[i],
       address,
-      lockedBalance,
       votingPower,
-      delegatedToBalance: votingPowerMinusLockedBalance > 0 ? votingPowerMinusLockedBalance : 0n,
+      delegatedToBalance,
       delegatedByPercent,
     };
   }

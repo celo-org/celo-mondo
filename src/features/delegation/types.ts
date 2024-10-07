@@ -72,7 +72,6 @@ export type DelegateeMetadata = z.infer<typeof DelegateeMetadataSchema>;
 
 export type Delegatee = DelegateeMetadata & {
   address: Address;
-  lockedBalance: bigint;
   votingPower: bigint;
   delegatedToBalance: bigint;
   delegatedByPercent: number;
