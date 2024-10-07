@@ -153,13 +153,14 @@ export function DelegateRegistrationForm({
       validateOnBlur={false}
     >
       {({ errors }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between lg:max-w-2xl">
           <div className={'space-y-3'}>
             {delegatedPercent > 0 && (
               <p className={'text-red-600'}>
                 You are currently delegating{' '}
-                <span className={'font-bold'}>{delegatedPercent}%</span> of your voting power. You
-                can still register as a delegatee, but consider undelegating.
+                <span className={'font-bold'}>{delegatedPercent}%</span> of your locked CELO. You
+                can still register as a delegatee, but consider undelegating. You can delegate only
+                CELO that you locked, not CELO that is delegated to you.
               </p>
             )}
             <div className={'flex flex-col space-y-0.5'}>
