@@ -40,18 +40,6 @@ async function fetchDelegateeStats(
   publicClient: PublicClient,
   metadata: DelegateeMetadata[],
 ): Promise<AddressTo<Delegatee>> {
-  const lockedBalanceResults = await publicClient.multicall({
-    contracts: metadata.map(
-      (d) =>
-        ({
-          address: Addresses.LockedGold,
-          abi: lockedGoldABI,
-          functionName: 'getAccountTotalLockedGold',
-          args: [d.address],
-        }) as const,
-    ),
-  });
-
   const votingPowerResults = await publicClient.multicall({
     contracts: metadata.map(
       (d) =>
