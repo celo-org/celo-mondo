@@ -24,13 +24,26 @@ export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
         <h2 className="font-serif text-2xl">Delegate</h2>
         <VotingPower />
       </div>
-      <SolidButton
-        className="btn-neutral w-full"
-        onClick={() => showTxModal()}
-      >{`️🗳️ Delegate voting power`}</SolidButton>
+      <div>
+        <SolidButton
+          className="btn-neutral w-full"
+          onClick={() => showTxModal()}
+        >{`️🗳️ Delegate voting power`}</SolidButton>
+        {delegatee.delegatedByPercent > 0 && (
+          <p className={'text-md pt-1 text-red-600'}>
+            Delegatee is currently delegating{' '}
+            <span className={'font-bold'}>{delegatee.delegatedByPercent}%</span> of their voting
+            power.
+          </p>
+        )}
+      </div>
       <div>
         <h3 className="text-sm">{`Delegate's current voting power`}</h3>
         <Amount valueWei={delegatee.votingPower} className="text-xl" />
+      </div>
+      <div>
+        <h3 className="text-sm">{`Delegated`}</h3>
+        <Amount valueWei={delegatee.delegatedToBalance} className="text-xl" />
       </div>
       <div className="border-taupe-30 border-t pt-4">
         {proposalToVotes ? (

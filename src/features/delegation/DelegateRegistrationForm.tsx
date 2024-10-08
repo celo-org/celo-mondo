@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { TextField } from 'src/components/input/TextField';
+import { useDelegatedPercent } from 'src/features/delegation/hooks/useDelegatedPercent';
 import { useSignedData } from 'src/features/delegation/hooks/useSIgnedData';
 import {
   RegisterDelegateFormValues,
@@ -36,6 +37,7 @@ export function DelegateRegistrationForm({
   const [isSigning, setIsSigning] = useState(false);
   const [pullRequestUrl, setPullRequestUrl] = useState<string | null>(null);
   const signForm = useSignedData();
+  const { delegatedPercent } = useDelegatedPercent(address);
 
   const validate = async (values: RegisterDelegateFormValues, image: File | null) => {
     return await validateRegistrationRequest({
@@ -151,8 +153,16 @@ export function DelegateRegistrationForm({
       validateOnBlur={false}
     >
       {({ errors }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between lg:max-w-2xl">
           <div className={'space-y-3'}>
+            {delegatedPercent > 0 && (
+              <p className={'text-red-600'}>
+                You are currently delegating{' '}
+                <span className={'font-bold'}>{delegatedPercent}%</span> of your locked CELO. You
+                can still register as a delegatee, but consider undelegating. You can delegate only
+                CELO that you locked, not CELO that is delegated to you.
+              </p>
+            )}
             <div className={'flex flex-col space-y-0.5'}>
               <label htmlFor={'address'} className="text-xs font-semibold">
                 Address

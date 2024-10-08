@@ -26,7 +26,7 @@ const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
 export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [columnVisibility, setColumnVisibility] = useState({});
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'delegatedBalance', desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'delegatedToBalance', desc: true }]);
   const onSortingChange = (s: SortingState | ((prev: SortingState) => SortingState)) => {
     setSorting(s);
   };
@@ -154,7 +154,7 @@ function useTableColumns() {
         ),
         enableSorting: false,
       }),
-      columnHelper.accessor('delegatedBalance', {
+      columnHelper.accessor('delegatedToBalance', {
         header: 'Delegated',
         cell: (props) => <div>{formatNumberString(props.getValue(), 0, true) + ' CELO'}</div>,
       }),
