@@ -16,13 +16,20 @@ const CONNECT_SRC_HOSTS = [
   'https://raw.githubusercontent.com',
   'https://celo-mainnet.infura.io',
   'https://qstash.upstash.io',
+  'https://app.safe.global',
+  'https://*.rainbow.me',
 ];
-const FRAME_SRC_HOSTS = ['https://*.walletconnect.com', 'https://*.walletconnect.org'];
-const IMG_SRC_HOSTS = ['https://*.walletconnect.com'];
+const FRAME_SRC_HOSTS = [
+  'https://*.walletconnect.com',
+  'https://*.walletconnect.org',
+  'https://app.safe.global',
+];
+const IMG_SRC_HOSTS = ['https://*.walletconnect.com', 'https://app.safe.global'];
+const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
 
 const cspHeader = `
   default-src 'self';
-  script-src 'self'${isDev ? " 'unsafe-eval'" : ''};
+  script-src 'self' ${isDev ? "'unsafe-eval'" : SCRIPTS_SRC_HOSTS.join(' ')};
   script-src-elem 'self' 'unsafe-inline';
   style-src 'self' 'unsafe-inline';
   connect-src 'self' ${CONNECT_SRC_HOSTS.join(' ')};
@@ -32,7 +39,7 @@ const cspHeader = `
   base-uri 'self';
   form-action 'self';
   frame-src 'self' ${FRAME_SRC_HOSTS.join(' ')};
-  frame-ancestors 'none';
+  frame-ancestors 'self' ${FRAME_SRC_HOSTS.join(' ')};
   ${!isDev ? 'block-all-mixed-content;' : ''}
   ${!isDev ? 'upgrade-insecure-requests;' : ''}
 `
@@ -46,7 +53,7 @@ const securityHeaders = [
   },
   {
     key: 'X-Frame-Options',
-    value: 'DENY',
+    value: `ALLOW-FROM ${FRAME_SRC_HOSTS.join(' ')}`,
   },
   {
     key: 'X-Content-Type-Options',
@@ -77,6 +84,18 @@ module.exports = {
       {
         source: '/(.*)',
         headers: securityHeaders,
+      },
+      {
+        // This allow the manifest to be fetched and used by safe.global
+        source: '/manifest.json',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET' },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-Requested-With, content-type, Authorization',
+          },
+        ],
       },
     ];
   },
