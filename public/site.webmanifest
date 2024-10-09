@@ -1,6 +1,7 @@
 {
     "name": "Celo Mondo",
     "short_name": "Celo Mondo",
+    "description": "Celo Mondo is a DApp for participating in staking and governance on Celo.\n\nEarn rewards by locking & staking your CELO tokens. Help decide Celo's destiny by casting your vote in on-chain governance proposals.",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
