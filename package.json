@@ -73,7 +73,7 @@
   "resolutions": {
     "bignumber.js": "9.1.2",
     "zustand": "^4.4",
-    "bn.js": "^5.2"
+    "bn.js": "^5.2.1"
   },
   "scripts": {
     "prepare": "husky",
