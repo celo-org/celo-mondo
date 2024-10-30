@@ -1,0 +1,16 @@
+{
+  "name": "PGov",
+  "address": "0x3FB19771947072629C8EEE7995a2eF23B72d4C8A",
+  "logoUri": "/logos/delegatees/0x3FB19771947072629C8EEE7995a2eF23B72d4C8A.svg",
+  "date": "2024-10-30",
+  "links": {
+    "website": "https://twitter.com/pgovteam",
+    "twitter": "https://twitter.com/pgovteam"
+  },
+  "interests": [
+    "Growth",
+    "Accountability",
+    "Sustainability"
+  ],
+  "description": "We're a team of dedicated governance enthusiasts who have been in the governance space for over four years. Our team were some of the first members involved in defi governance and we want to apply what we have learned over the years to Celo!"
+}
