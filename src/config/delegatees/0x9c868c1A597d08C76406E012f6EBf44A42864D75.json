@@ -1,0 +1,17 @@
+{
+  "name": "clemens.eth",
+  "address": "0x9c868c1A597d08C76406E012f6EBf44A42864D75",
+  "logoUri": "/logos/delegatees/0x9c868c1A597d08C76406E012f6EBf44A42864D75.jpg",
+  "date": "2024-11-05",
+  "links": {
+    "website": "https://clemensot.to",
+    "twitter": "https://x.com/clemensvienna"
+  },
+  "interests": [
+    "Blockchain Infrastructure",
+    "High Availability",
+    "Proof-of-Stake",
+    "Decentralization"
+  ],
+  "description": "Blockchain Infrastructure Enthusiast. Validator Operator @ atweb3.io"
+}
