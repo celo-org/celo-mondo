@@ -1,0 +1,16 @@
+{
+  "name": "Celo Mexico",
+  "address": "0xbd7b5d8Fdc2d21e73350741ff5C4cAC335B219a2",
+  "logoUri": "/logos/delegatees/0xbd7b5d8Fdc2d21e73350741ff5C4cAC335B219a2.png",
+  "date": "2024-11-07",
+  "links": {
+    "website": "https://celomexico.org/",
+    "twitter": "https://x.com/celomexico"
+  },
+  "interests": [
+    "Blockchain",
+    "ReFi",
+    "SoFi"
+  ],
+  "description": "Regional Celo DAO in Mexico"
+}
