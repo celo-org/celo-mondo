@@ -1,0 +1,16 @@
+{
+  "name": "Martín Volpe",
+  "address": "0x3779CF289d8161Cd6679696D10647FBa2cb0ef50",
+  "logoUri": "/logos/delegatees/0x3779CF289d8161Cd6679696D10647FBa2cb0ef50.jpg",
+  "date": "2024-11-07",
+  "links": {
+    "twitter": "https://twitter.com/martinvol"
+  },
+  "interests": [
+    "Engineering",
+    "Stablecoins",
+    "Latam",
+    "Europe"
+  ],
+  "description": "Have been involved in Celo since 2019, before mainnet launch. I am a Protocol Lead and director at cLabs. I'm a signer of the Celo Approver, Mento Watch and CeLatam DAO multisigs."
+}
