@@ -77,7 +77,7 @@ __metadata:
     autoprefixer: "npm:^10.4.20"
     bignumber.js: "npm:^9.1.2"
     clsx: "npm:^2.1.1"
-    critters: "npm:^0.0.22"
+    critters: "npm:^0.0.25"
     daisyui: "npm:^4.9.0"
     dompurify: "npm:^3.1.4"
     dotenv: "npm:^16.4.5"
@@ -4110,9 +4110,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"critters@npm:^0.0.22":
-  version: 0.0.22
-  resolution: "critters@npm:0.0.22"
+"critters@npm:^0.0.25":
+  version: 0.0.25
+  resolution: "critters@npm:0.0.25"
   dependencies:
     chalk: "npm:^4.1.0"
     css-select: "npm:^5.1.0"
@@ -4121,7 +4121,7 @@ __metadata:
     htmlparser2: "npm:^8.0.2"
     postcss: "npm:^8.4.23"
     postcss-media-query-parser: "npm:^0.2.3"
-  checksum: 10/57806f9141ef12fddbe4c6fa8442573b4d5fcc4f564bedaf3b34f8eb231b4177bb9122a31dec8037d129f78813c1f8b9acdc84883de527a7eac5ef66440cf1da
+  checksum: 10/f3e02e0184981deae80394b015d789c5f30e37a1175d54134dbd32fa8bbed6af352f7ef891d9a13be53470be55da4370f1b4191d3aefc6f38d872ec0e6de3cee
   languageName: node
   linkType: hard
 
