@@ -1,0 +1,16 @@
+{
+  "name": "FranklinDAO",
+  "address": "0x070341aA5Ed571f0FB2c4a5641409B1A46b4961b",
+  "logoUri": "/logos/delegatees/FranklinDAO.svg",
+  "date": "2024-11-19",
+  "links": {
+    "website": "https://twitter.com/franklin_dao",
+    "twitter": "https://twitter.com/franklin_dao"
+  },
+  "interests": [
+    "Efficiency",
+    "Growth",
+    "Impact"
+  ],
+  "description": "FranklinDAO is a student-run DAO composing of students at the University of Pennsylvania, and is one of the most active blockchain university orgs in the world. We have made major contributions throughout the years in Uniswap, Compound, Arbitrum, Aave through working groups and spearheading proposals. We’re excited to participate in Celo and help work on impactful initiatives."
+}
