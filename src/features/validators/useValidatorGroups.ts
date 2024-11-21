@@ -1,9 +1,11 @@
 import { accountsABI, electionABI, lockedGoldABI, validatorsABI } from '@celo/abis';
+import { epochManagerABI } from '@celo/abis-12';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { isCel2 } from 'src/utils/is-cel2';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
 import { PublicClient } from 'viem';
@@ -122,11 +124,17 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
         abi: validatorsABI,
         functionName: 'getRegisteredValidators',
       } as const,
-      {
-        address: Addresses.Election,
-        abi: electionABI,
-        functionName: 'getCurrentValidatorSigners',
-      } as const,
+      (await isCel2(publicClient))
+        ? {
+            address: Addresses.EpochManager,
+            abi: epochManagerABI,
+            functionName: 'getElectedSigners',
+          }
+        : {
+            address: Addresses.Election,
+            abi: electionABI,
+            functionName: 'getCurrentValidatorSigners',
+          },
     ],
   });
   if (validatorAddrsResp.status !== 'success' || !validatorAddrsResp.result?.length) {

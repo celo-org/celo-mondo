@@ -1,5 +1,4 @@
 import { ChainId } from 'src/config/chains';
-import { links } from 'src/config/links';
 
 interface Config {
   debug: boolean;
@@ -12,6 +11,7 @@ interface Config {
   infuraApiKey: string;
   upstashKey: string;
   watchBlockNumber: boolean;
+  useAlfajores: boolean;
 }
 
 const isDevMode = process?.env?.NODE_ENV === 'development';
@@ -21,19 +21,21 @@ const fornoApiKey = process?.env?.NEXT_PUBLIC_FORNO_API_KEY || '';
 const celoscanApiKey = process?.env?.NEXT_PUBLIC_CELOSCAN_API_KEY || '';
 const infuraApiKey = process?.env?.NEXT_PUBLIC_INFURA_API_KEY || '';
 const upstashKey = process?.env?.UPSTASH_KEY || '';
+const useAlfajores = process?.env?.NEXT_PUBLIC_USE_ALFAJORES === '1' || false;
 
-export const fornoRpcUrl = `${links.forno}?apikey=${fornoApiKey}`;
-export const infuraRpcUrl = `${links.infura}/${infuraApiKey}`;
+export const fornoRpcUrl = `https://forno.celo.org?apikey=${fornoApiKey}`;
+export const infuraRpcUrl = `https://celo-mainnet.infura.io/v3/${infuraApiKey}`;
 
 export const config: Config = Object.freeze({
   debug: isDevMode,
   version,
   appName: 'Celo Mondo',
-  chainId: ChainId.Celo,
+  chainId: useAlfajores ? ChainId.Alfajores : ChainId.Celo,
   walletConnectProjectId,
   fornoApiKey,
   celoscanApiKey,
   infuraApiKey,
   upstashKey,
   watchBlockNumber: false,
+  useAlfajores,
 });
