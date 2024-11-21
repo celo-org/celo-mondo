@@ -1,5 +1,5 @@
 import { electionABI } from '@celo/abis';
-import { fornoRpcUrl } from 'src/config/config';
+import { config, fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import {
   StakeActivationRequest,
@@ -10,7 +10,7 @@ import { logger } from 'src/utils/logger';
 import { errorToString } from 'src/utils/strings';
 import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { celo } from 'viem/chains';
+import { celo, celoAlfajores } from 'viem/chains';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +50,10 @@ async function activateStake(request: StakeActivationRequest) {
   const group = request.group as HexString;
   const transactionHash = request.transactionHash as HexString;
 
-  const client = createPublicClient({ chain: celo, transport: http(fornoRpcUrl) });
+  const client = createPublicClient({
+    chain: config.useAlfajores ? celoAlfajores : celo,
+    transport: config.useAlfajores ? http() : http(fornoRpcUrl),
+  });
 
   const transaction = await client.getTransaction({ hash: transactionHash });
   if (!eqAddress(transaction.from, address))
@@ -104,5 +107,9 @@ function getWalletClient() {
   const privateKey = process.env.STAKE_ACTIVATION_PRIVATE_KEY as HexString;
   if (!privateKey) throw new Error('No private key set for staking activation');
   const account = privateKeyToAccount(privateKey);
-  return createWalletClient({ account, chain: celo, transport: http(fornoRpcUrl) });
+  return createWalletClient({
+    account,
+    chain: config.useAlfajores ? celoAlfajores : celo,
+    transport: config.useAlfajores ? http() : http(fornoRpcUrl),
+  });
 }
