@@ -41,7 +41,7 @@ const connectors = connectorsForWallets(
 );
 
 export const wagmiConfig = createConfig({
-  chains: [config.useAlfajores ? celoAlfajores : celo],
+  chains: [config.isAlfajores ? celoAlfajores : celo],
   connectors,
   transports: {
     [celo.id]: fallback([http(fornoRpcUrl), http(infuraRpcUrl)]),

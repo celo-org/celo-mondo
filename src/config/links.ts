@@ -12,8 +12,8 @@ export const links = {
   delegate: 'https://github.com/celo-org/celo-mondo/blob/main/src/config/delegates.json',
   // Explorers
   blockscout: 'https://explorer.celo.org',
-  celoscan: config.useAlfajores ? 'https://alfajores.celoscan.io/' : 'https://celoscan.io',
-  celoscanApi: config.useAlfajores
+  celoscan: config.isAlfajores ? 'https://alfajores.celoscan.io/' : 'https://celoscan.io',
+  celoscanApi: config.isAlfajores
     ? 'https://api-alfajores.celoscan.io/api'
     : 'https://api.celoscan.io',
   // Auto-activation

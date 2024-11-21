@@ -1,21 +1,16 @@
 import { accountsABI } from '@celo/abis';
 import { App, Octokit } from 'octokit';
 import path from 'path';
-import { config, fornoRpcUrl } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import {
   delegateeRegistrationRequestToMetadata,
   metadataToJSONString,
 } from 'src/features/delegation/delegateeMetadata';
 import { RegisterDelegateRequest } from 'src/features/delegation/types';
-import { createPublicClient, http } from 'viem';
-import { celo, celoAlfajores } from 'viem/chains';
+import { createCeloPublicClient } from 'src/utils/client';
 
 export async function isAddressAnAccount(address: HexString) {
-  const client = createPublicClient({
-    chain: config.useAlfajores ? celoAlfajores : celo,
-    transport: config.useAlfajores ? http() : http(fornoRpcUrl),
-  });
+  const client = createCeloPublicClient();
 
   return await client.readContract({
     address: Addresses.Accounts,

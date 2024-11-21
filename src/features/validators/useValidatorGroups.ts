@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
+import { Addresses, resolveAddress } from 'src/config/contracts';
 import { isCel2 } from 'src/utils/is-cel2';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
@@ -126,7 +126,7 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
       } as const,
       (await isCel2(publicClient))
         ? {
-            address: Addresses.EpochManager,
+            address: await resolveAddress('EpochManager'),
             abi: epochManagerABI,
             functionName: 'getElectedSigners',
           }

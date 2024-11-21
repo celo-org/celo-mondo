@@ -1,4 +1,7 @@
+import { registryABI } from '@celo/abis-12';
 import { config } from 'src/config/config';
+import { ZERO_ADDRESS } from 'src/config/consts';
+import { createCeloPublicClient } from 'src/utils/client';
 
 const ALFAJORES_ADDRESSES = {
   Accounts: '0xed7f51A34B4e71fbE69B3091FcF879cD14bD73A9',
@@ -12,10 +15,31 @@ const ALFAJORES_ADDRESSES = {
 const MAINNET_ADDRESSES = {
   Accounts: '0x7d21685C17607338b313a7174bAb6620baD0aaB7',
   Election: '0x8D6677192144292870907E3Fa8A5527fE55A7ff6',
-  EpochManager: '0x0000000000000000000000000000000000000000', // to be added
+  // TODO once the migration is done add the address here
+  // for now it will be resolved automatically during runtime
+  EpochManager: ZERO_ADDRESS,
   Governance: '0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972',
   LockedGold: '0x6cC083Aed9e3ebe302A6336dBC7c921C9f03349E',
   Validators: '0xaEb865bCa93DdC8F47b8e29F40C5399cE34d0C58',
 } as const;
 
-export const Addresses = config.useAlfajores ? ALFAJORES_ADDRESSES : MAINNET_ADDRESSES;
+export const Addresses = config.isAlfajores ? ALFAJORES_ADDRESSES : MAINNET_ADDRESSES;
+
+export const REGISTRY_ADDRESS = '0x000000000000000000000000000000000000ce10';
+
+export const resolveAddress = async (name: keyof typeof Addresses) => {
+  if (Addresses[name] === ZERO_ADDRESS) {
+    console.log(`Resolving ${name} address from registry`);
+
+    const client = createCeloPublicClient();
+
+    return await client.readContract({
+      address: REGISTRY_ADDRESS,
+      functionName: 'getAddressForStringOrDie',
+      abi: registryABI,
+      args: [name],
+    });
+  }
+
+  return Addresses[name];
+};
