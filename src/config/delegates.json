@@ -281,5 +281,17 @@
     },
     "interests": ["Staking", "Security", "Passive Income"],
     "description": "Staking is a process of delegating your cryptocurrency to us. Our valdiators are responsible for validating transactions on the blockchain. In exchange for the participation in the network, you will receive a portion of the transaction fees and block rewards that are generated on the network. This means that at the end of each validating cycle (or epoch), your stake increases, generating you passive income."
+  },
+  "0xB6Bb848A8E00b77698CAb1626C893dc8ddE4927c": {
+    "name": "Hawwal",
+    "address": "0xB6Bb848A8E00b77698CAb1626C893dc8ddE4927c",
+    "logoUri": "/logos/delegatees/Hawwal.jpg",
+    "date": "2024-11-23",
+    "links": {
+      "website": "https://www.blaqkstereo.com",
+      "twitter": "https://x.com/itshawwal"
+    },
+    "interests": ["Blockchain", "NFTArt", "Creators", "Education", "Decentralization"],
+    "description": "I am the founder of Blaqk Stereo Music, a decentralized music distribution and streaming platform empowering artists to retrieve royalties seamlessly in stablecoin via the Minipay wallet. Additionally, I lead Celo Tribe, a Web3 club established in 18 universities across Nigeria, fostering blockchain education and innovation among students. As an alumnus of Celo Camp Batch 9 and with over a half a decade experience in Web3 and DAO building, I have honed the skills necessary to drive meaningful contributions to decentralized ecosystems. Over the past two years, I have actively supported the Celo ecosystem, combining my passion for regeneration with a commitment to creating inclusive opportunities. My deep understanding of governance and my dedication to advancing Celo’s mission of prosperity for all positions me as a strong candidate for delegate responsibilities. I am eager to bring my unique perspective to governance discussions and help shape the ecosystem’s future."
   }
 }
