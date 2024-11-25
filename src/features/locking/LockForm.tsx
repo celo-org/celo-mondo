@@ -107,7 +107,7 @@ export function LockForm({
             )}
             {values.action === LockActionType.Withdraw && shouldShowWithdrawalTip && (
               <TipBox color="purple">
-                You currently have no available unlocked CELO. Unstaking takes 3 days.{' '}
+                You currently have no available unlocked CELO. Unlocking takes 3 days.{' '}
                 {isUnstaking && (
                   <>
                     <br />
