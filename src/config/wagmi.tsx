@@ -17,7 +17,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { config, fornoRpcUrl, infuraRpcUrl } from 'src/config/config';
 import { Color } from 'src/styles/Color';
 import { fallback } from 'viem';
-import { celo } from 'viem/chains';
+import { celo, celoAlfajores } from 'viem/chains';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 
 const connectors = connectorsForWallets(
@@ -41,10 +41,11 @@ const connectors = connectorsForWallets(
 );
 
 export const wagmiConfig = createConfig({
-  chains: [celo],
+  chains: [config.isAlfajores ? celoAlfajores : celo],
   connectors,
   transports: {
     [celo.id]: fallback([http(fornoRpcUrl), http(infuraRpcUrl)]),
+    [celoAlfajores.id]: http(),
   },
 });
 

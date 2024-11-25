@@ -8,6 +8,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 const ENABLE_CSP_HEADER = true;
 const CONNECT_SRC_HOSTS = [
   'https://*.celo.org',
+  'https://*.celo-testnet.org',
   'https://*.celoscan.io',
   'https://*.walletconnect.com',
   'wss://*.walletconnect.com',

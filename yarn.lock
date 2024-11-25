@@ -58,6 +58,7 @@ __metadata:
   resolution: "@celo-mondo/celo-mondo-web@workspace:."
   dependencies:
     "@celo/abis": "npm:^11.0.0"
+    "@celo/abis-12": "npm:@celo/abis@12.0.0-canary.66"
     "@celo/compliance": "npm:^1.0.24"
     "@headlessui/react": "npm:^1.7.19"
     "@metamask/jazzicon": "https://github.com/jmrossy/jazzicon#7a8df28974b4e81129bfbe3cab76308b889032a6"
@@ -111,6 +112,13 @@ __metadata:
     zod: "npm:^3.23.8"
   languageName: unknown
   linkType: soft
+
+"@celo/abis-12@npm:@celo/abis@12.0.0-canary.66":
+  version: 12.0.0-canary.66
+  resolution: "@celo/abis@npm:12.0.0-canary.66"
+  checksum: 10/71f85edda338c651e214e77d983a9fb644cdc2f5bb0fe6bc471d73e3a8f87256dc4dc6e966e79d7b239fd5729d4862606c384a8f601e030829111e32b0824279
+  languageName: node
+  linkType: hard
 
 "@celo/abis@npm:^11.0.0":
   version: 11.0.0

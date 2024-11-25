@@ -2,6 +2,7 @@ import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Checkmark } from 'src/components/icons/Checkmark';
 import { Amount } from 'src/components/numbers/Amount';
+import { config } from 'src/config/config';
 import { ConfirmationDetails } from 'src/features/transactions/types';
 import { getTxExplorerUrl } from 'src/features/transactions/utils';
 import { toTitleCase } from 'src/utils/strings';
@@ -33,7 +34,7 @@ export function TransactionConfirmation({
           <div className="flex flex-row justify-between border-t border-taupe-300 pt-2">
             <div className="text-sm font-medium">Transaction</div>
             <A_Blank
-              href={getTxExplorerUrl(confirmation.receipt.transactionHash)}
+              href={getTxExplorerUrl(confirmation.receipt.transactionHash, config.chainId)}
               className="text-sm font-medium text-blue-500"
             >
               View in explorer

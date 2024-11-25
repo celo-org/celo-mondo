@@ -14,6 +14,8 @@ For support, you can [file an issue](https://github.com/celo-org/celo-mondo/issu
 
 ## Development
 
+To run Celo Mondo against alfajores network set `NEXT_PUBLIC_IS_ALFAJORES` env variable to `1`.
+
 1. Install: `yarn`
 2. Setup: `yarn prepare`
 3. Run locally: `yarn dev`
