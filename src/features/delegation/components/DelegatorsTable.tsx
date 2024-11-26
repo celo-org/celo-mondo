@@ -51,7 +51,9 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
       <tbody>
         {tableData.map((row) => (
           <tr key={row.label}>
-            <td className="py-2 font-mono text-sm text-taupe-600"><ShortAddress address={row.label as `0x${string}`}/></td>
+            <td className="py-2 font-mono text-sm text-taupe-600">
+              <ShortAddress address={row.label as `0x${string}`} />
+            </td>
             <td className="text-right text-sm">{`${formatNumberString(row.value)} CELO`}</td>
           </tr>
         ))}
