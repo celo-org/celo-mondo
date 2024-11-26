@@ -53,7 +53,10 @@ function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
         <div className="ml-4 flex flex-col">
           <h1 className="font-serif text-2xl md:text-3xl">{delegatee.name}</h1>
           <div className="flex items-center space-x-2">
-            <ShortAddress address={delegatee.address} className="text-sm text-taupe-600" />
+            <ShortAddress
+              address={delegatee.address}
+              className="font-mono text-sm text-taupe-600"
+            />
             <span className="text-sm text-taupe-600">•</span>
             <span className="text-sm text-taupe-600">{`Since ${dateString}`}</span>
           </div>

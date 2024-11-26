@@ -112,7 +112,10 @@ export function ProposalBadgeRow({
       {showProposer && proposer && (
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
-          <ShortAddress address={proposer} className="hidden text-sm text-taupe-600 sm:block" />
+          <ShortAddress
+            address={proposer}
+            className="hidden font-mono text-sm text-taupe-600 sm:block"
+          />
         </>
       )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
