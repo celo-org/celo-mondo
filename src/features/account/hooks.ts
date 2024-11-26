@@ -1,9 +1,11 @@
 import { accountsABI, lockedGoldABI } from '@celo/abis';
+import { useEffect, useState } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { BALANCE_REFRESH_INTERVAL, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { isCel2 } from 'src/utils/is-cel2';
 import { isNullish } from 'src/utils/typeof';
-import { useBalance as _useBalance, useReadContract } from 'wagmi';
+import { useBalance as _useBalance, usePublicClient, useReadContract } from 'wagmi';
 
 export function useBalance(address?: Address) {
   const { data, isError, isLoading, error, refetch } = _useBalance({
@@ -71,4 +73,16 @@ export function useAccountDetails(address?: Address) {
     isLoading,
     refetch,
   };
+}
+
+export function useIsCel2() {
+  const publicClient = usePublicClient();
+  const [_isCel2, setIsCel2] = useState<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (!publicClient) return;
+
+    void isCel2(publicClient).then((value) => setIsCel2(value));
+  }, [publicClient]);
+
+  return _isCel2;
 }
