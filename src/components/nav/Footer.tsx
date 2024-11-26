@@ -12,6 +12,7 @@ export function Footer() {
         <FooterIconLink href={links.github} type={SocialLinkType.Github} />
         <FooterIconLink href={links.twitter} type={SocialLinkType.Twitter} />
         <FooterIconLink href={links.discord} type={SocialLinkType.Discord} />
+        <FooterIconLink href={links.bug} type={SocialLinkType.Bug} />
       </div>
       <div className="flex items-center space-x-1">
         <div className="text-xs text-taupe-400">

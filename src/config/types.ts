@@ -5,6 +5,7 @@ export enum SocialLinkType {
   Twitter = 'twitter',
   Github = 'github',
   Discord = 'discord',
+  Bug = 'bug',
 }
 
 export const SocialLinksSchema = z.record(z.nativeEnum(SocialLinkType), z.string().url());
