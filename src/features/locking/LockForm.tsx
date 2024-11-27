@@ -82,6 +82,9 @@ export function LockForm({
     return validateForm(values, lockedBalances, walletBalance, stakeBalances, isVoting);
   };
 
+  const shouldShowWithdrawalTip = lockedBalances?.pendingFree === 0n && lockedBalances?.locked > 0n;
+  const isUnstaking = lockedBalances && lockedBalances.pendingBlocked > 0n;
+
   return (
     <Formik<LockFormValues>
       initialValues={{
@@ -100,6 +103,20 @@ export function LockForm({
               <TipBox color="purple">
                 You currently have no locked CELO. Staking and governance requires locked funds.
                 Lock CELO to begin.
+              </TipBox>
+            )}
+            {values.action === LockActionType.Withdraw && shouldShowWithdrawalTip && (
+              <TipBox color="purple">
+                You currently have no available unlocked CELO. Unlocking takes 3 days.{' '}
+                {isUnstaking && (
+                  <>
+                    <br />
+                    <span>
+                      You are currently unlocking {fromWeiRounded(lockedBalances.pendingBlocked)}{' '}
+                      CELO.
+                    </span>
+                  </>
+                )}
               </TipBox>
             )}
             <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />

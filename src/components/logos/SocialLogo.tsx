@@ -1,5 +1,6 @@
 import { SVGProps } from 'react';
 import { A_Blank } from 'src/components/buttons/A_Blank';
+import { Bug } from 'src/components/logos/Bug';
 import { Discord } from 'src/components/logos/Discord';
 import { Github } from 'src/components/logos/Github';
 import { Twitter } from 'src/components/logos/Twitter';
@@ -18,6 +19,7 @@ const LOGOS: Record<SocialLinkType, React.FC<any>> = {
   [SocialLinkType.Twitter]: Twitter,
   [SocialLinkType.Github]: Github,
   [SocialLinkType.Discord]: Discord,
+  [SocialLinkType.Bug]: Bug,
 };
 
 export function SocialLogo({ svgProps, type, className, size = 18 }: Props) {

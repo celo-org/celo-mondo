@@ -6,6 +6,8 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
+import { config } from 'src/config/config';
+import { useIsCel2 } from 'src/features/account/hooks';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
 
@@ -14,9 +16,17 @@ interface Bridge {
   operator: string;
   href: string;
   logo: any;
+  cel2Only?: boolean;
 }
 
 const BRIDGES: Bridge[] = [
+  {
+    name: 'Superbridge',
+    operator: 'Superbridge',
+    href: `https://superbridge.app/celo${config.isAlfajores ? '-testnet' : ''}`,
+    logo: '/logos/superbridge.jpg',
+    cel2Only: true,
+  },
   {
     name: 'Squid Router',
     operator: 'Squid',
@@ -32,17 +42,18 @@ const BRIDGES: Bridge[] = [
 ];
 
 export default function Page() {
+  const isCel2 = useIsCel2();
   return (
     <Section className="mt-6" containerClassName="space-y-6">
       <H1>Bridge to Celo</H1>
-      {BRIDGES.map((bridge) => (
+      {BRIDGES.filter((x) => (x.cel2Only ? isCel2 : true)).map((bridge) => (
         <BridgeLink key={bridge.name} {...bridge} />
       ))}
-      {/* <p className="text-center text-sm text-taupe-600">
+      <p className="text-center text-sm text-taupe-600">
         These bridges are independent, third-party service providers.
         <br />
         Celo assumes no responsibility for their operation.
-      </p> */}
+      </p>
     </Section>
   );
 }

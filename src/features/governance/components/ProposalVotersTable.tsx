@@ -3,6 +3,7 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ChartDataItem, sortAndCombineChartData } from 'src/components/charts/chartData';
 import { Collapse } from 'src/components/menus/Collapse';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { CopyInline } from 'src/components/text/CopyInline';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
@@ -17,19 +18,28 @@ import { toTitleCase } from 'src/utils/strings';
 const NUM_TO_SHOW = 20;
 
 export function ProposalVotersTable({ propData }: { propData: MergedProposalData }) {
+  const votersData = useProposalVoters(propData.id);
   return (
     <Collapse
-      button={<h2 className="text-left font-serif text-2xl">Voters</h2>}
+      button={
+        <h2 className="text-left font-serif text-2xl">
+          Voters <VotersCount {...votersData} />
+        </h2>
+      }
       buttonClasses="w-full"
       defaultOpen={propData.stage >= ProposalStage.Execution}
     >
-      <VoterTableContent propData={propData} />
+      <VoterTableContent propData={{ ...propData, votersData }} />
     </Collapse>
   );
 }
 
-function VoterTableContent({ propData }: { propData: MergedProposalData }) {
-  const { isLoading, voters, totals } = useProposalVoters(propData.id);
+function VoterTableContent({
+  propData,
+}: {
+  propData: MergedProposalData & { votersData: ReturnType<typeof useProposalVoters> };
+}) {
+  const { isLoading, voters, totals } = propData.votersData;
   const { addressToGroup } = useValidatorGroups();
 
   const tableData = useMemo(() => {
@@ -82,7 +92,11 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
       <tbody>
         {tableData.map((row) => (
           <tr key={row.label}>
-            <td className="py-2 text-sm">{row.label}</td>
+            <td
+              className={`py-2 text-sm ${row.label.startsWith('0x') ? 'font-mono' : ''} text-taupe-600`}
+            >
+              <CopyInline text={row.label} />
+            </td>
             <td className="px-4 py-2 text-sm font-medium">{toTitleCase(row.type)}</td>
             <td>
               <div className="flex w-fit items-center space-x-2 rounded-full bg-taupe-300 px-2">
@@ -97,4 +111,10 @@ function VoterTableContent({ propData }: { propData: MergedProposalData }) {
       </tbody>
     </table>
   );
+}
+
+function VotersCount({ isLoading, voters }: ReturnType<typeof useProposalVoters>) {
+  if (isLoading) return null;
+
+  return <span className="pl-4 text-sm text-taupe-600">{Object.keys(voters!).length}</span>;
 }

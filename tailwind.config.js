@@ -39,7 +39,7 @@ module.exports = {
     fontFamily: {
       sans: ['var(--font-inter)', 'sans-serif'],
       serif: ['var(--font-alpina)', 'serif'],
-      mono: ['Courier New', 'monospace'],
+      mono: ['monospace'],
     },
     fontSize: {
       xs: '0.725rem',

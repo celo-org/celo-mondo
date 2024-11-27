@@ -28,7 +28,7 @@ export function TransactionConfirmation({
           {confirmation.properties.map(({ label, value }) => (
             <div key={label} className="flex flex-row justify-between">
               <div className="text-sm font-medium">{label}</div>
-              <div className="text-sm font-medium">{value}</div>
+              <div className="overflow-hidden text-ellipsis text-sm font-medium">{value}</div>
             </div>
           ))}
           <div className="flex flex-row justify-between border-t border-taupe-300 pt-2">
