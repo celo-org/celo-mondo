@@ -123,6 +123,18 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
     ),
   });
 
+  const approved = await publicClient.multicall({
+    contracts: allIdsAndUpvotes.map(
+      (p) =>
+        ({
+          address: Addresses.Governance,
+          abi: governanceABI,
+          functionName: 'isApproved',
+          args: [p.id],
+        }) as const,
+    ),
+  });
+
   const votes = await publicClient.multicall({
     contracts: allIdsAndUpvotes.map(
       (p) =>
@@ -138,16 +150,22 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   const proposals: Proposal[] = [];
   for (let i = 0; i < allIdsAndUpvotes.length; i++) {
     const { id, upvotes } = allIdsAndUpvotes[i];
+    const isApproved = approved[i];
     const props = properties[i];
     const proposalStage = stages[i];
     const vote = votes[i];
 
-    if (!props.result || !proposalStage.result || !vote.result) {
+    if (!props.result || !proposalStage.result || !vote.result || !isApproved.result) {
       logger.warn('Missing proposal metadata, stage, or vote totals for ID', id);
       continue;
     }
 
-    const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
+    // NOTE: `isApproved` is _also_ part of the ProposalRaw
+    // however it seems that `isApproved()` can be not called prior
+    // in the smart contract and thus unpacking isApproved as false despite
+    // being computed as true when calling isApproved() explicitely.
+    // https://github.com/celo-org/celo-mondo/issues/96
+    const [proposer, deposit, timestampSec, numTransactions, url, networkWeight] =
       props.result as ProposalRaw;
     const [yes, no, abstain] = vote.result as VoteTotalsRaw;
     const stage = proposalStage.result as ProposalStage;
@@ -163,7 +181,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
       deposit,
       numTransactions,
       networkWeight,
-      isApproved,
+      isApproved: isApproved.result,
       url,
       upvotes,
       votes: {
