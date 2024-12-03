@@ -123,18 +123,6 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
     ),
   });
 
-  const approved = await publicClient.multicall({
-    contracts: allIdsAndUpvotes.map(
-      (p) =>
-        ({
-          address: Addresses.Governance,
-          abi: governanceABI,
-          functionName: 'isApproved',
-          args: [p.id],
-        }) as const,
-    ),
-  });
-
   const votes = await publicClient.multicall({
     contracts: allIdsAndUpvotes.map(
       (p) =>
@@ -150,12 +138,11 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   const proposals: Proposal[] = [];
   for (let i = 0; i < allIdsAndUpvotes.length; i++) {
     const { id, upvotes } = allIdsAndUpvotes[i];
-    const isApproved = approved[i];
     const props = properties[i];
     const proposalStage = stages[i];
     const vote = votes[i];
 
-    if (!props.result || !proposalStage.result || !vote.result || !isApproved.result) {
+    if (!props.result || !proposalStage.result || !vote.result) {
       logger.warn('Missing proposal metadata, stage, or vote totals for ID', id);
       continue;
     }
@@ -165,7 +152,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
     // in the smart contract and thus unpacking isApproved as false despite
     // being computed as true when calling isApproved() explicitely.
     // https://github.com/celo-org/celo-mondo/issues/96
-    const [proposer, deposit, timestampSec, numTransactions, url, networkWeight] =
+    const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
       props.result as ProposalRaw;
     const [yes, no, abstain] = vote.result as VoteTotalsRaw;
     const stage = proposalStage.result as ProposalStage;
@@ -181,7 +168,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
       deposit,
       numTransactions,
       networkWeight,
-      isApproved: isApproved.result,
+      isApproved,
       url,
       upvotes,
       votes: {
@@ -241,8 +228,19 @@ function mergeProposalsWithMetadata(
     if (metadataIndex >= 0) {
       // Remove the metadata element
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
-      // Add it to the merged array, giving priority to on-chain stage
-      merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
+      // For some reason for re-submitted proposals that eventually, the
+      // expired failed proposal on chain is still expired, use the metadata
+      // and trust `executedIds` events
+      if (metadata.id && executedIds.includes(metadata.id)) {
+        merged.push({
+          stage: metadata.stage,
+          id: metadata.id,
+          metadata: { ...metadata, votes: proposal.votes },
+        });
+      } else {
+        // Add it to the merged array, giving priority to on-chain stage
+        merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
+      }
     } else {
       // No metadata found, use just the on-chain data
       merged.push({ stage: proposal.stage, id: proposal.id, proposal });
