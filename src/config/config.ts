@@ -1,4 +1,4 @@
-import { celo, celoAlfajores } from 'viem/chains';
+import { celo, celoAlfajores, Chain } from 'viem/chains';
 
 interface Config {
   debug: boolean;
@@ -10,7 +10,7 @@ interface Config {
   infuraApiKey: string;
   upstashKey: string;
   watchBlockNumber: boolean;
-  chain: typeof chain;
+  chain: Chain;
 }
 
 const isDevMode = process?.env?.NODE_ENV === 'development';
@@ -47,7 +47,7 @@ const chain = {
         },
         testnet: true,
       }),
-};
+} as Chain;
 
 export const config: Config = Object.freeze({
   debug: isDevMode,
