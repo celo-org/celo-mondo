@@ -55,7 +55,7 @@ export function useActivateStake(refetchStakeData: () => any) {
   const activateStake = (group: Address) => {
     writeContract({
       address: Addresses.Election,
-      chainId: config.chainId,
+      chainId: config.chain.id,
       abi: electionABI,
       functionName: 'activate',
       args: [group],

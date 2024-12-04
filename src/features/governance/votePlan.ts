@@ -23,7 +23,7 @@ export function getVoteTxPlan(values: VoteFormValues, dequeued: number[]): TxPla
   return [
     {
       action: 'vote',
-      chainId: config.chainId,
+      chainId: config.chain.id,
       address: Addresses.Governance,
       abi: governanceABI,
       functionName: 'vote',
@@ -42,7 +42,7 @@ export function getUpvoteTxPlan(
   return [
     {
       action: 'upvote',
-      chainId: config.chainId,
+      chainId: config.chain.id,
       address: Addresses.Governance,
       abi: governanceABI,
       functionName: 'upvote',

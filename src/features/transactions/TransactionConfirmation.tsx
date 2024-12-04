@@ -34,7 +34,7 @@ export function TransactionConfirmation({
           <div className="flex flex-row justify-between border-t border-taupe-300 pt-2">
             <div className="text-sm font-medium">Transaction</div>
             <A_Blank
-              href={getTxExplorerUrl(confirmation.receipt.transactionHash, config.chainId)}
+              href={getTxExplorerUrl(confirmation.receipt.transactionHash, config.chain.id)}
               className="text-sm font-medium text-blue-500"
             >
               View in explorer

@@ -25,7 +25,7 @@ export function getLockTxPlan(
     return [
       {
         action,
-        chainId: config.chainId,
+        chainId: config.chain.id,
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'unlock',
@@ -43,7 +43,7 @@ export function getLockTxPlan(
       const txAmount = bigIntMin(amountRemaining, p.value);
       txs.push({
         action,
-        chainId: config.chainId,
+        chainId: config.chain.id,
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'relock',
@@ -55,7 +55,7 @@ export function getLockTxPlan(
     if (amountRemaining > 0) {
       txs.push({
         action,
-        chainId: config.chainId,
+        chainId: config.chain.id,
         address: Addresses.LockedGold,
         abi: lockedGoldABI,
         functionName: 'lock',
@@ -71,7 +71,7 @@ export function getLockTxPlan(
       if (p.timestamp <= now)
         txs.push({
           action,
-          chainId: config.chainId,
+          chainId: config.chain.id,
           address: Addresses.LockedGold,
           abi: lockedGoldABI,
           functionName: 'withdraw',

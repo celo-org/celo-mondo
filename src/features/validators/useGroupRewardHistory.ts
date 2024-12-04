@@ -7,7 +7,6 @@ import { Addresses } from 'src/config/contracts';
 import { queryCeloscanPath } from 'src/features/explorers/celoscan';
 import { logger } from 'src/utils/logger';
 import { Block, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
-import { celo, celoAlfajores } from 'viem/chains';
 
 const REWARD_DISTRIBUTED_ABI_FRAGMENT =
   'event EpochRewardsDistributedToVoters(address indexed group, uint256 value)';
@@ -68,8 +67,8 @@ async function fetchValidatorGroupRewardHistory(
     timeout: 20_000,
   });
   const infuraBatchClient = createPublicClient({
-    chain: config.isAlfajores ? celoAlfajores : celo,
-    transport: config.isAlfajores ? http() : infuraTransport,
+    chain: config.chain,
+    transport: config.chain.testnet ? http() : infuraTransport,
   });
 
   const rewardLogs = await infuraBatchClient.getLogs({
