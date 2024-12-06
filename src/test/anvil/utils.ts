@@ -1,7 +1,7 @@
-import { createTestClient, createWalletClient, http, publicActions, type Chain } from 'viem';
+import { createPublicClient, createTestClient, createWalletClient, http } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
-import { celoAlfajores } from 'viem/chains';
-import { ANVIL_BASE_HOST, ANVIL_CHAIN_ID, TEST_MNEMONIC } from './constants';
+import { celo } from 'viem/chains';
+import { ANVIL_BASE_HOST, TEST_MNEMONIC } from './constants';
 
 /**
  * The id of the current test worker.
@@ -10,8 +10,7 @@ import { ANVIL_BASE_HOST, ANVIL_CHAIN_ID, TEST_MNEMONIC } from './constants';
  */
 export const pool = Number(process.env.VITEST_POOL_ID ?? 1);
 export const anvil = {
-  ...celoAlfajores,
-  id: ANVIL_CHAIN_ID,
+  ...celo,
   rpcUrls: {
     default: {
       http: [`http://${ANVIL_BASE_HOST}/${pool}`],
@@ -22,13 +21,21 @@ export const anvil = {
       webSocket: [`ws://${ANVIL_BASE_HOST}/${pool}`],
     },
   },
-} as const satisfies Chain;
+} as unknown as typeof celo;
 
 export const testClient = createTestClient({
   chain: anvil,
   mode: 'anvil',
+  account: mnemonicToAccount(TEST_MNEMONIC),
   transport: http(),
-}).extend(publicActions);
+});
+
+export const publicClient = createPublicClient({
+  chain: anvil,
+  // For some reason if we don't set a batch size it fails on anvil?
+  batch: { multicall: { batchSize: 2048 } },
+  transport: http(),
+});
 
 export const walletClient = createWalletClient({
   chain: anvil,

@@ -1,7 +1,9 @@
 import { startProxy } from '@viem/anvil';
+import { formatEther } from 'viem';
+import { celo } from 'viem/chains';
 import {
-  ANVIL_CHAIN_ID,
-  ANVIL_STATE_PATH,
+  ANVIL_FORK_URL,
+  FORK_BLOCK_NUMBER,
   TEST_BALANCE,
   TEST_GAS_LIMIT,
   TEST_GAS_PRICE,
@@ -13,14 +15,16 @@ export default async function setup() {
     port: 8545,
     host: '::', // By default, the proxy will listen on all interfaces.
     options: {
-      chainId: ANVIL_CHAIN_ID,
-      state: ANVIL_STATE_PATH,
+      chainId: celo.id,
+      // state: ANVIL_STATE_PATH,
       mnemonic: TEST_MNEMONIC,
-      balance: TEST_BALANCE,
+      balance: BigInt(formatEther(TEST_BALANCE)),
       gasPrice: TEST_GAS_PRICE,
       gasLimit: TEST_GAS_LIMIT,
+      forkUrl: ANVIL_FORK_URL,
+      forkBlockNumber: FORK_BLOCK_NUMBER,
       blockBaseFeePerGas: 0,
-      stopTimeout: 1000,
+      startTimeout: 60_000,
     },
   });
 }

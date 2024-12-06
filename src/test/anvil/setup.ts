@@ -1,7 +1,15 @@
 import { fetchLogs } from '@viem/anvil';
+import { beforeEach } from 'node:test';
 import { afterEach } from 'vitest';
-import { ANVIL_BASE_HOST } from './constants';
-import { pool } from './utils';
+import { ANVIL_BASE_HOST, ANVIL_FORK_URL, FORK_BLOCK_NUMBER } from './constants';
+import { pool, testClient } from './utils';
+
+beforeEach(async () => {
+  testClient.reset({
+    jsonRpcUrl: ANVIL_FORK_URL,
+    blockNumber: FORK_BLOCK_NUMBER,
+  });
+});
 
 afterEach(async (context) => {
   context.onTestFailed(async () => {
