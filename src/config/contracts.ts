@@ -34,7 +34,7 @@ const MAINNET_ADDRESSES = {
 } as const;
 
 export const Addresses =
-config.chain.rpcUrls.default.http[0] === celo.rpcUrls.default.http[0]
+  config.chain.rpcUrls.default.http[0] === celo.rpcUrls.default.http[0]
     ? MAINNET_ADDRESSES
     : config.chain.rpcUrls.default.http[0] === celoAlfajores.rpcUrls.default.http[0]
       ? ALFAJORES_ADDRESSES
