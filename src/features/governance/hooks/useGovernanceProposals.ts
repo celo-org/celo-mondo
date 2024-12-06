@@ -147,6 +147,11 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
       continue;
     }
 
+    // NOTE: `isApproved` is _also_ part of the ProposalRaw
+    // however it seems that `isApproved()` can be not called prior
+    // in the smart contract and thus unpacking isApproved as false despite
+    // being computed as true when calling isApproved() explicitely.
+    // https://github.com/celo-org/celo-mondo/issues/96
     const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
       props.result as ProposalRaw;
     const [yes, no, abstain] = vote.result as VoteTotalsRaw;
@@ -223,8 +228,19 @@ function mergeProposalsWithMetadata(
     if (metadataIndex >= 0) {
       // Remove the metadata element
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
-      // Add it to the merged array, giving priority to on-chain stage
-      merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
+      // For some reason for re-submitted proposals that eventually, the
+      // expired failed proposal on chain is still expired, use the metadata
+      // and trust `executedIds` events
+      if (metadata.id && executedIds.includes(metadata.id)) {
+        merged.push({
+          stage: metadata.stage,
+          id: metadata.id,
+          metadata: { ...metadata, votes: proposal.votes },
+        });
+      } else {
+        // Add it to the merged array, giving priority to on-chain stage
+        merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
+      }
     } else {
       // No metadata found, use just the on-chain data
       merged.push({ stage: proposal.stage, id: proposal.id, proposal });

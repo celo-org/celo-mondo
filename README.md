@@ -14,10 +14,13 @@ For support, you can [file an issue](https://github.com/celo-org/celo-mondo/issu
 
 ## Development
 
-To run Celo Mondo against alfajores network set `NEXT_PUBLIC_IS_ALFAJORES` env variable to `1`.
+To run Celo Mondo against alfajores network set `NEXT_PUBLIC_RPC_URL` env variable to `alfajores`.
+
+To run Celo Mondo against any other network (such as your local testnet) set `NEXT_PUBLIC_RPC_URL` env variable to `http://<your-rpc-url>`.
 
 1. Install: `yarn`
 2. Setup: `yarn prepare`
 3. Run locally: `yarn dev`
+4. Test locally: `yarn test`
 
 For more information about the architecture and internals of this app, see [DEVELOPER.md](./DEVELOPER.md).
