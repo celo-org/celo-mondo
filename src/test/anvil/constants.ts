@@ -1,4 +1,3 @@
-import { readFileSync } from 'fs';
 import { parseEther } from 'viem';
 import { celo } from 'viem/chains';
 
@@ -14,7 +13,6 @@ export const ANVIL_STATE_PATH = require.resolve(
     ? '@celo/devchain-anvil/devchain.json'
     : '@celo/devchain-anvil/l2-devchain.json',
 );
-const json = JSON.parse(readFileSync(ANVIL_STATE_PATH).toString());
 export const FORK_BLOCK_NUMBER = BigInt(29162229);
 
 export const ANVIL_CHAIN_ID = celo.id;
