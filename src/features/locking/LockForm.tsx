@@ -28,6 +28,7 @@ import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { fromWeiRounded, toWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
+import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
@@ -47,7 +48,7 @@ export function LockForm({
 }) {
   const { address } = useAccount();
   const { balance: walletBalance } = useBalance(address);
-  const { lockedBalances, pendingWithdrawals, refetch } = useLockedStatus(address);
+  const { lockedBalances, pendingWithdrawals, refetch, unlockingPeriod } = useLockedStatus(address);
   const { stakeBalances } = useStakingBalances(address);
   const { isVoting } = useIsGovernanceVoting(address);
 
@@ -84,6 +85,7 @@ export function LockForm({
 
   const shouldShowWithdrawalTip = lockedBalances?.pendingFree === 0n && lockedBalances?.locked > 0n;
   const isUnstaking = lockedBalances && lockedBalances.pendingBlocked > 0n;
+  const unlockingPeriodReadable = getHumanReadableDuration(Number((unlockingPeriod || 0n) * 1000n));
 
   return (
     <Formik<LockFormValues>
@@ -107,7 +109,8 @@ export function LockForm({
             )}
             {values.action === LockActionType.Withdraw && shouldShowWithdrawalTip && (
               <TipBox color="purple">
-                You currently have no available unlocked CELO. Unlocking takes 3 days.{' '}
+                You currently have no available unlocked CELO. Unlocking takes{' '}
+                {unlockingPeriodReadable}.{' '}
                 {isUnstaking && (
                   <>
                     <br />
