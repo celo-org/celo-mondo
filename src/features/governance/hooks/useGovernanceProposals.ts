@@ -18,6 +18,7 @@ import {
   ProposalStage,
   VoteType,
 } from 'src/features/governance/types';
+import { FORK_BLOCK_NUMBER } from 'src/test/anvil/constants';
 import { logger } from 'src/utils/logger';
 import { PublicClient, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
@@ -68,9 +69,10 @@ type ProposalRaw = [Address, bigint, bigint, bigint, string, bigint, boolean];
 // Yes, no, abstain
 type VoteTotalsRaw = [bigint, bigint, bigint];
 
-async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
+export async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
   // Get queued and dequeued proposals
   const [queued, dequeued] = await publicClient.multicall({
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: [
       {
         address: Addresses.Governance,
@@ -100,6 +102,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   if (!allIdsAndUpvotes.length) return [];
 
   const properties = await publicClient.multicall({
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -112,6 +115,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   });
 
   const stages = await publicClient.multicall({
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -124,6 +128,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   });
 
   const votes = await publicClient.multicall({
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -147,13 +152,9 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
       continue;
     }
 
-    // NOTE: `isApproved` is _also_ part of the ProposalRaw
-    // however it seems that `isApproved()` can be not called prior
-    // in the smart contract and thus unpacking isApproved as false despite
-    // being computed as true when calling isApproved() explicitely.
-    // https://github.com/celo-org/celo-mondo/issues/96
     const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
       props.result as ProposalRaw;
+
     const [yes, no, abstain] = vote.result as VoteTotalsRaw;
     const stage = proposalStage.result as ProposalStage;
     const timestamp = Number(timestampSec) * 1000;
@@ -182,7 +183,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   return proposals;
 }
 
-function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
+export function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
   // Fetching every past proposal would take too long so the app
   // fetches them at build time and stores a cache. To keep this
   // hook fast, the app should be re-built every now and then.
@@ -192,17 +193,22 @@ function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
 
 // The governance metadata is often left unchanged after a proposal is executed
 // so this query is used to double-check the status of proposals
-async function fetchExecutedProposalIds(): Promise<number[]> {
+export async function fetchExecutedProposalIds(): Promise<number[]> {
   const topics = encodeEventTopics({
     abi: governanceABI,
     eventName: 'ProposalExecuted',
   });
 
   const events = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
+
+  const stablecoinProposal = events.find((event) => {
+    return parseInt(event.topics[1], 16) === 195;
+  });
+  console.log(stablecoinProposal);
   return events.map((e) => parseInt(e.topics[1], 16));
 }
 
-function mergeProposalsWithMetadata(
+export function mergeProposalsWithMetadata(
   proposals: Proposal[],
   metadata: ProposalMetadata[],
   executedIds: number[],
@@ -236,6 +242,7 @@ function mergeProposalsWithMetadata(
           stage: metadata.stage,
           id: metadata.id,
           metadata: { ...metadata, votes: proposal.votes },
+          proposal,
         });
       } else {
         // Add it to the merged array, giving priority to on-chain stage

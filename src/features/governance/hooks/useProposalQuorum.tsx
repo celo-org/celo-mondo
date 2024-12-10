@@ -6,6 +6,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { Proposal } from 'src/features/governance/types';
+import { FORK_BLOCK_NUMBER } from 'src/test/anvil/constants';
 import { fromFixidity } from 'src/utils/numbers';
 import { PublicClient } from 'viem';
 import { usePublicClient, useReadContract } from 'wagmi';
@@ -25,38 +26,20 @@ export function useProposalQuorum(propData?: MergedProposalData) {
   if (!thresholds || !participationParameters) return;
 
   // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
-  let quorum = new BigNumber(participationParameters.baseline).times(
+  const quorumPct = new BigNumber(participationParameters.baseline).times(
     participationParameters.baselineQuorumFactor,
   );
   // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Proposals.sol#L195-L211
-  let requiredVotes = BigInt(quorum.times(propData.proposal.networkWeight.toString()).toFixed(0));
-
-  // It would seem calculating `support` is unecessary ?
-  // const totalVotes =
-  //   propData.proposal.votes[VoteType.Abstain] +
-  //   propData.proposal.votes[VoteType.No] +
-  //   propData.proposal.votes[VoteType.Yes];
-
-  // let noVotesWithPadding = propData.proposal.votes[VoteType.No];
-  // if (requiredVotes > totalVotes) {
-  //   noVotesWithPadding += requiredVotes - totalVotes;
-  // }
-
-  // const support = new BigNumber(propData.proposal.votes[VoteType.Yes].toString())
-  //   .div(
-  //     new BigNumber(propData.proposal.votes[VoteType.Yes].toString()).plus(
-  //       noVotesWithPadding.toString(),
-  //     ),
-  //   )
-  //   .toNumber();
-
+  const quorumVotes = BigInt(
+    quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
+  );
   const maxThreshold = Math.max(...thresholds);
-  return new BigNumber(requiredVotes.toString()).div(maxThreshold).toFixed(0);
+  return new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0);
 }
 
 function useParticipationParameters(): ParticipationParameters {
   const { data } = useReadContract({
-    // blockNumber: FORK_BLOCK_NUMBER,
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     address: Addresses.Governance,
     abi: governanceABI,
     functionName: 'getParticipationParameters',
@@ -94,54 +77,20 @@ function useThresholds(proposal?: Proposal) {
 async function fetchThresholds(publicClient: PublicClient, proposal: Proposal) {
   const txIds = new Array(Number(proposal.numTransactions)).fill(0).map((_, id) => id);
 
+  // Extracting the base contract call avoids the following error:
+  // Type instantiation is excessively deep and possibly infinite. ts(2589)
+  const getProposalTransactionContract = {
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'getProposalTransaction',
+  } as const;
+
   const results = await publicClient?.multicall({
     allowFailure: false,
-    // blockNumber: FORK_BLOCK_NUMBER,
-    contracts: txIds.map((txId) => ({
-      address: Addresses.Governance,
-      // copied from governanceABI
-      // which gives me a weird error:
-      // Type instantiation is excessively deep and possibly infinite. ts(2589)
-      abi: [
-        {
-          constant: true,
-          inputs: [
-            {
-              internalType: 'uint256',
-              name: 'proposalId',
-              type: 'uint256',
-            },
-            {
-              internalType: 'uint256',
-              name: 'index',
-              type: 'uint256',
-            },
-          ],
-          name: 'getProposalTransaction',
-          outputs: [
-            {
-              internalType: 'uint256',
-              name: '',
-              type: 'uint256',
-            },
-            {
-              internalType: 'address',
-              name: '',
-              type: 'address',
-            },
-            {
-              internalType: 'bytes',
-              name: '',
-              type: 'bytes',
-            },
-          ],
-          payable: false,
-          stateMutability: 'view',
-          type: 'function',
-        },
-      ] as const,
-      args: [proposal.id, txId] as const,
-      functionName: 'getProposalTransaction',
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
+    contracts: txIds.map((txId: number) => ({
+      ...getProposalTransactionContract,
+      args: [proposal.id, txId],
     })),
   });
 
@@ -149,45 +98,21 @@ async function fetchThresholds(publicClient: PublicClient, proposal: Proposal) {
     return;
   }
 
+  // Extracting the base contract call avoids the following error:
+  // Type instantiation is excessively deep and possibly infinite. ts(2589)
+  const getConstitutionContract = {
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'getConstitution',
+  } as const;
+
   const thresholds = await publicClient?.multicall({
     allowFailure: false,
-    // blockNumber: FORK_BLOCK_NUMBER,
+    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: results.map(([_value, destination, data]) => {
       const functionId = extractFunctionSignature(data);
       return {
-        address: Addresses.Governance,
-        // copied from governanceABI
-        // which gives me a weird error:
-        // Type instantiation is excessively deep and possibly infinite. ts(2589)
-        abi: [
-          {
-            constant: true,
-            inputs: [
-              {
-                internalType: 'address',
-                name: 'destination',
-                type: 'address',
-              },
-              {
-                internalType: 'bytes4',
-                name: 'functionId',
-                type: 'bytes4',
-              },
-            ],
-            name: 'getConstitution',
-            outputs: [
-              {
-                internalType: 'uint256',
-                name: '',
-                type: 'uint256',
-              },
-            ],
-            payable: false,
-            stateMutability: 'view',
-            type: 'function',
-          },
-        ] as const,
-        functionName: 'getConstitution',
+        ...getConstitutionContract,
         args: [destination, functionId],
       };
     }),
