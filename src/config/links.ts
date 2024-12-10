@@ -11,8 +11,8 @@ export const links = {
   forum: 'https://forum.celo.org',
   governance: 'https://github.com/celo-org/governance',
   // Explorers
-  celoscan: config.isAlfajores ? 'https://alfajores.celoscan.io/' : 'https://celoscan.io',
-  celoscanApi: config.isAlfajores
+  celoscan: config.chain.testnet ? 'https://alfajores.celoscan.io/' : 'https://celoscan.io',
+  celoscanApi: config.chain.testnet
     ? 'https://api-alfajores.celoscan.io/api'
     : 'https://api.celoscan.io',
   // Auto-activation
