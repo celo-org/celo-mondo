@@ -14,8 +14,13 @@ beforeEach(async () => {
 afterEach(async (context) => {
   context.onTestFailed(async () => {
     // If a test fails, you can fetch and print the logs of your anvil instance.
-    const logs = await fetchLogs(`http://${ANVIL_BASE_HOST}`, pool);
-    // Only print the 20 most recent log messages.
-    console.log(...logs.slice(-20));
+    await fetchLogs(`http://${ANVIL_BASE_HOST}`, pool)
+      .then((logs) => {
+        // Only print the 20 most recent log messages.
+        console.log(...logs.slice(-20));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   });
 });

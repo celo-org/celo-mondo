@@ -16,7 +16,6 @@ export default async function setup() {
     host: '::', // By default, the proxy will listen on all interfaces.
     options: {
       chainId: celo.id,
-      // state: ANVIL_STATE_PATH,
       mnemonic: TEST_MNEMONIC,
       balance: BigInt(formatEther(TEST_BALANCE)),
       gasPrice: TEST_GAS_PRICE,

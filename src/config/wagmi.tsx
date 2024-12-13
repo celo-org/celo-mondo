@@ -14,11 +14,10 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
-import { config, fornoRpcUrl, infuraRpcUrl } from 'src/config/config';
+import { config, infuraRpcUrl } from 'src/config/config';
 import { Color } from 'src/styles/Color';
-import { fallback } from 'viem';
 import { celo, celoAlfajores } from 'viem/chains';
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider, createConfig, fallback, http } from 'wagmi';
 
 const connectors = connectorsForWallets(
   [
@@ -44,8 +43,8 @@ export const wagmiConfig = createConfig({
   chains: [config.chain],
   connectors,
   transports: {
-    [celo.id]: fallback([http(fornoRpcUrl), http(infuraRpcUrl)]),
-    [celoAlfajores.id]: http(),
+    [celo.id]: fallback([http(config.chain.rpcUrls.default.http[0]), http(infuraRpcUrl)]),
+    [celoAlfajores.id]: http(config.chain.rpcUrls.default.http[0]),
   },
 });
 

@@ -18,8 +18,8 @@ import {
   ProposalStage,
   VoteType,
 } from 'src/features/governance/types';
-import { FORK_BLOCK_NUMBER } from 'src/test/anvil/constants';
 import { logger } from 'src/utils/logger';
+import getRuntimeBlockNumber from 'src/utils/runtimeBlockNumber';
 import { PublicClient, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
 
@@ -72,7 +72,7 @@ type VoteTotalsRaw = [bigint, bigint, bigint];
 export async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
   // Get queued and dequeued proposals
   const [queued, dequeued] = await publicClient.multicall({
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
+    blockNumber: getRuntimeBlockNumber(),
     contracts: [
       {
         address: Addresses.Governance,
@@ -102,7 +102,7 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
   if (!allIdsAndUpvotes.length) return [];
 
   const properties = await publicClient.multicall({
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
+    blockNumber: getRuntimeBlockNumber(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -115,7 +115,7 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
   });
 
   const stages = await publicClient.multicall({
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
+    blockNumber: getRuntimeBlockNumber(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -128,7 +128,7 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
   });
 
   const votes = await publicClient.multicall({
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
+    blockNumber: getRuntimeBlockNumber(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -200,11 +200,6 @@ export async function fetchExecutedProposalIds(): Promise<number[]> {
   });
 
   const events = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
-
-  const stablecoinProposal = events.find((event) => {
-    return parseInt(event.topics[1], 16) === 195;
-  });
-  console.log(stablecoinProposal);
   return events.map((e) => parseInt(e.topics[1], 16));
 }
 
@@ -291,7 +286,7 @@ function isActive(p: MergedProposalData) {
   return ACTIVE_PROPOSAL_STAGES.includes(p.stage);
 }
 
-function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
+export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
   if (stage === ProposalStage.Queued) {
     return timestamp + QUEUED_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Approval) {

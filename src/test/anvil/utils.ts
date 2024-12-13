@@ -1,7 +1,7 @@
-import { createPublicClient, createTestClient, createWalletClient, http } from 'viem';
+import { createPublicClient, createTestClient, createWalletClient, http, PublicClient } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
-import { ANVIL_BASE_HOST, TEST_MNEMONIC } from './constants';
+import { ANVIL_BASE_HOST, ANVIL_FORK_URL, TEST_MNEMONIC } from './constants';
 
 /**
  * The id of the current test worker.
@@ -30,12 +30,19 @@ export const testClient = createTestClient({
   transport: http(),
 });
 
+// @ts-expect-error
 export const publicClient = createPublicClient({
   chain: anvil,
   // For some reason if we don't set a batch size it fails on anvil?
   batch: { multicall: { batchSize: 2048 } },
   transport: http(),
-});
+}) as PublicClient;
+
+// @ts-expect-error
+export const publicArchiveClient = createPublicClient({
+  chain: celo,
+  transport: http(ANVIL_FORK_URL),
+}) as PublicClient;
 
 export const walletClient = createWalletClient({
   chain: anvil,

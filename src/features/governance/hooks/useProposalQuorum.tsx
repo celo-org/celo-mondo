@@ -6,8 +6,8 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { Proposal } from 'src/features/governance/types';
-import { FORK_BLOCK_NUMBER } from 'src/test/anvil/constants';
 import { fromFixidity } from 'src/utils/numbers';
+import getRuntimeBlockNumber from 'src/utils/runtimeBlockNumber';
 import { PublicClient } from 'viem';
 import { usePublicClient, useReadContract } from 'wagmi';
 
@@ -34,12 +34,12 @@ export function useProposalQuorum(propData?: MergedProposalData) {
     quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
   );
   const maxThreshold = Math.max(...thresholds);
-  return new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0);
+  return BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0));
 }
 
-function useParticipationParameters(): ParticipationParameters {
+export function useParticipationParameters(): ParticipationParameters {
   const { data } = useReadContract({
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
+    blockNumber: getRuntimeBlockNumber(),
     address: Addresses.Governance,
     abi: governanceABI,
     functionName: 'getParticipationParameters',
@@ -60,13 +60,13 @@ function useParticipationParameters(): ParticipationParameters {
   );
 }
 
-function useThresholds(proposal?: Proposal) {
+export function useThresholds(proposal?: Proposal) {
   const publicClient = usePublicClient();
   const { isLoading, error, data } = useQuery({
-    queryKey: ['useThresholds', publicClient],
+    queryKey: ['useThresholds', publicClient, proposal],
     queryFn: async () => {
       if (!publicClient || !proposal) return null;
-      return await fetchThresholds(publicClient, proposal);
+      return await fetchThresholds(publicClient, proposal.id, proposal.numTransactions);
     },
   });
   useToastError(error, 'Error fetching proposal quorum data');
@@ -74,8 +74,12 @@ function useThresholds(proposal?: Proposal) {
   return isLoading ? undefined : data;
 }
 
-async function fetchThresholds(publicClient: PublicClient, proposal: Proposal) {
-  const txIds = new Array(Number(proposal.numTransactions)).fill(0).map((_, id) => id);
+export async function fetchThresholds(
+  publicClient: PublicClient,
+  proposalId: number,
+  numTransactions: bigint,
+) {
+  const txIds = new Array(Number(numTransactions)).fill(0).map((_, id) => id);
 
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
@@ -86,14 +90,13 @@ async function fetchThresholds(publicClient: PublicClient, proposal: Proposal) {
   } as const;
 
   const results = await publicClient?.multicall({
+    blockNumber: getRuntimeBlockNumber(),
     allowFailure: false,
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: txIds.map((txId: number) => ({
       ...getProposalTransactionContract,
-      args: [proposal.id, txId],
+      args: [proposalId, txId],
     })),
   });
-
   if (!results) {
     return;
   }
@@ -107,8 +110,8 @@ async function fetchThresholds(publicClient: PublicClient, proposal: Proposal) {
   } as const;
 
   const thresholds = await publicClient?.multicall({
+    blockNumber: getRuntimeBlockNumber(),
     allowFailure: false,
-    blockNumber: process.env.NODE_ENV === 'development' ? FORK_BLOCK_NUMBER : undefined,
     contracts: results.map(([_value, destination, data]) => {
       const functionId = extractFunctionSignature(data);
       return {
@@ -131,7 +134,7 @@ async function fetchThresholds(publicClient: PublicClient, proposal: Proposal) {
  * @notice Extracts the first four bytes of a byte array.
  * https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/common/ExtractFunctionSignature.sol#L9
  */
-function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
+export function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
   const data = Buffer.from(input.replace('0x', ''), 'hex');
   return `0x${data.subarray(0, 4).toString('hex')}`;
 }

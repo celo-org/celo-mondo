@@ -26,10 +26,15 @@ export const infuraRpcUrl = `https://celo-mainnet.infura.io/v3/${infuraApiKey}`;
 
 const rpcUrl = process?.env?.NEXT_PUBLIC_RPC_URL || celo.rpcUrls.default.http[0];
 
-const isMainnet = ['mainnet', celo.rpcUrls.default.http[0]].includes(rpcUrl);
+const isMainnet = [
+  'mainnet',
+  celo.rpcUrls.default.http[0],
+  process.env.NEXT_PUBLIC_RPC_URL,
+].includes(rpcUrl);
 const isKnownNetwork = [
   'mainnet',
   celo.rpcUrls.default.http[0],
+  process.env.NEXT_PUBLIC_RPC_URL,
   'testnet',
   'alfajores',
   celoAlfajores.rpcUrls.default.http[0],
@@ -48,6 +53,10 @@ const chain = {
         testnet: true,
       }),
 } as Chain;
+
+// TODO: too complex, refactor this
+
+chain.rpcUrls.default.http = [rpcUrl];
 
 export const config: Config = Object.freeze({
   debug: isDevMode,
