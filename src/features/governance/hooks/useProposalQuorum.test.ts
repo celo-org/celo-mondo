@@ -20,7 +20,7 @@ beforeEach(() => {
   }));
   vi.mock('@tanstack/react-query', async (importActual) => ({
     ...(await importActual()),
-    useQuery: vi.fn(({ data, error, isLoading }) => ({
+    useQuery: vi.fn(({ data, error }) => ({
       isLoading: false,
       isError: !error,
       error,
