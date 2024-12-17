@@ -1,7 +1,6 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
-import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
@@ -19,12 +18,13 @@ interface ParticipationParameters {
 }
 
 export function useProposalQuorum(propData?: MergedProposalData) {
-  const participationParameters = useParticipationParameters();
-  const thresholds = useThresholds(propData?.proposal);
+  const { isLoading: isLoadingParticipationParameters, data: participationParameters } =
+    useParticipationParameters();
+  const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(propData?.proposal);
 
-  if (!propData || !propData.proposal) return;
-  if (!thresholds || !participationParameters) return;
-
+  if (!propData || !propData.proposal || !participationParameters || !thresholds) {
+    return { isLoading: true };
+  }
   // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
   const quorumPct = new BigNumber(participationParameters.baseline).times(
     participationParameters.baselineQuorumFactor,
@@ -33,12 +33,18 @@ export function useProposalQuorum(propData?: MergedProposalData) {
   const quorumVotes = BigInt(
     quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
   );
-  const maxThreshold = Math.max(...thresholds);
-  return BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0));
+  const maxThreshold = Math.max(...thresholds!);
+  return {
+    data: BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0)),
+    isLoading: false,
+  };
 }
 
-export function useParticipationParameters(): ParticipationParameters {
-  const { data } = useReadContract({
+export function useParticipationParameters(): {
+  isLoading: boolean;
+  data: ParticipationParameters;
+} {
+  const { data, isLoading } = useReadContract({
     blockNumber: getRuntimeBlockNumber(),
     address: Addresses.Governance,
     abi: governanceABI,
@@ -49,29 +55,33 @@ export function useParticipationParameters(): ParticipationParameters {
     },
   });
 
-  return useMemo(
-    () => ({
+  return {
+    isLoading,
+    data: {
       baseline: fromFixidity(data?.[0]),
       baselineFloor: fromFixidity(data?.[1]),
       baselineUpdateFactor: fromFixidity(data?.[2]),
       baselineQuorumFactor: fromFixidity(data?.[3]),
-    }),
-    [data],
-  );
+    },
+  };
 }
 
 export function useThresholds(proposal?: Proposal) {
   const publicClient = usePublicClient();
-  const { isLoading, error, data } = useQuery({
+  const { error, isLoading, data } = useQuery({
     queryKey: ['useThresholds', publicClient, proposal],
     queryFn: async () => {
-      if (!publicClient || !proposal) return null;
-      return await fetchThresholds(publicClient, proposal.id, proposal.numTransactions);
+      return await fetchThresholds(publicClient!, proposal!.id, proposal!.numTransactions);
     },
+    enabled: Boolean(publicClient && proposal),
   });
   useToastError(error, 'Error fetching proposal quorum data');
 
-  return isLoading ? undefined : data;
+  return {
+    isLoading,
+    data,
+    error,
+  };
 }
 
 export async function fetchThresholds(

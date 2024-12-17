@@ -46,6 +46,9 @@
   "devDependencies": {
     "@celo/devchain-anvil": "12.0.0-canary.49",
     "@tanstack/eslint-plugin-query": "^5.28.6",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
     "@types/dompurify": "^3",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.73",
@@ -60,6 +63,7 @@
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.1.4",
     "eslint-config-prettier": "^9.1.0",
+    "happy-dom": "^15.11.7",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.10",
     "postcss": "^8.4.38",

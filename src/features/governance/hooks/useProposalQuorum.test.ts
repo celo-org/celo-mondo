@@ -1,8 +1,10 @@
 import * as rq from '@tanstack/react-query';
+import '@testing-library/jest-dom';
+import { waitFor } from '@testing-library/react';
 import BigNumber from 'bignumber.js';
 import { afterEach, beforeEach } from 'node:test';
-import { publicArchiveClient } from 'src/test/anvil/utils';
 import { describe, expect, it, vi } from 'vitest';
+import { publicArchiveClient, renderHook } from '../../../test/anvil/utils';
 import * as module from './useProposalQuorum';
 
 beforeEach(() => {
@@ -20,26 +22,26 @@ beforeEach(() => {
   }));
   vi.mock('@tanstack/react-query', async (importActual) => ({
     ...(await importActual()),
-    useQuery: vi.fn(({ data, error }) => ({
-      isLoading: false,
-      isError: !error,
-      error,
-      data,
-    })),
+    // useQuery: vi.fn(({ data, error }) => ({
+    //   isLoading: false,
+    //   isError: !error,
+    //   error,
+    //   data,
+    // })),
   }));
-  vi.mock('src/components/notifications/useToastError', async (importActual) => ({
-    ...(await importActual()),
-    useToastError: () => {},
-  }));
-  vi.mock('src/features/governance/hooks/useProposalQuorum', async (importActual) => ({
-    ...(await importActual()),
-    useThresholds: vi.fn((data) => data),
-    useParticipationParameters: vi.fn((data) => data),
-  }));
-  vi.mock('react', async (importActual) => ({
-    ...(await importActual()),
-    useMemo: vi.fn((x) => x()),
-  }));
+  // vi.mock('src/components/notifications/useToastError', async (importActual) => ({
+  //   ...(await importActual()),
+  //   useToastError: () => {},
+  // }));
+  // vi.mock('src/features/governance/hooks/useProposalQuorum', async (importActual) => ({
+  //   ...(await importActual()),
+  //   useThresholds: vi.fn((data) => data),
+  //   useParticipationParameters: vi.fn((data) => data),
+  // }));
+  // vi.mock('react', async (importActual) => ({
+  //   ...(await importActual()),
+  //   useMemo: vi.fn((x) => x()),
+  // }));
 });
 
 afterEach(() => {
@@ -83,27 +85,30 @@ describe('fetchThresholds', () => {
 
 describe('useParticipationParameters', () => {
   it('fetches the params from the governance contract', async () => {
-    expect(module.useParticipationParameters()).toMatchInlineSnapshot(`
+    const {
+      result: { current },
+    } = renderHook(() => module.useParticipationParameters());
+    await waitFor(() => !current.isLoading);
+    expect(current).toMatchInlineSnapshot(`
       {
-        "baseline": 0.06,
-        "baselineFloor": 0.05,
-        "baselineQuorumFactor": 0.5,
-        "baselineUpdateFactor": 0.2,
+        "data": {
+          "baseline": 0.06,
+          "baselineFloor": 0.05,
+          "baselineQuorumFactor": 0.5,
+          "baselineUpdateFactor": 0.2,
+        },
+        "isLoading": undefined,
       }
     `);
   });
 });
 
 describe('useProposalQuorum', () => {
-  it('maths properly', () => {
+  it('maths properly', async () => {
+    // Enabling MENTO Governance's proposal block
+    process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
     const baseline = 0.06;
     const baselineQuorumFactor = 0.5;
-    vi.spyOn(module, 'useParticipationParameters').mockReturnValue({
-      baseline,
-      baselineFloor: 0.05,
-      baselineUpdateFactor: 0.2,
-      baselineQuorumFactor,
-    });
     // @ts-expect-error
     vi.spyOn(rq, 'useQuery').mockReturnValue({ data: [0.75, 0.1, 0.5] });
     const networkWeight = 200000000000000000000000000n;
@@ -111,10 +116,13 @@ describe('useProposalQuorum', () => {
     const quorumPct = baseline * baselineQuorumFactor;
     const quorumVotes = new BigNumber(networkWeight.toString()).times(quorumPct);
     const maxThreshold = quorumVotes.times(0.75 /* highest mocked threshold */);
-    expect(
+
+    const { result } = renderHook(() =>
       // @ts-expect-error
-      module.useProposalQuorum({ proposal: { id: 1, numTransactions: 3, networkWeight } }),
-    ).toBe(BigInt(maxThreshold.toFixed(0)));
+      module.useProposalQuorum({ proposal: { id: 196, numTransactions: 50n, networkWeight } }),
+    );
+    await waitFor(() => !result.current.isLoading);
+    expect(result.current.data).toBe(BigInt(maxThreshold.toFixed(0)));
     expect(BigInt(maxThreshold.toFixed(0))).toMatchInlineSnapshot(`4500000000000000000000000n`);
   });
 });

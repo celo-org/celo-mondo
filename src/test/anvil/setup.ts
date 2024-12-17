@@ -4,6 +4,8 @@ import { afterEach } from 'vitest';
 import { ANVIL_BASE_HOST, ANVIL_FORK_URL, FORK_BLOCK_NUMBER } from './constants';
 import { pool, testClient } from './utils';
 
+import '@testing-library/jest-dom/vitest';
+
 beforeEach(async () => {
   testClient.reset({
     jsonRpcUrl: ANVIL_FORK_URL,
