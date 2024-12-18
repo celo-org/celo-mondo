@@ -17,12 +17,15 @@ interface ParticipationParameters {
   baselineQuorumFactor: number;
 }
 
-export function useProposalQuorum(propData?: MergedProposalData) {
+export function useProposalQuorum(propData?: MergedProposalData): {
+  isLoading: boolean;
+  data?: bigint;
+} {
   const { isLoading: isLoadingParticipationParameters, data: participationParameters } =
     useParticipationParameters();
   const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(propData?.proposal);
-
-  if (!propData || !propData.proposal || !participationParameters || !thresholds) {
+  console.log({ thresholds });
+  if (!propData || !propData.proposal || isLoadingParticipationParameters || isLoadingThresholds) {
     return { isLoading: true };
   }
   // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
@@ -43,8 +46,9 @@ export function useProposalQuorum(propData?: MergedProposalData) {
 export function useParticipationParameters(): {
   isLoading: boolean;
   data: ParticipationParameters;
+  error: Error | null;
 } {
-  const { data, isLoading } = useReadContract({
+  const { data, isLoading, error } = useReadContract({
     blockNumber: getRuntimeBlockNumber(),
     address: Addresses.Governance,
     abi: governanceABI,
@@ -63,13 +67,18 @@ export function useParticipationParameters(): {
       baselineUpdateFactor: fromFixidity(data?.[2]),
       baselineQuorumFactor: fromFixidity(data?.[3]),
     },
+    error,
   };
 }
 
-export function useThresholds(proposal?: Proposal) {
+export function useThresholds(proposal?: Proposal): {
+  isLoading: boolean;
+  data?: number[];
+  error: Error | null;
+} {
   const publicClient = usePublicClient();
   const { error, isLoading, data } = useQuery({
-    queryKey: ['useThresholds', publicClient, proposal],
+    queryKey: ['useThresholds', publicClient, proposal?.id],
     queryFn: async () => {
       return await fetchThresholds(publicClient!, proposal!.id, proposal!.numTransactions);
     },
@@ -107,6 +116,7 @@ export async function fetchThresholds(
       args: [proposalId, txId],
     })),
   });
+
   if (!results) {
     return;
   }

@@ -60,3 +60,16 @@ exports[`fetchThresholds > fetches the constitution threshholds properly #2 2`] 
   0.5,
 ]
 `;
+
+exports[`useParticipationParameters > fetches the params from the governance contract 1`] = `
+{
+  "data": {
+    "baseline": 0.06,
+    "baselineFloor": 0.05,
+    "baselineQuorumFactor": 0.5,
+    "baselineUpdateFactor": 0.2,
+  },
+  "error": undefined,
+  "isLoading": undefined,
+}
+`;

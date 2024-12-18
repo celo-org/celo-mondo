@@ -45,9 +45,11 @@ export function useGovernanceProposals() {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
       // Fetch on-chain data
-      const proposals = await fetchGovernanceProposals(publicClient);
-      const metadata = await fetchGovernanceMetadata();
-      const executedIds = await fetchExecutedProposalIds();
+      const [proposals, metadata, executedIds] = await Promise.all([
+        fetchGovernanceProposals(publicClient),
+        fetchGovernanceMetadata(),
+        fetchExecutedProposalIds(),
+      ]);
       // Then merge it with the cached
       return mergeProposalsWithMetadata(proposals, metadata, executedIds);
     },

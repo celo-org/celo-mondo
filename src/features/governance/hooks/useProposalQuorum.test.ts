@@ -1,11 +1,16 @@
-import * as rq from '@tanstack/react-query';
 import '@testing-library/jest-dom';
 import { waitFor } from '@testing-library/react';
 import BigNumber from 'bignumber.js';
 import { afterEach, beforeEach } from 'node:test';
+import { toFixidity } from 'src/utils/numbers';
 import { describe, expect, it, vi } from 'vitest';
 import { publicArchiveClient, renderHook } from '../../../test/anvil/utils';
-import * as module from './useProposalQuorum';
+import {
+  extractFunctionSignature,
+  fetchThresholds,
+  useParticipationParameters,
+  useProposalQuorum,
+} from './useProposalQuorum';
 
 beforeEach(() => {
   vi.mock('wagmi', async (importActual) => ({
@@ -20,28 +25,6 @@ beforeEach(() => {
       ],
     })),
   }));
-  vi.mock('@tanstack/react-query', async (importActual) => ({
-    ...(await importActual()),
-    // useQuery: vi.fn(({ data, error }) => ({
-    //   isLoading: false,
-    //   isError: !error,
-    //   error,
-    //   data,
-    // })),
-  }));
-  // vi.mock('src/components/notifications/useToastError', async (importActual) => ({
-  //   ...(await importActual()),
-  //   useToastError: () => {},
-  // }));
-  // vi.mock('src/features/governance/hooks/useProposalQuorum', async (importActual) => ({
-  //   ...(await importActual()),
-  //   useThresholds: vi.fn((data) => data),
-  //   useParticipationParameters: vi.fn((data) => data),
-  // }));
-  // vi.mock('react', async (importActual) => ({
-  //   ...(await importActual()),
-  //   useMemo: vi.fn((x) => x()),
-  // }));
 });
 
 afterEach(() => {
@@ -50,8 +33,8 @@ afterEach(() => {
 
 describe('extractFunctionSignature', () => {
   it('gets the four first bytes of a byte array', () => {
-    expect(module.extractFunctionSignature('0x112233445566778899')).toBe('0x11223344');
-    expect(module.extractFunctionSignature('1234567890' as `0x${string}`)).toBe('0x12345678');
+    expect(extractFunctionSignature('0x112233445566778899')).toBe('0x11223344');
+    expect(extractFunctionSignature('1234567890' as `0x${string}`)).toBe('0x12345678');
   });
 });
 
@@ -63,7 +46,7 @@ describe('fetchThresholds', () => {
     const proposalId = 195;
     const spy = vi.spyOn(publicArchiveClient, 'multicall');
     await expect(
-      module.fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs),
+      fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs),
     ).resolves.toMatchSnapshot();
     expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
     expect(spy.mock.calls.length).toBe(2);
@@ -76,7 +59,7 @@ describe('fetchThresholds', () => {
     const proposalId = 196;
     const spy = vi.spyOn(publicArchiveClient, 'multicall');
     await expect(
-      module.fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs),
+      fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs),
     ).resolves.toMatchSnapshot();
     expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
     expect(spy.mock.calls.length).toBe(2);
@@ -85,21 +68,9 @@ describe('fetchThresholds', () => {
 
 describe('useParticipationParameters', () => {
   it('fetches the params from the governance contract', async () => {
-    const {
-      result: { current },
-    } = renderHook(() => module.useParticipationParameters());
-    await waitFor(() => !current.isLoading);
-    expect(current).toMatchInlineSnapshot(`
-      {
-        "data": {
-          "baseline": 0.06,
-          "baselineFloor": 0.05,
-          "baselineQuorumFactor": 0.5,
-          "baselineUpdateFactor": 0.2,
-        },
-        "isLoading": undefined,
-      }
-    `);
+    const { result } = renderHook(() => useParticipationParameters());
+    await waitFor(() => expect(result.current.isLoading).not.toBe(true));
+    expect(result.current).toMatchSnapshot();
   });
 });
 
@@ -109,8 +80,18 @@ describe('useProposalQuorum', () => {
     process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
     const baseline = 0.06;
     const baselineQuorumFactor = 0.5;
-    // @ts-expect-error
-    vi.spyOn(rq, 'useQuery').mockReturnValue({ data: [0.75, 0.1, 0.5] });
+    let calls = 0;
+    vi.spyOn(publicArchiveClient, 'multicall').mockImplementation(async () => {
+      if (calls++ === 0) {
+        return [
+          ['0x', '0x', '0x'],
+          ['0x', '0x', '0x'],
+          ['0x', '0x', '0x'],
+        ];
+      } else {
+        return [0.75, 0.1, 0.5].map(toFixidity);
+      }
+    });
     const networkWeight = 200000000000000000000000000n;
 
     const quorumPct = baseline * baselineQuorumFactor;
@@ -119,9 +100,9 @@ describe('useProposalQuorum', () => {
 
     const { result } = renderHook(() =>
       // @ts-expect-error
-      module.useProposalQuorum({ proposal: { id: 196, numTransactions: 50n, networkWeight } }),
+      useProposalQuorum({ proposal: { id: 1, numTransactions: 3, networkWeight } }),
     );
-    await waitFor(() => !result.current.isLoading);
+    await waitFor(() => expect(result.current.isLoading).not.toBe(true));
     expect(result.current.data).toBe(BigInt(maxThreshold.toFixed(0)));
     expect(BigInt(maxThreshold.toFixed(0))).toMatchInlineSnapshot(`4500000000000000000000000n`);
   });

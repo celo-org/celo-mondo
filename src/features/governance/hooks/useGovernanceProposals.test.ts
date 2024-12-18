@@ -10,6 +10,7 @@ import {
   fetchGovernanceMetadata,
   fetchGovernanceProposals,
   getExpiryTimestamp,
+  mergeProposalsWithMetadata,
   useGovernanceProposal,
 } from './useGovernanceProposals';
 
@@ -59,7 +60,7 @@ describe('fetchExecutedProposalIds', () => {
     }));
   });
 
-  it.fails('maps celoscan events to proposal ids', async () => {
+  it('maps celoscan events to proposal ids', async () => {
     vi.mock('src/features/explorers/celoscan', async (importActual) => ({
       ...(await importActual()),
       queryCeloscanLogs: () =>
@@ -125,6 +126,8 @@ describe('getExpiryTimestamp', () => {
 });
 
 describe('fetchGovernanceProposals', () => {
+  // Know block, mento proposal creation, for abritary reasons
+  process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
   test('fetched queued and dequeued proposals', async () => {
     const proposals = await fetchGovernanceProposals(publicClient);
     expect(proposals).toMatchSnapshot();
@@ -132,22 +135,33 @@ describe('fetchGovernanceProposals', () => {
 }, 15_000);
 
 describe('mergeProposalsWithMetadata', () => {
-  // This is almost and E2E test, so not sure about that.
-  test.todo('merges properly', async () => {});
-
-  test.todo('merge executed', async () => {
+  test('merge properly', async () => {
+    // make sure we used cached data for tests
+    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => {
+      throw new Error('Test error: 403 rate limit exceeded');
+    });
+    // Know block, mento proposal creation, for abritary reasons
+    process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
     // This is almost and E2E test, so not sure about that. fix the github rate limit
-    const ids = await fetchExecutedProposalIds();
-    const proposalsChain = await fetchGovernanceProposals(publicClient);
-    const proposalsGH = await fetchGovernanceMetadata();
+    const [ids, proposalsChain, proposalsGH] = await Promise.all([
+      fetchExecutedProposalIds(),
+      fetchGovernanceProposals(publicClient),
+      fetchGovernanceMetadata(),
+    ]);
 
-    const executedChain = proposalsChain.filter(
-      (x) => x.stage === ProposalStage.Executed || x.stage === ProposalStage.Execution,
-    );
-    const executedGH = proposalsGH.filter(
-      (x) => x.stage === ProposalStage.Executed || x.stage === ProposalStage.Execution,
-    );
-    expect(executedChain.length).toBe(0);
-    expect(executedGH.length).toBe(ids.length);
+    const merged = mergeProposalsWithMetadata(proposalsChain, proposalsGH, ids);
+    expect(merged.length).toBe((await import('src/config/proposals.json')).default.length);
+    merged.forEach((proposal) => {
+      if (proposal.id === 196) {
+        // mento
+        expect(proposal.stage).toBe(ProposalStage.Queued);
+      } else if (proposal.id === 195) {
+        // gvt guild
+        expect(proposal.stage).toBe(ProposalStage.Referendum);
+      } else if (proposal.metadata?.cgp === 149) {
+        // draft
+        expect(proposal.stage).toBe(ProposalStage.None);
+      }
+    });
   });
 }, 10000);

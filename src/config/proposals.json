@@ -2096,9 +2096,9 @@
     "timestamp": 1716422400000,
     "timestampExecuted": 1717113600000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "15637180923411949481583775",
+      "no": "803071079695202545884267",
+      "abstain": "158521938162827452501095"
     }
   },
   {
@@ -2113,9 +2113,9 @@
     "timestamp": 1719446400000,
     "timestampExecuted": 1720483200000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "24995728387484444499725236",
+      "no": "2526567736694",
+      "abstain": "25722869814645787237"
     }
   },
   {
@@ -2130,9 +2130,9 @@
     "timestamp": 1719360000000,
     "timestampExecuted": 1720828800000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "17906941892797620833679016",
+      "no": "1555631167899194003374",
+      "abstain": "64556262437625045255704"
     }
   },
   {
@@ -2147,9 +2147,9 @@
     "timestamp": 1721779200000,
     "timestampExecuted": 1723507200000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "1567786487379131024615109",
+      "no": "1743973200273647673050",
+      "abstain": "12190351548863554617425621"
     }
   },
   {
@@ -2163,9 +2163,9 @@
     "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
     "timestamp": 1722470400000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "7311270592366178906424809",
+      "no": "1052875318387568208771036",
+      "abstain": "275503297679584786792311"
     }
   },
   {
@@ -2179,9 +2179,9 @@
     "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
     "timestamp": 1722902400000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "423305894499211746439297",
+      "no": "984603262175208534886123",
+      "abstain": "473729958780760268232905"
     }
   },
   {
@@ -2205,9 +2205,9 @@
     "timestamp": 1724630400000,
     "timestampExecuted": 1725408000000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "14038365258855133578012922",
+      "no": "30033914673902478388",
+      "abstain": "51708915618462140021"
     }
   },
   {
@@ -2216,10 +2216,33 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0147.md",
     "title": "Launch of PUSO Stablecoin",
     "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
-    "stage": 1,
+    "stage": 6,
     "id": 188,
     "url": "https://forum.celo.org/t/launch-of-puso-the-philippines-first-community-led-stablecoin/8786/10?u=philbow61",
-    "timestamp": 1724889600000
+    "timestamp": 1724889600000,
+    "timestampExecuted": 1725667200000,
+    "votes": {
+      "yes": "12791659812098214199612374",
+      "no": "0",
+      "abstain": "25313268947400803053860"
+    }
+  },
+  {
+    "cgp": 148,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0148.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0148.md",
+    "title": "Proposal for Stablecoin & dApp Public Goods Dashboard",
+    "author": "Anthony Yim <anthony@artemisanalytics.xyz>",
+    "stage": 6,
+    "id": 189,
+    "url": "https://forum.celo.org/t/proposal-for-stablecoin-dapp-public-goods-dashboard/8944",
+    "timestamp": 1725926400000,
+    "timestampExecuted": 1728604800000,
+    "votes": {
+      "yes": "19196383765513294833228793",
+      "no": "29999999999999999998",
+      "abstain": "105921367286428986370083"
+    }
   },
   {
     "cgp": 149,
@@ -2230,5 +2253,125 @@
     "stage": 0,
     "url": "https://forum.celo.org/t/decrease-constitution-parameter-for-goldtoken-increaseallowance/9002",
     "timestamp": 1725926400000
+  },
+  {
+    "cgp": 150,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0150.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0150.md",
+    "title": "Adding oracles to support cCOP",
+    "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
+    "stage": 6,
+    "id": 190,
+    "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin/9211",
+    "timestamp": 1729123200000,
+    "timestampExecuted": 1730246400000,
+    "votes": {
+      "yes": "15965588950234979553095750",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 151,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0151.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0151.md",
+    "title": "Launch of the cCOP Stablecoin",
+    "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz), @nvtaveras",
+    "stage": 6,
+    "id": 191,
+    "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin/9211",
+    "timestamp": 1729123200000,
+    "timestampExecuted": 1730332800000,
+    "votes": {
+      "yes": "8415239370544153759056444",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 152,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0152.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0152.md",
+    "title": "Creation of Celo Governance Guild",
+    "author": "@0xj4an-work (0xj4an-Work), @Wade (Wade)",
+    "stage": 6,
+    "id": 195,
+    "url": "https://forum.celo.org/t/creation-of-celo-governance-guild",
+    "timestamp": 1729728000000,
+    "timestampExecuted": 1732924800000,
+    "votes": {
+      "yes": "7761781971226818472551031",
+      "no": "0",
+      "abstain": "4096176297343921659432"
+    }
+  },
+  {
+    "cgp": 153,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0153.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0153.md",
+    "title": "CeloColombia DAO - Funding and Operations Proposal",
+    "author": "@CeloColombiano & Team",
+    "stage": 6,
+    "id": 193,
+    "url": "https://forum.celo.org/t/celocolombia-dao-funding-and-operations-proposal",
+    "timestamp": 1729728000000,
+    "timestampExecuted": 1731456000000,
+    "votes": {
+      "yes": "7701549623695961942533035",
+      "no": "68265368874125165798841",
+      "abstain": "245222846296012194773627"
+    }
+  },
+  {
+    "cgp": 154,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0154.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0154.md",
+    "title": "Funding for cLabs blockchain L2 project",
+    "author": "Marek Olszewski (@marekolszewski)",
+    "stage": 6,
+    "id": 194,
+    "url": "https://forum.celo.org/t/follow-on-funding-proposal-funding-for-remaining-clabs-celo-l2-development/9354",
+    "timestamp": 1698710400000,
+    "timestampExecuted": 1731801600000,
+    "votes": {
+      "yes": "7866567917887174163280483",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 155,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0155.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0155.md",
+    "title": "Add CeloToken and LockedCelo to the registry",
+    "author": "Sebastien Benoit (@soloseng), Martín Volpe (@martinvol)",
+    "stage": 0,
+    "timestamp": 1731974400000
+  },
+  {
+    "cgp": 156,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0156.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0156.md",
+    "title": "Enabling MENTO Governance",
+    "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>",
+    "stage": 8,
+    "id": 196,
+    "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community/9526",
+    "timestamp": 1732492800000,
+    "votes": {
+      "yes": "3525668055998380854144309",
+      "no": "1023686951731787961563689",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 157,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0157.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0157.md",
+    "title": "Enhancing Ecosystem Security Through Subsidized Services",
+    "author": "Benjamin Speckien (benjamin.speckien@clabs.co), Nikolaos Frestis (nikolaos.frestis@clabs.co), Stefan Ioja (stefan.ioja@clabs.co)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-ecosystem-security-services-program-enhancing-ecosystem-security-through-subsidized-services",
+    "timestamp": 1733097600000
   }
 ]
