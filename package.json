@@ -93,9 +93,7 @@
     "typecheck": "tsc",
     "lint": "next lint",
     "start": "next start",
-    "test": "yarn test:L1 && yarn test:L2",
-    "test:L1": "VITE_ANVIL_CELO_VERSION=L1 vitest",
-    "test:L2": "VITE_ANVIL_CELO_VERSION=L2 vitest",
+    "test": "vitest",
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build:app"
   },

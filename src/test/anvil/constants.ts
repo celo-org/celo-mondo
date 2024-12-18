@@ -1,33 +1,6 @@
 import { parseEther } from 'viem';
 import { celo } from 'viem/chains';
 
-// export const VITE_ANVIL_CELO_VERSION = process.env.VITE_ANVIL_CELO_VERSION as 'L1' | 'L2';
-
-// if (!['L1', 'L2'].includes(VITE_ANVIL_CELO_VERSION)) {
-//   throw new Error(
-//     'Missing or incorrect environment variable "VITE_ANVIL_CELO_VERSION", must be L1 or L2',
-//   );
-// }
-// export const ANVIL_STATE_PATH = require.resolve(
-//   VITE_ANVIL_CELO_VERSION === 'L1'
-//     ? '@celo/devchain-anvil/devchain.json'
-//     : '@celo/devchain-anvil/l2-devchain.json',
-// );
-// export const FORK_BLOCK_NUMBER = BigInt(29162229);
-
-// export const FORK_BLOCK_NUMBER =
-//   // last friday 12:23
-//   29162229n -
-//   // 17 days
-//   8n *
-//     // day
-//     17280n;
-
-// // Proposal for Stablecoin & dApp Public Goods Dashboard blockcnumber
-// export const FORK_BLOCK_NUMBER = BigInt('0x1ae603b') - 1n * 17280n;
-
-// Proposal for Creation of Celo Governance Guild
-// export const FORK_BLOCK_NUMBER = BigInt('0x1bb55eb') - (5n * 17280n) / 2n;
 export const FORK_BLOCK_NUMBER = 29162229n;
 
 export const ANVIL_CHAIN_ID = celo.id;

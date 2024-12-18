@@ -109,4 +109,4 @@ jobs:
       - name: test
         run: yarn run test
         env:
-          NEXT_PUBLIC_RPC_URL: ${{ secrets.RPC_URL }}
+          NEXT_PUBLIC_RPC_URL: https://public-archive-nodes.celo-testnet.org
