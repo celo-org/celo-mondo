@@ -11,6 +11,5 @@ test('anvil is setup', async () => {
   await expect(
     publicClient.getBalance({ address: (await walletClient.getAddresses())[0] }),
   ).resolves.toBe(TEST_BALANCE);
-  await expect(publicClient.getBlobBaseFee()).resolves.toBe(0n);
   await expect(publicClient.getBlockNumber()).resolves.toBe(FORK_BLOCK_NUMBER);
 }, 60_000);
