@@ -103,8 +103,6 @@ jobs:
             .yarn/cache
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
       - uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: 'nightly-f625d0fa7c51e65b4bf1e8f7931cd1c6e2e285e9'
 
       - name: test
         run: yarn run test
