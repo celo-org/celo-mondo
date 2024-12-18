@@ -24,7 +24,7 @@ export function useProposalQuorum(propData?: MergedProposalData): {
   const { isLoading: isLoadingParticipationParameters, data: participationParameters } =
     useParticipationParameters();
   const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(propData?.proposal);
-  console.log({ thresholds });
+
   if (!propData || !propData.proposal || isLoadingParticipationParameters || isLoadingThresholds) {
     return { isLoading: true };
   }
@@ -78,11 +78,11 @@ export function useThresholds(proposal?: Proposal): {
 } {
   const publicClient = usePublicClient();
   const { error, isLoading, data } = useQuery({
-    queryKey: ['useThresholds', publicClient, proposal?.id],
+    queryKey: ['useThresholds', publicClient, proposal?.id, Number(proposal!.numTransactions)],
     queryFn: async () => {
       return await fetchThresholds(publicClient!, proposal!.id, proposal!.numTransactions);
     },
-    enabled: Boolean(publicClient && proposal),
+    enabled: Boolean(publicClient && proposal?.id),
   });
   useToastError(error, 'Error fetching proposal quorum data');
 
