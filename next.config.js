@@ -18,14 +18,16 @@ const CONNECT_SRC_HOSTS = [
   'https://celo-mainnet.infura.io',
   'https://qstash.upstash.io',
   'https://app.safe.global',
+  'https://account.celopg.eco',
   'https://*.rainbow.me',
 ];
 const FRAME_SRC_HOSTS = [
   'https://*.walletconnect.com',
   'https://*.walletconnect.org',
   'https://app.safe.global',
+  'https://account.celopg.eco',
 ];
-const IMG_SRC_HOSTS = ['https://*.walletconnect.com', 'https://app.safe.global'];
+const IMG_SRC_HOSTS = ['https://*.walletconnect.com', 'https://app.safe.global', 'https://account.celopg.eco',];
 const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
 
 const cspHeader = `
