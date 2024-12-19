@@ -19,7 +19,7 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
-import getRuntimeBlockNumber from 'src/utils/runtimeBlockNumber';
+import getRuntimeBlock from 'src/utils/runtimeBlock';
 import { PublicClient, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
 
@@ -74,7 +74,7 @@ type VoteTotalsRaw = [bigint, bigint, bigint];
 export async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
   // Get queued and dequeued proposals
   const [queued, dequeued] = await publicClient.multicall({
-    blockNumber: getRuntimeBlockNumber(),
+    ...getRuntimeBlock(),
     contracts: [
       {
         address: Addresses.Governance,
@@ -104,7 +104,7 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
   if (!allIdsAndUpvotes.length) return [];
 
   const properties = await publicClient.multicall({
-    blockNumber: getRuntimeBlockNumber(),
+    ...getRuntimeBlock(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -117,7 +117,7 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
   });
 
   const stages = await publicClient.multicall({
-    blockNumber: getRuntimeBlockNumber(),
+    ...getRuntimeBlock(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -130,7 +130,7 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
   });
 
   const votes = await publicClient.multicall({
-    blockNumber: getRuntimeBlockNumber(),
+    ...getRuntimeBlock(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -231,7 +231,7 @@ export function mergeProposalsWithMetadata(
     if (metadataIndex >= 0) {
       // Remove the metadata element
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
-      // For some reason for re-submitted proposals that eventually, the
+      // For some reason for re-submitted proposals that eventually pass, the
       // expired failed proposal on chain is still expired, use the metadata
       // and trust `executedIds` events
       if (metadata.id && executedIds.includes(metadata.id)) {
