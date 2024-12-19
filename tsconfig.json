@@ -17,7 +17,7 @@
     "noEmit": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,

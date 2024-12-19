@@ -63,7 +63,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
 
 export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
   const { votes } = useProposalVoteTotals(propData);
-  const quorumRequired = useProposalQuorum(propData);
+  const { isLoading, data: quorumRequired } = useProposalQuorum(propData);
 
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
@@ -74,11 +74,11 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
       {
         label: 'Yes votes',
         value: fromWei(quorumMeetingVotes),
-        percentage: percent(quorumMeetingVotes, quorumRequired || 1n),
+        percentage: isLoading ? 0 : percent(quorumMeetingVotes, quorumRequired || 1n),
         color: Color.Wood,
       },
     ],
-    [quorumMeetingVotes, quorumRequired],
+    [quorumMeetingVotes, quorumRequired, isLoading],
   );
 
   return (
