@@ -2,6 +2,16 @@ import { registryABI } from '@celo/abis-12';
 import { config } from 'src/config/config';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { createCeloPublicClient } from 'src/utils/client';
+import { celo, celoAlfajores } from 'viem/chains';
+
+const UNKNOWN_TESTNET_ADDRESSES = {
+  Accounts: ZERO_ADDRESS,
+  Election: ZERO_ADDRESS,
+  EpochManager: ZERO_ADDRESS,
+  Governance: ZERO_ADDRESS,
+  LockedGold: ZERO_ADDRESS,
+  Validators: ZERO_ADDRESS,
+} as const;
 
 const ALFAJORES_ADDRESSES = {
   Accounts: '0xed7f51A34B4e71fbE69B3091FcF879cD14bD73A9',
@@ -23,7 +33,12 @@ const MAINNET_ADDRESSES = {
   Validators: '0xaEb865bCa93DdC8F47b8e29F40C5399cE34d0C58',
 } as const;
 
-export const Addresses = config.isAlfajores ? ALFAJORES_ADDRESSES : MAINNET_ADDRESSES;
+export const Addresses =
+  config.chain.rpcUrls.default.http[0] === celo.rpcUrls.default.http[0]
+    ? MAINNET_ADDRESSES
+    : config.chain.rpcUrls.default.http[0] === celoAlfajores.rpcUrls.default.http[0]
+      ? ALFAJORES_ADDRESSES
+      : UNKNOWN_TESTNET_ADDRESSES;
 
 export const REGISTRY_ADDRESS = '0x000000000000000000000000000000000000ce10';
 

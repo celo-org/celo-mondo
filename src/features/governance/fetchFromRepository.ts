@@ -21,13 +21,28 @@ export async function fetchProposalsFromRepo(
   cache: ProposalMetadata[],
   validateMarkdown: boolean,
 ): Promise<ProposalMetadata[]> {
-  const files = await fetchGithubDirectory(
-    GITHUB_OWNER,
-    GITHUB_REPO,
-    GITHUB_DIRECTORY_PATH,
-    GITHUB_BRANCH,
-    CGP_FILENAME_REGEX,
-  );
+  let files: GithubFile[];
+  try {
+    files = await fetchGithubDirectory(
+      GITHUB_OWNER,
+      GITHUB_REPO,
+      GITHUB_DIRECTORY_PATH,
+      GITHUB_BRANCH,
+      CGP_FILENAME_REGEX,
+    );
+  } catch (error: unknown) {
+    // Gracefully handle rate-limitations and use the cache
+    if ((error as Error).message.includes('403 rate limit exceeded')) {
+      files = cache.map(
+        (cachedProposal) =>
+          ({
+            name: `cgp-${cachedProposal.cgp}.md`,
+          }) as GithubFile,
+      );
+    } else {
+      throw error;
+    }
+  }
   const errorUrls = [];
   const validProposals: ProposalMetadata[] = [];
   for (const file of files) {
@@ -133,7 +148,7 @@ async function fetchGithubDirectory(
     return files;
   } catch (error) {
     logger.error('Error fetching github directory', path, error);
-    throw new Error('Error fetching github directory');
+    throw new Error(`Error fetching github directory ${(error as Error).message}`);
   }
 }
 

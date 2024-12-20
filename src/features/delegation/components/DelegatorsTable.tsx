@@ -6,6 +6,7 @@ import { formatNumberString } from 'src/components/numbers/Amount';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { useDelegators } from 'src/features/delegation/hooks/useDelegators';
 import { Delegatee } from 'src/features/delegation/types';
+import { normalizeAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { objKeys } from 'src/utils/objects';
 
@@ -30,6 +31,7 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
     const data = objKeys(delegatorToAmount).map((address) => ({
       label: address,
       value: fromWei(delegatorToAmount[address]),
+      address: normalizeAddress(address),
     }));
     return sortAndCombineChartData(data, NUM_TO_SHOW);
   }, [delegatorToAmount]);
@@ -52,7 +54,7 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
         {tableData.map((row) => (
           <tr key={row.label}>
             <td className="py-2 font-mono text-sm text-taupe-600">
-              <ShortAddress address={row.label as `0x${string}`} />
+              <ShortAddress address={row.address!} />
             </td>
             <td className="text-right text-sm">{`${formatNumberString(row.value)} CELO`}</td>
           </tr>

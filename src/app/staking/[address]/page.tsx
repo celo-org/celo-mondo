@@ -87,7 +87,9 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
         <div className="flex items-center space-x-3 sm:space-x-6">
           <ValidatorGroupLogo address={address} size={90} />
           <div>
-            <h1 className="font-serif text-4xl">{group?.name || '...'}</h1>
+            <h1 className="overflow-hidden text-ellipsis font-serif text-4xl">
+              {group?.name || '...'}
+            </h1>
             <div className="mt-2 flex items-center space-x-1.5 sm:space-x-3">
               <OutlineButton
                 className="all:py-1 all:font-normal"
