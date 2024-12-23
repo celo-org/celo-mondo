@@ -1,0 +1,18 @@
+{
+  "name": "Aaron Boyd",
+  "address": "0x37BAedAA536f7144E72915C683e6095177D33e78",
+  "logoUri": "/logos/delegatees/0x37BAedAA536f7144E72915C683e6095177D33e78.jpg",
+  "date": "2024-12-23",
+  "links": {
+    "website": "https://vido.atalma.io",
+    "twitter": "https://x.com/BlueThylacine"
+  },
+  "interests": [
+    "Blockchain engineering",
+    "effective governance",
+    "grants",
+    "node operations",
+    "trading"
+  ],
+  "description": "I am the founder of a genesis validator group atalma.io, developer and maintainer of the Vido monitoring tool @ https://vido.atalma.io, a Prezenti director since 2022, member of the CeloPG stewards group, and Celo forum super-lurker."
+}
