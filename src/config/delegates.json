@@ -511,5 +511,82 @@
     },
     "interests": ["DAO Governance"],
     "description": "Precious Ezema is a community builder with over 5 years experience. She has adept experience building blockchain communities. She constantly advocates for women in web3 and have worked with blockchain companies, like Celo, ethereum and Solana"
+  },
+  "0x2AeD14FE7bd056212cD0eD91b57a8EC5A5E33624": {
+    "name": "Rica Amaral",
+    "address": "0x2AeD14FE7bd056212cD0eD91b57a8EC5A5E33624",
+    "logoUri": "/logos/delegatees/0x2AeD14FE7bd056212cD0eD91b57a8EC5A5E33624.png",
+    "date": "2025-01-07",
+    "links": {
+      "website": "https://linktr.ee/ricaax",
+      "twitter": "https://www.twitter.com/ricaa"
+    },
+    "interests": ["ReFi", "Public Goods", "Educational Programs", "Ecosystem Development"],
+    "description": "Hi folks, this is Rica. I’ve been involved with Celo in one way or another for over 2 years already. I co-founded PositiveBlockchain.io and ReFi Lisboa, and I'm  the host of planta-R, the Portuguese ReFi podcast. Recently, I stepped into the Marketing Lead role for Celo EU’s 2nd season.  As a creative strategist and marketer with over a decade of experience at the intersection of business, art, tech, and impact, I focus on projects that uphold civil liberties, champion equality, nurture democratic values, and safeguard our planet’s future. I’m driven by a belief in the power of collective intelligence and decentralized communities to create meaningful change."
+  },
+  "0x2aa64E6d80390F5C017F0313cB908051BE2FD35e": {
+    "name": "Afo",
+    "address": "0x2aa64E6d80390F5C017F0313cB908051BE2FD35e",
+    "logoUri": "/logos/delegatees/0x2aa64E6d80390F5C017F0313cB908051BE2FD35e.jpeg",
+    "date": "2024-12-30",
+    "links": {
+      "website": "https://afolabi.info",
+      "twitter": "https://twitter.com/time_is_oba"
+    },
+    "interests": ["Public Goods", "Blockchains", "Augmented Reality", "Music"],
+    "description": "Builder and Steward helping craft the foundations of the regen space with Greenpill & WEFA"
+  },
+  "0x31bCfe0836492224C71410D62d4e0532ca128B3c": {
+    "name": "Florian",
+    "address": "0x31bCfe0836492224C71410D62d4e0532ca128B3c",
+    "logoUri": "/logos/delegatees/0x31bCfe0836492224C71410D62d4e0532ca128B3c.jpg",
+    "date": "2024-12-29",
+    "links": {
+      "website": "https://x.com/frerehugi",
+      "twitter": "https://x.com/frerehugi"
+    },
+    "interests": ["stablecoin usage", "trading", "CELO in East Africa"],
+    "description": "Surgeon with passion for CELO"
+  },
+  "0x37BAedAA536f7144E72915C683e6095177D33e78": {
+    "name": "Aaron Boyd",
+    "address": "0x37BAedAA536f7144E72915C683e6095177D33e78",
+    "logoUri": "/logos/delegatees/0x37BAedAA536f7144E72915C683e6095177D33e78.jpg",
+    "date": "2024-12-23",
+    "links": {
+      "website": "https://vido.atalma.io",
+      "twitter": "https://x.com/BlueThylacine"
+    },
+    "interests": [
+      "Blockchain engineering",
+      "effective governance",
+      "grants",
+      "node operations",
+      "trading"
+    ],
+    "description": "I am the founder of a genesis validator group atalma.io, developer and maintainer of the Vido monitoring tool @ https://vido.atalma.io, a Prezenti director since 2022, member of the CeloPG stewards group, and Celo forum super-lurker."
+  },
+  "0x59ae7f40C6795097CE2aEdC96166F0AfCceB28B8": {
+    "name": "SellMax",
+    "address": "0x59ae7f40C6795097CE2aEdC96166F0AfCceB28B8",
+    "logoUri": "/logos/delegatees/0x59ae7f40C6795097CE2aEdC96166F0AfCceB28B8.webp",
+    "date": "2024-12-20",
+    "links": {
+      "website": "https://x.com/Slava738599",
+      "twitter": "https://x.com/Slava738599"
+    },
+    "interests": ["web"],
+    "description": "delegation"
+  },
+  "0x809C9f8dd8CA93A41c3adca4972Fa234C28F7714": {
+    "name": "Paul2",
+    "address": "0x809C9f8dd8CA93A41c3adca4972Fa234C28F7714",
+    "logoUri": "/logos/delegatees/0x809C9f8dd8CA93A41c3adca4972Fa234C28F7714.jpeg",
+    "date": "2024-12-30",
+    "links": {
+      "twitter": "https://twitter.com/paul_glavin"
+    },
+    "interests": ["Decision mechanisms", "public goods funding", "community governance"],
+    "description": "building better money 🌱 Open Source Project Lead for gardens.fund"
   }
 }

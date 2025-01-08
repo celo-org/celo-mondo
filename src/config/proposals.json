@@ -2373,5 +2373,15 @@
     "stage": 0,
     "url": "https://forum.celo.org/t/celo-ecosystem-security-services-program-enhancing-ecosystem-security-through-subsidized-services",
     "timestamp": 1733097600000
+  },
+  {
+    "cgp": 158,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0158.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0158.md",
+    "title": "Celo Infrastructure for Chain Lifecycle Operational Support (CICLOPS)",
+    "author": "Eric Nakagawa (@ericnakagawa), Martin Volpe (@martinvol), Silas Boyd-Wickizer (@silas)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-ciclops/9661",
+    "timestamp": 1734566400000
   }
 ]
