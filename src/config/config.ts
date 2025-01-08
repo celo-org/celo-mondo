@@ -24,21 +24,14 @@ const upstashKey = process?.env?.UPSTASH_KEY || '';
 export const fornoRpcUrl = `https://forno.celo.org?apikey=${fornoApiKey}`;
 export const infuraRpcUrl = `https://celo-mainnet.infura.io/v3/${infuraApiKey}`;
 
-const rpcUrl = process?.env?.NEXT_PUBLIC_RPC_URL || celo.rpcUrls.default.http[0];
+const mainnetUrl = celo.rpcUrls.default.http[0];
+const alfajoresUrl = celoAlfajores.rpcUrls.default.http[0];
+const rpcUrl = process?.env?.NEXT_PUBLIC_RPC_URL || mainnetUrl;
 
-const isMainnet = [
-  'mainnet',
-  celo.rpcUrls.default.http[0],
-  process.env.NEXT_PUBLIC_RPC_URL,
-].includes(rpcUrl);
-const isKnownNetwork = [
-  'mainnet',
-  celo.rpcUrls.default.http[0],
-  process.env.NEXT_PUBLIC_RPC_URL,
-  'testnet',
-  'alfajores',
-  celoAlfajores.rpcUrls.default.http[0],
-].includes(rpcUrl);
+// We assume using a custom RPC url will be mainnet (archive node, local node, ...)
+const isMainnet = ['mainnet', mainnetUrl, process.env.NEXT_PUBLIC_RPC_URL].includes(rpcUrl);
+const isAlfajores = ['alfajores', alfajoresUrl].includes(rpcUrl);
+const isKnownNetwork = isMainnet || isAlfajores;
 
 const chain = {
   ...(isMainnet ? celo : celoAlfajores),
@@ -54,8 +47,7 @@ const chain = {
       }),
 } as Chain;
 
-// TODO: too complex, refactor this
-
+// NOTE: override the viem chain's rpc url in case we use an env variable
 chain.rpcUrls.default.http = [rpcUrl];
 
 export const config: Config = Object.freeze({
