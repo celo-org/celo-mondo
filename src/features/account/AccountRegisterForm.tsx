@@ -21,7 +21,7 @@ export function AccountRegisterForm({
       address: Addresses.Accounts,
       abi: accountsABI,
       functionName: 'createAccount',
-      chainId: config.chainId,
+      chainId: config.chain.id,
     });
   };
 

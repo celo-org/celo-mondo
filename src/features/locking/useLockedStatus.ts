@@ -31,6 +31,7 @@ export function useLockedStatus(address?: Address) {
     isError,
     lockedBalances: data?.balances,
     pendingWithdrawals: data?.pendingWithdrawals,
+    unlockingPeriod: data?.unlockingPeriod,
     refetch,
   };
 }
@@ -39,24 +40,34 @@ async function fetchLockedStatus(
   publicClient: PublicClient,
   address: Address,
 ): Promise<LockedStatus> {
-  const [totalLockedResp, pendingWithdrawalsResp] = await publicClient.multicall({
-    contracts: [
-      {
-        address: Addresses.LockedGold,
-        abi: lockedGoldABI,
-        functionName: 'getAccountTotalLockedGold',
-        args: [address],
-      } as const,
-      {
-        address: Addresses.LockedGold,
-        abi: lockedGoldABI,
-        functionName: 'getPendingWithdrawals',
-        args: [address],
-      } as const,
-    ],
-  });
-  if (totalLockedResp.status !== 'success' || pendingWithdrawalsResp.status !== 'success') {
-    throw new Error('Error fetching locked balances or pending withdrawals');
+  const [totalLockedResp, pendingWithdrawalsResp, unlockingPeriodResp] =
+    await publicClient.multicall({
+      contracts: [
+        {
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'getAccountTotalLockedGold',
+          args: [address],
+        } as const,
+        {
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'getPendingWithdrawals',
+          args: [address],
+        } as const,
+        {
+          address: Addresses.LockedGold,
+          abi: lockedGoldABI,
+          functionName: 'unlockingPeriod',
+        } as const,
+      ],
+    });
+  if (
+    totalLockedResp.status !== 'success' ||
+    pendingWithdrawalsResp.status !== 'success' ||
+    unlockingPeriodResp.status !== 'success'
+  ) {
+    throw new Error('Error fetching locked balances or pending withdrawals or unlocking period');
   }
   const totalLocked = totalLockedResp.result;
   // [values, times]
@@ -96,5 +107,6 @@ async function fetchLockedStatus(
       pendingFree,
     },
     pendingWithdrawals,
+    unlockingPeriod: unlockingPeriodResp.result,
   };
 }

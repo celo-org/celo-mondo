@@ -52,7 +52,7 @@ function getStakeActionPlan(amountWei: bigint, group: Address, groups: Validator
   return [
     {
       action: StakeActionType.Stake,
-      chainId: config.chainId,
+      chainId: config.chain.id,
       address: Addresses.Election,
       abi: electionABI,
       functionName: 'vote',
@@ -79,7 +79,7 @@ function getUnstakeActionPlan(
     const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, pendingToRevoke * -1n);
     txs.push({
       action: StakeActionType.Unstake,
-      chainId: config.chainId,
+      chainId: config.chain.id,
       address: Addresses.Election,
       abi: electionABI,
       functionName: 'revokePending',
@@ -95,7 +95,7 @@ function getUnstakeActionPlan(
   const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, amountRemaining * -1n);
   txs.push({
     action: StakeActionType.Unstake,
-    chainId: config.chainId,
+    chainId: config.chain.id,
     address: Addresses.Election,
     abi: electionABI,
     functionName: 'revokeActive',

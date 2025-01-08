@@ -26,13 +26,13 @@ jobs:
         # Check out the lockfile from main, reinstall, and then
         # verify the lockfile matches what was committed.
         run: |
-            yarn install --immutable
-            CHANGES=$(git status -s)
-            if [[ ! -z $CHANGES ]]; then
-              echo "Changes found: $CHANGES"
-              git diff
-              exit 1
-            fi
+          yarn install --immutable
+          CHANGES=$(git status -s)
+          if [[ ! -z $CHANGES ]]; then
+            echo "Changes found: $CHANGES"
+            git diff
+            exit 1
+          fi
 
   build:
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
             .yarn/cache
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
-      - name: lint 
+      - name: lint
         run: yarn run lint
 
   test:
@@ -102,6 +102,13 @@ jobs:
             **/node_modules
             .yarn/cache
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+      - uses: foundry-rs/foundry-toolchain@v1
 
+      - name: build
+        run: yarn run build
+        env:
+          NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
       - name: test
         run: yarn run test
+        env:
+          NEXT_PUBLIC_RPC_URL: https://public-archive-nodes.celo-testnet.org

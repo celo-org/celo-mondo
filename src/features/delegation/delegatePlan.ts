@@ -28,7 +28,7 @@ function getDelegateActionPlan(delegatee: Address, percent: number): TxPlan {
   return [
     {
       action: DelegateActionType.Delegate,
-      chainId: config.chainId,
+      chainId: config.chain.id,
       address: Addresses.LockedGold,
       abi: lockedGoldABI,
       functionName: 'delegateGovernanceVotes',
@@ -41,7 +41,7 @@ function getUndelegateActionPlan(delegatee: Address, percent: number) {
   return [
     {
       action: DelegateActionType.Delegate,
-      chainId: config.chainId,
+      chainId: config.chain.id,
       address: Addresses.LockedGold,
       abi: lockedGoldABI,
       functionName: 'revokeDelegatedGovernanceVotes',

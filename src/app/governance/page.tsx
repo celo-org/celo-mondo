@@ -145,6 +145,8 @@ function useFilteredProposals({
           p.proposal?.url.toLowerCase().includes(query) ||
           p.metadata?.title.toLowerCase().includes(query) ||
           p.metadata?.author.toLowerCase().includes(query) ||
+          String(p.metadata?.cgp).toLowerCase().includes(query) ||
+          String(p.id).toLowerCase().includes(query) ||
           p.metadata?.url?.toLowerCase().includes(query),
       );
   }, [proposals, filter, searchQuery]);

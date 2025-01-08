@@ -9,7 +9,7 @@ import { useProposalVoters } from 'src/features/governance/hooks/useProposalVote
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName } from 'src/features/validators/utils';
-import { shortenAddress } from 'src/utils/addresses';
+import { normalizeAddress, shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
@@ -59,7 +59,12 @@ function VoterTableContent({
         const amount = fromWei(voters[account][type]);
         if (amount <= 0) continue;
         const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
-        votesByType[type]?.push({ label, value: amount, percentage });
+        votesByType[type]?.push({
+          label,
+          value: amount,
+          percentage,
+          address: normalizeAddress(account),
+        });
       }
     }
     // Use the sortAndCombine utility to collapse down to limited number
@@ -95,7 +100,7 @@ function VoterTableContent({
             <td
               className={`py-2 text-sm ${row.label.startsWith('0x') ? 'font-mono' : ''} text-taupe-600`}
             >
-              <CopyInline text={row.label} />
+              <CopyInline text={row.label} textToCopy={row.address!} />
             </td>
             <td className="px-4 py-2 text-sm font-medium">{toTitleCase(row.type)}</td>
             <td>

@@ -281,5 +281,312 @@
     },
     "interests": ["Staking", "Security", "Passive Income"],
     "description": "Staking is a process of delegating your cryptocurrency to us. Our valdiators are responsible for validating transactions on the blockchain. In exchange for the participation in the network, you will receive a portion of the transaction fees and block rewards that are generated on the network. This means that at the end of each validating cycle (or epoch), your stake increases, generating you passive income."
+  },
+  "0x070341aA5Ed571f0FB2c4a5641409B1A46b4961b": {
+    "name": "FranklinDAO",
+    "address": "0x070341aA5Ed571f0FB2c4a5641409B1A46b4961b",
+    "logoUri": "/logos/delegatees/franklinDAO.png",
+    "date": "2024-11-19",
+    "links": {
+      "website": "https://twitter.com/franklin_dao",
+      "twitter": "https://twitter.com/franklin_dao"
+    },
+    "interests": ["Efficiency", "Growth", "Impact"],
+    "description": "FranklinDAO is a student-run DAO composing of students at the University of Pennsylvania, and is one of the most active blockchain university orgs in the world. We have made major contributions throughout the years in Uniswap, Compound, Arbitrum, Aave through working groups and spearheading proposals. We’re excited to participate in Celo and help work on impactful initiatives."
+  },
+  "0x12BD1596d7cfbf7c18F08499B54A31C980989070": {
+    "name": "Celo Colombia",
+    "address": "0x12BD1596d7cfbf7c18F08499B54A31C980989070",
+    "logoUri": "/logos/delegatees/0x12BD1596d7cfbf7c18F08499B54A31C980989070.png",
+    "date": "2024-10-09",
+    "links": {
+      "website": "https://linktr.ee/celoorgco",
+      "twitter": "https://x.com/Celo_Col"
+    },
+    "interests": ["Governance", "ReFi", "Community", "StableCoins"],
+    "description": "Hello Celorians, we are CeloColombia 🇨🇴, dedicated to growing and supporting the Celo ecosystem in Colombia. Through our dedicated socials on X, Instagram, and Discord, we work to expand awareness and adoption of Celo across Colombia.  As CeloColombia, our mission is to foster regenerative financial solutions and strengthen Celo’s presence in the region. We are currently working on key initiatives, including stablecoin proposals and partnerships aimed at boosting liquidity within the network. Through community-building efforts and strategic governance participation, we aim to position Celo as a leader in the Latin American market and contribute to its global impact.  Let’s connect and collaborate! Find us on X and Instagram, or visit our Linktree for more."
+  },
+  "0x289769b63e4727616C340989E396fE69ab42Ed93": {
+    "name": "Chitty babu",
+    "address": "0x289769b63e4727616C340989E396fE69ab42Ed93",
+    "logoUri": "/logos/delegatees/0x289769b63e4727616C340989E396fE69ab42Ed93.jpg",
+    "date": "2024-10-08",
+    "links": {
+      "website": "https://linktr.ee/chitty_celo",
+      "twitter": "https://x.com/Chittybabu7"
+    },
+    "interests": ["Web3", "RWA", "climate", "finance"],
+    "description": "As the Celo India Lead, a Celo Ambassador, and a participant in Celo Camp and have deep commitment to building the Celo ecosystem in India. active leader in community development through organizing training sessions and meetups, while also representing Celo at conferences and hackathons across the country. Notably, won the prestigious Celo Devpost Hackathon and a key contributor to the Celo platform."
+  },
+  "0x3779CF289d8161Cd6679696D10647FBa2cb0ef50": {
+    "name": "Martín Volpe",
+    "address": "0x3779CF289d8161Cd6679696D10647FBa2cb0ef50",
+    "logoUri": "/logos/delegatees/0x3779CF289d8161Cd6679696D10647FBa2cb0ef50.jpg",
+    "date": "2024-11-07",
+    "links": {
+      "twitter": "https://twitter.com/martinvol"
+    },
+    "interests": ["Engineering", "Stablecoins", "Latam", "Europe"],
+    "description": "Have been involved in Celo since 2019, before mainnet launch. I am a Protocol Lead and director at cLabs. I'm a signer of the Celo Approver, Mento Watch and CeLatam DAO multisigs."
+  },
+  "0x3FB19771947072629C8EEE7995a2eF23B72d4C8A": {
+    "name": "PGov",
+    "address": "0x3FB19771947072629C8EEE7995a2eF23B72d4C8A",
+    "logoUri": "/logos/delegatees/0x3FB19771947072629C8EEE7995a2eF23B72d4C8A.svg",
+    "date": "2024-10-30",
+    "links": {
+      "website": "https://twitter.com/pgovteam",
+      "twitter": "https://twitter.com/pgovteam"
+    },
+    "interests": ["Growth", "Accountability", "Sustainability"],
+    "description": "We're a team of dedicated governance enthusiasts who have been in the governance space for over four years. Our team were some of the first members involved in defi governance and we want to apply what we have learned over the years to Celo!"
+  },
+  "0x50111E51Cf97d6165e1A88D5CA0d4a4fa5d6c47E": {
+    "name": "Niko",
+    "address": "0x50111E51Cf97d6165e1A88D5CA0d4a4fa5d6c47E",
+    "logoUri": "/logos/delegatees/0x50111E51Cf97d6165e1A88D5CA0d4a4fa5d6c47E.png",
+    "date": "2024-10-03",
+    "links": {
+      "website": "https://www.celodao.eu/",
+      "twitter": "https://x.com/nikodcg"
+    },
+    "interests": ["Stablecoin", "Defi", "NFT", "Governance", "Emerging Markets"],
+    "description": "I’m originally a creative who thrives on helping builders and trailblazers find product-market fit in both business and life. Over the past two years, I’ve dedicated my energy to growing Celo’s ecosystem by leading initiatives in media, events, and opportunities that push the community forward. Becoming a delegate feels like a natural next step, allowing me to deepen my impact and serve as a voice for participants across the ecosystem."
+  },
+  "0x5A9dECFD5f146FCD1D1b85B2Ee069F4502fC87E4": {
+    "name": "MontyMerlin",
+    "address": "0x5A9dECFD5f146FCD1D1b85B2Ee069F4502fC87E4",
+    "logoUri": "/logos/delegatees/0x5A9dECFD5f146FCD1D1b85B2Ee069F4502fC87E4.png",
+    "date": "2024-10-03",
+    "links": {
+      "website": "https://linktr.ee/montybryant",
+      "twitter": "https://x.com/MontyMerlin"
+    },
+    "interests": ["ReFi", "Regen", "Public Goods", "Environmentalism", "Celo"],
+    "description": "Monty is a passionate advocate for ReFi & Regeneration. He is a founder at ReFi DAO, board at Trusted Seed, co-lead at Celo Public Goods, and source, Regen Coordi-Nation."
+  },
+  "0x5d1ed874ea2f4269c2e1D075973c7fdb7b39154A": {
+    "name": "Joan de Ramón Brunet",
+    "address": "0x5d1ed874ea2f4269c2e1D075973c7fdb7b39154A",
+    "logoUri": "/logos/delegatees/0x5d1ed874ea2f4269c2e1D075973c7fdb7b39154A.jpg",
+    "date": "2024-10-06",
+    "links": {
+      "website": "https://www.linkedin.com/in/joan-de-ram%C3%B3n-brunet-98613b124/",
+      "twitter": "https://x.com/joan_drb"
+    },
+    "interests": ["RWA", "RWA Lending", "Asset Manager", "Emerging Market", "Stablecoins"],
+    "description": "Hello Celorians, this is Joan_drb. I’ve been involved with the Celo ecosystem for the past 3 years and am currently co-leading CELO EU in its second season. I started as a builder, working as Head of Growth for EthicHub, and since then I’ve developed a genuine interest in leveraging blockchain to create fair business models. My goal with Celo is to help the ecosystem by building solutions that bridge the gap between Western societies and other economies."
+  },
+  "0x5d36a202687fD6Bd0f670545334bF0B4827Cc1E2": {
+    "name": "LauNaMu",
+    "address": "0x5d36a202687fD6Bd0f670545334bF0B4827Cc1E2",
+    "logoUri": "/logos/delegatees/0x5d36a202687fD6Bd0f670545334bF0B4827Cc1E2.png",
+    "date": "2024-12-03",
+    "links": {
+      "website": "https://www.metricsgarden.xyz",
+      "twitter": "https:/x.com/0xynamu"
+    },
+    "interests": ["Public Goods", "Impact Assessment", "Governance"],
+    "description": "Hi! I'm LauNaMu, I deeply resonate with Celo's mission to create a more financially inclusive world through building real world onchain products and particularly cover the needs in emerging markets. Having previously worked in Fintech at the intersection of Financial Inclusion and Emerging Markets I am excited to bring this knowledge along with my experience contributing to Optimism's governance to Celo as it joins the Superchain."
+  },
+  "0x7811C360A5CFa1377ffdcC95b95DFD21dB0DAc06": {
+    "name": "Dfyzok",
+    "address": "0x7811C360A5CFa1377ffdcC95b95DFD21dB0DAc06",
+    "logoUri": "/logos/delegatees/0x7811C360A5CFa1377ffdcC95b95DFD21dB0DAc06.jpg",
+    "date": "2024-11-12",
+    "links": {
+      "twitter": "https://x.com/ivanegorov54456"
+    },
+    "interests": ["NFt crypto"],
+    "description": "Thai"
+  },
+  "0x9F444b3b4911566Dd3aE10e5e22f2e7eABef007A": {
+    "name": "Brisa Mukunde",
+    "address": "0x9F444b3b4911566Dd3aE10e5e22f2e7eABef007A",
+    "logoUri": "/logos/delegatees/0x9F444b3b4911566Dd3aE10e5e22f2e7eABef007A.jpg",
+    "date": "2024-10-07",
+    "links": {
+      "website": "https://www.linkedin.com/in/mukundebrisa/",
+      "twitter": "https://x.com/saint_brisa"
+    },
+    "interests": ["ReFi", "Community", "Transparency", "Prosperity"],
+    "description": "Hey Frens, I am dedicated to driving community growth and promoting Celo vision of a regenerative economy that benefits all. As a core contributor to the Africa DAO and an active builder in the Celo ecosystem for the past 4 years, I aim to strengthen Celo governance through inclusive decision-making. My experience in fostering Web3 communities and supporting DAO initiatives positions me to help advance Celo's development and governance."
+  },
+  "0x9c868c1A597d08C76406E012f6EBf44A42864D75": {
+    "name": "clemens.eth",
+    "address": "0x9c868c1A597d08C76406E012f6EBf44A42864D75",
+    "logoUri": "/logos/delegatees/0x9c868c1A597d08C76406E012f6EBf44A42864D75.jpg",
+    "date": "2024-11-05",
+    "links": {
+      "website": "https://clemensot.to",
+      "twitter": "https://x.com/clemensvienna"
+    },
+    "interests": [
+      "Blockchain Infrastructure",
+      "High Availability",
+      "Proof-of-Stake",
+      "Decentralization"
+    ],
+    "description": "Blockchain Infrastructure Enthusiast. Validator Operator @ atweb3.io"
+  },
+  "0xB52e0e3fCe591ac274438d0D96b2373DE26C7FF0": {
+    "name": "Wolfcito",
+    "address": "0xB52e0e3fCe591ac274438d0D96b2373DE26C7FF0",
+    "logoUri": "/logos/delegatees/0xB52e0e3fCe591ac274438d0D96b2373DE26C7FF0.png",
+    "date": "2024-11-06",
+    "links": {
+      "website": "https://wolfcito.xyz",
+      "twitter": "https://x.com/AKAwolfcito"
+    },
+    "interests": ["Refi", "Public Goods", "Superchain", "AI"],
+    "description": "I'm Wolfcito, a crypto enthusiast. I'm software developer with a strong passion for Web3. I focus on building scalable, decentralized solutions."
+  },
+  "0xB6Bb848A8E00b77698CAb1626C893dc8ddE4927c": {
+    "name": "Hawwal",
+    "address": "0xB6Bb848A8E00b77698CAb1626C893dc8ddE4927c",
+    "logoUri": "/logos/delegatees/0xB6Bb848A8E00b77698CAb1626C893dc8ddE4927c.jpg",
+    "date": "2024-11-23",
+    "links": {
+      "website": "https://www.blaqkstereo.com",
+      "twitter": "https://x.com/itshawwal"
+    },
+    "interests": ["Blockchain", "NFTArt", "Creators", "Education", "Decentralization"],
+    "description": "Founder: Blaqk Stereo Music, & Alumni Celo Camp batch 9"
+  },
+  "0xE73a198e7C07c418D7dcFd42f5E953074aBbD125": {
+    "name": "Humberto Besso",
+    "address": "0xE73a198e7C07c418D7dcFd42f5E953074aBbD125",
+    "logoUri": "/logos/delegatees/0xE73a198e7C07c418D7dcFd42f5E953074aBbD125.png",
+    "date": "2024-11-27",
+    "links": {
+      "website": "https://urbanika.xyz/",
+      "twitter": "https://twitter.com/humbertobesso"
+    },
+    "interests": ["Governance", "IRL DAOs", "Positive Planetary Impact", "Commons", "ReFi"],
+    "description": "MSc & MA in eGovernance and Public Sector Innovation, 8 years in Blockchain, 10 years in IRL Community Building and Participatory Governance experiments, Founder, SolarPunk Bus driver. Delegate to me if you want to bring web3 to be used for improving your city and wellbeing."
+  },
+  "0xF6320E6195A816E44F9599F322D489cAbbC45D24": {
+    "name": "Gerry Alvarez",
+    "address": "0xF6320E6195A816E44F9599F322D489cAbbC45D24",
+    "logoUri": "/logos/delegatees/0xF6320E6195A816E44F9599F322D489cAbbC45D24.jpg",
+    "date": "2024-11-07",
+    "links": {
+      "website": "https://motusdao.org",
+      "twitter": "https://x.com/motusdao"
+    },
+    "interests": ["ReFi", "SoFi", "DeSci", "Blockchain"],
+    "description": "passionate advocate for regenerative communities and innovative Web3 solutions. With a background as a licensed psychologist, you blend expertise in mental health with decentralized technologies to drive social impact projects, including Celo Mexico, MotusDAO, ReFi Mexico."
+  },
+  "0xaA3600788b72863ff51C8f0dB5F10bB65fbFeAB4": {
+    "name": "Lana Dingwall",
+    "address": "0xaA3600788b72863ff51C8f0dB5F10bB65fbFeAB4",
+    "logoUri": "/logos/delegatees/0xaA3600788b72863ff51C8f0dB5F10bB65fbFeAB4.jpeg",
+    "date": "2024-10-03",
+    "links": {
+      "website": "https://www.glodollar.org/",
+      "twitter": "https://x.com/lanzdingz"
+    },
+    "interests": ["ReFi", "DeFi", "Grants", "Public Goods", "Stablecoins"],
+    "description": "I am a core team member and chapter lead with The GreenPill Network, as well as the Head of Growth at Glo Dollar, a stablecoin funding public goods. I serve on the Gitcoin Community Grants Council, have experience with CharmVerse's Grants Team, and am a Council member at Octant and an ambassador for Unlock Protocol. With a strong background in DAOs and community building, I bring expertise in governance and network development, and I am committed to advocating for collaborative solutions to global challenges."
+  },
+  "0xbd7b5d8Fdc2d21e73350741ff5C4cAC335B219a2": {
+    "name": "Celo Mexico",
+    "address": "0xbd7b5d8Fdc2d21e73350741ff5C4cAC335B219a2",
+    "logoUri": "/logos/delegatees/0xbd7b5d8Fdc2d21e73350741ff5C4cAC335B219a2.png",
+    "date": "2024-11-07",
+    "links": {
+      "website": "https://celomexico.org/",
+      "twitter": "https://x.com/celomexico"
+    },
+    "interests": ["Blockchain", "ReFi", "SoFi"],
+    "description": "Regional Celo DAO in Mexico"
+  },
+  "0xe486E4F9c7efd40B999DfAD946407612c4a56C1B": {
+    "name": "Precious Ezema ",
+    "address": "0xe486E4F9c7efd40B999DfAD946407612c4a56C1B",
+    "logoUri": "/logos/delegatees/0xe486E4F9c7efd40B999DfAD946407612c4a56C1B.jpeg",
+    "date": "2024-10-03",
+    "links": {
+      "twitter": "https://twitter.com/ezema_precious?s=21&t=8D9qM7gef6Imbd_8bublNg"
+    },
+    "interests": ["DAO Governance"],
+    "description": "Precious Ezema is a community builder with over 5 years experience. She has adept experience building blockchain communities. She constantly advocates for women in web3 and have worked with blockchain companies, like Celo, ethereum and Solana"
+  },
+  "0x2AeD14FE7bd056212cD0eD91b57a8EC5A5E33624": {
+    "name": "Rica Amaral",
+    "address": "0x2AeD14FE7bd056212cD0eD91b57a8EC5A5E33624",
+    "logoUri": "/logos/delegatees/0x2AeD14FE7bd056212cD0eD91b57a8EC5A5E33624.png",
+    "date": "2025-01-07",
+    "links": {
+      "website": "https://linktr.ee/ricaax",
+      "twitter": "https://www.twitter.com/ricaa"
+    },
+    "interests": ["ReFi", "Public Goods", "Educational Programs", "Ecosystem Development"],
+    "description": "Hi folks, this is Rica. I’ve been involved with Celo in one way or another for over 2 years already. I co-founded PositiveBlockchain.io and ReFi Lisboa, and I'm  the host of planta-R, the Portuguese ReFi podcast. Recently, I stepped into the Marketing Lead role for Celo EU’s 2nd season.  As a creative strategist and marketer with over a decade of experience at the intersection of business, art, tech, and impact, I focus on projects that uphold civil liberties, champion equality, nurture democratic values, and safeguard our planet’s future. I’m driven by a belief in the power of collective intelligence and decentralized communities to create meaningful change."
+  },
+  "0x2aa64E6d80390F5C017F0313cB908051BE2FD35e": {
+    "name": "Afo",
+    "address": "0x2aa64E6d80390F5C017F0313cB908051BE2FD35e",
+    "logoUri": "/logos/delegatees/0x2aa64E6d80390F5C017F0313cB908051BE2FD35e.jpeg",
+    "date": "2024-12-30",
+    "links": {
+      "website": "https://afolabi.info",
+      "twitter": "https://twitter.com/time_is_oba"
+    },
+    "interests": ["Public Goods", "Blockchains", "Augmented Reality", "Music"],
+    "description": "Builder and Steward helping craft the foundations of the regen space with Greenpill & WEFA"
+  },
+  "0x31bCfe0836492224C71410D62d4e0532ca128B3c": {
+    "name": "Florian",
+    "address": "0x31bCfe0836492224C71410D62d4e0532ca128B3c",
+    "logoUri": "/logos/delegatees/0x31bCfe0836492224C71410D62d4e0532ca128B3c.jpg",
+    "date": "2024-12-29",
+    "links": {
+      "website": "https://x.com/frerehugi",
+      "twitter": "https://x.com/frerehugi"
+    },
+    "interests": ["stablecoin usage", "trading", "CELO in East Africa"],
+    "description": "Surgeon with passion for CELO"
+  },
+  "0x37BAedAA536f7144E72915C683e6095177D33e78": {
+    "name": "Aaron Boyd",
+    "address": "0x37BAedAA536f7144E72915C683e6095177D33e78",
+    "logoUri": "/logos/delegatees/0x37BAedAA536f7144E72915C683e6095177D33e78.jpg",
+    "date": "2024-12-23",
+    "links": {
+      "website": "https://vido.atalma.io",
+      "twitter": "https://x.com/BlueThylacine"
+    },
+    "interests": [
+      "Blockchain engineering",
+      "effective governance",
+      "grants",
+      "node operations",
+      "trading"
+    ],
+    "description": "I am the founder of a genesis validator group atalma.io, developer and maintainer of the Vido monitoring tool @ https://vido.atalma.io, a Prezenti director since 2022, member of the CeloPG stewards group, and Celo forum super-lurker."
+  },
+  "0x59ae7f40C6795097CE2aEdC96166F0AfCceB28B8": {
+    "name": "SellMax",
+    "address": "0x59ae7f40C6795097CE2aEdC96166F0AfCceB28B8",
+    "logoUri": "/logos/delegatees/0x59ae7f40C6795097CE2aEdC96166F0AfCceB28B8.webp",
+    "date": "2024-12-20",
+    "links": {
+      "website": "https://x.com/Slava738599",
+      "twitter": "https://x.com/Slava738599"
+    },
+    "interests": ["web"],
+    "description": "delegation"
+  },
+  "0x809C9f8dd8CA93A41c3adca4972Fa234C28F7714": {
+    "name": "Paul2",
+    "address": "0x809C9f8dd8CA93A41c3adca4972Fa234C28F7714",
+    "logoUri": "/logos/delegatees/0x809C9f8dd8CA93A41c3adca4972Fa234C28F7714.jpeg",
+    "date": "2024-12-30",
+    "links": {
+      "twitter": "https://twitter.com/paul_glavin"
+    },
+    "interests": ["Decision mechanisms", "public goods funding", "community governance"],
+    "description": "building better money 🌱 Open Source Project Lead for gardens.fund"
   }
 }

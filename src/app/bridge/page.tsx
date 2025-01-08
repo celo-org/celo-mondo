@@ -23,7 +23,7 @@ const BRIDGES: Bridge[] = [
   {
     name: 'Superbridge',
     operator: 'Superbridge',
-    href: `https://superbridge.app/celo${config.isAlfajores ? '-testnet' : ''}`,
+    href: `https://superbridge.app/celo${config.chain.testnet ? '-testnet' : ''}`,
     logo: '/logos/superbridge.jpg',
     cel2Only: true,
   },

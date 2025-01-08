@@ -14,6 +14,7 @@ export interface LockedBalances {
 export interface LockedStatus {
   balances: LockedBalances;
   pendingWithdrawals: PendingWithdrawal[];
+  unlockingPeriod: bigint;
 }
 
 export enum LockActionType {

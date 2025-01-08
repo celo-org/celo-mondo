@@ -5,6 +5,7 @@ export interface ChartDataItem {
   label: string;
   value: number;
   percentage?: number;
+  address?: `0x${string}`;
 }
 
 export function sortAndCombineChartData(

@@ -19,6 +19,7 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
+import getRuntimeBlock from 'src/utils/runtimeBlock';
 import { PublicClient, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
 
@@ -44,9 +45,11 @@ export function useGovernanceProposals() {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
       // Fetch on-chain data
-      const proposals = await fetchGovernanceProposals(publicClient);
-      const metadata = await fetchGovernanceMetadata();
-      const executedIds = await fetchExecutedProposalIds();
+      const [proposals, metadata, executedIds] = await Promise.all([
+        fetchGovernanceProposals(publicClient),
+        fetchGovernanceMetadata(),
+        fetchExecutedProposalIds(),
+      ]);
       // Then merge it with the cached
       return mergeProposalsWithMetadata(proposals, metadata, executedIds);
     },
@@ -68,9 +71,10 @@ type ProposalRaw = [Address, bigint, bigint, bigint, string, bigint, boolean];
 // Yes, no, abstain
 type VoteTotalsRaw = [bigint, bigint, bigint];
 
-async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
+export async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Proposal[]> {
   // Get queued and dequeued proposals
   const [queued, dequeued] = await publicClient.multicall({
+    ...getRuntimeBlock(),
     contracts: [
       {
         address: Addresses.Governance,
@@ -100,6 +104,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   if (!allIdsAndUpvotes.length) return [];
 
   const properties = await publicClient.multicall({
+    ...getRuntimeBlock(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -112,6 +117,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   });
 
   const stages = await publicClient.multicall({
+    ...getRuntimeBlock(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -124,6 +130,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   });
 
   const votes = await publicClient.multicall({
+    ...getRuntimeBlock(),
     contracts: allIdsAndUpvotes.map(
       (p) =>
         ({
@@ -149,6 +156,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
 
     const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
       props.result as ProposalRaw;
+
     const [yes, no, abstain] = vote.result as VoteTotalsRaw;
     const stage = proposalStage.result as ProposalStage;
     const timestamp = Number(timestampSec) * 1000;
@@ -177,7 +185,7 @@ async function fetchGovernanceProposals(publicClient: PublicClient): Promise<Pro
   return proposals;
 }
 
-function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
+export function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
   // Fetching every past proposal would take too long so the app
   // fetches them at build time and stores a cache. To keep this
   // hook fast, the app should be re-built every now and then.
@@ -187,7 +195,7 @@ function fetchGovernanceMetadata(): Promise<ProposalMetadata[]> {
 
 // The governance metadata is often left unchanged after a proposal is executed
 // so this query is used to double-check the status of proposals
-async function fetchExecutedProposalIds(): Promise<number[]> {
+export async function fetchExecutedProposalIds(): Promise<number[]> {
   const topics = encodeEventTopics({
     abi: governanceABI,
     eventName: 'ProposalExecuted',
@@ -197,7 +205,7 @@ async function fetchExecutedProposalIds(): Promise<number[]> {
   return events.map((e) => parseInt(e.topics[1], 16));
 }
 
-function mergeProposalsWithMetadata(
+export function mergeProposalsWithMetadata(
   proposals: Proposal[],
   metadata: ProposalMetadata[],
   executedIds: number[],
@@ -223,8 +231,20 @@ function mergeProposalsWithMetadata(
     if (metadataIndex >= 0) {
       // Remove the metadata element
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
-      // Add it to the merged array, giving priority to on-chain stage
-      merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
+      // For some reason for re-submitted proposals that eventually pass, the
+      // expired failed proposal on chain is still expired, use the metadata
+      // and trust `executedIds` events
+      if (metadata.id && executedIds.includes(metadata.id)) {
+        merged.push({
+          stage: metadata.stage,
+          id: metadata.id,
+          metadata: { ...metadata, votes: proposal.votes },
+          proposal,
+        });
+      } else {
+        // Add it to the merged array, giving priority to on-chain stage
+        merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
+      }
     } else {
       // No metadata found, use just the on-chain data
       merged.push({ stage: proposal.stage, id: proposal.id, proposal });
@@ -268,7 +288,7 @@ function isActive(p: MergedProposalData) {
   return ACTIVE_PROPOSAL_STAGES.includes(p.stage);
 }
 
-function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
+export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
   if (stage === ProposalStage.Queued) {
     return timestamp + QUEUED_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Approval) {
