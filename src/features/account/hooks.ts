@@ -115,9 +115,9 @@ export function useAccountDetails(address?: Address, addressOrVoteSigner?: Addre
       isAccountResult.isLoading || isValidatorResult.isLoading || isValidatorGroupResult.isLoading,
     refetch: () =>
       Promise.all([
-        isAccountResult.refetch,
-        isValidatorResult.refetch,
-        isValidatorGroupResult.refetch,
+        isAccountResult.refetch(),
+        isValidatorResult.refetch(),
+        isValidatorGroupResult.refetch(),
       ]),
   };
 }
