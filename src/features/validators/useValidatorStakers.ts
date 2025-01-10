@@ -36,12 +36,15 @@ export function useValidatorStakers(group?: Address) {
       gcTime: 2 * 60 * 60 * 1000,
       staleTime: 60 * 60 * 1000, // 1 hour
     },
-    contracts: accounts.map((account) => ({
-      address: Addresses.Election,
-      abi: electionABI,
-      functionName: 'getActiveVotesForGroupByAccount',
-      args: [group!, account],
-    })),
+    contracts: accounts.map(
+      (account) =>
+        ({
+          address: Addresses.Election,
+          abi: electionABI,
+          functionName: 'getActiveVotesForGroupByAccount',
+          args: [group!, account],
+        }) as const,
+    ),
   });
 
   let aggregateData: Array<[Address, number]> = [];
@@ -57,7 +60,6 @@ export function useValidatorStakers(group?: Address) {
   useToastError(accurateStakes.error, 'Error fetching staked amounts');
 
   return {
-    // @ts-ignore accurate stakes type initialization is deep
     isLoading: isLoading || accurateStakes.isLoading,
     isError: isError || accurateStakes.isError,
     stakers: aggregateData,
