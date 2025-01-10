@@ -10,6 +10,7 @@ import { sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
 import { objFilter } from 'src/utils/objects';
 import { decodeEventLog, encodeEventTopics } from 'viem';
+import { useReadContracts } from 'wagmi';
 
 export function useValidatorStakers(group?: Address) {
   const { isLoading, isError, error, data } = useQuery({
@@ -19,16 +20,47 @@ export function useValidatorStakers(group?: Address) {
       logger.debug(`Fetching stakers for group ${group}`);
       return fetchValidatorGroupStakers(group);
     },
-    gcTime: Infinity,
+    gcTime: 2 * 60 * 60 * 1000,
     staleTime: 60 * 60 * 1000, // 1 hour
   });
 
   useToastError(error, 'Error fetching group stakers');
 
+  const accounts = Object.keys(data ?? {}) as Address[];
+
+  // because of rewards the amount in logs will be slightly off. so refetch the exact amounts.
+  // note this does leave off pending but pending is not active yet so i argue its correct
+  const accurateStakes = useReadContracts({
+    query: {
+      enabled: !isLoading && !!data && !!group,
+      gcTime: 2 * 60 * 60 * 1000,
+      staleTime: 60 * 60 * 1000, // 1 hour
+    },
+    contracts: accounts.map((account) => ({
+      address: Addresses.Election,
+      abi: electionABI,
+      functionName: 'getActiveVotesForGroupByAccount',
+      args: [group!, account],
+    })),
+  });
+
+  let aggregateData: Array<[Address, number]> = [];
+  if (accurateStakes.isSuccess && accurateStakes.data) {
+    aggregateData = accurateStakes.data
+      .filter(({ status }) => status === 'success')
+      .map(({ result }, index) => {
+        const address = accounts[index];
+        const staked = result;
+        return [address, fromWei(staked as unknown as bigint)];
+      });
+  }
+  useToastError(accurateStakes.error, 'Error fetching staked amounts');
+
   return {
-    isLoading,
-    isError,
-    stakers: data || undefined,
+    // @ts-ignore accurate stakes type initialization is deep
+    isLoading: isLoading || accurateStakes.isLoading,
+    isError: isError || accurateStakes.isError,
+    stakers: aggregateData,
   };
 }
 
