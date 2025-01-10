@@ -1,0 +1,18 @@
+{
+  "name": "SEEDGov",
+  "address": "0x5670daa9De464782b7B6fc88E659F079aE7C2f94",
+  "logoUri": "/logos/delegatees/0x5670daa9De464782b7B6fc88E659F079aE7C2f94.png",
+  "date": "2025-01-09",
+  "links": {
+    "website": "https://seedgov.org/",
+    "twitter": "https://twitter.com/SEEDGov"
+  },
+  "interests": [
+    "Decentralized governance",
+    "Layer 2",
+    "public goods",
+    "governance design",
+    "Superchain."
+  ],
+  "description": "SEEDGov is a dynamic vertical within the SEED Org ecosystem, rooted in community values and evolving into an active delegate platform that engages across protocols—from AMMs to Layer 2—applying hands-on governance expertise to strengthen decentralized ecosystems like Celo."
+}
