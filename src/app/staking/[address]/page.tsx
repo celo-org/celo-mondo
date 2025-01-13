@@ -20,6 +20,7 @@ import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
 import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
+import { ShortAddress } from 'src/components/text/ShortAddress';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinkType } from 'src/config/types';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
@@ -42,6 +43,7 @@ import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
+import { isAddress } from 'viem';
 
 export const dynamicParams = true;
 
@@ -324,19 +326,19 @@ function Members({ group }: { group?: ValidatorGroup }) {
 }
 
 function Stakers({ group }: { group?: ValidatorGroup }) {
-  const { stakers } = useValidatorStakers(group?.address);
+  const { stakers, isLoading } = useValidatorStakers(group?.address);
 
   const chartData = useMemo(() => {
-    if (!stakers) return null;
-    if (!objLength(stakers)) return [{ label: 'No Stakers', value: 1, color: Color.Grey }];
-    const rawData = Object.entries(stakers).map(([address, amount]) => ({
+    if (isLoading) return null;
+    if (!stakers.length) return [{ label: 'No Stakers', value: 1, color: Color.Grey }];
+    const rawData = stakers.map(([address, amount]) => ({
       label: address,
       value: amount,
     }));
     return sortAndCombineChartData(rawData);
-  }, [stakers]);
+  }, [stakers, isLoading]);
 
-  if (!chartData?.length) {
+  if (isLoading || !chartData) {
     return (
       <div className="flex items-center justify-center p-20">
         <Spinner size="lg" />
@@ -360,9 +362,11 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
                 <td className={tableClasses.td}>
                   <div className="flex items-center space-x-2">
                     <Circle fill={data.color} size={10} />
-                    <span>
-                      {data.label === 'Others' ? 'Other stakers' : shortenAddress(data.label)}
-                    </span>
+                    {isAddress(data.label) ? (
+                      <ShortAddress address={data.label} />
+                    ) : (
+                      <span>{data.label === 'Others' ? 'Other stakers' : data.label}</span>
+                    )}
                   </div>
                 </td>
                 <td className={tableClasses.td}>
