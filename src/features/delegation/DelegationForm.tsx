@@ -5,6 +5,7 @@ import { RadioField } from 'src/components/input/RadioField';
 import { RangeField } from 'src/components/input/RangeField';
 import { TextField } from 'src/components/input/TextField';
 import { MAX_NUM_DELEGATEES, ZERO_ADDRESS } from 'src/config/consts';
+import { useAccountDetails, useVoteSigner } from 'src/features/account/hooks';
 import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -43,6 +44,8 @@ export function DelegationForm({
   const { address } = useAccount();
   const { addressToDelegatee } = useDelegatees();
   const { delegations, refetch } = useDelegationBalances(address);
+  const { voteSigner } = useVoteSigner(address);
+  const { isValidatorOrVoteSigner, isValidatorGroupOrVoteSigner } = useAccountDetails(address, voteSigner);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<DelegateFormValues>({
@@ -65,6 +68,7 @@ export function DelegationForm({
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('delegation', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
+  const canDelegate = !isValidatorOrVoteSigner && !isValidatorGroupOrVoteSigner;
 
   const onSubmit = (values: DelegateFormValues) => writeContract(getNextTx(values));
 
@@ -86,7 +90,7 @@ export function DelegationForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between space-y-3">
           <div
             className={values.action === DelegateActionType.Transfer ? 'space-y-3' : 'space-y-5'}
           >
@@ -113,15 +117,26 @@ export function DelegationForm({
             )}
             <PercentField delegations={delegations} disabled={isInputDisabled} />
           </div>
-          <MultiTxFormSubmitButton
-            txIndex={txPlanIndex}
-            numTxs={numTxs}
-            isLoading={isLoading}
-            loadingText={ActionToVerb[values.action]}
-            tipText={ActionToTipText[values.action]}
-          >
-            {`${toTitleCase(values.action)}`}
-          </MultiTxFormSubmitButton>
+
+          {
+            <MultiTxFormSubmitButton
+              txIndex={txPlanIndex}
+              numTxs={numTxs}
+              isLoading={isLoading}
+              loadingText={ActionToVerb[values.action]}
+              tipText={ActionToTipText[values.action]}
+              disabled={!canDelegate}
+            >
+              {`${toTitleCase(values.action)}`}
+            </MultiTxFormSubmitButton>
+          }
+
+          {!canDelegate && (
+            <p className={'min-w-[18rem] max-w-sm text-xs text-red-600'}>
+              Validators and validator groups (as well as their signers) cannot delegate their
+              voting power.
+            </p>
+          )}
         </Form>
       )}
     </Formik>

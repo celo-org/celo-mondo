@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Amount } from 'src/components/numbers/Amount';
-import { useAccountDetails, useVoteSigner } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { Delegatee } from 'src/features/delegation/types';
 import { VotingPower } from 'src/features/governance/components/VotingPower';
@@ -11,12 +10,8 @@ import { TransactionFlowType } from 'src/features/transactions/TransactionFlowTy
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { bigIntMax } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
-import { useAccount } from 'wagmi';
 
 export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
-  const { address } = useAccount();
-  const { voteSigner } = useVoteSigner(address);
-  const { isValidator, isValidatorGroup } = useAccountDetails(address, voteSigner);
   const { proposalToVotes } = useDelegateeHistory(delegatee.address);
   const showTxModal = useTransactionModal(TransactionFlowType.Delegate, {
     delegatee: delegatee.address,
@@ -31,15 +26,8 @@ export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
       <div>
         <SolidButton
           className="btn-neutral w-full"
-          disabled={isValidator === true || isValidatorGroup === true}
           onClick={() => showTxModal()}
         >{`️🗳️ Delegate voting power`}</SolidButton>
-        {(isValidator || isValidatorGroup) && (
-          <p className={'text-md pt-1 text-red-600'}>
-            Validators and validator groups (as well as their signers) cannot delegate their voting
-            power.
-          </p>
-        )}
         {delegatee.delegatedByPercent > 0 && (
           <p className={'text-md pt-1 text-red-600'}>
             Delegatee is currently delegating{' '}

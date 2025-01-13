@@ -82,7 +82,7 @@ export function useAccountDetails(address?: Address, addressOrVoteSigner?: Addre
     query: { enabled: !!address },
   });
 
-  const isValidatorResult = useReadContract({
+  const isValidatorOrVoteSignerResult = useReadContract({
     address: Addresses.Validators,
     abi: validatorsABI,
     functionName: 'isValidator',
@@ -90,7 +90,7 @@ export function useAccountDetails(address?: Address, addressOrVoteSigner?: Addre
     query: { enabled: !!addressOrVoteSigner },
   });
 
-  const isValidatorGroupResult = useReadContract({
+  const isValidatorGroupOrVoteSignerResult = useReadContract({
     address: Addresses.Validators,
     abi: validatorsABI,
     functionName: 'isValidatorGroup',
@@ -102,22 +102,29 @@ export function useAccountDetails(address?: Address, addressOrVoteSigner?: Addre
   // as name, metadataUrl, walletAddress, voteSignerToAccount, etc.
 
   useToastError(
-    isAccountResult.error || isValidatorResult.error || isValidatorGroupResult.error,
+    isAccountResult.error ||
+      isValidatorOrVoteSignerResult.error ||
+      isValidatorGroupOrVoteSignerResult.error,
     'Error fetching account details',
   );
 
   return {
     isRegistered: isAccountResult.data,
-    isValidator: isValidatorResult.data,
-    isValidatorGroup: isValidatorGroupResult.data,
-    isError: isAccountResult.isError || isValidatorResult.isError || isValidatorGroupResult.isError,
+    isValidatorOrVoteSigner: isValidatorOrVoteSignerResult.data,
+    isValidatorGroupOrVoteSigner: isValidatorGroupOrVoteSignerResult.data,
+    isError:
+      isAccountResult.isError ||
+      isValidatorOrVoteSignerResult.isError ||
+      isValidatorGroupOrVoteSignerResult.isError,
     isLoading:
-      isAccountResult.isLoading || isValidatorResult.isLoading || isValidatorGroupResult.isLoading,
+      isAccountResult.isLoading ||
+      isValidatorOrVoteSignerResult.isLoading ||
+      isValidatorGroupOrVoteSignerResult.isLoading,
     refetch: () =>
       Promise.all([
         isAccountResult.refetch(),
-        isValidatorResult.refetch(),
-        isValidatorGroupResult.refetch(),
+        isValidatorOrVoteSignerResult.refetch(),
+        isValidatorGroupOrVoteSignerResult.refetch(),
       ]),
   };
 }
