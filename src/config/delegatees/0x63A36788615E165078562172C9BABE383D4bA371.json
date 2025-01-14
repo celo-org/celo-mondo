@@ -1,0 +1,18 @@
+{
+  "name": "David Dao",
+  "address": "0x63A36788615E165078562172C9BABE383D4bA371",
+  "logoUri": "/logos/delegatees/0x63A36788615E165078562172C9BABE383D4bA371.png",
+  "date": "2025-01-14",
+  "links": {
+    "website": "https://daviddao.org/",
+    "twitter": "https://x.com/dwddao"
+  },
+  "interests": [
+    "Artificial Intelligence",
+    "DeSci",
+    "ReFi",
+    "Mechanism Design",
+    "Nature Conservation"
+  ],
+  "description": "David Dao is the Co-Founder of GainForest.Earth, a decentralized science non-profit dedicated to tackling the climate and biodiversity crisis with regenerative intelligence. Previously, David won the XPRIZE Rainforest Impact Prize and is the co-inventor of data valuation for machine learning. He earned his doctorate degree in computer science from ETH Zurich, and was a postdoctoral scholar in environmental science with research fellowships at MIT, UC Berkeley and Stanford."
+}
