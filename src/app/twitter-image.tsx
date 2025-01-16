@@ -2,8 +2,7 @@ import { ImageResponse } from 'next/og';
 import React from 'react';
 import { Background } from 'src/components/open-graph/Background';
 import { BasePage } from 'src/components/open-graph/BasePage';
-import { Mondo, MondoWithSubText } from 'src/components/open-graph/MondoLogo';
-import { Portrait } from 'src/components/open-graph/Portrait';
+import { Mondo } from 'src/components/open-graph/MondoLogo';
 
 export const runtime = 'edge';
 export const alt = 'Celo Mondo';
@@ -51,15 +50,6 @@ function FallBack() {
   return (
     <Background>
       <Mondo baseSize={100} />
-    </Background>
-  );
-}
-
-function Validator({ name }: { name: string }) {
-  return (
-    <Background direction="h">
-      <MondoWithSubText baseSize={40} subText="Stake" />
-      <Portrait name={name} relativeImage="/validators/" />
     </Background>
   );
 }
