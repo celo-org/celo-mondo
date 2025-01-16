@@ -84,7 +84,7 @@ function Proposal({ number }: { number: string }) {
           paddingBottom: 40,
         }}
       >
-        <ExtraLarge text={`VOTE 🗳️`} />
+        <ExtraLarge text={`🗳️`} />
         <Title baseSize={40} text={`Proposal ${number}`} />
       </div>
     </Background>
