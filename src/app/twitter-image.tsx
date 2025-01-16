@@ -21,7 +21,7 @@ export default async function Image() {
   ).then((res) => res.arrayBuffer());
 
   return new ImageResponse(
-    <Validator name="Ledger By Figment" />,
+    <Proposal number="126" />,
     // ImageResponse options
     {
       // For convenience, we can re-use the exported opengraph-image
@@ -72,6 +72,25 @@ function Validator({ name }: { name: string }) {
   );
 }
 
+function Proposal({ number }: { number: string }) {
+  return (
+    <Background direction="h">
+      <MondoWithSubText baseSize={40} subText="Stake" />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingBottom: 40,
+        }}
+      >
+        <ExtraLarge text={`VOTE 🗳️`} />
+        <Title baseSize={40} text={`Proposal ${number}`} />
+      </div>
+    </Background>
+  );
+}
+
 /// components
 
 function Portrait({ name }: { name: string }) {
@@ -97,6 +116,21 @@ function Portrait({ name }: { name: string }) {
         }}
       />
       <Title baseSize={textSize} text={name} />
+    </div>
+  );
+}
+
+function ExtraLarge({ text }: { text: string }) {
+  return (
+    <div
+      style={{
+        fontSize: 160,
+        color: Color.Black,
+        display: 'flex',
+        textAlign: 'center',
+      }}
+    >
+      {text}
     </div>
   );
 }
