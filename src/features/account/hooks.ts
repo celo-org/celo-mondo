@@ -46,7 +46,7 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-export function useVoteSigner(address?: Address) {
+export function useVoteSigner(address?: Address, isRegistered?: boolean) {
   const {
     data: voteSigner,
     isError,
@@ -58,7 +58,7 @@ export function useVoteSigner(address?: Address) {
     abi: accountsABI,
     functionName: 'voteSignerToAccount',
     args: [address || ZERO_ADDRESS],
-    query: { enabled: !!address },
+    query: { enabled: !!address && !!isRegistered },
   });
 
   useToastError(error, 'Error fetching vote signer');
@@ -73,7 +73,7 @@ export function useVoteSigner(address?: Address) {
 
 // Note, this retrieves the address' info from the Accounts contract
 // It has nothing to do with wallets or backend services
-export function useAccountDetails(address?: Address, addressOrVoteSigner?: Address) {
+export function useAccountDetails(address?: Address) {
   const isAccountResult = useReadContract({
     address: Addresses.Accounts,
     abi: accountsABI,
@@ -82,49 +82,42 @@ export function useAccountDetails(address?: Address, addressOrVoteSigner?: Addre
     query: { enabled: !!address },
   });
 
-  const isValidatorOrVoteSignerResult = useReadContract({
+  const isValidatorResult = useReadContract({
     address: Addresses.Validators,
     abi: validatorsABI,
     functionName: 'isValidator',
-    args: [addressOrVoteSigner || ZERO_ADDRESS],
-    query: { enabled: !!addressOrVoteSigner },
+    args: [address || ZERO_ADDRESS],
+    query: { enabled: !!address },
   });
 
-  const isValidatorGroupOrVoteSignerResult = useReadContract({
+  const isValidatorGroupResult = useReadContract({
     address: Addresses.Validators,
     abi: validatorsABI,
     functionName: 'isValidatorGroup',
-    args: [addressOrVoteSigner || ZERO_ADDRESS],
-    query: { enabled: !!addressOrVoteSigner },
+    args: [address || ZERO_ADDRESS],
+    query: { enabled: !!address },
   });
 
   // Note, more reads can be added here if more info is needed, such
   // as name, metadataUrl, walletAddress, voteSignerToAccount, etc.
 
   useToastError(
-    isAccountResult.error ||
-      isValidatorOrVoteSignerResult.error ||
-      isValidatorGroupOrVoteSignerResult.error,
+    isAccountResult.error || isValidatorResult.error || isValidatorGroupResult.error,
     'Error fetching account details',
   );
 
   return {
     isRegistered: isAccountResult.data,
-    isValidatorOrVoteSigner: isValidatorOrVoteSignerResult.data,
-    isValidatorGroupOrVoteSigner: isValidatorGroupOrVoteSignerResult.data,
-    isError:
-      isAccountResult.isError ||
-      isValidatorOrVoteSignerResult.isError ||
-      isValidatorGroupOrVoteSignerResult.isError,
+    isValidator: isValidatorResult.data,
+    isValidatorGroup: isValidatorGroupResult.data,
+    isError: isAccountResult.isError || isValidatorResult.isError || isValidatorGroupResult.isError,
     isLoading:
-      isAccountResult.isLoading ||
-      isValidatorOrVoteSignerResult.isLoading ||
-      isValidatorGroupOrVoteSignerResult.isLoading,
+      isAccountResult.isLoading || isValidatorResult.isLoading || isValidatorGroupResult.isLoading,
     refetch: () =>
       Promise.all([
         isAccountResult.refetch(),
-        isValidatorOrVoteSignerResult.refetch(),
-        isValidatorGroupOrVoteSignerResult.refetch(),
+        isValidatorResult.refetch(),
+        isValidatorGroupResult.refetch(),
       ]),
   };
 }

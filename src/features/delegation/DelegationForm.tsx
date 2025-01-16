@@ -44,8 +44,10 @@ export function DelegationForm({
   const { address } = useAccount();
   const { addressToDelegatee } = useDelegatees();
   const { delegations, refetch } = useDelegationBalances(address);
-  const { voteSigner } = useVoteSigner(address);
-  const { isValidatorOrVoteSigner, isValidatorGroupOrVoteSigner } = useAccountDetails(address, voteSigner);
+  const { isValidator, isValidatorGroup, isRegistered } = useAccountDetails(address);
+  const { voteSigner } = useVoteSigner(address, isRegistered);
+  const { isValidator: isVoteSignerForValidator, isValidatorGroup: isVoteSignerForValidatorGroup } =
+    useAccountDetails(voteSigner);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<DelegateFormValues>({
@@ -68,7 +70,11 @@ export function DelegationForm({
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('delegation', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
-  const canDelegate = !isValidatorOrVoteSigner && !isValidatorGroupOrVoteSigner;
+  const canDelegate =
+    !isValidator &&
+    !isValidatorGroup &&
+    !isVoteSignerForValidator &&
+    !isVoteSignerForValidatorGroup;
 
   const onSubmit = (values: DelegateFormValues) => writeContract(getNextTx(values));
 
