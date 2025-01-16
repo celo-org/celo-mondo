@@ -29,7 +29,7 @@ export async function OpenGraphImage({ children }: React.PropsWithChildren<{}>) 
       // For convenience, we can re-use the exported opengraph-image
       // size config to also set the ImageResponse's width and height.
       ...size,
-      debug: true,
+      // debug: true,
       fonts: [
         {
           name: 'Alpina',
@@ -46,7 +46,7 @@ export default function Image() {
   return OpenGraphImage({ children: <BasePage title="Staking" /> });
 }
 
-function FallBack() {
+export function FallBack() {
   return (
     <Background>
       <Mondo baseSize={100} />
