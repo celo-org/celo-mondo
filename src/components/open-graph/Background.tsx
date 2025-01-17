@@ -29,6 +29,8 @@ export function Background({
         height: '100%',
         display: 'flex',
         position: 'relative',
+        // slightly bias away from bottom as twitter puts text there
+        paddingBottom: 20,
         ...style,
       }}
     >

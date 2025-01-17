@@ -1,8 +1,18 @@
+/* eslint-disable @next/next/no-img-element */
+import { shortenAddress } from 'src/utils/addresses';
 import { Title } from './Title';
 
 /// components
 
-export function Portrait({ name, relativeImage }: { name: string; relativeImage: string }) {
+export function Portrait({
+  name,
+  relativeImage,
+  address,
+}: {
+  name: string;
+  relativeImage: string;
+  address: Address;
+}) {
   const baseSize = 280;
   const textSize = name.length > 12 ? 24 : name.length < 6 ? 38 : 32;
   return (
@@ -14,17 +24,22 @@ export function Portrait({ name, relativeImage }: { name: string; relativeImage:
         margin: name.length > 12 ? 0 : 30,
       }}
     >
-      <img
-        src={`https://mondo.celo.org/logos/${relativeImage}`}
-        width={baseSize * 1}
-        height={baseSize * 1}
-        alt="CELO"
-        style={{
-          objectFit: 'contain',
-          margin: 30,
-        }}
-      />
-      <Title baseSize={textSize} text={name} />
+      {relativeImage?.length ? (
+        <img
+          src={`https://mondo.celo.org${relativeImage}`}
+          width={baseSize}
+          height={baseSize}
+          alt="CELO"
+          style={{
+            border: '1px solid #C6C2B5',
+            objectFit: 'contain',
+            margin: 30,
+          }}
+        />
+      ) : (
+        <Title baseSize={baseSize / 3} text="🌐" />
+      )}
+      <Title baseSize={textSize} text={name.length ? name : shortenAddress(address)} />
     </div>
   );
 }
