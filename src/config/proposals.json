@@ -2250,9 +2250,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0149.md",
     "title": "Decrease `constitution` parameter for `GoldToken.increaseAllowance`",
     "author": "Martin Chrzanowski (@m-chrzan)",
-    "stage": 0,
+    "stage": 6,
+    "id": 198,
     "url": "https://forum.celo.org/t/decrease-constitution-parameter-for-goldtoken-increaseallowance/9002",
-    "timestamp": 1725926400000
+    "timestamp": 1725926400000,
+    "timestampExecuted": 1705190400000,
+    "votes": {
+      "yes": "9167068622696043033945178",
+      "no": "0",
+      "abstain": "30000000000000000000"
+    }
   },
   {
     "cgp": 150,
