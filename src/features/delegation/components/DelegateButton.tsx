@@ -13,7 +13,6 @@ import { objLength } from 'src/utils/objects';
 
 export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
   const { proposalToVotes } = useDelegateeHistory(delegatee.address);
-
   const showTxModal = useTransactionModal(TransactionFlowType.Delegate, {
     delegatee: delegatee.address,
   });
