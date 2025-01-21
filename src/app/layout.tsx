@@ -22,6 +22,7 @@ export const metadata: Metadata = {
     description: 'Staking & Governance for Celo',
   },
   twitter: {
+    site: '@celo',
     card: 'summary_large_image',
   },
   icons: [
