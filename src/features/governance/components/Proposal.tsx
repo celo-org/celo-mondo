@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { BackLink } from 'src/components/buttons/BackLink';
-import { Section } from 'src/components/layout/Section';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { links } from 'src/config/links';
 import { ProposalBadgeRow, ProposalLinkRow } from 'src/features/governance/components/ProposalCard';
@@ -54,14 +53,14 @@ export function Proposal({ id }: { id: string }) {
   }
 
   return (
-    <Section containerClassName="mt-4 lg:flex lg:flex-row lg:gap-6">
+    <>
       <ProposalContent propData={propData} />
       {propData.stage !== ProposalStage.None && (
         <CollapsibleResponsiveMenu>
           <ProposalChainData propData={propData} />
         </CollapsibleResponsiveMenu>
       )}
-    </Section>
+    </>
   );
 }
 

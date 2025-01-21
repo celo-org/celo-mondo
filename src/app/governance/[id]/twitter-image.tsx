@@ -14,7 +14,7 @@ export default function Image(props: { params: { id: string } }) {
 function Proposal({ number }: { number: string }) {
   return (
     <Background direction="h">
-      <MondoWithSubText baseSize={40} subText="Stake" />
+      <MondoWithSubText baseSize={40} subText="Govern" />
       <div
         style={{
           display: 'flex',
