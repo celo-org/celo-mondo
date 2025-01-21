@@ -1,5 +1,5 @@
+// DO NOT USE "use client" here as it breaks metadata for openGraph
 import ValidatorPage from 'src/features/staking/page';
-
 type Params = { params: { address: Address } };
 export const dynamicParams = true;
 
