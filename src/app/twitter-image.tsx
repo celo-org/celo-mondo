@@ -17,7 +17,7 @@ export const contentType = 'image/png';
 
 // Image generation
 export async function OpenGraphImage({ children }: React.PropsWithChildren<{}>) {
-  // Font loading like this seems required
+  // Font loading like this seems required to be absolute URL
   const alpina = fetch(
     new URL(
       'https://github.com/celo-org/celo-mondo/raw/8db2b2c80bf3f4f6e26b2f060ec2846d40ea5e5f/public/fonts/alpina-standard-regular.ttf',
