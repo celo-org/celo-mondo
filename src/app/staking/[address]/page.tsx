@@ -49,15 +49,6 @@ export const dynamicParams = true;
 
 type Params = { params: { address: Address } };
 
-export async function generateMetadata({ params }: Params) {
-  return {
-    openGraph: {
-      title: `Stake ${params.address}`,
-      description: params.address,
-    },
-  };
-}
-
 export default function Page({ params: { address } }: Params) {
   const { addressToGroup } = useValidatorGroups();
   const group = addressToGroup?.[address];

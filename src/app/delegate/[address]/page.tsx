@@ -24,15 +24,6 @@ export const dynamicParams = true;
 
 type DelegateParams = { params: { address: Address } };
 
-export async function generateMetadata({ params }: DelegateParams) {
-  return {
-    openGraph: {
-      title: `Delegate to ${params.address}`,
-      description: params.address,
-    },
-  };
-}
-
 export default function Page({ params: { address } }: DelegateParams) {
   const { addressToDelegatee } = useDelegatees();
   const delegatee = addressToDelegatee?.[address];
