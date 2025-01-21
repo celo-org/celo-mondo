@@ -588,5 +588,65 @@
     },
     "interests": ["Decision mechanisms", "public goods funding", "community governance"],
     "description": "building better money 🌱 Open Source Project Lead for gardens.fund"
+  },
+  "0x1421d52714B01298E2e9AA969e14c9317B3E1CFA": {
+    "name": "Sejal",
+    "address": "0x1421d52714B01298E2e9AA969e14c9317B3E1CFA",
+    "logoUri": "/logos/delegatees/0x1421d52714B01298E2e9AA969e14c9317B3E1CFA.jpeg",
+    "date": "2025-01-13",
+    "links": {
+      "website": "https://allo.capital/",
+      "twitter": "https://x.com/sejal_rekhan"
+    },
+    "interests": ["Public Goods Funding", "AI", "Governance"],
+    "description": "Hi! I’m Sejal. I started my journey at Gitcoin, where I focused on community-driven grants and collaborative funding, and I’m now at Allo Capital exploring innovative funding mechanisms. I’m passionate about making Celo a hub for public goods, testing and building mechanisms that benefit everyone.  As a Celo PG Steward, I’m excited to bring my experience in PGF to support Celo’s mission."
+  },
+  "0x2f9B1BEDCbF3F2E060806b96d519f6261e6Fce13": {
+    "name": "Emiri Udogwu",
+    "address": "0x2f9B1BEDCbF3F2E060806b96d519f6261e6Fce13",
+    "logoUri": "/logos/delegatees/0x2f9B1BEDCbF3F2E060806b96d519f6261e6Fce13.jpg",
+    "date": "2025-01-16",
+    "links": {
+      "website": "http://github.com/emiridbest",
+      "twitter": "http://x.com/emiridbest"
+    },
+    "interests": ["Defi", "Stablecoin", "DeSci"],
+    "description": "Founder @Esusu, ex Celo Camp Batch9, ex sage,  multiple hackathon winning."
+  },
+  "0x5670daa9De464782b7B6fc88E659F079aE7C2f94": {
+    "name": "SEEDGov",
+    "address": "0x5670daa9De464782b7B6fc88E659F079aE7C2f94",
+    "logoUri": "/logos/delegatees/0x5670daa9De464782b7B6fc88E659F079aE7C2f94.png",
+    "date": "2025-01-09",
+    "links": {
+      "website": "https://seedgov.org/",
+      "twitter": "https://twitter.com/SEEDGov"
+    },
+    "interests": [
+      "Decentralized governance",
+      "Layer 2",
+      "public goods",
+      "governance design",
+      "Superchain."
+    ],
+    "description": "SEEDGov is a dynamic vertical within the SEED Org ecosystem, rooted in community values and evolving into an active delegate platform that engages across protocols—from AMMs to Layer 2—applying hands-on governance expertise to strengthen decentralized ecosystems like Celo."
+  },
+  "0x63A36788615E165078562172C9BABE383D4bA371": {
+    "name": "David Dao",
+    "address": "0x63A36788615E165078562172C9BABE383D4bA371",
+    "logoUri": "/logos/delegatees/0x63A36788615E165078562172C9BABE383D4bA371.png",
+    "date": "2025-01-14",
+    "links": {
+      "website": "https://daviddao.org/",
+      "twitter": "https://x.com/dwddao"
+    },
+    "interests": [
+      "Artificial Intelligence",
+      "DeSci",
+      "ReFi",
+      "Mechanism Design",
+      "Nature Conservation"
+    ],
+    "description": "David Dao is the Co-Founder of GainForest.Earth, a decentralized science non-profit dedicated to tackling the climate and biodiversity crisis with regenerative intelligence. Previously, David won the XPRIZE Rainforest Impact Prize and is the co-inventor of data valuation for machine learning. He earned his doctorate degree in computer science from ETH Zurich, and was a postdoctoral scholar in environmental science with research fellowships at MIT, UC Berkeley and Stanford."
   }
 }

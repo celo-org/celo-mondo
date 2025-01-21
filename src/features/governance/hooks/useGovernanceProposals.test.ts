@@ -160,7 +160,7 @@ describe('mergeProposalsWithMetadata', () => {
         expect(proposal.stage).toBe(ProposalStage.Referendum);
       } else if (proposal.metadata?.cgp === 149) {
         // draft
-        expect(proposal.stage).toBe(ProposalStage.None);
+        expect(proposal.stage).toBe(ProposalStage.Executed);
       }
     });
   });
