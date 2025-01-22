@@ -142,7 +142,10 @@ export function DelegationForm({
           }
 
           {!canDelegate && (
-            <p className={'min-w-[18rem] max-w-sm text-xs text-red-600'} data-testid="delegate-form-warning">
+            <p
+              className={'min-w-[18rem] max-w-sm text-xs text-red-600'}
+              data-testid="delegate-form-warning"
+            >
               Validators and validator groups (as well as their signers) cannot delegate their
               voting power.
             </p>
