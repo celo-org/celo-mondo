@@ -66,7 +66,7 @@
     "happy-dom": "^15.11.7",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.10",
-    "postcss": "^8.4.38",
+    "postcss": "^8.5.1",
     "prettier": "^3.3.3",
     "prettier-plugin-organize-imports": "^3.2.4",
     "prettier-plugin-tailwindcss": "^0.5.12",
