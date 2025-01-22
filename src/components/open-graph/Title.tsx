@@ -4,7 +4,7 @@ export function Title({ baseSize, text }: { baseSize: number; text: string }) {
   return (
     <div
       style={{
-        marginTop: baseSize * 0.3,
+        marginTop: baseSize * 0.2,
         fontSize: baseSize * 2.25,
         color: Color.Black,
         display: 'flex',

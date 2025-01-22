@@ -8,8 +8,6 @@ import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { createCeloPublicClient } from 'src/utils/client';
 export { contentType, size } from 'src/app/twitter-image';
 
-// export const runtime = 'edge';
-
 export const alt = 'Stake';
 // cant use wagmi here as this is serverside
 async function fetchName(address: Address) {

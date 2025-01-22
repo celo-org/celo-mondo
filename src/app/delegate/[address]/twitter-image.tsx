@@ -5,7 +5,6 @@ import { Portrait } from 'src/components/open-graph/Portrait';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
 
 export { contentType, size } from 'src/app/twitter-image';
-// export const runtime = 'edge';
 
 export const alt = 'Delegate';
 
