@@ -1,8 +1,7 @@
 import { FunctionComponent, ReactNode, useCallback, useState } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
-import { useAccountDetails, useLockedBalance, useVoteSigner } from 'src/features/account/hooks';
-import { DelegationForm } from 'src/features/delegation/DelegationForm';
+import { useAccountDetails, useLockedBalance } from 'src/features/account/hooks';
 import { LockForm } from 'src/features/locking/LockForm';
 import { TransactionConfirmation } from 'src/features/transactions/TransactionConfirmation';
 import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/types';
@@ -26,19 +25,16 @@ export function TransactionFlow<FormDefaults extends {}>({
   closeModal,
 }: TransactionFlowProps<FormDefaults> & { closeModal: () => void }) {
   const { address } = useAccount();
-  const { isRegistered, refetch: refetchAccountDetails } = useAccountDetails(address);
-  const { voteSigner, isLoading: isVoteSignerLoading } = useVoteSigner(address, isRegistered);
   const { lockedBalance } = useLockedBalance(address);
+  const { isRegistered, refetch: refetchAccountDetails } = useAccountDetails(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
-  const isDelegatingAsVoteSigner =
-    FormComponent.name === DelegationForm.name && voteSigner !== address;
 
   let Component: ReactNode;
-  if (!address || isNullish(lockedBalance) || isNullish(isRegistered) || isVoteSignerLoading) {
+  if (!address || isNullish(lockedBalance) || isNullish(isRegistered)) {
     Component = <SpinnerWithLabel className="py-20">Loading account data...</SpinnerWithLabel>;
-  } else if (!isRegistered && !isDelegatingAsVoteSigner) {
+  } else if (!isRegistered) {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
-  } else if (lockedBalance <= 0n && requiresLockedFunds && !isDelegatingAsVoteSigner) {
+  } else if (lockedBalance <= 0n && requiresLockedFunds) {
     Component = <LockForm showTip={true} />;
   } else if (!confirmationDetails) {
     Component = <FormComponent defaultFormValues={defaultFormValues} onConfirmed={onConfirmed} />;
