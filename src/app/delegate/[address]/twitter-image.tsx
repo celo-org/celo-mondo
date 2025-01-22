@@ -3,6 +3,7 @@ import { Background } from 'src/components/open-graph/Background';
 import { MondoWithSubText } from 'src/components/open-graph/MondoLogo';
 import { Portrait } from 'src/components/open-graph/Portrait';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
+
 export { contentType, size } from 'src/app/twitter-image';
 // export const runtime = 'edge';
 

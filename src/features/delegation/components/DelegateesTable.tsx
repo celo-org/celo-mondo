@@ -11,6 +11,8 @@ import {
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
+import { Fade } from 'src/components/animation/Fade';
+import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { SearchField } from 'src/components/input/SearchField';
@@ -18,6 +20,7 @@ import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
+import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { Delegatee } from 'src/features/delegation/types';
 import { useIsMobile } from 'src/styles/mediaQueries';
 
@@ -189,3 +192,16 @@ const classNames = {
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };
+export function DelegateeTableSection() {
+  const { delegatees } = useDelegatees();
+
+  if (!delegatees) {
+    return <FullWidthSpinner>Loading delegate data</FullWidthSpinner>;
+  }
+
+  return (
+    <Fade show>
+      <DelegateesTable delegatees={delegatees} />
+    </Fade>
+  );
+}

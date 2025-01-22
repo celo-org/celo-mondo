@@ -15,10 +15,10 @@ export function MondoWithSubText({ baseSize, subText }: { baseSize: number; subT
         style={{
           marginTop: baseSize * 0.4,
           display: 'flex',
-          fontSize: baseSize * 1.5,
+          fontSize: baseSize * 1.7,
           fontWeight: 200,
-          fontFamily: 'sans-serif',
           justifyContent: 'center',
+          textAlign: 'center',
           position: 'relative',
         }}
       >
@@ -28,6 +28,7 @@ export function MondoWithSubText({ baseSize, subText }: { baseSize: number; subT
   );
 }
 export function Mondo({ baseSize }: { baseSize: number }) {
+  const size = baseSize * 1.2;
   return (
     <div
       style={{
@@ -39,17 +40,19 @@ export function Mondo({ baseSize }: { baseSize: number }) {
     >
       <div
         style={{
-          fontSize: baseSize * 1.5,
+          fontSize: size * 1,
           display: 'flex',
+          textAlign: 'center',
           flexDirection: 'column',
           justifyContent: 'flex-start',
           alignItems: 'center',
+          marginBottom: size * 0.3,
         }}
       >
         <img
           src={'https://mondo.celo.org/logos/celo-full.svg'}
-          width={baseSize * 4}
-          height={baseSize}
+          width={size * 4}
+          height={size}
           alt="CELO"
           style={{
             objectFit: 'contain',
