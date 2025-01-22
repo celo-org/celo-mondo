@@ -20,6 +20,8 @@ export async function generateMetadata({ params: { address } }: DelegateParams) 
     twitter: {
       title: shortenAddress(address),
       creator: getXName(data),
+      site: '@celo',
+      card: 'summary_large_image',
     },
   };
 }

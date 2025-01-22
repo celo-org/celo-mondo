@@ -12,6 +12,8 @@ export async function generateMetadata({ params: { address } }: Params) {
     },
     twitter: {
       title: shortenAddress(address),
+      site: '@celo',
+      card: 'summary_large_image',
     },
   };
 }

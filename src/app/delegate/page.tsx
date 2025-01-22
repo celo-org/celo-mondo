@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   openGraph: basicTitleDecription,
   twitter: {
     title: 'Celo Mondo', // shown on twitter cards
+    site: '@celo',
+    card: 'summary_large_image',
   },
 };
 
