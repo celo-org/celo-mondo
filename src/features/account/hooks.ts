@@ -1,4 +1,5 @@
 import { accountsABI, lockedGoldABI } from '@celo/abis';
+import { validatorsABI } from '@celo/abis-12';
 import { useEffect, useState } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { BALANCE_REFRESH_INTERVAL, ZERO_ADDRESS } from 'src/config/consts';
@@ -45,11 +46,9 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-// Note, this retrieves the address' info from the Accounts contract
-// It has nothing to do with wallets or backend services
-export function useAccountDetails(address?: Address) {
+export function useVoteSigner(address?: Address, isRegistered?: boolean) {
   const {
-    data: isRegistered,
+    data: voteSigner,
     isError,
     isLoading,
     error,
@@ -57,7 +56,44 @@ export function useAccountDetails(address?: Address) {
   } = useReadContract({
     address: Addresses.Accounts,
     abi: accountsABI,
+    functionName: 'voteSignerToAccount',
+    args: [address || ZERO_ADDRESS],
+    query: { enabled: !!address && !!isRegistered },
+  });
+
+  useToastError(error, 'Error fetching vote signer');
+
+  return {
+    voteSigner,
+    isError,
+    isLoading,
+    refetch,
+  };
+}
+
+// Note, this retrieves the address' info from the Accounts contract
+// It has nothing to do with wallets or backend services
+export function useAccountDetails(address?: Address) {
+  const isAccountResult = useReadContract({
+    address: Addresses.Accounts,
+    abi: accountsABI,
     functionName: 'isAccount',
+    args: [address || ZERO_ADDRESS],
+    query: { enabled: !!address },
+  });
+
+  const isValidatorResult = useReadContract({
+    address: Addresses.Validators,
+    abi: validatorsABI,
+    functionName: 'isValidator',
+    args: [address || ZERO_ADDRESS],
+    query: { enabled: !!address },
+  });
+
+  const isValidatorGroupResult = useReadContract({
+    address: Addresses.Validators,
+    abi: validatorsABI,
+    functionName: 'isValidatorGroup',
     args: [address || ZERO_ADDRESS],
     query: { enabled: !!address },
   });
@@ -65,13 +101,24 @@ export function useAccountDetails(address?: Address) {
   // Note, more reads can be added here if more info is needed, such
   // as name, metadataUrl, walletAddress, voteSignerToAccount, etc.
 
-  useToastError(error, 'Error fetching account registration status');
+  useToastError(
+    isAccountResult.error || isValidatorResult.error || isValidatorGroupResult.error,
+    'Error fetching account details',
+  );
 
   return {
-    isRegistered,
-    isError,
-    isLoading,
-    refetch,
+    isRegistered: isAccountResult.data,
+    isValidator: isValidatorResult.data,
+    isValidatorGroup: isValidatorGroupResult.data,
+    isError: isAccountResult.isError || isValidatorResult.isError || isValidatorGroupResult.isError,
+    isLoading:
+      isAccountResult.isLoading || isValidatorResult.isLoading || isValidatorGroupResult.isLoading,
+    refetch: () =>
+      Promise.all([
+        isAccountResult.refetch(),
+        isValidatorResult.refetch(),
+        isValidatorGroupResult.refetch(),
+      ]),
   };
 }
 
