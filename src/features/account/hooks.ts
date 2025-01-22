@@ -58,7 +58,7 @@ export function useVoteSigner(address?: Address, isRegistered?: boolean) {
     abi: accountsABI,
     functionName: 'voteSignerToAccount',
     args: [address || ZERO_ADDRESS],
-    query: { enabled: !!address && !!isRegistered },
+    query: { enabled: !!address && typeof isRegistered === 'boolean' },
   });
 
   useToastError(error, 'Error fetching vote signer');

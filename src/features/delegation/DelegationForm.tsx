@@ -43,9 +43,9 @@ export function DelegationForm({
 }) {
   const { address } = useAccount();
   const { addressToDelegatee } = useDelegatees();
-  const { delegations, refetch } = useDelegationBalances(address);
   const { isValidator, isValidatorGroup, isRegistered } = useAccountDetails(address);
   const { voteSigner } = useVoteSigner(address, isRegistered);
+  const { delegations, refetch } = useDelegationBalances(address, voteSigner);
   const { isValidator: isVoteSignerForValidator, isValidatorGroup: isVoteSignerForValidatorGroup } =
     useAccountDetails(voteSigner);
 
@@ -96,7 +96,10 @@ export function DelegationForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between space-y-3">
+        <Form
+          className="mt-4 flex flex-1 flex-col justify-between space-y-3"
+          data-testid="delegate-form"
+        >
           <div
             className={values.action === DelegateActionType.Transfer ? 'space-y-3' : 'space-y-5'}
           >
@@ -132,13 +135,14 @@ export function DelegationForm({
               loadingText={ActionToVerb[values.action]}
               tipText={ActionToTipText[values.action]}
               disabled={!canDelegate}
+              data-testid="delegate-form-submit"
             >
               {`${toTitleCase(values.action)}`}
             </MultiTxFormSubmitButton>
           }
 
           {!canDelegate && (
-            <p className={'min-w-[18rem] max-w-sm text-xs text-red-600'}>
+            <p className={'min-w-[18rem] max-w-sm text-xs text-red-600'} data-testid="delegate-form-warning">
               Validators and validator groups (as well as their signers) cannot delegate their
               voting power.
             </p>

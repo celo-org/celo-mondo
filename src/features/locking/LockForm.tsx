@@ -99,7 +99,7 @@ export function LockForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="lock-form">
           <div className="space-y-5">
             {showTip && (
               <TipBox color="purple">

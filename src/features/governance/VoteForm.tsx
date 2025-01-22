@@ -70,7 +70,7 @@ export function VoteForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="vote-form">
           <div className="space-y-3">
             <ProposalFormDetails proposalId={values.proposalId} />
             <div className="px-0.5 py-1">
