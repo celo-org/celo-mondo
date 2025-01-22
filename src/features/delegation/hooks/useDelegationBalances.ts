@@ -8,16 +8,18 @@ import { fromFixidity } from 'src/utils/numbers';
 import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
-export function useDelegationBalances(address?: Address) {
+export function useDelegationBalances(address?: Address, voteSigner?: Address) {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useDelegationBalances', publicClient, address],
+    queryKey: ['useDelegationBalances', publicClient, address, voteSigner],
     queryFn: async () => {
       if (!address || !publicClient) return null;
+
       logger.debug('Fetching delegation balances');
-      return fetchDelegationBalances(publicClient, address);
+      return fetchDelegationBalances(publicClient, address, voteSigner);
     },
+    enabled: !!address && !!voteSigner,
     gcTime: 10 * 60 * 1000, // 10 minutes
     staleTime: 1 * 60 * 1000, // 1 minute
   });
@@ -35,6 +37,7 @@ export function useDelegationBalances(address?: Address) {
 async function fetchDelegationBalances(
   publicClient: PublicClient,
   address: Address,
+  voteSignerForAddress?: Address,
 ): Promise<DelegationBalances> {
   const result: DelegationBalances = {
     totalPercent: 0,
@@ -47,7 +50,7 @@ async function fetchDelegationBalances(
     address: Addresses.LockedGold,
     abi: lockedGoldABI,
     functionName: 'getDelegateesOfDelegator',
-    args: [address],
+    args: [voteSignerForAddress || address],
   });
 
   // If there are none, stop here
@@ -60,7 +63,7 @@ async function fetchDelegationBalances(
           address: Addresses.LockedGold,
           abi: lockedGoldABI,
           functionName: 'getDelegatorDelegateeInfo',
-          args: [address, del],
+          args: [voteSignerForAddress || address, del],
         }) as const,
     ),
   });

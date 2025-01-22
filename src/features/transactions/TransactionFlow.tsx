@@ -31,7 +31,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   const { lockedBalance } = useLockedBalance(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
   const isDelegatingAsVoteSigner =
-    FormComponent.name === DelegationForm.name && voteSigner !== address;
+    FormComponent.name === DelegationForm.name && voteSigner && voteSigner !== address;
 
   let Component: ReactNode;
   if (!address || isNullish(lockedBalance) || isNullish(isRegistered) || isVoteSignerLoading) {
