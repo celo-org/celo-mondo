@@ -26,7 +26,7 @@ export function AccountRegisterForm({
   };
 
   return (
-    <div className="flex flex-1 flex-col justify-between">
+    <div className="flex flex-1 flex-col justify-between" data-testid="register-form">
       <div className="flex flex-col items-center space-y-4 py-16">
         <div className="bounce-and-spin flex items-center justify-center">
           <Image className="" src={CeloCube} alt="Loading..." width={80} height={80} />
