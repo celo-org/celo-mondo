@@ -6,6 +6,7 @@ import { BALANCE_REFRESH_INTERVAL, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { isCel2 } from 'src/utils/is-cel2';
 import { isNullish } from 'src/utils/typeof';
+import { ReadContractErrorType } from 'viem';
 import { useBalance as _useBalance, usePublicClient, useReadContract } from 'wagmi';
 
 export function useBalance(address?: Address) {
@@ -51,17 +52,28 @@ export function useVoteSigner(address?: Address, isRegistered?: boolean) {
     data: voteSigner,
     isError,
     isLoading,
-    error,
     refetch,
   } = useReadContract({
     address: Addresses.Accounts,
     abi: accountsABI,
     functionName: 'voteSignerToAccount',
     args: [address || ZERO_ADDRESS],
-    query: { enabled: !!address && typeof isRegistered === 'boolean' },
-  });
+    query: {
+      enabled: isRegistered === false,
+      // The contract will revert if given address is both:
+      // - not registered
+      // - not a vote signer
+      // and hence we don't need to retry in this case, otherwise
+      // we'll retry up to 3 times
+      retry: (failureCount: number, error: ReadContractErrorType) => {
+        if (error.message.includes('reverted')) {
+          return false;
+        }
 
-  useToastError(error, 'Error fetching vote signer');
+        return failureCount < 3;
+      },
+    },
+  });
 
   return {
     voteSigner,

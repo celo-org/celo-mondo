@@ -19,7 +19,7 @@ export function useDelegationBalances(address?: Address, voteSigner?: Address) {
       logger.debug('Fetching delegation balances');
       return fetchDelegationBalances(publicClient, address, voteSigner);
     },
-    enabled: !!address && !!voteSigner,
+    enabled: !!address,
     gcTime: 10 * 60 * 1000, // 10 minutes
     staleTime: 1 * 60 * 1000, // 1 minute
   });
