@@ -28,7 +28,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
     <nav>
       <ul className="flex list-none items-center justify-center space-x-6">
         {LINKS(!!address).map((l) => {
-          const isSelected = l.to === pathname || (l.to !== '/' && pathname.startsWith(l.to));
+          const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
 
           return (
             <div key={l.label} className="relative">

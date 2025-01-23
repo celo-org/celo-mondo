@@ -6,7 +6,7 @@ import {
   delegateeRegistrationRequestToMetadata,
   metadataToJSONString,
 } from 'src/features/delegation/delegateeMetadata';
-import { RegisterDelegateRequest } from 'src/features/delegation/types';
+import { DelegateeMetadata, RegisterDelegateRequest } from 'src/features/delegation/types';
 import { createCeloPublicClient } from 'src/utils/client';
 
 export async function isAddressAnAccount(address: HexString) {
@@ -129,4 +129,12 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
   });
 
   return createPRResponse.data.html_url;
+}
+export function getXName(data: DelegateeMetadata) {
+  const link = data.links.twitter;
+
+  if (link?.startsWith('https://')) {
+    return `@${link.split('.com/')[1]}`;
+  }
+  return undefined;
 }
