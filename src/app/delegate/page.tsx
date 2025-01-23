@@ -1,13 +1,24 @@
-'use client';
-
+import { Metadata } from 'next';
 import Link from 'next/link';
-import { Fade } from 'src/components/animation/Fade';
-import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { CtaCard } from 'src/components/layout/CtaCard';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
-import { DelegateesTable } from 'src/features/delegation/components/DelegateesTable';
-import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
+import { DelegateeTableSection } from 'src/features/delegation/components/DelegateesTable';
+
+const basicTitleDecription = {
+  title: 'Celo Mondo | Delegatees',
+  description: 'Delegate voting power to a delegatee of your choice.',
+};
+
+export const metadata: Metadata = {
+  ...basicTitleDecription,
+  openGraph: basicTitleDecription,
+  twitter: {
+    title: 'Celo Mondo', // shown on twitter cards
+    site: '@celo',
+    card: 'summary_large_image',
+  },
+};
 
 export default function Page() {
   return (
@@ -18,20 +29,6 @@ export default function Page() {
         <DelegateeTableSection />
       </Section>
     </>
-  );
-}
-
-function DelegateeTableSection() {
-  const { delegatees } = useDelegatees();
-
-  if (!delegatees) {
-    return <FullWidthSpinner>Loading delegate data</FullWidthSpinner>;
-  }
-
-  return (
-    <Fade show>
-      <DelegateesTable delegatees={delegatees} />
-    </Fade>
   );
 }
 
