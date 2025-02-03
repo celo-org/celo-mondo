@@ -1,0 +1,14 @@
+{
+  "name": "CalBlockchain",
+  "address": "0xcFB5a8A167c1E437e34d82C25Cc0Ef24d4f27d4b",
+  "logoUri": "/logos/delegatees/0xcFB5a8A167c1E437e34d82C25Cc0Ef24d4f27d4b.jpg",
+  "date": "2025-02-03",
+  "links": {
+    "website": "https://blockchain.studentorg.berkeley.edu/",
+    "twitter": "https://x.com/CalBlockchain"
+  },
+  "interests": [
+    "Blockchain"
+  ],
+  "description": "Student Organization at Berkeley focused on blockchain innovation, education, consulting, and research. Founded in 2014."
+}
