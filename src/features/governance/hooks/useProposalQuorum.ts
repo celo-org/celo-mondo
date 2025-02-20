@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
@@ -24,23 +25,37 @@ export function useProposalQuorum(propData?: MergedProposalData): {
   const { isLoading: isLoadingParticipationParameters, data: participationParameters } =
     useParticipationParameters();
   const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(propData?.proposal);
-
   if (!propData || !propData.proposal || isLoadingParticipationParameters || isLoadingThresholds) {
     return { isLoading: true };
   }
-  // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
-  const quorumPct = new BigNumber(participationParameters.baseline).times(
-    participationParameters.baselineQuorumFactor,
-  );
-  // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Proposals.sol#L195-L211
-  const quorumVotes = BigInt(
-    quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
-  );
-  const maxThreshold = Math.max(...thresholds!);
-  return {
-    data: BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0)),
-    isLoading: false,
-  };
+  try {
+    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
+    const quorumPct = new BigNumber(participationParameters.baseline).times(
+      participationParameters.baselineQuorumFactor,
+    );
+    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Proposals.sol#L195-L211
+    const quorumVotes = BigInt(
+      quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
+    );
+    const maxThreshold = Math.max(...thresholds!);
+    return {
+      data: BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0)),
+      isLoading: false,
+    };
+  } catch (error) {
+    console.warn(
+      'Error calculating proposal quorum',
+      'thresholds',
+      thresholds,
+      'networkWeight',
+      propData.proposal.networkWeight.toString(),
+      error,
+    );
+    return {
+      isLoading: false,
+      data: BigInt(0),
+    };
+  }
 }
 
 export function useParticipationParameters(): {
