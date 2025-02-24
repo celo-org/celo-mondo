@@ -274,7 +274,7 @@ __metadata:
     "@celo/abis": "npm:^11.0.0"
     "@celo/abis-12": "npm:@celo/abis@12.0.0-canary.66"
     "@celo/compliance": "npm:^1.0.24"
-    "@celo/devchain-anvil": "npm:12.0.0-canary.49"
+    "@celo/devchain-anvil": "npm:12.0.0-epoch-manager.1"
     "@headlessui/react": "npm:^1.7.19"
     "@metamask/jazzicon": "https://github.com/jmrossy/jazzicon#7a8df28974b4e81129bfbe3cab76308b889032a6"
     "@metamask/post-message-stream": "npm:6.1.2"
@@ -355,10 +355,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@celo/devchain-anvil@npm:12.0.0-canary.49":
-  version: 12.0.0-canary.49
-  resolution: "@celo/devchain-anvil@npm:12.0.0-canary.49"
-  checksum: 10/7f3e359a41dde6f50b64eab91f8d3fc5aa16892767d34ae172a703eae499dc0d98df2527b2ff25fb2240a846d0b6364f6acea274cd2269c1dbccb584e9f6f83c
+"@celo/devchain-anvil@npm:12.0.0-epoch-manager.1":
+  version: 12.0.0-epoch-manager.1
+  resolution: "@celo/devchain-anvil@npm:12.0.0-epoch-manager.1"
+  checksum: 10/f7b183fce108e55a41c4b7e25f70a10b33cc2e60e0e5966817c320a80119bacc7697ef9fcca7e53cf1e507f612172fa5e23bc0bcaaf5466205d703559a193f0e
   languageName: node
   linkType: hard
 
