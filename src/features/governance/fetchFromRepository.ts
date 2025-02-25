@@ -1,4 +1,4 @@
-import { sanitize } from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import { micromark } from 'micromark';
 import { gfmTable, gfmTableHtml } from 'micromark-extension-gfm-table';
 import {
@@ -94,20 +94,20 @@ export async function fetchProposalsFromRepo(
   return validProposals;
 }
 
-export async function fetchProposalContent(url: string) {
-  const content = await fetchGithubFile(url);
-  if (!content) throw new Error('Failed to fetch proposal content');
-  const fileParts = separateYamlFrontMatter(content);
+export async function fetchProposalContent(cgpNumber: number) {
+  const response = await fetch(`/governance/${cgpNumber}/markdown-api`);
+  const { yaml } = await response.json();
+  if (!yaml) throw new Error('Failed to fetch proposal content');
+  const fileParts = separateYamlFrontMatter(yaml);
   if (!fileParts) throw new Error('Failed to parse proposal content');
   const markup = markdownToHtml(fileParts.body);
   if (isNullish(markup)) throw new Error('Failed to convert markdown to html');
   if (!markup) {
-    logger.warn('Content is empty for:', url);
+    logger.warn('Content is empty for:', cgpNumber);
     return '';
   }
-  // Client-side only due to issue with DomPurify in SSR
-  if (typeof window !== 'undefined') return sanitize(markup);
-  else return '';
+  // return markup;
+  return DOMPurify.sanitize(markup);
 }
 
 interface GithubFile {
