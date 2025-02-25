@@ -5,16 +5,16 @@ import { ProposalMetadata } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 
 export function useProposalContent(metadata?: ProposalMetadata) {
-  const url = metadata?.cgpUrlRaw;
+  const cgpNumber = metadata?.cgp;
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useProposalContent', url],
+    queryKey: ['useProposalContent', cgpNumber],
     queryFn: () => {
-      if (!url) return null;
-      logger.debug('Fetching proposal content', url);
-      return fetchProposalContent(url);
+      if (!cgpNumber) return null;
+      logger.debug('Fetching proposal content', cgpNumber);
+      return fetchProposalContent(cgpNumber);
     },
     gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    staleTime: 5 * 60 * 1000, // 5 min // TODO 1 hour is too long while its active
   });
 
   useToastError(error, 'Error fetching proposal content');
