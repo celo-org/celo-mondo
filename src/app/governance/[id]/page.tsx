@@ -11,7 +11,7 @@ export const metadata = {
 export default function Page({ params: { id } }: { params: { id: string } }) {
   return (
     <Section containerClassName="mt-4 lg:flex lg:flex-row lg:gap-6">
-      <Proposal id={id} />;
+      <Proposal id={id} />
     </Section>
   );
 }
