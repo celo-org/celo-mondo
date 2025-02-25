@@ -56,7 +56,7 @@ it('successfuly calls PR creation', async () => {
   expect(request.address).toBe('0x6A5DD51Da29914e8659b9CC354B414f30c7692c4');
   expect(request.description).toBe('Delegatee description');
   expect(request.image).toBeInstanceOf(File);
-  expect((request.image as File).arrayBuffer()).resolves.toEqual(imageBuffer.buffer);
+  await expect((request.image as File).arrayBuffer()).resolves.toEqual(imageBuffer.buffer);
   expect(request.interests).toBe('blockchain, NFTs');
   expect(request.name).toBe('Delegatee name');
   expect(request.signature).toBe(

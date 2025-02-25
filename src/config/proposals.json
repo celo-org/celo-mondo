@@ -2096,9 +2096,9 @@
     "timestamp": 1716422400000,
     "timestampExecuted": 1717113600000,
     "votes": {
-      "yes": "15637180923411949481583775",
-      "no": "803071079695202545884267",
-      "abstain": "158521938162827452501095"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2113,9 +2113,9 @@
     "timestamp": 1719446400000,
     "timestampExecuted": 1720483200000,
     "votes": {
-      "yes": "24995728387484444499725236",
-      "no": "2526567736694",
-      "abstain": "25722869814645787237"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2130,9 +2130,9 @@
     "timestamp": 1719360000000,
     "timestampExecuted": 1720828800000,
     "votes": {
-      "yes": "17906941892797620833679016",
-      "no": "1555631167899194003374",
-      "abstain": "64556262437625045255704"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2147,9 +2147,9 @@
     "timestamp": 1721779200000,
     "timestampExecuted": 1723507200000,
     "votes": {
-      "yes": "1567786487379131024615109",
-      "no": "1743973200273647673050",
-      "abstain": "12190351548863554617425621"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2163,9 +2163,9 @@
     "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
     "timestamp": 1722470400000,
     "votes": {
-      "yes": "7311270592366178906424809",
-      "no": "1052875318387568208771036",
-      "abstain": "275503297679584786792311"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2179,19 +2179,27 @@
     "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
     "timestamp": 1722902400000,
     "votes": {
-      "yes": "423305894499211746439297",
-      "no": "984603262175208534886123",
-      "abstain": "473729958780760268232905"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
     "cgp": 145,
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0145.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0145.md",
-    "title": "Increase minimum gas threshold to 25000000000 gwei",
+    "title": "Increase minimum gas threshold to 25000000000 wei",
     "author": "Martín Volpe (@martinvol)",
-    "stage": 0,
-    "timestamp": 1722902400000
+    "stage": 6,
+    "id": 205,
+    "url": "https://forum.celo.org/t/increase-minimum-gas-price-threshold-to-25000000000-wei",
+    "timestamp": 1722902400000,
+    "timestampExecuted": 1740096000000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 146,
@@ -2205,9 +2213,9 @@
     "timestamp": 1724630400000,
     "timestampExecuted": 1725408000000,
     "votes": {
-      "yes": "14038365258855133578012922",
-      "no": "30033914673902478388",
-      "abstain": "51708915618462140021"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2222,9 +2230,9 @@
     "timestamp": 1724889600000,
     "timestampExecuted": 1725667200000,
     "votes": {
-      "yes": "12791659812098214199612374",
+      "yes": "0",
       "no": "0",
-      "abstain": "25313268947400803053860"
+      "abstain": "0"
     }
   },
   {
@@ -2239,9 +2247,9 @@
     "timestamp": 1725926400000,
     "timestampExecuted": 1728604800000,
     "votes": {
-      "yes": "19196383765513294833228793",
-      "no": "29999999999999999998",
-      "abstain": "105921367286428986370083"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2256,9 +2264,9 @@
     "timestamp": 1725926400000,
     "timestampExecuted": 1705190400000,
     "votes": {
-      "yes": "9167068622696043033945178",
+      "yes": "0",
       "no": "0",
-      "abstain": "30000000000000000000"
+      "abstain": "0"
     }
   },
   {
@@ -2273,7 +2281,7 @@
     "timestamp": 1729123200000,
     "timestampExecuted": 1730246400000,
     "votes": {
-      "yes": "15965588950234979553095750",
+      "yes": "0",
       "no": "0",
       "abstain": "0"
     }
@@ -2290,7 +2298,7 @@
     "timestamp": 1729123200000,
     "timestampExecuted": 1730332800000,
     "votes": {
-      "yes": "8415239370544153759056444",
+      "yes": "0",
       "no": "0",
       "abstain": "0"
     }
@@ -2307,9 +2315,9 @@
     "timestamp": 1729728000000,
     "timestampExecuted": 1732924800000,
     "votes": {
-      "yes": "7761781971226818472551031",
+      "yes": "0",
       "no": "0",
-      "abstain": "4096176297343921659432"
+      "abstain": "0"
     }
   },
   {
@@ -2324,9 +2332,9 @@
     "timestamp": 1729728000000,
     "timestampExecuted": 1731456000000,
     "votes": {
-      "yes": "7701549623695961942533035",
-      "no": "68265368874125165798841",
-      "abstain": "245222846296012194773627"
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
     }
   },
   {
@@ -2341,7 +2349,7 @@
     "timestamp": 1698710400000,
     "timestampExecuted": 1731801600000,
     "votes": {
-      "yes": "7866567917887174163280483",
+      "yes": "0",
       "no": "0",
       "abstain": "0"
     }
@@ -2361,25 +2369,27 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0156.md",
     "title": "Enabling MENTO Governance",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>",
-    "stage": 8,
-    "id": 196,
+    "stage": 1,
+    "id": 206,
     "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community/9526",
-    "timestamp": 1732492800000,
-    "votes": {
-      "yes": "3525668055998380854144309",
-      "no": "1023686951731787961563689",
-      "abstain": "0"
-    }
+    "timestamp": 1732492800000
   },
   {
     "cgp": 157,
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0157.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0157.md",
-    "title": "Enhancing Ecosystem Security Through Subsidized Services",
+    "title": "Celo SHIELD - Subsidized Help for Improving Ecosystem-Level Defense",
     "author": "Benjamin Speckien (benjamin.speckien@clabs.co), Nikolaos Frestis (nikolaos.frestis@clabs.co), Stefan Ioja (stefan.ioja@clabs.co)",
-    "stage": 0,
+    "stage": 6,
+    "id": 199,
     "url": "https://forum.celo.org/t/celo-ecosystem-security-services-program-enhancing-ecosystem-security-through-subsidized-services",
-    "timestamp": 1733097600000
+    "timestamp": 1733097600000,
+    "timestampExecuted": 1739145600000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 158,
@@ -2387,8 +2397,136 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0158.md",
     "title": "Celo Infrastructure for Chain Lifecycle Operational Support (CICLOPS)",
     "author": "Eric Nakagawa (@ericnakagawa), Martin Volpe (@martinvol), Silas Boyd-Wickizer (@silas)",
+    "stage": 6,
+    "id": 197,
+    "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-ciclops",
+    "timestamp": 1734566400000,
+    "timestampExecuted": 1736812800000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 159,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0159.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0159.md",
+    "title": "Adding oracles to support cGHS",
+    "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
+    "stage": 6,
+    "id": 200,
+    "url": "https://forum.celo.org/t/launch-of-a-ghanaian-cedi-stablecoin-cghs",
+    "timestamp": 1738108800000,
+    "timestampExecuted": 1739491200000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 160,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0160.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0160.md",
+    "title": "Celo Regional Council",
+    "author": "Celo Regional DAOs",
+    "stage": 6,
+    "id": 201,
+    "url": "https://forum.celo.org/t/celo-regional-council-h1-2025",
+    "timestamp": 1738627200000,
+    "timestampExecuted": 1739577600000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 161,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0161.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0161.md",
+    "title": "CeloPG Season 0",
+    "author": "LuukDAO <@LuukDAO>, Monty Merlin <@MontyMerlin>, Niko Da Costa <@NikoG>",
+    "stage": 6,
+    "id": 202,
+    "url": "https://forum.celo.org/t/budget-request-celopg-season-0-final",
+    "timestamp": 1738627200000,
+    "timestampExecuted": 1739577600000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 162,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0162.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0162.md",
+    "title": "Stabila Funding Request Aave Liquidity & Incentives",
+    "author": "Michael Kwan <@MichaelKwan>",
+    "stage": 1,
+    "id": 208,
+    "url": "https://forum.celo.org/t/stabila-funding-request-aave-liquidity-incentives",
+    "timestamp": 1738800000000
+  },
+  {
+    "cgp": 163,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0163.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0163.md",
+    "title": "Launch of the cGHS Stablecoin",
+    "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
+    "stage": 6,
+    "id": 204,
+    "url": "https://forum.celo.org/t/launch-of-a-ghanaian-cedi-stablecoin-cghs",
+    "timestamp": 1738886400000,
+    "timestampExecuted": 1740096000000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 164,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0164.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0164.md",
+    "title": "The Great Celo Halvening Temperature check",
+    "author": "Marek Olszewski (@marekolszewski), Martin Volpe (@martinvol)",
+    "stage": 1,
+    "id": 209,
+    "url": "https://forum.celo.org/t/the-great-celo-halvening-temperature-check",
+    "timestamp": 1738368000000
+  },
+  {
+    "cgp": 165,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0165.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0165.md",
+    "title": "Celo Communities Guild Proposal 2025 H1 Budget",
+    "author": "Celo communities Guild: 0xj4an-work (@0xj4an-work), Goldo (@0xGoldo), Anthony (@0xKnight)",
+    "stage": 1,
+    "id": 207,
+    "url": "https://forum.celo.org/t/celo-communities-guild-proposal-2025-h1-budget",
+    "timestamp": 1739491200000
+  },
+  {
+    "cgp": 166,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0166.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0166.md",
+    "title": "Contracts Release 12",
+    "author": "cLabs Primitives Team",
     "stage": 0,
-    "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-ciclops/9661",
-    "timestamp": 1734566400000
+    "url": "https://forum.celo.org/t/contract-release-12",
+    "timestamp": 1708128000000
+  },
+  {
+    "cgp": 167,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0167.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0167.md",
+    "title": "Set Parameters for L2 transition",
+    "author": "cLabs Primitives Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/set-parameters-for-l2-transition/10365",
+    "timestamp": 1739577600000
   }
 ]
