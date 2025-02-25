@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook as _renderHook } from '@testing-library/react';
-import React from 'react';
 import { PublicClient, createPublicClient, createTestClient, createWalletClient, http } from 'viem';
 import { mnemonicToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
