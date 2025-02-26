@@ -648,5 +648,111 @@
       "Nature Conservation"
     ],
     "description": "David Dao is the Co-Founder of GainForest.Earth, a decentralized science non-profit dedicated to tackling the climate and biodiversity crisis with regenerative intelligence. Previously, David won the XPRIZE Rainforest Impact Prize and is the co-inventor of data valuation for machine learning. He earned his doctorate degree in computer science from ETH Zurich, and was a postdoctoral scholar in environmental science with research fellowships at MIT, UC Berkeley and Stanford."
+  },
+  "0x140D3f60AC840571a3e08e218B823094d4715564": {
+    "name": "koH",
+    "address": "0x140D3f60AC840571a3e08e218B823094d4715564",
+    "logoUri": "/logos/delegatees/0x140D3f60AC840571a3e08e218B823094d4715564.jpg",
+    "date": "2025-01-24",
+    "links": {
+      "website": "https://handprotocol.org",
+      "twitter": "https://x.com/crypto_koh"
+    },
+    "interests": ["Gov", "Regen", "Art", "AI", "OSS"],
+    "description": "Hey I'm koH and my main focus is leveraging blockchain to help positive change projects. My main project is Hand Protocol which is focused on assisting regen projects or people to accomplish their missions!"
+  },
+  "0x1d8b86f4E261b6329465358f573c3B31A4a2A646": {
+    "name": "Marie-Claire Graf",
+    "address": "0x1d8b86f4E261b6329465358f573c3B31A4a2A646",
+    "logoUri": "/logos/delegatees/0x1d8b86f4E261b6329465358f573c3B31A4a2A646.jpg",
+    "date": "2025-01-31",
+    "links": {
+      "website": "https://marieclairegraf.com",
+      "twitter": "https://x.com/MarieClaireGraf"
+    },
+    "interests": ["climate", "diplomacy", "negotiations", "nature", "sailing"],
+    "description": "Co-Founder of Youth Negotiators Academy for democratic governance and intergenerational leadership in environmental policy, diplomacy and decision-making processes to create a momentum for systemic change. She was initiating and is leading several associations and movements on the intersections of climate, youth and women representation, food systems transformation and education. She studied environmental and political sciences in Zurich and was a climate negotiator for Switzerland."
+  },
+  "0x20F50b8832f87104853df3FdDA47Dd464f885a49": {
+    "name": "Felix Eligbue",
+    "address": "0x20F50b8832f87104853df3FdDA47Dd464f885a49",
+    "logoUri": "/logos/delegatees/0x20F50b8832f87104853df3FdDA47Dd464f885a49.jpg",
+    "date": "2025-01-18",
+    "links": {
+      "website": "https://philix.vercel.app",
+      "twitter": "https://x.com/philixbob"
+    },
+    "interests": ["Stablecoin", "Defi", "Impact"],
+    "description": "Software developer and Founder @pharmoprep"
+  },
+  "0x3DDC7d25c7a1dc381443e491Bbf1Caa8928A05B0": {
+    "name": "Ignas",
+    "address": "0x3DDC7d25c7a1dc381443e491Bbf1Caa8928A05B0",
+    "logoUri": "/logos/delegatees/0x3DDC7d25c7a1dc381443e491Bbf1Caa8928A05B0.png",
+    "date": "2025-01-17",
+    "links": {
+      "twitter": "https://x.com/DefiIgnas"
+    },
+    "interests": ["DeFi", "L1s", "L2s", "DAO governance"],
+    "description": "I’m Ignas, a solo researcher with the main focus on DeFi. My mission is to provide clear, in-depth insights helping my audiences stay up-to-date with the latest trends while actively supporting DAO development.  I believe in the decentralized future and it means actively participating in Arbitrum DAO in every way I can—whether it’s by serving as a delegate, joining working groups, discussing any proposals or seizing new opportunities that come up. I’ll also be sharing key DAO decisions on X and my blog."
+  },
+  "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439": {
+    "name": "Grassroots Economics",
+    "address": "0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439",
+    "logoUri": "/logos/delegatees/0x5523058cdFfe5F3c1EaDADD5015E55C6E00fb439.png",
+    "date": "2025-01-20",
+    "links": {
+      "website": "https://grassrootseconomics.org",
+      "twitter": "https://x.com/grassecon"
+    },
+    "interests": ["Open Source", "Governance", "ReFi", "Community", "Engineering"],
+    "description": "Grassroots Economics is a non-profit foundation that seeks to support communities to take charge of their own livelihoods and economic future. We focus on community development through commons and are dedicated to helping communities realize and share their abundance through Economic Commons with Instruments like Community Asset Vouchers and Commitment Pooling that can act as a medium of exchange and commons. While core beneficiaries of our programs include businesses and people living in informal settlements as well as rural areas, the documentation and tools have been broadly applied worldwide.  It is tremendously important to us that people take, use, build on and share what we've found to be useful. Join us in demonstrating, disseminating, designing & curating the best practices to empower communities to create and manage their own financial instruments. All our software, websites, materials are CopyLeft under AGPL 3.0 for software and Creative Commons Share-Alike With Attribution. Please copy, modify and"
+  },
+  "0x6820442229778647b77cA1bb1746d1966dEbe3Ea": {
+    "name": "Vow",
+    "address": "0x6820442229778647b77cA1bb1746d1966dEbe3Ea",
+    "logoUri": "/logos/delegatees/0x6820442229778647b77cA1bb1746d1966dEbe3Ea.jpg",
+    "date": "2025-01-15",
+    "links": {
+      "website": "https://x.com/VowIMTX",
+      "twitter": "https://x.com/VowIMTX"
+    },
+    "interests": ["Blockchain", "Sustainable"],
+    "description": "Advisor at KohCelo"
+  },
+  "0xCDaba8e196D9BF1DabdF6b5D3Bc3BFD175FF81c8": {
+    "name": "UMN Blockchain",
+    "address": "0xCDaba8e196D9BF1DabdF6b5D3Bc3BFD175FF81c8",
+    "logoUri": "/logos/delegatees/0xCDaba8e196D9BF1DabdF6b5D3Bc3BFD175FF81c8.jpg",
+    "date": "2025-01-22",
+    "links": {
+      "website": "https://www.umnbc.org/",
+      "twitter": "https://x.com/umnblockchain"
+    },
+    "interests": ["Blockchain"],
+    "description": "Club at University of Minnesota dedicated to Blockchain"
+  },
+  "0xba3982536F79090D4d68cD14e1B7d15fF1014030": {
+    "name": "Anthony Annaelechukwu Nduka",
+    "address": "0xba3982536F79090D4d68cD14e1B7d15fF1014030",
+    "logoUri": "/logos/delegatees/0xba3982536F79090D4d68cD14e1B7d15fF1014030.jpeg",
+    "date": "2025-01-29",
+    "links": {
+      "twitter": "https://x.com/ndukaanthonya"
+    },
+    "interests": ["Community", "NFTs", "DAO", "Stablecoins"],
+    "description": "Community Developer"
+  },
+  "0xcFB5a8A167c1E437e34d82C25Cc0Ef24d4f27d4b": {
+    "name": "CalBlockchain",
+    "address": "0xcFB5a8A167c1E437e34d82C25Cc0Ef24d4f27d4b",
+    "logoUri": "/logos/delegatees/0xcFB5a8A167c1E437e34d82C25Cc0Ef24d4f27d4b.jpg",
+    "date": "2025-02-03",
+    "links": {
+      "website": "https://blockchain.studentorg.berkeley.edu/",
+      "twitter": "https://x.com/CalBlockchain"
+    },
+    "interests": ["Blockchain"],
+    "description": "Student Organization at Berkeley focused on blockchain innovation, education, consulting, and research. Founded in 2014."
   }
 }

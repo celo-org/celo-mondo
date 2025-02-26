@@ -2359,7 +2359,7 @@
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0155.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0155.md",
     "title": "Add CeloToken and LockedCelo to the registry",
-    "author": "Sebastien Benoit (@soloseng), Martín Volpe (@martinvol)",
+    "author": "@soloseng, Martín Volpe (@martinvol)",
     "stage": 0,
     "timestamp": 1731974400000
   },
