@@ -316,7 +316,7 @@ export function pessimisticallyHandleMismatchedIDs(
   proposal: Proposal,
 ): MergedProposalData {
   if (executedIds.includes(metadata.id!)) {
-    // the proposal is WRONG use the trust the metadata
+    // the proposal is WRONG, trust the metadata
     // do NOT use votes from the proposal they are wrong
     return {
       stage: ProposalStage.Executed,
