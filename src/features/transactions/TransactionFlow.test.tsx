@@ -4,6 +4,7 @@ import { DelegationForm } from 'src/features/delegation/DelegationForm';
 import * as useDelegatees from 'src/features/delegation/hooks/useDelegatees';
 import * as useDelegationBalances from 'src/features/delegation/hooks/useDelegationBalances';
 import * as useGovernanceProposals from 'src/features/governance/hooks/useGovernanceProposals';
+import * as votingHooks from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import * as useLockedStatus from 'src/features/locking/useLockedStatus';
 import * as useStakingBalances from 'src/features/staking/useStakingBalances';
@@ -145,6 +146,17 @@ describe('<TransactionFlow />', () => {
         await waitFor(async () => expect(await flow.findByTestId('register-form')).toBeTruthy());
       });
     });
+    describe('as a account which has been delegated votes', () => {
+      test('renders <VoteForm /> for account', async () => {
+        setupHooks({ isRegistered: true, lockedGoldBalance: 0n, votingPower: 1n });
+
+        const flow = render(
+          <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
+        );
+
+        await waitFor(async () => expect(await flow.findByTestId('vote-form')).toBeTruthy());
+      });
+    });
   });
 });
 
@@ -152,6 +164,7 @@ type SetupHooksOptions = {
   isRegistered?: boolean;
   lockedGoldBalance?: bigint;
   voteSignerForAddress?: string;
+  votingPower?: bigint;
 };
 
 // Mocks all necessary hooks for the TransactionFlow component
@@ -166,13 +179,18 @@ const setupHooks = (options?: SetupHooksOptions) => {
     isError: false,
     isLoading: false,
   } as any);
-
   vi.spyOn(useDelegatees, 'useDelegatees').mockReturnValue({} as any);
   vi.spyOn(useDelegationBalances, 'useDelegationBalances').mockReturnValue({} as any);
   vi.spyOn(useLockedStatus, 'useLockedStatus').mockReturnValue({} as any);
   vi.spyOn(useStakingBalances, 'useStakingBalances').mockReturnValue({} as any);
   vi.spyOn(useGovernanceProposals, 'useGovernanceProposals').mockReturnValue({} as any);
   vi.spyOn(useGovernanceProposals, 'useGovernanceProposal').mockReturnValue({} as any);
+
+  vi.spyOn(votingHooks, 'useGovernanceVotingPower').mockReturnValue({
+    isLoading: false,
+    votingPower: options?.votingPower ?? 0n,
+    isError: false,
+  });
 
   vi.spyOn(hooks, 'useAccountDetails').mockReturnValue({
     isError: false,
