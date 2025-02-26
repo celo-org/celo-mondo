@@ -3,7 +3,7 @@ import { TransactionLog } from 'src/features/explorers/types';
 import { publicClient } from 'src/test/anvil/utils';
 import { logger } from 'src/utils/logger';
 import { afterAll, describe, expect, it, test, vi } from 'vitest';
-import { ProposalStage } from '../types';
+import { Proposal, ProposalMetadata, ProposalStage } from '../types';
 import {
   MergedProposalData,
   fetchExecutedProposalIds,
@@ -11,6 +11,7 @@ import {
   fetchGovernanceProposals,
   getExpiryTimestamp,
   mergeProposalsWithMetadata,
+  pessimisticallyHandleMismatchedIDs,
   useGovernanceProposal,
 } from './useGovernanceProposals';
 
@@ -161,7 +162,112 @@ describe('mergeProposalsWithMetadata', () => {
       } else if (proposal.metadata?.cgp === 149) {
         // draft
         expect(proposal.stage).toBe(ProposalStage.Executed);
+      } else if (proposal.metadata?.cgp === 163) {
+        expect(proposal.stage).toBe(ProposalStage.Executed);
       }
     });
   });
 }, 10000);
+
+describe('pessimisticallyHandleMismatchedIDs', () => {
+  const executedIDS = [1, 3, 5, 7, 11, 21, 99, 101];
+  const metdataCommon = {
+    cgpUrl: 'https://github.com/celo-org/governance/blob/main/CGPs/cgp-0101.md',
+    cgpUrlRaw: 'https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0101.md',
+    title: 'test proposal',
+    author: 'test author',
+    votes: undefined,
+  } as const;
+
+  // values not used in test
+  const proposalCommon = {
+    timestamp: Date.now(),
+    url: 'https://github.com/celo-org/governance/blob/main/CGPs/cgp-0101.md',
+    deposit: 100000000000000000000n,
+    numTransactions: 2n,
+    proposer: '0x1234567890123456789012345678901234567890',
+    networkWeight: 100000000000000000000n,
+    votes: {
+      yes: 1000000000000000000000n,
+      no: 1000000000000000000000n,
+      abstain: 1000000000000000000000n,
+    },
+    upvotes: 1000000000000000000000n,
+  } as const;
+
+  describe('when on chain proposal id has been executed', () => {
+    it('returns with proposal as truth', () => {
+      const executedID = executedIDS[0];
+      const nonExecutedId = 4;
+      expect(executedIDS.includes(nonExecutedId)).toBe(false);
+      const proposal: Proposal = {
+        id: executedID,
+        stage: ProposalStage.Executed,
+        ...proposalCommon,
+        isApproved: true,
+      };
+      const metadata: ProposalMetadata = {
+        id: nonExecutedId,
+        stage: ProposalStage.Queued,
+        cgp: 101,
+        ...metdataCommon,
+      };
+      expect(pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal)).toEqual({
+        id: executedID,
+        metadata: { ...metadata, id: executedID },
+        stage: ProposalStage.Executed,
+        proposal,
+      });
+    });
+  });
+  describe('when id from github metadata has been executed', () => {
+    it('returns metadata as truth', () => {
+      const executedID = executedIDS[3];
+      const nonExecutedId = 22;
+      expect(executedIDS.includes(nonExecutedId)).toBe(false);
+      const proposal: Proposal = {
+        id: nonExecutedId,
+        stage: ProposalStage.Expiration,
+        ...proposalCommon,
+        isApproved: true,
+      };
+      const metadata: ProposalMetadata = {
+        id: executedID,
+        stage: ProposalStage.Queued,
+        cgp: 101,
+        ...metdataCommon,
+      };
+      expect(pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal)).toEqual({
+        id: executedID,
+        stage: ProposalStage.Executed,
+        metadata: metadata,
+      });
+    });
+  });
+  // realistcally this should never happen so not bothering with it for now
+  describe.todo('when both id has been executed', () => {
+    it('returns with higher as truth', () => {});
+  });
+  describe('when on chain is expired and gh hub stage is withdrawn/rejected', () => {
+    it('returns with x as truth  and uses metadata for status', () => {
+      const proposal: Proposal = {
+        id: 4,
+        stage: ProposalStage.Expiration,
+        ...proposalCommon,
+        isApproved: true,
+      };
+      const metadata: ProposalMetadata = {
+        id: 62,
+        stage: ProposalStage.Rejected,
+        cgp: 101,
+        ...metdataCommon,
+      };
+      expect(pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal)).toEqual({
+        id: 62,
+        metadata: { ...metadata, votes: undefined },
+        stage: metadata.stage,
+        proposal,
+      });
+    });
+  });
+});

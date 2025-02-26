@@ -204,7 +204,13 @@ export async function fetchExecutedProposalIds(): Promise<number[]> {
   const events = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
   return events.map((e) => parseInt(e.topics[1], 16));
 }
-
+/*
+ * merges onchain data with metadata
+ * @param proposals - onchain proposals
+ * @param metadata - metadata from the repo
+ * @param executedIds - list of executed proposal IDs
+ * @returns merged proposals
+ */
 export function mergeProposalsWithMetadata(
   proposals: Proposal[],
   metadata: ProposalMetadata[],
@@ -213,11 +219,10 @@ export function mergeProposalsWithMetadata(
   const sortedProposals = [...proposals].sort((a, b) => b.id - a.id);
   const sortedMetadata = [...metadata].sort((a, b) => b.cgp - a.cgp);
   const merged: Array<MergedProposalData> = [];
-
+  const proposalMap = new Map(sortedProposals.map((p) => [p.id, p]));
   for (const proposal of sortedProposals) {
     // First, try to match using the proposal ID
     let metadataIndex = sortedMetadata.findIndex((m) => m.id === proposal.id);
-
     // If no match was found, try to match using the discussion url
     // which is sometimes set to the CGP URL
     if (metadataIndex < 0 && proposal.url) {
@@ -231,17 +236,20 @@ export function mergeProposalsWithMetadata(
     if (metadataIndex >= 0) {
       // Remove the metadata element
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
-      // For some reason for re-submitted proposals that eventually pass, the
-      // expired failed proposal on chain is still expired, use the metadata
-      // and trust `executedIds` events
-      if (metadata.id && executedIds.includes(metadata.id)) {
-        merged.push({
-          stage: metadata.stage,
-          id: metadata.id,
-          metadata: { ...metadata, votes: proposal.votes },
-          proposal,
-        });
+
+      if (metadata.id && metadata.id !== proposal.id) {
+        // case when both proposals are still available on chain (ie not expired yet)
+        const proposalFromMetaData = proposalMap.get(metadata.id);
+        // get it next time we around. just skip it for now
+        if (proposalFromMetaData) {
+          // add it back  it can be found when we are on the correct proposal
+          sortedMetadata.push(metadata);
+          continue;
+        } else {
+          merged.push(pessimisticallyHandleMismatchedIDs(executedIds, metadata, proposal));
+        }
       } else {
+        // happy normal case
         // Add it to the merged array, giving priority to on-chain stage
         merged.push({ stage: proposal.stage, id: proposal.id, proposal, metadata });
       }
@@ -250,8 +258,8 @@ export function mergeProposalsWithMetadata(
       merged.push({ stage: proposal.stage, id: proposal.id, proposal });
     }
   }
-
   // Merge in any remaining metadata, cleaning it first
+  // this is where DRAFTS will come from for example
   for (const metadata of sortedMetadata) {
     if (metadata.id && executedIds.includes(metadata.id)) {
       metadata.stage = ProposalStage.Executed;
@@ -282,6 +290,61 @@ export function mergeProposalsWithMetadata(
         return 0;
       })
   );
+}
+
+/*
+    situation. there were 2 proposals for the same cgp.
+    one was a mistake, the other was executed.
+    the mistake proposal will remain onchain while the metadata from gh will point to the correct one
+
+    reasons it could be resubmitted onchain    
+       a mistake was found 
+          before upvoting
+          during voting
+          after upvoting
+
+        the proposals failed to recieve sufficient votes
+        the proposal passed but was not approved or executed
+   
+        in all cases the higher id Should be the correct one 
+
+        unless if was just a mistake (but if it points to the same cgp then it is not a mistake)
+    */
+export function pessimisticallyHandleMismatchedIDs(
+  executedIds: number[],
+  metadata: ProposalMetadata,
+  proposal: Proposal,
+): MergedProposalData {
+  if (executedIds.includes(metadata.id!)) {
+    // the proposal is WRONG use the trust the metadata
+    // do NOT use votes from the proposal they are wrong
+    return {
+      stage: ProposalStage.Executed,
+      id: metadata.id,
+      metadata: { ...metadata, votes: undefined },
+    };
+  } else if (executedIds.includes(proposal.id)) {
+    // the proposal was exectuted so it is correct
+    return {
+      stage: ProposalStage.Executed,
+      id: proposal.id,
+      proposal,
+      metadata: { ...metadata, id: proposal.id },
+    };
+  } else if (
+    proposal.stage === ProposalStage.Expiration &&
+    (metadata.stage === ProposalStage.Rejected || metadata.stage === ProposalStage.Withdrawn)
+  ) {
+    return { stage: metadata.stage, id: metadata.id, proposal, metadata };
+  } else {
+    // what would cause this
+    // none like this currently show. but if they do they should be handled
+    return {
+      stage: metadata.stage,
+      id: metadata.id,
+      metadata: { ...metadata },
+    };
+  }
 }
 
 function isActive(p: MergedProposalData) {
