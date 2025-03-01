@@ -220,6 +220,7 @@ export function mergeProposalsWithMetadata(
   const sortedMetadata = [...metadata].sort((a, b) => b.cgp - a.cgp);
   const merged: Array<MergedProposalData> = [];
   const proposalMap = new Map(sortedProposals.map((p) => [p.id, p]));
+
   for (const proposal of sortedProposals) {
     // First, try to match using the proposal ID
     let metadataIndex = sortedMetadata.findIndex((m) => m.id === proposal.id);
@@ -238,16 +239,9 @@ export function mergeProposalsWithMetadata(
       const metadata = sortedMetadata.splice(metadataIndex, 1)[0];
 
       if (metadata.id && metadata.id !== proposal.id) {
-        // case when both proposals are still available on chain (ie not expired yet)
-        const proposalFromMetaData = proposalMap.get(metadata.id);
-        // get it next time we around. just skip it for now
-        if (proposalFromMetaData) {
-          // add it back  it can be found when we are on the correct proposal
-          sortedMetadata.push(metadata);
-          continue;
-        } else {
-          merged.push(pessimisticallyHandleMismatchedIDs(executedIds, metadata, proposal));
-        }
+        merged.push(
+          pessimisticallyHandleMismatchedIDs(executedIds, metadata, proposal, proposalMap),
+        );
       } else {
         // happy normal case
         // Add it to the merged array, giving priority to on-chain stage
@@ -314,6 +308,7 @@ export function pessimisticallyHandleMismatchedIDs(
   executedIds: number[],
   metadata: ProposalMetadata,
   proposal: Proposal,
+  proposalMap: Map<number, Proposal>,
 ): MergedProposalData {
   if (executedIds.includes(metadata.id!)) {
     // the proposal is WRONG, trust the metadata
@@ -337,12 +332,19 @@ export function pessimisticallyHandleMismatchedIDs(
   ) {
     return { stage: metadata.stage, id: metadata.id, proposal, metadata };
   } else {
+    const probableID = Math.max(metadata.id!, proposal.id);
+
+    const probableStage = probableID === metadata.id ? metadata.stage : proposal.stage;
+
+    const metaData = { ...metadata, id: probableID, stage: probableStage };
+
     // what would cause this
     // none like this currently show. but if they do they should be handled
     return {
-      stage: metadata.stage,
-      id: metadata.id,
-      metadata: { ...metadata },
+      stage: probableStage,
+      id: probableID,
+      metadata: metaData,
+      proposal: proposalMap.get(probableID),
     };
   }
 }
