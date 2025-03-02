@@ -319,6 +319,7 @@ export function pessimisticallyHandleMismatchedIDs(
       stage: ProposalStage.Executed,
       id: metadata.id,
       metadata: { ...metadata, votes: undefined },
+      proposal: proposalMap.get(metadata.id!),
     };
   } else if (executedIds.includes(proposal.id)) {
     // the proposal was exectuted so it is correct
