@@ -179,6 +179,27 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
     votes: undefined,
   } as const;
 
+  const proposalMap = new Map<number, Proposal>();
+
+  proposalMap.set(212, {
+    id: 212,
+    stage: 3,
+    timestamp: 1740839940000,
+    expiryTimestamp: 1741444740000,
+    proposer: '0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a',
+    deposit: 10000000000000000000000n,
+    numTransactions: 2n,
+    networkWeight: 0n,
+    isApproved: false,
+    url: 'https://github.com/celo-org/governance/blob/main/CGPs/cgp-0165.md',
+    upvotes: 0n,
+    votes: {
+      yes: 0n,
+      no: 0n,
+      abstain: 0n,
+    },
+  });
+
   // values not used in test
   const proposalCommon = {
     timestamp: Date.now(),
@@ -212,7 +233,9 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
         cgp: 101,
         ...metdataCommon,
       };
-      expect(pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal)).toEqual({
+      expect(
+        pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
+      ).toEqual({
         id: executedID,
         metadata: { ...metadata, id: executedID },
         stage: ProposalStage.Executed,
@@ -237,7 +260,9 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
         cgp: 101,
         ...metdataCommon,
       };
-      expect(pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal)).toEqual({
+      expect(
+        pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
+      ).toEqual({
         id: executedID,
         stage: ProposalStage.Executed,
         metadata: metadata,
@@ -262,10 +287,54 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
         cgp: 101,
         ...metdataCommon,
       };
-      expect(pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal)).toEqual({
+      expect(
+        pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
+      ).toEqual({
         id: 62,
         metadata: { ...metadata, votes: undefined },
         stage: metadata.stage,
+        proposal,
+      });
+    });
+  });
+  describe('when neither id has been executed', () => {
+    const proposal: Proposal = {
+      id: 212,
+      stage: 3,
+      timestamp: 1740839940000,
+      expiryTimestamp: 1741444740000,
+      proposer: '0xFEF5A1A2b3754A2F53161EaaAcb3EB889F004d4a',
+      deposit: 10000000000000000000000n,
+      numTransactions: 2n,
+      networkWeight: 0n,
+      isApproved: false,
+      url: 'https://github.com/celo-org/governance/blob/main/CGPs/cgp-0165.md',
+      upvotes: 0n,
+      votes: {
+        yes: 0n,
+        no: 0n,
+        abstain: 0n,
+      },
+    };
+    const metadata: ProposalMetadata = {
+      cgp: 165,
+      cgpUrl: 'https://github.com/celo-org/governance/blob/main/CGPs/cgp-0165.md',
+      cgpUrlRaw: 'https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0165.md',
+      title: 'Celo Communities Guild Proposal 2025 H1 Budget',
+      author:
+        'Celo communities Guild: 0xj4an-work (@0xj4an-work), Goldo (@0xGoldo), Anthony (@0xKnight)',
+      stage: 1,
+      id: 207,
+      url: 'https://forum.celo.org/t/celo-communities-guild-proposal-2025-h1-budget',
+      timestamp: 1739491200000,
+    };
+    it('returns the higher one (on the assumption that new is probably correct', () => {
+      expect(
+        pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
+      ).toEqual({
+        id: 212,
+        metadata: { ...metadata, id: 212, stage: 3 },
+        stage: 3,
         proposal,
       });
     });

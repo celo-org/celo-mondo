@@ -221,6 +221,8 @@ export function mergeProposalsWithMetadata(
   const merged: Array<MergedProposalData> = [];
   const proposalMap = new Map(sortedProposals.map((p) => [p.id, p]));
 
+  // One day deduping proposals first will might be a better approach
+
   for (const proposal of sortedProposals) {
     // First, try to match using the proposal ID
     let metadataIndex = sortedMetadata.findIndex((m) => m.id === proposal.id);
