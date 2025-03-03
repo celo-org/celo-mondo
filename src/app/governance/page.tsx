@@ -68,7 +68,7 @@ function ProposalList() {
     };
   }, [proposals]);
 
-  const votingPower = useGovernanceVotingPower(address);
+  const { votingPower } = useGovernanceVotingPower(address);
 
   return (
     <div className="space-y-5 md:min-w-[38rem]">
@@ -88,9 +88,7 @@ function ProposalList() {
           className="w-full text-sm md:w-64"
         />
       </div>
-      {address && !isNullish(votingPower.votingPower) && votingPower.votingPower <= 0n && (
-        <NoFundsLockedCtaCard />
-      )}
+      {address && !isNullish(votingPower) && votingPower <= 0n && <NoFundsLockedCtaCard />}
       {filteredProposals ? (
         <Fade show>
           <TabHeaderFilters
