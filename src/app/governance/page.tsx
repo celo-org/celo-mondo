@@ -9,7 +9,6 @@ import { SearchField } from 'src/components/input/SearchField';
 import { Section } from 'src/components/layout/Section';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { H1 } from 'src/components/text/headers';
-import { useLockedBalance } from 'src/features/account/hooks';
 import { ProposalCard } from 'src/features/governance/components/ProposalCard';
 import {
   GetInvolvedCtaCard,
@@ -19,6 +18,7 @@ import {
   MergedProposalData,
   useGovernanceProposals,
 } from 'src/features/governance/hooks/useGovernanceProposals';
+import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -51,7 +51,6 @@ function ProposalList() {
 
   const { proposals } = useGovernanceProposals();
   const { address } = useAccount();
-  const { lockedBalance } = useLockedBalance(address);
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filter, setFilter] = useState<Filter>(Filter.All);
@@ -68,6 +67,8 @@ function ProposalList() {
       [Filter.History]: _proposals.filter((p) => p.stage > 4).length,
     };
   }, [proposals]);
+
+  const { votingPower } = useGovernanceVotingPower(address);
 
   return (
     <div className="space-y-5 md:min-w-[38rem]">
@@ -87,7 +88,7 @@ function ProposalList() {
           className="w-full text-sm md:w-64"
         />
       </div>
-      {address && !isNullish(lockedBalance) && lockedBalance <= 0n && <NoFundsLockedCtaCard />}
+      {address && !isNullish(votingPower) && votingPower <= 0n && <NoFundsLockedCtaCard />}
       {filteredProposals ? (
         <Fade show>
           <TabHeaderFilters

@@ -3,6 +3,8 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
 import { useAccountDetails, useLockedBalance, useVoteSigner } from 'src/features/account/hooks';
 import { DelegationForm } from 'src/features/delegation/DelegationForm';
+import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
+import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
 import { TransactionConfirmation } from 'src/features/transactions/TransactionConfirmation';
 import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/types';
@@ -33,12 +35,31 @@ export function TransactionFlow<FormDefaults extends {}>({
   const isDelegatingAsVoteSigner =
     FormComponent.name === DelegationForm.name && voteSigner && voteSigner !== address;
 
+  const votingPower = useGovernanceVotingPower(address);
+
+  const hasVotingPower =
+    typeof votingPower.votingPower === 'bigint' && votingPower.votingPower > 0n;
+
+  // voting power includes votes delegated to the account and locked celo
+  const willVoteAndHasVotingPower = FormComponent.name === VoteForm.name && hasVotingPower;
+
   let Component: ReactNode;
-  if (!address || isNullish(lockedBalance) || isNullish(isRegistered) || isVoteSignerLoading) {
+  if (
+    !address ||
+    isNullish(lockedBalance) ||
+    isNullish(isRegistered) ||
+    isVoteSignerLoading ||
+    votingPower.isLoading
+  ) {
     Component = <SpinnerWithLabel className="py-20">Loading account data...</SpinnerWithLabel>;
   } else if (!isRegistered && !isDelegatingAsVoteSigner) {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
-  } else if (lockedBalance <= 0n && requiresLockedFunds && !isDelegatingAsVoteSigner) {
+  } else if (
+    lockedBalance <= 0n &&
+    requiresLockedFunds &&
+    !isDelegatingAsVoteSigner &&
+    !willVoteAndHasVotingPower
+  ) {
     Component = <LockForm showTip={true} />;
   } else if (!confirmationDetails) {
     Component = <FormComponent defaultFormValues={defaultFormValues} onConfirmed={onConfirmed} />;
