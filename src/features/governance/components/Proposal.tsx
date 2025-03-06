@@ -25,7 +25,7 @@ import { useProposalContent } from 'src/features/governance/hooks/useProposalCon
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
-import { getHumanReadableDuration } from 'src/utils/time';
+import { getEndHumanEndTime } from 'src/utils/time';
 import styles from './styles.module.css';
 
 const ID_PARAM_REGEX = /^(cgp-)?(\d+)$/;
@@ -67,7 +67,6 @@ export function Proposal({ id }: { id: string }) {
 function ProposalContent({ propData }: { propData: MergedProposalData }) {
   const { proposal, metadata } = propData;
   const title = trimToLength(metadata?.title || `Proposal #${proposal?.id}`, 80);
-
   const { content, isLoading } = useProposalContent(metadata);
 
   return (
@@ -103,7 +102,7 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id, stage, proposal } = propData;
+  const { id, stage, proposal, metadata } = propData;
   const expiryTimestamp = proposal?.expiryTimestamp;
 
   if (stage === ProposalStage.None) return null;
@@ -116,7 +115,14 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
         {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
         {expiryTimestamp && expiryTimestamp > 0 && (
-          <div className="text-taupe-600">{`Expires in ${getHumanReadableDuration(expiryTimestamp - Date.now())}`}</div>
+          <>
+            <div className="text-sm text-taupe-600">
+              {getEndHumanEndTime({
+                timestampExecuted: metadata?.timestampExecuted,
+                expiryTimestamp,
+              })}
+            </div>
+          </>
         )}
       </div>
       {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
