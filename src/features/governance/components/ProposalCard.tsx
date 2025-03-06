@@ -14,7 +14,7 @@ import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
-import { getHumanReadableDuration, getHumanReadableTimeString } from 'src/utils/time';
+import { getEndHumanEndTime } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -36,11 +36,7 @@ export function ProposalCard({
 
   const link = cgp ? `/governance/cgp-${cgp}` : `/governance/${id}`;
   const titleValue = title ? trimToLength(title, 50) : undefined;
-  const endTimeValue = timestampExecuted
-    ? `Executed ${getHumanReadableTimeString(timestampExecuted)}`
-    : expiryTimestamp && expiryTimestamp > 0
-      ? `Expires ${getHumanReadableDuration(expiryTimestamp - Date.now())}`
-      : undefined;
+  const endTimeValue = getEndHumanEndTime({ timestampExecuted, expiryTimestamp });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {}).map(([vote, amount]) => ({

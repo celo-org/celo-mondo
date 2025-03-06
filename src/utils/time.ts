@@ -63,7 +63,39 @@ export function getHumanReadableDuration(ms: number, minSec?: number) {
   return `${days} ${days === 1 ? 'day' : 'days'}`;
 }
 
+export function getFullDateHumanDateString(timestamp: number) {
+  const formatter = Intl.DateTimeFormat(undefined, {
+    minute: 'numeric',
+    hour: 'numeric',
+    day: '2-digit',
+    weekday: 'short',
+    month: 'short',
+    hour12: false,
+    timeZoneName: 'short',
+  });
+  return formatter.format(timestamp);
+}
+
 export function getDateTimeString(timestamp: number) {
   const date = new Date(timestamp);
-  return `${date.toLocaleTimeString()} ${date.toLocaleDateString()}`;
+  return `${date.toLocaleTimeString()} ${getFullDateHumanDateString(timestamp)}`;
+}
+
+export function getEndHumanEndTime({
+  timestampExecuted,
+  expiryTimestamp,
+}: {
+  timestampExecuted: number | undefined;
+  expiryTimestamp: number | undefined;
+}): string | undefined {
+  const now = Date.now();
+  if (timestampExecuted) {
+    return `Executed at ${getHumanReadableTimeString(timestampExecuted)}`;
+  } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp > now) {
+    return `Expires in ${getHumanReadableDuration(expiryTimestamp - now)} on ${getFullDateHumanDateString(expiryTimestamp)}`;
+  } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp < now) {
+    return `Expired at ${getHumanReadableTimeString(expiryTimestamp - now)}`;
+  } else {
+    return undefined;
+  }
 }
