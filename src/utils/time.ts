@@ -37,7 +37,8 @@ export function getHumanReadableTimeString(timestamp: number) {
     return `${hours} hours ago`;
   }
 
-  return `on ${getDateTimeString(timestamp)}`;
+  const date = new Date(timestamp);
+  return `on ${date.toLocaleDateString()}`;
 }
 
 export function getHumanReadableDuration(ms: number, minSec?: number) {
