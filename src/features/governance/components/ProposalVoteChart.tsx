@@ -17,7 +17,6 @@ import { toTitleCase } from 'src/utils/strings';
 
 export function ProposalVoteChart({ propData }: { propData: MergedProposalData }) {
   const { isLoading, votes } = useProposalVoteTotals(propData);
-  const isPassing = useIsProposalPassing(propData?.proposal?.id);
 
   const totalVotes = bigIntSum(Object.values(votes || {}));
 
