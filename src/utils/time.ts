@@ -37,8 +37,7 @@ export function getHumanReadableTimeString(timestamp: number) {
     return `${hours} hours ago`;
   }
 
-  const date = new Date(timestamp);
-  return date.toLocaleDateString();
+  return `on ${getDateTimeString(timestamp)}`;
 }
 
 export function getHumanReadableDuration(ms: number, minSec?: number) {
@@ -90,11 +89,11 @@ export function getEndHumanEndTime({
 }): string | undefined {
   const now = Date.now();
   if (timestampExecuted) {
-    return `Executed at ${getHumanReadableTimeString(timestampExecuted)}`;
+    return `Executed ${getHumanReadableTimeString(timestampExecuted)}`;
   } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp > now) {
     return `Expires in ${getHumanReadableDuration(expiryTimestamp - now)} on ${getFullDateHumanDateString(expiryTimestamp)}`;
   } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp < now) {
-    return `Expired at ${getHumanReadableTimeString(expiryTimestamp - now)}`;
+    return `Expired ${getHumanReadableTimeString(expiryTimestamp - now)}`;
   } else {
     return undefined;
   }
