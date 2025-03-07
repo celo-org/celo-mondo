@@ -1,0 +1,16 @@
+{
+  "name": "ReFi Medellin",
+  "address": "0x302E2A0D4291ac14Aa1160504cA45A0A1F2E7a5c",
+  "logoUri": "/logos/delegatees/0x302E2A0D4291ac14Aa1160504cA45A0A1F2E7a5c.png",
+  "date": "2025-03-07",
+  "links": {
+    "website": "https://www.refimedellin.org",
+    "twitter": "https://x.com/refimedellin"
+  },
+  "interests": [
+    "ReFi",
+    "Sustainability",
+    "Stablecoins"
+  ],
+  "description": "We are the first Colombian Node of ReFiDAO responsible for promoting ReFi projects in the region.  At ReFi Medellín, we believe in regenerative projects and the transformative impact they have. It's time to think differently and regenerate together!"
+}
