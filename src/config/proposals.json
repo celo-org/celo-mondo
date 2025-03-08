@@ -2359,8 +2359,10 @@
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0155.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0155.md",
     "title": "Add CeloToken and LockedCelo to the registry",
-    "author": "@soloseng, Martín Volpe (@martinvol)",
-    "stage": 0,
+    "author": "Martín Volpe (@martinvol), @soloseng",
+    "stage": 1,
+    "id": 210,
+    "url": "https://forum.celo.org/t/add-celotoken-and-lockedcelo-to-the-registry/10315",
     "timestamp": 1731974400000
   },
   {
@@ -2505,7 +2507,7 @@
     "title": "Celo Communities Guild Proposal 2025 H1 Budget",
     "author": "Celo communities Guild: 0xj4an-work (@0xj4an-work), Goldo (@0xGoldo), Anthony (@0xKnight)",
     "stage": 1,
-    "id": 207,
+    "id": 212,
     "url": "https://forum.celo.org/t/celo-communities-guild-proposal-2025-h1-budget",
     "timestamp": 1739491200000
   },
@@ -2528,5 +2530,25 @@
     "stage": 0,
     "url": "https://forum.celo.org/t/set-parameters-for-l2-transition/10365",
     "timestamp": 1739577600000
+  },
+  {
+    "cgp": 168,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0168.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0168.md",
+    "title": "Budget Request: Prezenti Grant funding: Season 0",
+    "author": "Wade @0xzoz , Maya @Maya-R-B , Aaron @aaronmboyd",
+    "stage": 1,
+    "id": 211,
+    "url": "https://forum.celo.org/t/budget-request-prezenti-grant-funding-season-0",
+    "timestamp": 1740614400000
+  },
+  {
+    "cgp": 169,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0169.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0169.md",
+    "title": "Set The Great Celo Halvening Parameters",
+    "author": "cLabs Team",
+    "stage": 0,
+    "timestamp": 1708992000000
   }
 ]
