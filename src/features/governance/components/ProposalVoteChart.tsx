@@ -7,19 +7,50 @@ import {
   useIsProposalPassing,
   useProposalQuorum,
 } from 'src/features/governance/hooks/useProposalQuorum';
-import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
-import { EmptyVoteAmounts, VoteToColor, VoteType, VoteTypes } from 'src/features/governance/types';
+import {
+  useHistoricalProposalVoteTotals,
+  useProposalVoteTotals,
+} from 'src/features/governance/hooks/useProposalVoteTotals';
+import {
+  EmptyVoteAmounts,
+  VoteAmounts,
+  VoteToColor,
+  VoteType,
+  VoteTypes,
+} from 'src/features/governance/types';
 import { Color } from 'src/styles/Color';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { objKeys } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 
+export function PastProposalVoteChart({ id, title = 'Result' }: { id: number; title?: string }) {
+  const { isLoading, votes } = useHistoricalProposalVoteTotals(id);
+
+  const totalVotes = bigIntSum(Object.values(votes || {}));
+
+  return <ViewVotes votes={votes} totalVotes={totalVotes} title={title} isLoading={isLoading} />;
+}
+
 export function ProposalVoteChart({ propData }: { propData: MergedProposalData }) {
   const { isLoading, votes } = useProposalVoteTotals(propData);
 
   const totalVotes = bigIntSum(Object.values(votes || {}));
 
+  return <ViewVotes votes={votes} totalVotes={totalVotes} isLoading={isLoading} />;
+}
+
+function ViewVotes({
+  votes,
+  title = 'Result',
+  totalVotes,
+  isLoading,
+}: {
+  totalVotes: bigint;
+  votes: VoteAmounts | undefined;
+  title?: string;
+  isLoading?: boolean;
+}) {
   const voteBarChartData = useMemo(
     () =>
       objKeys(EmptyVoteAmounts).reduce(
@@ -47,7 +78,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
 
   return (
     <div className="space-y-2">
-      <h2 className="font-serif text-2xl">Result</h2>
+      <h2 className="font-serif text-2xl">{title}</h2>
       <div className="space-y-1.5">
         {Object.values(VoteTypes).map((v) => (
           <div key={v} className="relative text-xs">

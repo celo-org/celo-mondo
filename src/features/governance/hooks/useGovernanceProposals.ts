@@ -26,8 +26,9 @@ import { usePublicClient } from 'wagmi';
 const CGP_REGEX = /cgp-(\d+)/;
 
 export type MergedProposalData = { stage: ProposalStage; id?: number } & (
-  | { proposal: Proposal; metadata?: ProposalMetadata }
-  | { proposal?: Proposal; metadata: ProposalMetadata }
+  | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
+  | { proposal?: Proposal; metadata: ProposalMetadata; history?: undefined }
+  | { proposal: Proposal; metadata: ProposalMetadata; history?: number[] }
 );
 
 export function useGovernanceProposal(id?: number) {
@@ -319,7 +320,8 @@ export function pessimisticallyHandleMismatchedIDs(
       stage: ProposalStage.Executed,
       id: metadata.id,
       metadata: { ...metadata, votes: undefined },
-      proposal: proposalMap.get(metadata.id!),
+      proposal: proposalMap.get(metadata.id!)!,
+      history: [proposal.id],
     };
   } else if (executedIds.includes(proposal.id)) {
     // the proposal was exectuted so it is correct
@@ -328,14 +330,23 @@ export function pessimisticallyHandleMismatchedIDs(
       id: proposal.id,
       proposal,
       metadata: { ...metadata, id: proposal.id },
+      history: metadata.id ? [metadata.id] : undefined,
     };
   } else if (
     proposal.stage === ProposalStage.Expiration &&
     (metadata.stage === ProposalStage.Rejected || metadata.stage === ProposalStage.Withdrawn)
   ) {
-    return { stage: metadata.stage, id: metadata.id, proposal, metadata };
+    return {
+      stage: metadata.stage,
+      id: metadata.id,
+      proposal,
+      metadata,
+      history: metadata.id ? [metadata.id] : undefined,
+    };
   } else {
-    const probableID = Math.max(metadata.id!, proposal.id);
+    const metaDataId = typeof metadata.id === 'number' ? metadata.id : 0;
+    const probableID = Math.max(metaDataId, proposal.id);
+    const historicId = Math.min(metaDataId, proposal.id);
 
     const probableStage = probableID === metadata.id ? metadata.stage : proposal.stage;
 
@@ -347,7 +358,8 @@ export function pessimisticallyHandleMismatchedIDs(
       stage: probableStage,
       id: probableID,
       metadata: metaData,
-      proposal: proposalMap.get(probableID),
+      proposal: proposalMap.get(probableID)!,
+      history: historicId ? [historicId] : undefined,
     };
   }
 }

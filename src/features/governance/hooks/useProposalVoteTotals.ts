@@ -5,6 +5,28 @@ import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVo
 import { ProposalStage } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 
+export function useHistoricalProposalVoteTotals(id: number) {
+  const { isLoading, isError, error, data } = useQuery({
+    queryKey: ['useHistoricalProposalVoteTotals', id],
+    queryFn: async () => {
+      if (!id) return null;
+
+      logger.debug(`Fetching historical proposals votes for ${id}`);
+      return fetchProposalVoters(id);
+    },
+    gcTime: Infinity,
+    staleTime: 60 * 60 * 1000 * 4, // 4 hour
+  });
+
+  useToastError(error, 'Error fetching historical proposals vote totals');
+
+  return {
+    isLoading,
+    isError,
+    votes: data?.totals,
+  };
+}
+
 export function useProposalVoteTotals(propData?: MergedProposalData) {
   const {
     isLoading,
