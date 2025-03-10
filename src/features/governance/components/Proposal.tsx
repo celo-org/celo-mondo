@@ -13,6 +13,7 @@ import {
   ProposalVoteButtons,
 } from 'src/features/governance/components/ProposalVoteButtons';
 import {
+  PastProposalVoteChart,
   ProposalQuorumChart,
   ProposalVoteChart,
 } from 'src/features/governance/components/ProposalVoteChart';
@@ -102,7 +103,7 @@ function ProposalContent({ propData }: { propData: MergedProposalData }) {
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id, stage, proposal, metadata } = propData;
+  const { id, stage, proposal, metadata, history } = propData;
   const expiryTimestamp = proposal?.expiryTimestamp;
 
   if (stage === ProposalStage.None) return null;
@@ -133,6 +134,14 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       {stage >= ProposalStage.Referendum && (
         <div className="hidden overflow-auto border-taupe-300 p-3 lg:block lg:border">
           <ProposalVotersTable propData={propData} />
+        </div>
+      )}
+      {history && history.length > 0 && (
+        <div className="space-y-4 border-taupe-300 p-3 lg:border">
+          <h2 className="font-serif text-2xl">Past Onchain Results</h2>
+          {history.map((id) => (
+            <PastProposalVoteChart key={id} title={`As #${id}`} id={id} />
+          ))}
         </div>
       )}
     </div>

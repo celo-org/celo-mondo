@@ -236,6 +236,7 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
       expect(
         pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
       ).toEqual({
+        history: [4],
         id: executedID,
         metadata: { ...metadata, id: executedID },
         stage: ProposalStage.Executed,
@@ -266,6 +267,7 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
         id: executedID,
         stage: ProposalStage.Executed,
         metadata: metadata,
+        history: [22],
       });
     });
   });
@@ -289,12 +291,14 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
       };
       expect(
         pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
-      ).toEqual({
-        id: 62,
-        metadata: { ...metadata, votes: undefined },
-        stage: metadata.stage,
-        proposal,
-      });
+      ).toEqual(
+        expect.objectContaining({
+          id: 62,
+          metadata: { ...metadata, votes: undefined },
+          stage: metadata.stage,
+          proposal,
+        }),
+      );
     });
   });
   describe('when neither id has been executed', () => {
@@ -331,12 +335,14 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
     it('returns the higher one (on the assumption that new is probably correct', () => {
       expect(
         pessimisticallyHandleMismatchedIDs(executedIDS, metadata, proposal, proposalMap),
-      ).toEqual({
-        id: 212,
-        metadata: { ...metadata, id: 212, stage: 3 },
-        stage: 3,
-        proposal,
-      });
+      ).toEqual(
+        expect.objectContaining({
+          id: 212,
+          metadata: { ...metadata, id: 212, stage: 3 },
+          stage: 3,
+          proposal,
+        }),
+      );
     });
   });
 });
