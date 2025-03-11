@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
+import { MergedProposalData } from 'src/features/governance/governanceData';
 import {
   useIsProposalPassing,
   useProposalQuorum,
