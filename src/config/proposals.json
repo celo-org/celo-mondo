@@ -2096,9 +2096,9 @@
     "timestamp": 1716422400000,
     "timestampExecuted": 1717113600000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "15637180923411949481583775",
+      "no": "803071079695202545884267",
+      "abstain": "158521938162827452501095"
     }
   },
   {
@@ -2113,9 +2113,9 @@
     "timestamp": 1719446400000,
     "timestampExecuted": 1720483200000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "24995728387484444499725236",
+      "no": "2526567736694",
+      "abstain": "25722869814645787237"
     }
   },
   {
@@ -2130,9 +2130,9 @@
     "timestamp": 1719360000000,
     "timestampExecuted": 1720828800000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "17906941892797620833679016",
+      "no": "1555631167899194003374",
+      "abstain": "64556262437625045255704"
     }
   },
   {
@@ -2147,9 +2147,9 @@
     "timestamp": 1721779200000,
     "timestampExecuted": 1723507200000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "1567786487379131024615109",
+      "no": "1743973200273647673050",
+      "abstain": "12190351548863554617425621"
     }
   },
   {
@@ -2163,9 +2163,9 @@
     "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
     "timestamp": 1722470400000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "7311270592366178906424809",
+      "no": "1052875318387568208771036",
+      "abstain": "275503297679584786792311"
     }
   },
   {
@@ -2179,9 +2179,9 @@
     "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
     "timestamp": 1722902400000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "423305894499211746439297",
+      "no": "984603262175208534886123",
+      "abstain": "473729958780760268232905"
     }
   },
   {
@@ -2196,9 +2196,9 @@
     "timestamp": 1722902400000,
     "timestampExecuted": 1740096000000,
     "votes": {
-      "yes": "0",
+      "yes": "30640070270430250403070919",
       "no": "0",
-      "abstain": "0"
+      "abstain": "14413668385090594673492"
     }
   },
   {
@@ -2213,9 +2213,9 @@
     "timestamp": 1724630400000,
     "timestampExecuted": 1725408000000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "14038365258855133578012922",
+      "no": "30033914673902478388",
+      "abstain": "51708915618462140021"
     }
   },
   {
@@ -2230,9 +2230,9 @@
     "timestamp": 1724889600000,
     "timestampExecuted": 1725667200000,
     "votes": {
-      "yes": "0",
+      "yes": "12791659812098214199612374",
       "no": "0",
-      "abstain": "0"
+      "abstain": "25313268947400803053860"
     }
   },
   {
@@ -2247,9 +2247,9 @@
     "timestamp": 1725926400000,
     "timestampExecuted": 1728604800000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "19196383765513294833228793",
+      "no": "29999999999999999998",
+      "abstain": "105921367286428986370083"
     }
   },
   {
@@ -2264,9 +2264,9 @@
     "timestamp": 1725926400000,
     "timestampExecuted": 1705190400000,
     "votes": {
-      "yes": "0",
+      "yes": "9167068622696043033945178",
       "no": "0",
-      "abstain": "0"
+      "abstain": "30000000000000000000"
     }
   },
   {
@@ -2281,7 +2281,7 @@
     "timestamp": 1729123200000,
     "timestampExecuted": 1730246400000,
     "votes": {
-      "yes": "0",
+      "yes": "15965588950234979553095750",
       "no": "0",
       "abstain": "0"
     }
@@ -2298,7 +2298,7 @@
     "timestamp": 1729123200000,
     "timestampExecuted": 1730332800000,
     "votes": {
-      "yes": "0",
+      "yes": "8415239370544153759056444",
       "no": "0",
       "abstain": "0"
     }
@@ -2315,9 +2315,9 @@
     "timestamp": 1729728000000,
     "timestampExecuted": 1732924800000,
     "votes": {
-      "yes": "0",
+      "yes": "7761781971226818472551031",
       "no": "0",
-      "abstain": "0"
+      "abstain": "4096176297343921659432"
     }
   },
   {
@@ -2332,9 +2332,9 @@
     "timestamp": 1729728000000,
     "timestampExecuted": 1731456000000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "7701549623695961942533035",
+      "no": "68265368874125165798841",
+      "abstain": "245222846296012194773627"
     }
   },
   {
@@ -2349,7 +2349,7 @@
     "timestamp": 1698710400000,
     "timestampExecuted": 1731801600000,
     "votes": {
-      "yes": "0",
+      "yes": "7866567917887174163280483",
       "no": "0",
       "abstain": "0"
     }
@@ -2361,7 +2361,7 @@
     "title": "Add CeloToken and LockedCelo to the registry",
     "author": "Martín Volpe (@martinvol), @soloseng",
     "stage": 1,
-    "id": 210,
+    "id": 213,
     "url": "https://forum.celo.org/t/add-celotoken-and-lockedcelo-to-the-registry/10315",
     "timestamp": 1731974400000
   },
@@ -2388,9 +2388,9 @@
     "timestamp": 1733097600000,
     "timestampExecuted": 1739145600000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "42224055846184478327798012",
+      "no": "685976496550350400",
+      "abstain": "157214256283747629077"
     }
   },
   {
@@ -2405,7 +2405,7 @@
     "timestamp": 1734566400000,
     "timestampExecuted": 1736812800000,
     "votes": {
-      "yes": "0",
+      "yes": "9698883143336395745256054",
       "no": "0",
       "abstain": "0"
     }
@@ -2422,7 +2422,7 @@
     "timestamp": 1738108800000,
     "timestampExecuted": 1739491200000,
     "votes": {
-      "yes": "0",
+      "yes": "25178984541609888813461064",
       "no": "0",
       "abstain": "0"
     }
@@ -2439,9 +2439,9 @@
     "timestamp": 1738627200000,
     "timestampExecuted": 1739577600000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "23941670371487477416038700",
+      "no": "579757717622618013351770",
+      "abstain": "186088204565848353370730"
     }
   },
   {
@@ -2456,9 +2456,9 @@
     "timestamp": 1738627200000,
     "timestampExecuted": 1739577600000,
     "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
+      "yes": "35562285233159974934576772",
+      "no": "352210004952424118704463",
+      "abstain": "164089964057776025576923"
     }
   },
   {
@@ -2484,9 +2484,9 @@
     "timestamp": 1738886400000,
     "timestampExecuted": 1740096000000,
     "votes": {
-      "yes": "0",
+      "yes": "37703785130351576271780159",
       "no": "0",
-      "abstain": "0"
+      "abstain": "52248860833279249339"
     }
   },
   {
@@ -2495,10 +2495,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0164.md",
     "title": "The Great Celo Halvening Temperature check",
     "author": "Marek Olszewski (@marekolszewski), Martin Volpe (@martinvol)",
-    "stage": 1,
+    "stage": 6,
     "id": 209,
     "url": "https://forum.celo.org/t/the-great-celo-halvening-temperature-check",
-    "timestamp": 1738368000000
+    "timestamp": 1738368000000,
+    "timestampExecuted": 1740700800000,
+    "votes": {
+      "yes": "19261901285462570082451836",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 165,
@@ -2506,10 +2512,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0165.md",
     "title": "Celo Communities Guild Proposal 2025 H1 Budget",
     "author": "Celo communities Guild: 0xj4an-work (@0xj4an-work), Goldo (@0xGoldo), Anthony (@0xKnight)",
-    "stage": 1,
+    "stage": 6,
     "id": 212,
     "url": "https://forum.celo.org/t/celo-communities-guild-proposal-2025-h1-budget",
-    "timestamp": 1739491200000
+    "timestamp": 1739491200000,
+    "timestampExecuted": 1741392000000,
+    "votes": {
+      "yes": "9193512902396468911545269",
+      "no": "0",
+      "abstain": "147050609427872937455904"
+    }
   },
   {
     "cgp": 166,
@@ -2537,10 +2549,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0168.md",
     "title": "Budget Request: Prezenti Grant funding: Season 0",
     "author": "Wade @0xzoz , Maya @Maya-R-B , Aaron @aaronmboyd",
-    "stage": 1,
+    "stage": 6,
     "id": 211,
     "url": "https://forum.celo.org/t/budget-request-prezenti-grant-funding-season-0",
-    "timestamp": 1740614400000
+    "timestamp": 1740614400000,
+    "timestampExecuted": 1741392000000,
+    "votes": {
+      "yes": "7729441123735023784535065",
+      "no": "0",
+      "abstain": "48206050181210438018590"
+    }
   },
   {
     "cgp": 169,
