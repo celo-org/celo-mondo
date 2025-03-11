@@ -10,8 +10,8 @@ export const dynamicParams = true;
 type Params = { params: { id: string } };
 
 export async function generateMetadata({ params }: Params) {
-  const publiClient = createCeloPublicClient();
-  const proposals = await collectProposals(publiClient);
+  const publicClient = createCeloPublicClient();
+  const proposals = await collectProposals(publicClient);
   const proposal = findProposal(proposals, params.id);
 
   const title = `${params.id}: ${proposal?.metadata?.title}`;
