@@ -1,7 +1,7 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { PROPOSAL_V1_MAX_ID } from 'src/config/consts';
+import { GCTime, PROPOSAL_V1_MAX_ID, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
@@ -20,8 +20,8 @@ export function useProposalVoters(id?: number) {
       logger.debug(`Fetching proposals voters for ${id}`);
       return fetchProposalVoters(id);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching proposals voters');

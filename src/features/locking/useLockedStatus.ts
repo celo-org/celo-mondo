@@ -1,6 +1,7 @@
 import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useAccountDetails } from 'src/features/account/hooks';
 import { LockedStatus, PendingWithdrawal } from 'src/features/locking/types';
@@ -20,8 +21,8 @@ export function useLockedStatus(address?: Address) {
       logger.debug('Fetching locked status balance and withdrawals');
       return fetchLockedStatus(publicClient, address);
     },
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: GCTime.Short,
+    staleTime: StaleTime.Short,
   });
 
   useToastError(error, 'Error fetching locked balances and withdrawals');

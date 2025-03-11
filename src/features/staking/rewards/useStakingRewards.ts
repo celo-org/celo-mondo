@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { computeStakingRewards } from 'src/features/staking/rewards/computeRewards';
 import { fetchStakeEvents } from 'src/features/staking/rewards/fetchStakeHistory';
 import { GroupToStake } from 'src/features/staking/types';
@@ -18,8 +19,8 @@ export function useStakingRewards(address?: Address, stakes?: GroupToStake) {
       const totalRewardsWei = toWei(totalRewards);
       return { events, groupToReward, totalRewards, totalRewardsWei };
     },
-    gcTime: Infinity,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: GCTime.Short,
+    staleTime: StaleTime.Short,
   });
 
   useToastError(error, 'Error fetching staking rewards');

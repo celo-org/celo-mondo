@@ -1,5 +1,6 @@
 import { OFAC_SANCTIONS_LIST_URL, SANCTIONED_ADDRESSES } from '@celo/compliance';
 import { PropsWithChildren, useEffect } from 'react';
+import { DAY } from 'src/config/consts';
 import { readFromCache, writeToCache } from 'src/utils/localSave';
 import { useAccount, useDisconnect } from 'wagmi';
 
@@ -29,8 +30,6 @@ function usePolice() {
     }
   }, [isConnected, address, disconnect]);
 }
-
-const DAY = 24 * 60 * 60 * 1000;
 
 export async function isSanctionedAddress(address: string): Promise<boolean> {
   const cache = readFromCache(OFAC_SANCTIONS_LIST_URL);

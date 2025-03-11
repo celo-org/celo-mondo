@@ -1,4 +1,5 @@
 import { electionABI } from '@celo/abis';
+import { DAY } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import {
   StakeActivationRequest,
@@ -62,7 +63,7 @@ async function activateStake(request: StakeActivationRequest) {
   // Ensure at least 1/3 of validators have confirmed the tx to prevent rogue validator spoofing
   if (confirmations < 33n) throw new Error('Transaction lacks sufficient confirmations');
   const timePassed = Date.now() - Number(block.timestamp) * 1000;
-  if (timePassed > 3 * 24 * 60 * 60 * 1000) throw new Error('Transaction is too old');
+  if (timePassed > 3 * DAY) throw new Error('Transaction is too old');
 
   // Used to validate tx logs but that's not strictly needed
   // and fetching them for old txs was causing problems

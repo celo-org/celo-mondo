@@ -1,7 +1,7 @@
 import { electionABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { config } from 'src/config/config';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { GCTime, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { GroupToStake } from 'src/features/staking/types';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
@@ -30,8 +30,8 @@ export function usePendingStakingActivations(address?: Address, groupToStake: Gr
     allowFailure: true,
     query: {
       enabled: !!address && pendingGroups.length > 0,
-      gcTime: Infinity,
-      staleTime: 60 * 60 * 1000, // 1 hour
+      gcTime: GCTime.Long,
+      staleTime: StaleTime.Default,
     },
   });
 
