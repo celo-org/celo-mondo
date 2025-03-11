@@ -3,7 +3,7 @@ import { epochManagerABI } from '@celo/abis-12';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { MAX_NUM_ELECTABLE_VALIDATORS, ZERO_ADDRESS } from 'src/config/consts';
+import { GCTime, MAX_NUM_ELECTABLE_VALIDATORS, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses, resolveAddress } from 'src/config/contracts';
 import { isCel2 } from 'src/utils/is-cel2';
 import { logger } from 'src/utils/logger';
@@ -22,8 +22,8 @@ export function useValidatorGroups() {
       logger.debug('Fetching validator groups');
       return fetchValidatorGroupInfo(publicClient);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching validator groups');

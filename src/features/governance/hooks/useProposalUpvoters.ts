@@ -17,8 +17,6 @@ export function useProposalUpvoters(id?: number) {
       logger.debug(`Fetching proposals upvoters for ${id}`);
       return fetchProposalUpvoters(id);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
   });
 
   useToastError(error, 'Error fetching proposals upvoters');

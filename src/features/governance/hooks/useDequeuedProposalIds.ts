@@ -1,6 +1,7 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
@@ -15,8 +16,8 @@ export function useDequeuedProposalIds() {
       logger.debug(`Fetching approved proposal IDs`);
       return fetchApprovedProposalIds();
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching proposal approval history');

@@ -4,8 +4,10 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import {
   APPROVAL_STAGE_EXPIRY_TIME,
   EXECUTION_STAGE_EXPIRY_TIME,
+  GCTime,
   QUEUED_STAGE_EXPIRY_TIME,
   REFERENDUM_STAGE_EXPIRY_TIME,
+  StaleTime,
 } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import CachedMetadata from 'src/config/proposals.json';
@@ -54,8 +56,8 @@ export function useGovernanceProposals() {
       // Then merge it with the cached
       return mergeProposalsWithMetadata(proposals, metadata, executedIds);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching governance proposals');

@@ -1,6 +1,7 @@
 import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
@@ -19,8 +20,8 @@ export function useDelegatedPercent(address?: Address) {
 
       return fetchDelegatedFraction(publicClient, address);
     },
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: GCTime.Short,
+    staleTime: StaleTime.Short,
   });
 
   useToastError(error, 'Error fetching delegated percent');
