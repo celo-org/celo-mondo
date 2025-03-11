@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
+import { MergedProposalData } from 'src/features/governance/governanceData';
 import {
   useIsProposalPassing,
   useProposalQuorum,
@@ -22,7 +23,6 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { objKeys } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
-import { MergedProposalData } from '../governanceData';
 
 export function PastProposalVoteChart({ id, title = 'Result' }: { id: number; title?: string }) {
   const { isLoading, votes } = useHistoricalProposalVoteTotals(id);

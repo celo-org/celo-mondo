@@ -18,14 +18,13 @@ import {
   ProposalVoteChart,
 } from 'src/features/governance/components/ProposalVoteChart';
 import { ProposalVotersTable } from 'src/features/governance/components/ProposalVotersTable';
-import { findProposal } from 'src/features/governance/governanceData';
+import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
 import { getEndHumanEndTime } from 'src/utils/time';
-import { MergedProposalData } from '../governanceData';
 import styles from './styles.module.css';
 
 export function Proposal({ id }: { id: string }) {

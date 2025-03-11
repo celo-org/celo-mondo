@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
+import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName } from 'src/features/validators/utils';
 import { shortenAddress } from 'src/utils/addresses';
 import { objKeys } from 'src/utils/objects';
-import { MergedProposalData } from '../governanceData';
 
 export function ProposalUpvotersTable({ propData }: { propData: MergedProposalData }) {
   return (
