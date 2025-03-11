@@ -48,7 +48,7 @@ async function main() {
     try {
       logger.info(`Fetching votes for proposal ${proposal.id}`);
       const { totals } = await fetchProposalVoters(proposal.id);
-      console.log(totals);
+      logger.info(totals);
       await sleep(300); // for rate limits
       proposal.votes = totals;
     } catch (error) {
