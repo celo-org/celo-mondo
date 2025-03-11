@@ -6,6 +6,7 @@ import { createCeloPublicClient } from 'src/utils/client';
 
 export const dynamicParams = true;
 
+// id might be just a number as a string or can be cgp-N
 type Params = { params: { id: string } };
 
 export async function generateMetadata({ params }: Params) {
