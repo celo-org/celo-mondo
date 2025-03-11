@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
+import { MergedProposalData } from '../governanceData';
 
 export function useHistoricalProposalVoteTotals(id: number) {
   const { isLoading, isError, error, data } = useQuery({

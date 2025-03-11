@@ -7,7 +7,6 @@ import { SocialLogo } from 'src/components/logos/SocialLogo';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { SocialLinkType } from 'src/config/types';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
-import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
@@ -15,6 +14,7 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
 import { getEndHumanEndTime } from 'src/utils/time';
+import { MergedProposalData } from '../governanceData';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 

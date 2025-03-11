@@ -2495,10 +2495,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0164.md",
     "title": "The Great Celo Halvening Temperature check",
     "author": "Marek Olszewski (@marekolszewski), Martin Volpe (@martinvol)",
-    "stage": 1,
+    "stage": 6,
     "id": 209,
     "url": "https://forum.celo.org/t/the-great-celo-halvening-temperature-check",
-    "timestamp": 1738368000000
+    "timestamp": 1738368000000,
+    "timestampExecuted": 1740700800000,
   },
   {
     "cgp": 165,
@@ -2506,10 +2507,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0165.md",
     "title": "Celo Communities Guild Proposal 2025 H1 Budget",
     "author": "Celo communities Guild: 0xj4an-work (@0xj4an-work), Goldo (@0xGoldo), Anthony (@0xKnight)",
-    "stage": 1,
+    "stage": 6,
     "id": 212,
     "url": "https://forum.celo.org/t/celo-communities-guild-proposal-2025-h1-budget",
-    "timestamp": 1739491200000
+    "timestamp": 1739491200000,
+    "timestampExecuted": 1741392000000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 166,
@@ -2537,10 +2544,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0168.md",
     "title": "Budget Request: Prezenti Grant funding: Season 0",
     "author": "Wade @0xzoz , Maya @Maya-R-B , Aaron @aaronmboyd",
-    "stage": 1,
+    "stage": 6,
     "id": 211,
     "url": "https://forum.celo.org/t/budget-request-prezenti-grant-funding-season-0",
-    "timestamp": 1740614400000
+    "timestamp": 1740614400000,
+    "timestampExecuted": 1741392000000,
+    "votes": {
+      "yes": "0",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 169,

@@ -4,12 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { Addresses } from 'src/config/contracts';
-import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { Proposal } from 'src/features/governance/types';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
 import { fromHex, PublicClient, toHex } from 'viem';
 import { usePublicClient, useReadContract } from 'wagmi';
+import { MergedProposalData } from '../governanceData';
 
 interface ParticipationParameters {
   baseline: number;

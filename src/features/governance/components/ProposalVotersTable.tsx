@@ -4,7 +4,6 @@ import { ChartDataItem, sortAndCombineChartData } from 'src/components/charts/ch
 import { Collapse } from 'src/components/menus/Collapse';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { CopyInline } from 'src/components/text/CopyInline';
-import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
@@ -14,6 +13,7 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
+import { MergedProposalData } from '../governanceData';
 
 const NUM_TO_SHOW = 20;
 

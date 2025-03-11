@@ -3,17 +3,16 @@ import { TransactionLog } from 'src/features/explorers/types';
 import { publicClient } from 'src/test/anvil/utils';
 import { logger } from 'src/utils/logger';
 import { afterAll, describe, expect, it, test, vi } from 'vitest';
-import { Proposal, ProposalMetadata, ProposalStage } from '../types';
 import {
   MergedProposalData,
   fetchExecutedProposalIds,
-  fetchGovernanceMetadata,
   fetchGovernanceProposals,
   getExpiryTimestamp,
   mergeProposalsWithMetadata,
   pessimisticallyHandleMismatchedIDs,
-  useGovernanceProposal,
-} from './useGovernanceProposals';
+} from '../governanceData';
+import { Proposal, ProposalMetadata, ProposalStage } from '../types';
+import { fetchGovernanceMetadata, useGovernanceProposal } from './useGovernanceProposals';
 
 beforeEach(() => {
   vi.mock('wagmi', async (importActual) => ({
