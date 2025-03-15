@@ -49,6 +49,7 @@
 .proposal ol,
 .proposal ul {
   padding-left: 1rem;
+  margin-inline-start: 1rem;
 }
 
 .proposal ul {
@@ -60,14 +61,14 @@
 }
 
 .proposal li {
-  padding-left: 1rem;
+  padding-left: 0.6rem;
   margin-top: 0.6rem;
 }
 
 .proposal pre {
   padding: 0.5rem;
   background-color: rgba(0, 0, 0, 0.04);
-  overflow-x: hidden;
+  overflow-x: scroll;
 }
 
 .proposal img {
