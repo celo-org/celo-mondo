@@ -54,8 +54,8 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
       const { totals } = await fetchProposalVoters(id);
       return totals;
     },
-    gcTime: GCTime.Long,
-    staleTime: GCTime.Default,
+    gcTime: GCTime.Short,
+    staleTime: GCTime.Short,
   });
 
   useToastError(error, 'Error fetching proposals vote totals');
