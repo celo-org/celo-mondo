@@ -64,7 +64,8 @@ export const config: Config = Object.freeze({
   watchBlockNumber: false,
 });
 
-if (process.env.NODE_ENV === 'production') {
+// https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_ENV
+if (['production', 'preview'].includes(process.env.VERCEL_ENV!)) {
   const mandatoryConfig = [
     'celoscanApiKey',
     'walletConnectProjectId',
