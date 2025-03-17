@@ -14,10 +14,8 @@ import {
   GetInvolvedCtaCard,
   NoFundsLockedCtaCard,
 } from 'src/features/governance/components/ctaCards';
-import {
-  MergedProposalData,
-  useGovernanceProposals,
-} from 'src/features/governance/hooks/useGovernanceProposals';
+import { MergedProposalData } from 'src/features/governance/governanceData';
+import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
-import { MergedProposalData } from 'src/features/governance/hooks/useGovernanceProposals';
+import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName } from 'src/features/validators/utils';

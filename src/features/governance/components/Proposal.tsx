@@ -18,10 +18,8 @@ import {
   ProposalVoteChart,
 } from 'src/features/governance/components/ProposalVoteChart';
 import { ProposalVotersTable } from 'src/features/governance/components/ProposalVotersTable';
-import {
-  MergedProposalData,
-  useGovernanceProposals,
-} from 'src/features/governance/hooks/useGovernanceProposals';
+import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
+import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
@@ -29,23 +27,10 @@ import { trimToLength } from 'src/utils/strings';
 import { getEndHumanEndTime } from 'src/utils/time';
 import styles from './styles.module.css';
 
-const ID_PARAM_REGEX = /^(cgp-)?(\d+)$/;
 export function Proposal({ id }: { id: string }) {
   const { proposals } = useGovernanceProposals();
 
-  const propData = useMemo(() => {
-    if (!proposals || !id) return undefined;
-    const matches = ID_PARAM_REGEX.exec(id);
-    if (matches?.[1] === 'cgp-') {
-      const cgpId = parseInt(matches[2]);
-      return proposals.find((p) => p.metadata?.cgp === cgpId);
-    } else if (matches?.[2]) {
-      const propId = parseInt(matches[2]);
-      return proposals.find((p) => p.proposal?.id === propId);
-    } else {
-      return undefined;
-    }
-  }, [proposals, id]);
+  const propData = useMemo(() => findProposal(proposals, id), [proposals, id]);
 
   usePageInvariant(!proposals || propData, '/governance', 'Proposal not found');
 
