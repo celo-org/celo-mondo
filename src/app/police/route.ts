@@ -1,12 +1,14 @@
+import { Geo, geolocation } from '@vercel/functions';
 import { headers } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 import { logger } from 'src/utils/logger';
 
-export function GET(request: NextRequest) {
-  const headerList = headers();
+export async function GET(request: NextRequest) {
+  const headerList = await headers();
 
-  const country = request.geo?.country || (headerList.get('x-vercel-ip-country') as string);
-  const region = request.geo?.region || (headerList.get('x-vercel-ip-country-region') as string);
+  const geo = geolocation(request) as Geo;
+  const country = geo.country || (headerList.get('x-vercel-ip-country') as string);
+  const region = geo.region || (headerList.get('x-vercel-ip-country-region') as string);
 
   logger.info('country', country, region);
 

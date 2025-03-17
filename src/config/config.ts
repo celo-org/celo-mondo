@@ -1,3 +1,4 @@
+import { assert } from 'src/utils/validation';
 import { celo, celoAlfajores, Chain } from 'viem/chains';
 
 interface Config {
@@ -62,3 +63,16 @@ export const config: Config = Object.freeze({
   upstashKey,
   watchBlockNumber: false,
 });
+
+if (process.env.NODE_ENV === 'production') {
+  const mandatoryConfig = [
+    'celoscanApiKey',
+    'walletConnectProjectId',
+    'fornoApiKey',
+    'infuraApiKey',
+  ] as (keyof typeof config)[];
+
+  for (const key of mandatoryConfig) {
+    assert(config[key], `${key} must be set in production environments.`);
+  }
+}

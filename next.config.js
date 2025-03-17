@@ -27,7 +27,11 @@ const FRAME_SRC_HOSTS = [
   'https://app.safe.global',
   'https://account.celopg.eco',
 ];
-const IMG_SRC_HOSTS = ['https://*.walletconnect.com', 'https://app.safe.global', 'https://account.celopg.eco',];
+const IMG_SRC_HOSTS = [
+  'https://*.walletconnect.com',
+  'https://app.safe.global',
+  'https://account.celopg.eco',
+];
 const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
 
 const cspHeader = `
@@ -77,8 +81,11 @@ const securityHeaders = [
 ];
 
 module.exports = {
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.externals = [...config.externals, 'pino-pretty'];
+    if (isServer) {
+      config.devtool = 'source-map';
+    }
     return config;
   },
 
@@ -113,6 +120,6 @@ module.exports = {
   env: {
     NEXT_PUBLIC_VERSION: version,
   },
-
+  productionBrowserSourceMaps: true,
   reactStrictMode: true,
 };
