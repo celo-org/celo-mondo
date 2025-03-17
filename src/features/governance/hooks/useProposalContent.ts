@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { fetchProposalContent } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
@@ -13,8 +14,8 @@ export function useProposalContent(metadata?: ProposalMetadata) {
       logger.debug('Fetching proposal content', cgpNumber);
       return fetchProposalContent(cgpNumber);
     },
-    gcTime: Infinity,
-    staleTime: 5 * 60 * 1000, // 5 min // TODO 1 hour is too long while its active
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Short,
   });
 
   useToastError(error, 'Error fetching proposal content');

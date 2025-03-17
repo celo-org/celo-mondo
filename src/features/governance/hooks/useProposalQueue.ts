@@ -1,6 +1,6 @@
 import { governanceABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { DEQUEUE_FREQUENCY } from 'src/config/consts';
+import { DEQUEUE_FREQUENCY, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { UpvoteRecord } from 'src/features/governance/types';
 import { useReadContract } from 'wagmi';
@@ -12,7 +12,7 @@ export function useProposalQueue() {
     abi: governanceABI,
     functionName: 'getQueue',
     query: {
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 
@@ -39,7 +39,7 @@ export function useProposalDequeue() {
     abi: governanceABI,
     functionName: 'getDequeue',
     query: {
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 
@@ -63,7 +63,7 @@ export function useIsDequeueReady() {
     abi: governanceABI,
     functionName: 'lastDequeue',
     query: {
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 

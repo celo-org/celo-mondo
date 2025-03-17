@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage } from 'src/features/governance/types';
@@ -14,8 +15,8 @@ export function useHistoricalProposalVoteTotals(id: number) {
       logger.debug(`Fetching historical proposals votes for ${id}`);
       return fetchProposalVoters(id);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000 * 4, // 4 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Long,
   });
 
   useToastError(error, 'Error fetching historical proposals vote totals');
@@ -53,8 +54,8 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
       const { totals } = await fetchProposalVoters(id);
       return totals;
     },
-    gcTime: Infinity,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: GCTime.Short,
+    staleTime: GCTime.Short,
   });
 
   useToastError(error, 'Error fetching proposals vote totals');

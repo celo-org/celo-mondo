@@ -1,6 +1,7 @@
 import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
 import { Delegatee, DelegateeMetadata } from 'src/features/delegation/types';
@@ -22,8 +23,8 @@ export function useDelegatees() {
       const delegatees = Object.values(addressToDelegatee);
       return { addressToDelegatee, delegatees };
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, `Error fetching delegate data, ${error?.message}`);

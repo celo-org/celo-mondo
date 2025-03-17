@@ -1,6 +1,7 @@
 import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { DelegationBalances } from 'src/features/delegation/types';
 import { logger } from 'src/utils/logger';
@@ -20,8 +21,8 @@ export function useDelegationBalances(address?: Address, voteSigner?: Address) {
       return fetchDelegationBalances(publicClient, address, voteSigner);
     },
     enabled: !!address,
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: GCTime.Short,
+    staleTime: StaleTime.Short,
   });
 
   useToastError(error, 'Error fetching delegation balances');

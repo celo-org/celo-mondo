@@ -32,10 +32,7 @@ function FooterIconLink({ type, href }: { type: SocialLinkType; href: string }) 
 function BlockNumber() {
   const { data, isError } = useBlockNumber({
     watch: true,
-    cacheTime: 20_000,
-    query: {
-      staleTime: 10_000, // 10 seconds
-    },
   });
+
   return <div className="text-xs">{isError ? 'Error' : data?.toString() || '...'}</div>;
 }

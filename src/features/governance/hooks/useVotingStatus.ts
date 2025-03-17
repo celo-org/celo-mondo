@@ -1,7 +1,7 @@
 import { governanceABI, lockedGoldABI } from '@celo/abis';
 import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
@@ -16,7 +16,7 @@ export function useIsGovernanceVoting(address?: Address) {
     args: [address || ZERO_ADDRESS],
     query: {
       enabled: !!address,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 
@@ -37,7 +37,7 @@ export function useIsGovernanceUpVoting(address?: Address) {
     args: [address || ZERO_ADDRESS],
     query: {
       enabled: !!address,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 
@@ -77,7 +77,7 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
     args: [address || ZERO_ADDRESS, BigInt(proposalIndex || 0)],
     query: {
       enabled: address && !isNullish(proposalIndex) && proposalIndex >= 0,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   } as const);
 
@@ -108,7 +108,7 @@ export function useGovernanceVotingPower(address?: Address) {
     args: [address || ZERO_ADDRESS],
     query: {
       enabled: !!address,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   } as const);
 

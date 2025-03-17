@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { collectProposals } from 'src/features/governance/governanceData';
 import { logger } from 'src/utils/logger';
 import { usePublicClient } from 'wagmi';
@@ -21,8 +22,8 @@ export function useGovernanceProposals() {
       // Fetch on-chain data
       return await collectProposals(publicClient);
     },
-    gcTime: Infinity,
-    staleTime: 10 * 60 * 1000,
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching governance proposals');
