@@ -5,18 +5,26 @@ import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
-import { isValidAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
-import { objFilter } from 'src/utils/objects';
-import { decodeEventLog, encodeEventTopics } from 'viem';
+import { Address, decodeEventLog, encodeEventTopics, PublicClient } from 'viem';
+import { usePublicClient } from 'wagmi';
 
+/**
+ * Fetches all delegators for a given delegate address
+ */
 export function useDelegators(delegateAddress?: Address) {
+  const client = usePublicClient();
+
   const { isLoading, isError, error, data, refetch } = useQuery({
     queryKey: ['useDelegators', delegateAddress],
     queryFn: () => {
-      if (!delegateAddress) return null;
+      if (!delegateAddress || !client) {
+        return null;
+      }
+
       logger.debug(`Fetching delegators for delegatee ${delegateAddress}`);
-      return fetchDelegators(delegateAddress);
+
+      return fetchDelegators(client, delegateAddress);
     },
     gcTime: GCTime.Long,
     staleTime: StaleTime.Default,
@@ -32,37 +40,57 @@ export function useDelegators(delegateAddress?: Address) {
   };
 }
 
-async function fetchDelegators(delegateAddress: Address): Promise<AddressTo<bigint>> {
+/**
+ * Fetches all delegators for a given delegate address in a form of { address: amount }
+ */
+async function fetchDelegators(
+  client: PublicClient,
+  delegateAddress: Address,
+): Promise<AddressTo<bigint>> {
+  // First we need to fetch all delegation events to gather all possible delegators
   const delegateTopics = encodeEventTopics({
     abi: lockedGoldABI,
     eventName: 'CeloDelegated',
     args: { delegatee: delegateAddress },
   });
 
-  const revokeTopics = encodeEventTopics({
-    abi: lockedGoldABI,
-    eventName: 'DelegatedCeloRevoked',
-    args: { delegatee: delegateAddress },
-  });
-
   const delegateParams = `topic0=${delegateTopics[0]}&topic2=${delegateTopics[2]}&topic0_2_opr=and`;
   const delegateEvents = await queryCeloscanLogs(Addresses.LockedGold, delegateParams);
 
-  const revokeParams = `topic0=${revokeTopics[0]}&topic2=${revokeTopics[2]}&topic0_2_opr=and`;
-  const revokeEvents = await queryCeloscanLogs(Addresses.LockedGold, revokeParams);
+  const allDelegators: Address[] = [];
+  reduceLogs(allDelegators, delegateEvents);
 
-  const delegatorToAmount: AddressTo<bigint> = {};
-  reduceLogs(delegatorToAmount, delegateEvents, true);
-  reduceLogs(delegatorToAmount, revokeEvents, false);
+  // Filter out duplicates
+  const allDelegatorsUnique = Array.from(new Set(allDelegators));
 
-  // Filter out accounts with no remaining delegated amount
-  return objFilter(delegatorToAmount, (_, amount): amount is bigint => amount > 0n);
+  // Fetch the amount of gold delegated by each delegator in parallel
+  const allDelegatorsAndAmounts: [string, bigint][] = await Promise.all(
+    allDelegatorsUnique.map(async (address) => {
+      const [_, amount] = await client.readContract({
+        address: Addresses.LockedGold,
+        abi: lockedGoldABI,
+        functionName: 'getDelegatorDelegateeInfo',
+        args: [address, delegateAddress],
+      });
+
+      return [address, amount];
+    }),
+  );
+
+  // Filter out delegators with 0 amount (as they might have undelegated)
+  return Object.fromEntries(allDelegatorsAndAmounts.filter(([, amount]) => amount > 0n));
 }
 
-function reduceLogs(delegatorToAmount: AddressTo<bigint>, logs: TransactionLog[], isAdd: boolean) {
+/**
+ * Extracts delegators from the logs and adds them to the delegators array
+ */
+function reduceLogs(delegators: Address[], logs: TransactionLog[]) {
   for (const log of logs) {
     try {
-      if (!log.topics || log.topics.length < 3) continue;
+      if (!log.topics || log.topics.length < 3) {
+        continue;
+      }
+
       const { eventName, args } = decodeEventLog({
         abi: lockedGoldABI,
         data: log.data,
@@ -70,14 +98,14 @@ function reduceLogs(delegatorToAmount: AddressTo<bigint>, logs: TransactionLog[]
         strict: false,
       });
 
-      if (eventName !== 'CeloDelegated' && eventName !== 'DelegatedCeloRevoked') continue;
+      if (eventName !== 'CeloDelegated') continue;
 
-      const { delegator, amount } = args;
-      if (!amount || !delegator || !isValidAddress(delegator)) continue;
+      const { delegator } = args;
+      if (!delegator) {
+        continue;
+      }
 
-      delegatorToAmount[delegator] ||= 0n;
-      if (isAdd) delegatorToAmount[delegator] += amount;
-      else delegatorToAmount[delegator] -= amount;
+      delegators.push(delegator);
     } catch (error) {
       logger.warn('Error decoding delegation event log', error, log);
     }
