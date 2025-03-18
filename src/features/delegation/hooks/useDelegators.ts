@@ -16,7 +16,7 @@ export function useDelegators(delegateAddress?: Address) {
   const client = usePublicClient();
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useDelegators', delegateAddress],
+    queryKey: ['useDelegators', delegateAddress, client],
     queryFn: () => {
       if (!delegateAddress || !client) {
         return null;
