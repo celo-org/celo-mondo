@@ -6,7 +6,7 @@ import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { logger } from 'src/utils/logger';
-import { Address, decodeEventLog, encodeEventTopics, PublicClient } from 'viem';
+import { Address, PublicClient, decodeEventLog, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 /**
