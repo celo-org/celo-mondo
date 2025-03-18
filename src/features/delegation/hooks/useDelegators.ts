@@ -63,19 +63,21 @@ async function fetchDelegators(
   // Filter out duplicates
   const allDelegatorsUnique = Array.from(new Set(allDelegators));
 
-  // Fetch the amount of gold delegated by each delegator in parallel
-  const allDelegatorsAndAmounts: [string, bigint][] = await Promise.all(
-    allDelegatorsUnique.map(async (address) => {
-      const [_, amount] = await client.readContract({
-        address: Addresses.LockedGold,
-        abi: lockedGoldABI,
-        functionName: 'getDelegatorDelegateeInfo',
-        args: [address, delegateAddress],
-      });
-
-      return [address, amount];
-    }),
-  );
+  // Fetch the amount of gold delegated by each delegator using multicall
+  const allDelegatorsAndAmounts: [string, bigint][] = (
+    await client.multicall({
+      allowFailure: false,
+      contracts: allDelegatorsUnique.map(
+        (address) =>
+          ({
+            address: Addresses.LockedGold,
+            abi: lockedGoldABI,
+            functionName: 'getDelegatorDelegateeInfo',
+            args: [address, delegateAddress],
+          }) as const,
+      ),
+    })
+  ).map((result, index) => [allDelegatorsUnique[index], result[1]]);
 
   // Filter out delegators with 0 amount (as they might have undelegated)
   return Object.fromEntries(allDelegatorsAndAmounts.filter(([, amount]) => amount > 0n));
