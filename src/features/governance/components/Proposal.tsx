@@ -4,8 +4,10 @@ import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { BackLink } from 'src/components/buttons/BackLink';
+import { ErrorBoundary } from 'src/components/errors/ErrorBoundaryInline';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { links } from 'src/config/links';
+import { ProposalApprovalsTable } from 'src/features/governance/components/ProposalApprovalsTable';
 import { ProposalBadgeRow, ProposalLinkRow } from 'src/features/governance/components/ProposalCard';
 import { ProposalUpvotersTable } from 'src/features/governance/components/ProposalUpvotersTable';
 import {
@@ -118,14 +120,25 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       )}
       {stage >= ProposalStage.Referendum && (
         <div className="hidden overflow-auto border-taupe-300 p-3 lg:block lg:border">
-          <ProposalVotersTable propData={propData} />
+          <ErrorBoundary>
+            <ProposalVotersTable propData={propData} />
+          </ErrorBoundary>
+        </div>
+      )}
+      {(stage === ProposalStage.Referendum || stage === ProposalStage.Execution) && id && (
+        <div className="hidden border-taupe-300 p-3 lg:block lg:border">
+          <ErrorBoundary>
+            <ProposalApprovalsTable proposalId={id} />
+          </ErrorBoundary>
         </div>
       )}
       {history && history.length > 0 && (
         <div className="space-y-4 border-taupe-300 p-3 lg:border">
           <h2 className="font-serif text-2xl">Past Onchain Results</h2>
           {history.map((id) => (
-            <PastProposalVoteChart key={id} title={`As #${id}`} id={id} />
+            <ErrorBoundary key={id}>
+              <PastProposalVoteChart title={`As #${id}`} id={id} />
+            </ErrorBoundary>
           ))}
         </div>
       )}
