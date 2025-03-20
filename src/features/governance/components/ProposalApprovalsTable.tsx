@@ -2,11 +2,15 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
 import { ShortAddress } from 'src/components/text/ShortAddress';
-import { useProposalApprovals } from 'src/features/governance/hooks/useProposalApprovals';
+import { useProposalApprovers } from 'src/features/governance/hooks/useProposalApprovers';
 import { Address } from 'viem';
 
 export function ProposalApprovalsTable({ proposalId }: { proposalId: number }) {
-  const { isLoading, confirmations, required } = useProposalApprovals(proposalId);
+  const {
+    isLoading,
+    confirmedBy: confirmations,
+    requiredConfirmationsCount: required,
+  } = useProposalApprovers(proposalId);
   const fraction = isLoading ? '? / 3' : `${confirmations?.length || 0} / ${required}`;
   return (
     <div className="hidden md:block">
