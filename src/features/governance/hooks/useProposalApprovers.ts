@@ -5,7 +5,7 @@ import { useProposalDequeueIndex } from 'src/features/governance/hooks/usePropos
 import { encodeFunctionData } from 'viem';
 import { useReadContract, useReadContracts } from 'wagmi';
 
-export function useProposalApprovals(proposalId: number) {
+export function useProposalApprovers(proposalId: number) {
   // get the address of the approver contract (a multisig contract)
   const approverAddress = useReadContract({
     address: Addresses.Governance,
@@ -72,7 +72,7 @@ export function useProposalApprovals(proposalId: number) {
     address: approverAddress.data,
     abi: multiSigABI,
     functionName: 'getConfirmations',
-    args: [indexOfTXToFindApproversOF !== -1 ? BigInt(indexOfTXToFindApproversOF ?? 0) : 0n], //todo need to find the correct index which is different from the dequeue index
+    args: [indexOfTXToFindApproversOF !== -1 ? BigInt(indexOfTXToFindApproversOF ?? 0) : 0n],
     query: {
       enabled:
         approverAddress.isSuccess &&
@@ -82,7 +82,7 @@ export function useProposalApprovals(proposalId: number) {
     },
   });
 
-  const required = useReadContract({
+  const requiredConfirmationsCount = useReadContract({
     address: approverAddress.data,
     abi: multiSigABI,
     functionName: 'required',
@@ -93,33 +93,10 @@ export function useProposalApprovals(proposalId: number) {
     },
   });
 
-  const owners = useReadContract({
-    address: approverAddress.data,
-    abi: multiSigABI,
-    functionName: 'getOwners',
-    // pending, executed
-    args: [], //todo need to find the correct index which is different from the dequeue index
-    query: {
-      enabled: approverAddress.isSuccess,
-      staleTime: StaleTime.Long,
-    },
-  });
-  // getRequired
   return {
-    isLoading:
-      confirmations.isLoading ||
-      isIndexLoading ||
-      approverAddress.isLoading ||
-      owners.isLoading ||
-      allTransactionsInMultisig.isLoading,
-    isError:
-      confirmations.isError ||
-      isIndexLoading ||
-      approverAddress.isError ||
-      allTransactionsInMultisig.isError,
-    confirmations: confirmations.data,
-    transactions: allTransactionsInMultisig.data,
-    required: required.data,
-    owners: owners.data,
+    isLoading: confirmations.isLoading || isIndexLoading || approverAddress.isLoading,
+    isError: confirmations.isError || approverAddress.isError,
+    confirmedBy: confirmations.data,
+    requiredConfirmationsCount: requiredConfirmationsCount.data,
   };
 }
