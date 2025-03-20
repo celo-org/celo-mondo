@@ -20,7 +20,7 @@ if (typeof process.env.NEXT_PUBLIC_CELOSCAN_API_KEY === 'string') {
 }
 
 const PROPOSALS_OUT_PATH = path.resolve(__dirname, '../config/proposals.json');
-const MIN_PROPOSAL_ID_VOTES_FETCH = 202;
+const MIN_PROPOSAL_ID_VOTES_FETCH = 212;
 
 async function main() {
   let cachedProposals: ProposalMetadata[] = [];

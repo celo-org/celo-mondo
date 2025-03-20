@@ -2360,10 +2360,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0155.md",
     "title": "Add CeloToken and LockedCelo to the registry",
     "author": "Martín Volpe (@martinvol), @soloseng",
-    "stage": 1,
+    "stage": 6,
     "id": 213,
-    "url": "https://forum.celo.org/t/add-celotoken-and-lockedcelo-to-the-registry/10315",
-    "timestamp": 1731974400000
+    "url": "https://forum.celo.org/t/add-celotoken-and-lockedcelo-to-the-registry",
+    "timestamp": 1731974400000,
+    "timestampExecuted": 1741996800000,
+    "votes": {
+      "yes": "36909344373415082173243251",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 156,
@@ -2371,10 +2377,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0156.md",
     "title": "Enabling MENTO Governance",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>",
-    "stage": 1,
+    "stage": 8,
     "id": 206,
     "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community/9526",
-    "timestamp": 1732492800000
+    "timestamp": 1732492800000,
+    "votes": {
+      "yes": "2784824418573596865622453",
+      "no": "62369225413955859079054",
+      "abstain": "24840293686487090470784"
+    }
   },
   {
     "cgp": 157,
@@ -2467,10 +2478,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0162.md",
     "title": "Stabila Funding Request Aave Liquidity & Incentives",
     "author": "Michael Kwan <@MichaelKwan>",
-    "stage": 1,
+    "stage": 6,
     "id": 208,
     "url": "https://forum.celo.org/t/stabila-funding-request-aave-liquidity-incentives",
-    "timestamp": 1738800000000
+    "timestamp": 1738800000000,
+    "timestampExecuted": 1740700800000,
+    "votes": {
+      "yes": "13774076761294073909604824",
+      "no": "0",
+      "abstain": "24800589041018930548628"
+    }
   },
   {
     "cgp": 163,
@@ -2529,9 +2546,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0166.md",
     "title": "Contracts Release 12",
     "author": "cLabs Primitives Team",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/contract-release-12",
-    "timestamp": 1708128000000
+    "stage": 6,
+    "id": 214,
+    "url": "https://forum.celo.org/t/contracts-release-12",
+    "timestamp": 1708128000000,
+    "timestampExecuted": 1742256000000,
+    "votes": {
+      "yes": "24988224679516513377726807",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 167,
@@ -2539,8 +2563,9 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0167.md",
     "title": "Set Parameters for L2 transition",
     "author": "cLabs Primitives Team",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/set-parameters-for-l2-transition/10365",
+    "stage": 1,
+    "id": 216,
+    "url": "https://forum.celo.org/t/set-parameters-for-l2-transition",
     "timestamp": 1739577600000
   },
   {
@@ -2568,5 +2593,48 @@
     "author": "cLabs Team",
     "stage": 0,
     "timestamp": 1708992000000
+  },
+  {
+    "cgp": 170,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0170.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0170.md",
+    "title": "Authorize 2nd half of Minipay Strategic Grant",
+    "author": "Opera MiniPay (@opera_minipay)",
+    "stage": 1,
+    "id": 215,
+    "url": "https://forum.celo.org/t/authorize-2nd-half-of-minipay-strategic-grant",
+    "timestamp": 1741305600000
+  },
+  {
+    "cgp": 171,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0171.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0171.md",
+    "title": "Celo L2’s Security Council",
+    "author": "cLabs Team",
+    "stage": 1,
+    "id": 218,
+    "url": "https://forum.celo.org/t/proposing-celo-l2s-security-council",
+    "timestamp": 1742256000000
+  },
+  {
+    "cgp": 172,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0172.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0172.md",
+    "title": "Adding a CELO/ETH feed to support ETH as gas currency post L2 transition",
+    "author": "@nvtaveras",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/returning-home-to-ethereum-the-launch-of-celo-l2-mainnet/10466",
+    "timestamp": 1741824000000
+  },
+  {
+    "cgp": 173,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0173.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0173.md",
+    "title": "Supply Liquidity to Aave via Mento Reserve",
+    "author": "Mento Foundation",
+    "stage": 1,
+    "id": 217,
+    "url": "https://forum.celo.org/t/supply-liquidity-to-aave-via-mento-reserve/10540",
+    "timestamp": 1741824000000
   }
 ]
