@@ -2,6 +2,7 @@ import { registryABI } from '@celo/abis-12';
 import { config } from 'src/config/config';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { createCeloPublicClient } from 'src/utils/client';
+import { logger } from 'src/utils/logger';
 import { celo, celoAlfajores } from 'viem/chains';
 
 const UNKNOWN_TESTNET_ADDRESSES = {
@@ -44,7 +45,7 @@ export const REGISTRY_ADDRESS = '0x000000000000000000000000000000000000ce10';
 
 export const resolveAddress = async (name: keyof typeof Addresses) => {
   if (Addresses[name] === ZERO_ADDRESS) {
-    console.log(`Resolving ${name} address from registry`);
+    logger.info(`Resolving ${name} address from registry`);
 
     const client = createCeloPublicClient();
 

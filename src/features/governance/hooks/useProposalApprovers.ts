@@ -69,8 +69,9 @@ export function useProposalApprovers(proposalId: number) {
         const [_destination, _value, data] = query.result as [string, bigint, string, boolean];
         return data === approveTxData;
       }
+      return false;
     });
-  }, [dequeueIndex, allTransactionsInMultisig]);
+  }, [dequeueIndex, allTransactionsInMultisig, proposalId]);
 
   const {
     data: confirmations,

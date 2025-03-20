@@ -12,15 +12,15 @@ BigInt.prototype.toJSON = function () {
 };
 
 if (typeof process.env.NEXT_PUBLIC_CELOSCAN_API_KEY === 'string') {
-  console.info('Using celoscan with API key');
+  logger.info('Using celoscan with API key');
 } else {
-  console.warn(
+  logger.warn(
     'Celoscan api key not loaded. Votes will not be updated. You probably need a .env file (not local.env). To pull secrets see https://vercel.com/docs/cli/env',
   );
 }
 
 const PROPOSALS_OUT_PATH = path.resolve(__dirname, '../config/proposals.json');
-const MIN_PROPOSAL_ID_VOTES_FETCH = 202;
+const MIN_PROPOSAL_ID_VOTES_FETCH = 212;
 
 async function main() {
   let cachedProposals: ProposalMetadata[] = [];
