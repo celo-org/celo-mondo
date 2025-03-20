@@ -1,6 +1,6 @@
 import { EIP712Delegatee, RegisterDelegateFormValues } from 'src/features/delegation/types';
 import { sha256 } from 'viem';
-import { useSignTypedData } from 'wagmi';
+import { useConfig, useConnections, useSignTypedData } from 'wagmi';
 
 export function useSignedData() {
   const { signTypedDataAsync } = useSignTypedData();
@@ -21,3 +21,11 @@ export function useSignedData() {
     });
   };
 }
+
+export const useIsSAFEWallet = () => {
+  const config = useConfig();
+  const [connection] = useConnections();
+  const safeConnector = config.connectors.find((x) => x.id === 'safe')!;
+  const isSafe = connection?.connector === safeConnector;
+  return isSafe;
+};
