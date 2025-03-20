@@ -30,7 +30,6 @@ export function ProposalApprovalsTable({ proposalId }: { proposalId: number }) {
   );
 }
 
-// currently actually just the addresses that have confirmed the transaction
 function ConfirmationsTable({
   isLoading,
   confirmations,
@@ -41,7 +40,7 @@ function ConfirmationsTable({
   if (isLoading) {
     return (
       <SpinnerWithLabel size="md" className="py-6">
-        Loading confirmations
+        Loading Approvers
       </SpinnerWithLabel>
     );
   }
@@ -49,7 +48,7 @@ function ConfirmationsTable({
   if (!confirmations?.length) {
     return (
       <div className="py-6 text-center text-sm text-gray-600">
-        No approvers have confirmed this proposal yet
+        No Approvers have confirmed this proposal yet
       </div>
     );
   }
