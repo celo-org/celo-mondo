@@ -11,7 +11,7 @@ interface ErrorBoundaryState {
   errorInfo: any;
 }
 
-export class ErrorBoundary extends Component<any, ErrorBoundaryState> {
+export class ErrorBoundaryInline extends Component<any, ErrorBoundaryState> {
   constructor(props: any) {
     super(props);
     this.state = { error: null, errorInfo: null };

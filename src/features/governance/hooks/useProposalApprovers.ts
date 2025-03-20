@@ -6,6 +6,7 @@ import { useProposalDequeueIndex } from 'src/features/governance/hooks/usePropos
 import { encodeFunctionData } from 'viem';
 import { useReadContract, useReadContracts } from 'wagmi';
 
+// @returns addresses of approvers that have confirmed the proposal
 export function useProposalApprovers(proposalId: number) {
   const {
     data: approversMultisigAddress,
