@@ -1,4 +1,5 @@
 import { governanceABI, multiSigABI } from '@celo/abis-12';
+import { useMemo } from 'react';
 import { StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useProposalDequeueIndex } from 'src/features/governance/hooks/useProposalQueue';
@@ -6,8 +7,12 @@ import { encodeFunctionData } from 'viem';
 import { useReadContract, useReadContracts } from 'wagmi';
 
 export function useProposalApprovers(proposalId: number) {
-  // get the address of the approver contract (a multisig contract)
-  const approverAddress = useReadContract({
+  const {
+    data: approversMultisigAddress,
+    isSuccess: isApproversMultisigAddressSuccess,
+    isLoading: isApproversMultisigAddressLoading,
+    isError: isApproversMultisigAddressError,
+  } = useReadContract({
     address: Addresses.Governance,
     abi: governanceABI,
     functionName: 'approver',
@@ -17,86 +22,98 @@ export function useProposalApprovers(proposalId: number) {
       staleTime: StaleTime.Long,
     },
   });
-  const { index, isLoading: isIndexLoading } = useProposalDequeueIndex(proposalId);
-  // build an approval txn which is needed to find the number above approvals
 
-  const approveTxData =
-    index &&
-    index !== -1n &&
-    encodeFunctionData({
-      abi: governanceABI,
-      functionName: 'approve',
-      args: [BigInt(proposalId), index],
-    });
-
-  // getConfirmations might be more accuratly get addresses of owners who have approved
-  const numberOfTxInMultiSig = useReadContract({
-    address: approverAddress.data,
+  const { data: numberOfTxInMultiSig, isSuccess: isNumberOfTxInMultiSigSuccess } = useReadContract({
+    address: approversMultisigAddress,
     abi: multiSigABI,
     functionName: 'getTransactionCount',
-    // pending, executed
-    args: [true, true], //todo need to find the correct index which is different from the dequeue index
+    args: [true, true],
     query: {
-      enabled: approverAddress.isSuccess,
+      enabled: isApproversMultisigAddressSuccess,
       staleTime: StaleTime.Long,
     },
   });
 
-  const allTransactionsInMultisig = useReadContracts({
-    contracts: Array(Number(numberOfTxInMultiSig.data ?? 0))
+  const { data: allTransactionsInMultisig } = useReadContracts({
+    contracts: Array(Number(numberOfTxInMultiSig ?? 0))
       .fill(0)
       .map((_, i) => ({
-        address: approverAddress.data,
+        address: approversMultisigAddress,
         abi: multiSigABI,
         functionName: 'transactions',
-        args: [i], //todo need to find the correct index which is different from the dequeue index
+        args: [i],
       })),
     query: {
-      enabled: approverAddress.isSuccess && numberOfTxInMultiSig.isSuccess,
+      enabled: isApproversMultisigAddressSuccess && isNumberOfTxInMultiSigSuccess,
       staleTime: StaleTime.Long,
     },
   });
-  const indexOfTXToFindApproversOF = allTransactionsInMultisig.data?.findIndex((query) => {
-    if (query.status === 'success' && query.result) {
-      const [_destination, _value, data, _isExecuted] = query.result as [
-        string,
-        bigint,
-        string,
-        boolean,
-      ];
-      return data === approveTxData;
-    }
-  });
 
-  const confirmations = useReadContract({
-    address: approverAddress.data,
+  const {
+    index: dequeueIndex,
+    isLoading: isIndexLoading,
+    isError: isDequeueIndexError,
+  } = useProposalDequeueIndex(proposalId);
+
+  const indexOfTXToFindApproversOf = useMemo(() => {
+    if (!allTransactionsInMultisig || !proposalId || !dequeueIndex) return -1;
+
+    const approveTxData = encodeFunctionData({
+      abi: governanceABI,
+      functionName: 'approve',
+      args: [BigInt(proposalId), dequeueIndex],
+    });
+
+    return allTransactionsInMultisig.findIndex((query) => {
+      if (query.status === 'success' && query.result) {
+        const [_destination, _value, data] = query.result as [string, bigint, string, boolean];
+        return data === approveTxData;
+      }
+    });
+  }, [dequeueIndex, allTransactionsInMultisig]);
+
+  const {
+    data: confirmations,
+    isLoading: isConfirmationsLoading,
+    isError: isConfirmationsError,
+  } = useReadContract({
+    address: approversMultisigAddress,
     abi: multiSigABI,
     functionName: 'getConfirmations',
-    args: [indexOfTXToFindApproversOF !== -1 ? BigInt(indexOfTXToFindApproversOF ?? 0) : 0n],
+    args: [indexOfTXToFindApproversOf !== -1 ? BigInt(indexOfTXToFindApproversOf) : 0n],
     query: {
-      enabled:
-        approverAddress.isSuccess &&
-        indexOfTXToFindApproversOF !== undefined &&
-        indexOfTXToFindApproversOF !== -1,
-      staleTime: StaleTime.Long,
+      enabled: isApproversMultisigAddressSuccess && indexOfTXToFindApproversOf !== -1,
+      staleTime: StaleTime.Default,
     },
   });
 
-  const requiredConfirmationsCount = useReadContract({
-    address: approverAddress.data,
+  const {
+    data: requiredConfirmationsCount,
+    isLoading: isRequiredCountLoading,
+    isError: isRequiredCountError,
+  } = useReadContract({
+    address: approversMultisigAddress,
     abi: multiSigABI,
     functionName: 'required',
     args: [],
     query: {
-      enabled: approverAddress.isSuccess,
+      enabled: isApproversMultisigAddressSuccess,
       staleTime: StaleTime.Long,
     },
   });
 
   return {
-    isLoading: confirmations.isLoading || isIndexLoading || approverAddress.isLoading,
-    isError: confirmations.isError || approverAddress.isError,
-    confirmedBy: confirmations.data,
-    requiredConfirmationsCount: requiredConfirmationsCount.data,
+    isLoading:
+      isConfirmationsLoading ||
+      isIndexLoading ||
+      isApproversMultisigAddressLoading ||
+      isRequiredCountLoading,
+    isError:
+      isConfirmationsError ||
+      isDequeueIndexError ||
+      isApproversMultisigAddressError ||
+      isRequiredCountError,
+    confirmedBy: confirmations,
+    requiredConfirmationsCount,
   };
 }
