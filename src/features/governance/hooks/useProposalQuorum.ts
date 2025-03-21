@@ -7,6 +7,7 @@ import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { Proposal } from 'src/features/governance/types';
+import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
 import { PublicClient, fromHex, toHex } from 'viem';
@@ -44,7 +45,7 @@ export function useProposalQuorum(propData?: MergedProposalData): {
       isLoading: false,
     };
   } catch (error) {
-    console.warn(
+    logger.warn(
       'Error calculating proposal quorum',
       'thresholds',
       thresholds,

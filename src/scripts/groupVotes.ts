@@ -17,7 +17,7 @@ async function main() {
   }
   const sorted = Object.entries(accountToCount).sort((a, b) => b[1] - a[1]);
   for (const acc of sorted) {
-    console.log(acc[0], acc[1]);
+    logger.debug(acc[0], acc[1]);
   }
 }
 
