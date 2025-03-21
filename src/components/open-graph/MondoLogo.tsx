@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 export function MondoWithSubText({ baseSize, subText }: { baseSize: number; subText: string }) {
   return (
     <div
@@ -49,7 +51,7 @@ export function Mondo({ baseSize }: { baseSize: number }) {
           marginBottom: size * 0.3,
         }}
       >
-        <img
+        <Image
           src={'https://mondo.celo.org/logos/celo-full.svg'}
           width={size * 4}
           height={size}

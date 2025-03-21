@@ -754,5 +754,29 @@
     },
     "interests": ["Blockchain"],
     "description": "Student Organization at Berkeley focused on blockchain innovation, education, consulting, and research. Founded in 2014."
+  },
+  "0x302E2A0D4291ac14Aa1160504cA45A0A1F2E7a5c": {
+    "name": "ReFi Medellin",
+    "address": "0x302E2A0D4291ac14Aa1160504cA45A0A1F2E7a5c",
+    "logoUri": "/logos/delegatees/0x302E2A0D4291ac14Aa1160504cA45A0A1F2E7a5c.png",
+    "date": "2025-03-07",
+    "links": {
+      "website": "https://www.refimedellin.org",
+      "twitter": "https://x.com/refimedellin"
+    },
+    "interests": ["ReFi", "Sustainability", "Stablecoins"],
+    "description": "We are the first Colombian Node of ReFiDAO responsible for promoting ReFi projects in the region.  At ReFi Medellín, we believe in regenerative projects and the transformative impact they have. It's time to think differently and regenerate together!"
+  },
+  "0xB2206f941A5206B55BFA33E665687523A8bcEd80": {
+    "name": "Swift Evo",
+    "address": "0xB2206f941A5206B55BFA33E665687523A8bcEd80",
+    "logoUri": "/logos/delegatees/0xB2206f941A5206B55BFA33E665687523A8bcEd80.jpg",
+    "date": "2025-03-12",
+    "links": {
+      "website": "https://matters.town/@swiftevo",
+      "twitter": "https://x.com/swiftevo1"
+    },
+    "interests": ["Public Goods", "DeSci", "Asia", "Gitcoin", "GreenPill"],
+    "description": "Co-founder of DeSci Asia, Gitcoin Grant 20, 21, 23 DeSci community round core operator, GreenPill Network DeSci Pod Mod, GreenSofa(Greenpill Taiwan) Steward"
   }
 }

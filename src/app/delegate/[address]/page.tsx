@@ -1,15 +1,16 @@
+'use server';
+
 // DO NOT USE "use client" here as it breaks metadata for openGraph
 import DelegatePage from 'src/features/delegation/components/delegatePage';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
 import { getXName } from 'src/features/delegation/utils';
 import { shortenAddress } from 'src/utils/addresses';
-export const dynamicParams = true;
 
-export type DelegateParams = { params: { address: Address } };
+export type Params = Promise<{ address: Address }>;
 
-export async function generateMetadata({ params: { address } }: DelegateParams) {
+export async function generateMetadata(props: { params: Params }) {
   const metadata = getDelegateeMetadata();
-
+  const { address } = await props.params;
   const data = metadata[address];
 
   return {
@@ -26,6 +27,7 @@ export async function generateMetadata({ params: { address } }: DelegateParams) 
   };
 }
 
-export default function Page({ params: { address } }: DelegateParams) {
+export default async function Page(props: { params: Params }) {
+  const { address } = await props.params;
   return <DelegatePage address={address} />;
 }
