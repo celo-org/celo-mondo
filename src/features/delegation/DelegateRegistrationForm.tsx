@@ -5,10 +5,13 @@ import { toast } from 'react-toastify';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { TextField } from 'src/components/input/TextField';
-import { Modal, useModal } from 'src/components/menus/Modal';
-import { delegateeRegistrationRequestToMetadata } from 'src/features/delegation/delegateeMetadata';
+import {
+  DelegateSafeWalletModal,
+  useIsSAFEWallet,
+  useSAFEModal,
+} from 'src/features/delegation/DelegateSafeWalletModal';
 import { useDelegatedPercent } from 'src/features/delegation/hooks/useDelegatedPercent';
-import { useIsSAFEWallet, useSignedData } from 'src/features/delegation/hooks/useSIgnedData';
+import { useSignedData } from 'src/features/delegation/hooks/useSignedData';
 import {
   RegisterDelegateFormValues,
   RegisterDelegateResponse,
@@ -40,7 +43,7 @@ export function DelegateRegistrationForm({
   const [pullRequestUrl, setPullRequestUrl] = useState<string | null>(null);
   const signForm = useSignedData();
   const isSAFE = useIsSAFEWallet();
-  const { isModalOpen, openModal, closeModal, values: formDataValues } = useSafeModal();
+  const { isModalOpen, openModal, closeModal, values: formDataValues } = useSAFEModal();
   const { delegatedPercent } = useDelegatedPercent(address);
 
   const validate = async (values: RegisterDelegateFormValues, image: File | null) => {
@@ -299,67 +302,11 @@ export function DelegateRegistrationForm({
           </Form>
         )}
       </Formik>
-      <SafeModal isModalOpen={isModalOpen} close={closeModal} values={formDataValues} />
+      <DelegateSafeWalletModal
+        isModalOpen={isModalOpen}
+        close={closeModal}
+        values={formDataValues}
+      />
     </>
   );
-}
-
-function SafeModal({
-  isModalOpen,
-  close,
-  values,
-}: {
-  values: RegisterDelegateFormValues | {};
-  isModalOpen: boolean;
-  close: () => void;
-}) {
-  return (
-    <Modal isOpen={isModalOpen} close={close}>
-      <div className="max-w-36[rem] flex min-h-[24rem] min-w-[18rem] flex-col border border-taupe-300 bg-taupe-100 p-2.5 pt-8">
-        <h2 className="font-serif text-xl">Registering from SAFE Instructions</h2>
-        <p className="my-4">
-          The Connected Address Appears to be a SAFE wallet. There are bugs related to registering
-          (but not acting as) a delegatee.
-        </p>
-        <p className="mb-4">
-          Please Follow{' '}
-          <a className="link" href={'/docs/delegating-as-safe.md'}>
-            These Instructions to register
-          </a>
-        </p>
-        <hr />
-        <h3 className="mb-4 mt-4 text-sm">Use the following JSON in your PR.</h3>
-        <pre className="bg-white p-2">
-          {isModalOpen && Object.prototype.hasOwnProperty.call(values, 'image')
-            ? JSON.stringify(
-                delegateeRegistrationRequestToMetadata(
-                  values as RegisterDelegateFormValues,
-                  new Date(),
-                ),
-                null,
-                2,
-              )
-            : null}
-        </pre>
-        <br />
-      </div>
-    </Modal>
-  );
-}
-
-function useSafeModal() {
-  const { isModalOpen, openModal, closeModal } = useModal();
-  const [values, setValues] = useState<RegisterDelegateFormValues | {}>({});
-
-  function openModalWithValues(_values: RegisterDelegateFormValues) {
-    setValues(_values);
-    openModal();
-  }
-
-  return {
-    isModalOpen,
-    openModal: openModalWithValues,
-    closeModal,
-    values,
-  };
 }
