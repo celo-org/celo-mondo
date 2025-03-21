@@ -6,12 +6,10 @@ import { useProposalApprovers } from 'src/features/governance/hooks/useProposalA
 import { Address } from 'viem';
 
 export function ProposalApprovalsTable({ proposalId }: { proposalId: number }) {
-  const {
-    isLoading,
-    confirmedBy: confirmations,
-    requiredConfirmationsCount: required,
-  } = useProposalApprovers(proposalId);
-  const fraction = isLoading ? '? / 3' : `${confirmations?.length || 0} / ${required}`;
+  const { isLoading, confirmedBy, requiredConfirmationsCount } = useProposalApprovers(proposalId);
+  const fraction = isLoading
+    ? '? / 3'
+    : `${confirmedBy?.length || 0} / ${requiredConfirmationsCount}`;
   return (
     <div className="hidden md:block">
       <Collapse
@@ -24,7 +22,7 @@ export function ProposalApprovalsTable({ proposalId }: { proposalId: number }) {
         buttonClasses="w-full"
         defaultOpen={true}
       >
-        <ConfirmationsTable isLoading={isLoading} confirmations={confirmations} />
+        <ConfirmationsTable isLoading={isLoading} confirmations={confirmedBy} />
       </Collapse>
     </div>
   );
