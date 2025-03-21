@@ -26,9 +26,7 @@ const ALFAJORES_ADDRESSES = {
 const MAINNET_ADDRESSES = {
   Accounts: '0x7d21685C17607338b313a7174bAb6620baD0aaB7',
   Election: '0x8D6677192144292870907E3Fa8A5527fE55A7ff6',
-  // TODO once the migration is done add the address here
-  // for now it will be resolved automatically during runtime
-  EpochManager: ZERO_ADDRESS,
+  EpochManager: '0xF424B5e85B290b66aC20f8A9EAB75E25a526725E',
   Governance: '0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972',
   LockedGold: '0x6cC083Aed9e3ebe302A6336dBC7c921C9f03349E',
   Validators: '0xaEb865bCa93DdC8F47b8e29F40C5399cE34d0C58',
