@@ -2636,5 +2636,15 @@
     "id": 217,
     "url": "https://forum.celo.org/t/supply-liquidity-to-aave-via-mento-reserve/10540",
     "timestamp": 1741824000000
+  },
+  {
+    "cgp": 174,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0174.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0174.md",
+    "title": "cGHS Name Update",
+    "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/cghs-name-update/10572",
+    "timestamp": 1742169600000
   }
 ]
