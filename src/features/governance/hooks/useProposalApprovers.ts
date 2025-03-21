@@ -13,16 +13,7 @@ export function useProposalApprovers(proposalId: number) {
     isSuccess: isApproversMultisigAddressSuccess,
     isLoading: isApproversMultisigAddressLoading,
     isError: isApproversMultisigAddressError,
-  } = useReadContract({
-    address: Addresses.Governance,
-    abi: governanceABI,
-    functionName: 'approver',
-    args: [],
-    query: {
-      enabled: proposalId !== undefined,
-      staleTime: StaleTime.Long,
-    },
-  });
+  } = useGovernanceApproverMultiSigAddress(proposalId);
 
   const { data: numberOfTxInMultiSig, isSuccess: isNumberOfTxInMultiSigSuccess } = useReadContract({
     address: approversMultisigAddress,
@@ -93,16 +84,7 @@ export function useProposalApprovers(proposalId: number) {
     data: requiredConfirmationsCount,
     isLoading: isRequiredCountLoading,
     isError: isRequiredCountError,
-  } = useReadContract({
-    address: approversMultisigAddress,
-    abi: multiSigABI,
-    functionName: 'required',
-    args: [],
-    query: {
-      enabled: isApproversMultisigAddressSuccess,
-      staleTime: StaleTime.Long,
-    },
-  });
+  } = useRequiredApproversCount(approversMultisigAddress, isApproversMultisigAddressSuccess);
 
   return {
     isLoading:
@@ -118,4 +100,33 @@ export function useProposalApprovers(proposalId: number) {
     confirmedBy: confirmations,
     requiredConfirmationsCount,
   };
+}
+
+function useRequiredApproversCount(
+  approversMultisigAddress: Address | undefined,
+  isApproversMultisigAddressSuccess: boolean,
+) {
+  return useReadContract({
+    address: approversMultisigAddress,
+    abi: multiSigABI,
+    functionName: 'required',
+    args: [],
+    query: {
+      enabled: isApproversMultisigAddressSuccess,
+      staleTime: StaleTime.Long,
+    },
+  });
+}
+
+function useGovernanceApproverMultiSigAddress(proposalId: number) {
+  return useReadContract({
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'approver',
+    args: [],
+    query: {
+      enabled: proposalId !== undefined,
+      staleTime: StaleTime.Long,
+    },
+  });
 }
