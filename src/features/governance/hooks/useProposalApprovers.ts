@@ -1,45 +1,21 @@
 import { governanceABI, multiSigABI } from '@celo/abis-12';
-import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { useProposalDequeueIndex } from 'src/features/governance/hooks/useProposalQueue';
-import { encodeFunctionData } from 'viem';
-import { useReadContract, useReadContracts } from 'wagmi';
+import { PublicClient, encodeFunctionData } from 'viem';
+import { usePublicClient } from 'wagmi';
 
 // @returns addresses of approvers that have confirmed the proposal
 export function useProposalApprovers(proposalId: number) {
+  const publicClient = usePublicClient();
+
   const {
     data: approversMultisigAddress,
     isSuccess: isApproversMultisigAddressSuccess,
     isLoading: isApproversMultisigAddressLoading,
     isError: isApproversMultisigAddressError,
-  } = useGovernanceApproverMultiSigAddress(proposalId);
-
-  const { data: numberOfTxInMultiSig, isSuccess: isNumberOfTxInMultiSigSuccess } = useReadContract({
-    address: approversMultisigAddress,
-    abi: multiSigABI,
-    functionName: 'getTransactionCount',
-    args: [true, true],
-    query: {
-      enabled: isApproversMultisigAddressSuccess,
-      staleTime: StaleTime.Long,
-    },
-  });
-
-  const { data: allTransactionsInMultisig } = useReadContracts({
-    contracts: Array(Number(numberOfTxInMultiSig ?? 0))
-      .fill(0)
-      .map((_, i) => ({
-        address: approversMultisigAddress,
-        abi: multiSigABI,
-        functionName: 'transactions',
-        args: [i],
-      })),
-    query: {
-      enabled: isApproversMultisigAddressSuccess && isNumberOfTxInMultiSigSuccess,
-      staleTime: StaleTime.Long,
-    },
-  });
+  } = useGovernanceApproverMultiSigAddress();
 
   const {
     index: dequeueIndex,
@@ -47,44 +23,33 @@ export function useProposalApprovers(proposalId: number) {
     isError: isDequeueIndexError,
   } = useProposalDequeueIndex(proposalId);
 
-  const indexOfTXToFindApproversOf = useMemo(() => {
-    if (!allTransactionsInMultisig || !proposalId || !dequeueIndex) return -1;
-
-    const approveTxData = encodeFunctionData({
-      abi: governanceABI,
-      functionName: 'approve',
-      args: [BigInt(proposalId), dequeueIndex],
-    });
-
-    return allTransactionsInMultisig.findIndex((query) => {
-      if (query.status === 'success' && query.result) {
-        const [_destination, _value, data] = query.result as [string, bigint, string, boolean];
-        return data === approveTxData;
-      }
-      return false;
-    });
-  }, [dequeueIndex, allTransactionsInMultisig, proposalId]);
-
   const {
     data: confirmations,
     isLoading: isConfirmationsLoading,
     isError: isConfirmationsError,
-  } = useReadContract({
-    address: approversMultisigAddress,
-    abi: multiSigABI,
-    functionName: 'getConfirmations',
-    args: [indexOfTXToFindApproversOf !== -1 ? BigInt(indexOfTXToFindApproversOf) : 0n],
-    query: {
-      enabled: isApproversMultisigAddressSuccess && indexOfTXToFindApproversOf !== -1,
-      staleTime: StaleTime.Default,
-    },
+  } = useQuery({
+    queryKey: [
+      'ProposalApprovers',
+      publicClient,
+      approversMultisigAddress,
+      proposalId,
+      dequeueIndex,
+    ],
+    queryFn: () =>
+      fetchProposalApprovers(publicClient!, {
+        governanceApproverMultisigAddress: approversMultisigAddress!,
+        proposalId: BigInt(proposalId),
+        dequeueIndex: dequeueIndex!,
+      }),
+    enabled: isApproversMultisigAddressSuccess && dequeueIndex !== undefined,
+    staleTime: StaleTime.Default,
   });
 
   const {
     data: requiredConfirmationsCount,
     isLoading: isRequiredCountLoading,
     isError: isRequiredCountError,
-  } = useRequiredApproversCount(approversMultisigAddress, isApproversMultisigAddressSuccess);
+  } = useRequiredApproversCount(approversMultisigAddress);
 
   return {
     isLoading:
@@ -102,31 +67,123 @@ export function useProposalApprovers(proposalId: number) {
   };
 }
 
-function useRequiredApproversCount(
-  approversMultisigAddress: Address | undefined,
-  isApproversMultisigAddressSuccess: boolean,
+function useGovernanceApproverMultiSigAddress() {
+  const publicClient = usePublicClient();
+
+  return useQuery({
+    queryKey: ['GovernanceApproverMultiSigAddress', publicClient],
+    queryFn: () => fetchApproverMultiSigAddress(publicClient!),
+    enabled: !!publicClient,
+    staleTime: StaleTime.Long,
+  });
+}
+
+function useRequiredApproversCount(approversMultisigAddress: Address | undefined) {
+  const publicClient = usePublicClient();
+  return useQuery({
+    queryKey: ['GovernanceRequiredConfirmationsCount', publicClient, approversMultisigAddress],
+    queryFn: () => fetchRequiredConfirmationsCount(publicClient!, approversMultisigAddress!),
+    enabled: !!publicClient && !!approversMultisigAddress,
+    staleTime: StaleTime.Long,
+  });
+}
+
+type ParamsFetchApproversInfo = {
+  governanceApproverMultisigAddress: Address;
+  proposalId: bigint;
+  dequeueIndex: bigint;
+};
+
+/*
+ * @returns addresses of approvers that have confirmed the proposal
+ */
+async function fetchProposalApprovers(
+  publicClient: PublicClient,
+  { proposalId, dequeueIndex, governanceApproverMultisigAddress }: ParamsFetchApproversInfo,
 ) {
-  return useReadContract({
+  // first need to find transaction in multisig that corresponds to the proposal
+  const txIndexInMultisig = await fetchIndexOfTransactionForProposalInMultisig(publicClient, {
+    governanceApproverMultisigAddress,
+    proposalId,
+    dequeueIndex,
+  });
+
+  const confirmations = await publicClient.readContract({
+    address: governanceApproverMultisigAddress,
+    abi: multiSigABI,
+    functionName: 'getConfirmations',
+    args: [txIndexInMultisig !== -1 ? BigInt(txIndexInMultisig) : 0n],
+  });
+
+  return confirmations;
+}
+
+/*
+ * @param proposalId - id of the proposal
+ * @param dequeueIndex - index of the proposal in the queue
+ * @param governanceApproverMultisigAddress - address of the multisig that holds the approvers
+ * @returns index of transaction in multisig that corresponds to the proposal
+ */
+async function fetchIndexOfTransactionForProposalInMultisig(
+  publicClient: PublicClient,
+  { proposalId, dequeueIndex, governanceApproverMultisigAddress }: ParamsFetchApproversInfo,
+) {
+  // sadly the Multisig gives no other way to fetch a specfic transaction other than already
+  // knowing the index or iterating through all transactions and matching the calldata
+
+  const countOfMultisigTransactions = await publicClient.readContract({
+    address: governanceApproverMultisigAddress,
+    abi: multiSigABI,
+    functionName: 'getTransactionCount',
+    args: [true, true],
+  });
+
+  const allTransactionsInMultisig = await publicClient.multicall({
+    contracts: Array(Number(countOfMultisigTransactions ?? 0))
+      .fill(0)
+      .map((_, i) => ({
+        address: governanceApproverMultisigAddress,
+        abi: multiSigABI,
+        functionName: 'transactions',
+        args: [BigInt(i)],
+      })),
+  });
+
+  const approveTxData = encodeFunctionData({
+    abi: governanceABI,
+    functionName: 'approve',
+    args: [proposalId, dequeueIndex],
+  });
+
+  const indexOfTxToFindApproversOf = allTransactionsInMultisig.findIndex((query) => {
+    if (query.status === 'success') {
+      const [_destination, _value, data] = query.result as [string, bigint, string, boolean];
+      return data === approveTxData;
+    }
+    return false;
+  });
+  return indexOfTxToFindApproversOf;
+}
+
+async function fetchRequiredConfirmationsCount(
+  publicClient: PublicClient,
+  approversMultisigAddress: Address,
+) {
+  const result = await publicClient.readContract({
     address: approversMultisigAddress,
     abi: multiSigABI,
     functionName: 'required',
     args: [],
-    query: {
-      enabled: isApproversMultisigAddressSuccess,
-      staleTime: StaleTime.Long,
-    },
   });
+  return result;
 }
 
-function useGovernanceApproverMultiSigAddress(proposalId: number) {
-  return useReadContract({
+async function fetchApproverMultiSigAddress(publicClient: PublicClient) {
+  const result = await publicClient.readContract({
     address: Addresses.Governance,
     abi: governanceABI,
     functionName: 'approver',
     args: [],
-    query: {
-      enabled: proposalId !== undefined,
-      staleTime: StaleTime.Long,
-    },
   });
+  return result;
 }
