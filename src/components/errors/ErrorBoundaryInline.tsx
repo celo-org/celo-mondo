@@ -7,26 +7,25 @@ import ErrorIcon from 'src/images/icons/error-circle.svg';
 import { logger } from 'src/utils/logger';
 
 interface ErrorBoundaryState {
-  error: any;
-  errorInfo: any;
+  hasError: boolean;
 }
 
 export class ErrorBoundaryInline extends Component<any, ErrorBoundaryState> {
   constructor(props: any) {
     super(props);
-    this.state = { error: null, errorInfo: null };
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    this.setState({
-      error,
-      errorInfo,
-    });
-    logger.error('Error caught by error boundary', error, errorInfo);
+    logger.error('Error caught by inline error boundary', '\n', error, '\n', errorInfo);
   }
 
   render() {
-    const errorInfo = this.state.error || this.state.errorInfo;
+    const errorInfo = this.state.hasError;
     if (errorInfo) {
       return (
         <div className="flex max-w-sm flex-col items-center">
