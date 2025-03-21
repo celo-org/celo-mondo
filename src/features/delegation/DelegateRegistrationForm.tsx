@@ -6,6 +6,7 @@ import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSp
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { TextField } from 'src/components/input/TextField';
 import { Modal, useModal } from 'src/components/menus/Modal';
+import { delegateeRegistrationRequestToMetadata } from 'src/features/delegation/delegateeMetadata';
 import { useDelegatedPercent } from 'src/features/delegation/hooks/useDelegatedPercent';
 import { useIsSAFEWallet, useSignedData } from 'src/features/delegation/hooks/useSIgnedData';
 import {
@@ -93,19 +94,21 @@ export function DelegateRegistrationForm({
           setIsSubmitting(true);
           setIsSigning(true);
 
+          const registrationValues = {
+            ...values,
+            address: address!,
+            image: imageFile,
+          };
+
           if (isSAFE) {
-            openModal(values);
+            openModal(registrationValues);
             setIsSigning(false);
             setIsSubmitting(false);
             return;
           }
 
           try {
-            signature = await signForm({
-              ...values,
-              address: address!,
-              image: imageFile,
-            });
+            signature = await signForm(registrationValues);
           } catch (err) {
             setIsSubmitting(false);
 
@@ -320,15 +323,24 @@ function SafeModal({
         </p>
         <p className="mb-4">
           Please Follow{' '}
-          <a className="link" href="/docs/delegating-as-safe.md">
+          <a className="link" href={'/docs/delegating-as-safe.md'}>
             These Instructions to register
           </a>
         </p>
         <hr />
-        <h3 className="mb-4 mt-4 text-sm">
-          Your Data (note that this format differs slightly from the requirements)
-        </h3>
-        <pre>{JSON.stringify(values, null, 2)}</pre>
+        <h3 className="mb-4 mt-4 text-sm">Use the following JSON in your PR.</h3>
+        <pre className="bg-white p-2">
+          {isModalOpen && Object.prototype.hasOwnProperty.call(values, 'image')
+            ? JSON.stringify(
+                delegateeRegistrationRequestToMetadata(
+                  values as RegisterDelegateFormValues,
+                  new Date(),
+                ),
+                null,
+                2,
+              )
+            : null}
+        </pre>
         <br />
       </div>
     </Modal>
