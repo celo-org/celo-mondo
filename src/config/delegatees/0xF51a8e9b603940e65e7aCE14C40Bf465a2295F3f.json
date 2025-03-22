@@ -1,0 +1,18 @@
+{
+  "name": "College DAO",
+  "address": "0xF51a8e9b603940e65e7aCE14C40Bf465a2295F3f",
+  "logoUri": "/logos/delegatees/CollegeDAO.png",
+  "date": "2025-03-22",
+  "links": {
+    "website": "https://collegedao.io",
+    "twitter": "https://x.com/collegedao_hub"
+  },
+  "interests": [
+    "Blockchain",
+    "Education",
+    "Infrastructure",
+    "Community",
+    "Governance"
+  ],
+  "description": "College DAO is the largest university blockchain network at 130+ top universities and Ivy Leagues worldwide. We enable the most forward-thinking protocols to accelerate adoption, education, and community building in the university ecosystem across every touch point - from hackathons and events, to validator programs and a network of permanent on-campus hacker houses."
+}
