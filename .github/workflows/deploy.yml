@@ -1,6 +1,10 @@
 name: Automatic deployments
 
 on:
+  push:
+    branches: [shazarre/Automatic_deployments]
+  pull_request:
+    branches: [shazarre/Automatic_deployments]
   # schedule:
   #   - cron: '0 * * * *' # Runs every hour
   workflow_dispatch: # Allows manual triggering (temporary)
