@@ -1,6 +1,6 @@
 import { logger } from 'src/utils/logger';
 
-export const revalidate = 60 * 3;
+export const revalidate = 180;
 
 const URL_BASE = 'https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-';
 
