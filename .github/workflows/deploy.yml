@@ -1,6 +1,7 @@
 name: Automatic deployments
 
 on:
+  # For testing
   push:
     branches: [shazarre/Automatic_deployments]
   pull_request:
@@ -13,6 +14,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ['self-hosted', 'org']
+    permissions:
+      id-token: write
     steps:
     - name: Akeyless Get Secrets
       id: get_auth_token
