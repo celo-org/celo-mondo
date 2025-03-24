@@ -16,6 +16,7 @@ jobs:
     runs-on: ['self-hosted', 'org']
     permissions:
       id-token: write
+      contents: read
     steps:
     - name: Akeyless Get Secrets
       id: get_auth_token
