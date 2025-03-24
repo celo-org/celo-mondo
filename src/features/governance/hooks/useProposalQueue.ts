@@ -54,6 +54,23 @@ export function useProposalDequeue() {
   };
 }
 
+export function useProposalDequeueIndex(proposalId: number) {
+  const { dequeue, isError, isLoading } = useProposalDequeue();
+  if (!dequeue) {
+    return {
+      isError,
+      isLoading,
+    };
+  }
+  const proposalIndex = dequeue.indexOf(proposalId);
+
+  return {
+    index: BigInt(proposalIndex),
+    isError,
+    isLoading,
+  };
+}
+
 // Checks if the queue has proposals that are ready to be dequeued
 // This is important because currently, upvote txs don't work in this scenario
 // because the act of upvoting would trigger a dequeue
