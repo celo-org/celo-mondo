@@ -3,9 +3,9 @@ name: Automatic deployments
 on:
   # For testing
   push:
-    branches: [shazarre/Automatic_deployments]
+    branches: [deployment-test]
   pull_request:
-    branches: [shazarre/Automatic_deployments]
+    branches: [deployment-test]
   # schedule:
   #   - cron: '0 * * * *' # Runs every hour
   workflow_dispatch: # Allows manual triggering (temporary)
