@@ -112,8 +112,67 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     group.eligible = true;
     group.capacity = getValidatorGroupCapacity(group, validatorAddrs.length, totalLocked);
   }
+  // note this modifies the groups object
+  await setVotesForIneligibleGroups(publicClient, groups);
 
   return { groups: Object.values(groups), addressToGroup: groups, totalLocked, totalVotes };
+}
+
+/*
+   Gets votes for groups that are ineligible as they could still be elected and could still have votes cast for them
+  */
+async function setVotesForIneligibleGroups(
+  publicClient: PublicClient,
+  groups: AddressTo<ValidatorGroup>,
+) {
+  const ineligibleGroups = Object.values(groups)
+    .filter((g) => g.votes === 0n)
+    .filter((g) => g.eligible === false);
+  // .filter((g) => electedSignersSet.union(new Set(Object.keys(g.members))).size > 0);
+
+  if (ineligibleGroups.length > 0) {
+    const activeVotesIneligibleGroups = await fetchActiveVotesForGroups(
+      publicClient,
+      ineligibleGroups,
+    );
+    mergeVotesWithGroups(ineligibleGroups, activeVotesIneligibleGroups, groups);
+  }
+}
+// note this modifies the original groups object
+function mergeVotesWithGroups(
+  ineligibleGroupsWhichStillHaveElectedMembers: ValidatorGroup[],
+  activeVotesIneligibleGroups: (bigint | undefined)[],
+  groups: AddressTo<ValidatorGroup>,
+) {
+  if (ineligibleGroupsWhichStillHaveElectedMembers.length !== activeVotesIneligibleGroups.length) {
+    logger.error('length mismatch between groups and active votes');
+    return;
+  }
+
+  ineligibleGroupsWhichStillHaveElectedMembers.forEach((group, i) => {
+    const votes = activeVotesIneligibleGroups[i];
+    if (typeof votes !== 'bigint') {
+      return;
+    }
+    // add the votes for groups that are ineligible but still have votes
+    // note this modifies the original groups object
+    groups[group.address].votes = votes;
+  });
+}
+
+async function fetchActiveVotesForGroups(publicClient: PublicClient, groups: ValidatorGroup[]) {
+  const votes = await publicClient.multicall({
+    contracts: groups.map((group) => {
+      return {
+        address: Addresses.Election,
+        abi: electionABI,
+        functionName: 'getActiveVotesForGroup',
+        args: [group.address],
+      } as const;
+    }),
+  });
+  // do NOT filter this we need the length to be the same as the original groups
+  return votes.map((entry) => entry.result);
 }
 
 async function fetchValidatorAddresses(publicClient: PublicClient) {
