@@ -1,14 +1,8 @@
 name: Automatic deployments
 
 on:
-  # For testing
-  push:
-    branches: [deployment-test]
-  pull_request:
-    branches: [deployment-test]
-  # schedule:
-  #   - cron: '0 * * * *' # Runs every hour
-  workflow_dispatch: # Allows manual triggering (temporary)
+  schedule:
+    - cron: '0 11 * * 1-5' # Runs at 11 am UTC, Monday to Friday
 
 jobs:
   deploy:
@@ -30,4 +24,3 @@ jobs:
         DEPLOYMENT_WEBHOOK_URL: ${{ env.TOKEN_VAR }}
       run: |
         curl -s -o /dev/null -X GET "$DEPLOYMENT_WEBHOOK_URL"
-  
