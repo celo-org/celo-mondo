@@ -154,8 +154,14 @@ async function fetchGithubDirectory(
 
 async function fetchGithubFile(url: string): Promise<string | null> {
   try {
+    const headers = new Headers();
+    if (process.env.NEXT_PUBLIC_GITHUB_PAT) {
+      headers.append('Authorization', process.env.NEXT_PUBLIC_GITHUB_PAT);
+    }
     logger.debug('Fetching github file', url);
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers,
+    });
     if (!response.ok) throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
     return await response.text();
   } catch (error) {
