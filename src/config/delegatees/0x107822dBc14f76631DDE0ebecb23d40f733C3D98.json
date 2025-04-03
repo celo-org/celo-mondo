@@ -1,0 +1,17 @@
+{
+  "name": "TUM Blockchain Club",
+  "address": "0x107822dBc14f76631DDE0ebecb23d40f733C3D98",
+  "logoUri": "/logos/delegatees/0x107822dBc14f76631DDE0ebecb23d40f733C3D98.png",
+  "date": "2025-03-30",
+  "links": {
+    "website": "https://www.tum-blockchain.com/",
+    "twitter": "https://x.com/tbc_munich"
+  },
+  "interests": [
+    "Blockchain",
+    "Education",
+    "Community",
+    "Governance"
+  ],
+  "description": "Leading student-run Blockchain Club in Germany"
+}
