@@ -83,7 +83,7 @@ const securityHeaders = [
 module.exports = {
   webpack: (config, { isServer }) => {
     config.externals = [...config.externals, 'pino-pretty'];
-    if (isServer) {
+    if (isServer && process.env.NODE_ENV === 'production') {
       config.devtool = 'source-map';
     }
     return config;

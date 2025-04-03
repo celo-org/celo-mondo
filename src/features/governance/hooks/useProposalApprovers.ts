@@ -108,13 +108,16 @@ async function fetchProposalApprovers(
     dequeueIndex,
   });
 
+  if (txIndexInMultisig === -1) {
+    return [];
+  }
+
   const confirmations = await publicClient.readContract({
     address: governanceApproverMultisigAddress,
     abi: multiSigABI,
     functionName: 'getConfirmations',
-    args: [txIndexInMultisig !== -1 ? BigInt(txIndexInMultisig) : 0n],
+    args: [BigInt(txIndexInMultisig)],
   });
-
   return confirmations;
 }
 
