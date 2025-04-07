@@ -128,7 +128,6 @@ async function setVotesForIneligibleGroups(
   const ineligibleGroups = Object.values(groups)
     .filter((g) => g.votes === 0n)
     .filter((g) => g.eligible === false);
-  // .filter((g) => electedSignersSet.union(new Set(Object.keys(g.members))).size > 0);
 
   if (ineligibleGroups.length > 0) {
     const activeVotesIneligibleGroups = await fetchActiveVotesForGroups(
