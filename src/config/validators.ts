@@ -281,9 +281,9 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     },
   },
   '0x70FC0b021dFdBb9A106D1Ed8F35f59D3f23eCb7B': {
-    logo: '/logos/validators/vladiator-labs.jpg',
+    logo: '/logos/validators/atalma-io.jpg',
     links: {
-      twitter: 'https://twitter.com/vladiatorlabs',
+      twitter: 'https://twitter.com/atalma_io',
     },
   },
   '0xc24baeac0Fd189637112B7e33d22FfF2730aF993': {
