@@ -2,7 +2,8 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
@@ -203,20 +204,26 @@ function TableTabs({
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
 }) {
-  const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
+  const router = useRouter();
+  const params = useSearchParams();
+  const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
+  const initialTab = (params.get('tab') as (typeof tabs)[number]) || tabs[0];
+  const [tab, setTab] = useState<(typeof tabs)[number]>(initialTab);
+
+  useEffect(() => {
+    if (params.get('tab') !== tab) {
+      router.push('?tab=' + tab);
+    }
+  }, [params, router, tab]);
 
   return (
     <div className="pt-2">
       <div className="flex space-x-10 border-b border-taupe-300 pb-2">
-        <TabHeaderButton isActive={tab === 'stakes'} onClick={() => setTab('stakes')}>
-          <span className="text-sm">Stakes</span>
-        </TabHeaderButton>
-        <TabHeaderButton isActive={tab === 'rewards'} onClick={() => setTab('rewards')}>
-          <span className="text-sm">Rewards</span>
-        </TabHeaderButton>
-        <TabHeaderButton isActive={tab === 'delegations'} onClick={() => setTab('delegations')}>
-          <span className="text-sm">Delegations</span>
-        </TabHeaderButton>
+        {tabs.map((tabName) => (
+          <TabHeaderButton key={tabName} isActive={tab === tabName} onClick={() => setTab(tabName)}>
+            <span className="text-sm capitalize">{tabName}</span>
+          </TabHeaderButton>
+        ))}
       </div>
       {tab === 'stakes' && (
         <ActiveStakesTable
