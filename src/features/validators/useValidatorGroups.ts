@@ -113,31 +113,46 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     group.capacity = getValidatorGroupCapacity(group, validatorAddrs.length, totalLocked);
   }
   // note this modifies the groups object
-  await setVotesForIneligibleGroups(publicClient, groups);
+  const groupsWithIneligibleVotes = await setVotesForIneligibleGroups(publicClient, groups);
 
-  return { groups: Object.values(groups), addressToGroup: groups, totalLocked, totalVotes };
+  return { groups: groupsWithIneligibleVotes, addressToGroup: groups, totalLocked, totalVotes };
 }
 
 /*
    Gets votes for groups that are ineligible as they could still be elected and could still have votes cast for them
+   @returns array of all groups. 
   */
 async function setVotesForIneligibleGroups(
   publicClient: PublicClient,
   groups: AddressTo<ValidatorGroup>,
-) {
-  const ineligibleGroups = Object.values(groups)
+): Promise<ValidatorGroup[]> {
+  const groupsArray = Object.values(groups);
+  const ineligibleGroups = groupsArray
     .filter((g) => g.votes === 0n)
     .filter((g) => g.eligible === false);
 
-  if (ineligibleGroups.length > 0) {
-    const activeVotesIneligibleGroups = await fetchActiveVotesForGroups(
-      publicClient,
-      ineligibleGroups,
-    );
-    mergeVotesWithGroups(ineligibleGroups, activeVotesIneligibleGroups, groups);
+  if (ineligibleGroups.length === 0) {
+    return groupsArray;
   }
+  const activeVotesIneligibleGroups = await fetchActiveVotesForGroups(
+    publicClient,
+    ineligibleGroups,
+  );
+  const modifiedGroups = mergeVotesWithGroups(
+    ineligibleGroups,
+    activeVotesIneligibleGroups,
+    groups,
+  );
+
+  return Object.values(modifiedGroups);
 }
-// note this modifies the original groups object
+/*
+  Merges the votes for ineligible groups into the groups object
+  @param ineligibleGroupsWhichStillHaveElectedMembers - array of groups that are ineligible but still have votes
+  @param activeVotesIneligibleGroups - array of votes for the ineligible groups
+  @param groups - object of all groups
+  @returns object of all groups with votes for ineligible groups merged in
+*/
 function mergeVotesWithGroups(
   ineligibleGroupsWhichStillHaveElectedMembers: ValidatorGroup[],
   activeVotesIneligibleGroups: (bigint | undefined)[],
@@ -145,18 +160,18 @@ function mergeVotesWithGroups(
 ) {
   if (ineligibleGroupsWhichStillHaveElectedMembers.length !== activeVotesIneligibleGroups.length) {
     logger.error('length mismatch between groups and active votes');
-    return;
+    return groups;
   }
-
+  const groupsAfterUpdates = { ...groups };
   ineligibleGroupsWhichStillHaveElectedMembers.forEach((group, i) => {
     const votes = activeVotesIneligibleGroups[i];
-    if (typeof votes !== 'bigint') {
-      return;
+    if (typeof votes === 'bigint') {
+      // add the votes for groups that are ineligible but still have votes
+      // note this modifies the original groups object
+      groupsAfterUpdates[group.address].votes = votes;
     }
-    // add the votes for groups that are ineligible but still have votes
-    // note this modifies the original groups object
-    groups[group.address].votes = votes;
   });
+  return groupsAfterUpdates;
 }
 
 async function fetchActiveVotesForGroups(publicClient: PublicClient, groups: ValidatorGroup[]) {
