@@ -112,7 +112,6 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     group.eligible = true;
     group.capacity = getValidatorGroupCapacity(group, validatorAddrs.length, totalLocked);
   }
-  // note this modifies the groups object
   const groupsWithIneligibleVotes = await setVotesForIneligibleGroups(publicClient, groups);
 
   return { groups: groupsWithIneligibleVotes, addressToGroup: groups, totalLocked, totalVotes };
