@@ -13,6 +13,7 @@ import { DelegationsTable } from 'src/features/delegation/components/Delegations
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { Delegatee, DelegationAmount } from 'src/features/delegation/types';
+import { ProposalVotesHistoryTable } from 'src/features/governance/components/ProposalVotesHistoryTable';
 import { LockActionType, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getTotalLockedCelo, getTotalUnlockedCelo } from 'src/features/locking/utils';
@@ -242,6 +243,7 @@ function TableTabs({
           addressToDelegatee={addressToDelegatee}
         />
       )}
+      {tab === 'history' && <ProposalVotesHistoryTable />}
     </div>
   );
 }
