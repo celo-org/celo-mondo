@@ -2,8 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
@@ -34,6 +32,7 @@ import LockIcon from 'src/images/icons/lock.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { usePageInvariant } from 'src/utils/navigation';
+import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
 export default function Page() {
@@ -205,23 +204,18 @@ function TableTabs({
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
 }) {
-  const router = useRouter();
-  const params = useSearchParams();
   const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
-  const initialTab = (params.get('tab') as (typeof tabs)[number]) || tabs[0];
-  const [tab, setTab] = useState<(typeof tabs)[number]>(initialTab);
-
-  useEffect(() => {
-    if (params.get('tab') !== tab) {
-      router.push('?tab=' + tab);
-    }
-  }, [params, router, tab]);
+  const { tab, onTabChange } = useTabs<typeof tabs>(tabs[0]);
 
   return (
     <div className="pt-2">
       <div className="flex space-x-10 border-b border-taupe-300 pb-2">
         {tabs.map((tabName) => (
-          <TabHeaderButton key={tabName} isActive={tab === tabName} onClick={() => setTab(tabName)}>
+          <TabHeaderButton
+            key={tabName}
+            isActive={tab === tabName}
+            onClick={() => onTabChange(tabName)}
+          >
             <span className="text-sm capitalize">{tabName}</span>
           </TabHeaderButton>
         ))}

@@ -22,7 +22,7 @@ export function ProposalVotesHistoryTable() {
     return (
       <HeaderAndSubheader
         header="No history available"
-        subHeader={`You don’t currently have any recorded governance votes with the logged in address. Delegated votes won't show.`}
+        subHeader={`You don’t currently have any recorded governance votes with the connected account. Delegated votes won't show.`}
         className="my-10"
       >
         <Link href="/governance">
