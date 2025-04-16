@@ -1,14 +1,11 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
-export default function useTabs<
-  Tabs extends readonly string[],
-  Tab extends Tabs[number] = Tabs[number],
->(defaultTab: Tab) {
+export default function useTabs<Tab extends string>(defaultTab: Tab) {
   const router = useRouter();
   const params = useSearchParams();
   const initialTab = (params?.get('tab') as Tab) || defaultTab;
-  const [tab, setTab] = useState<Tabs[number]>(initialTab);
+  const [tab, setTab] = useState<Tab>(initialTab);
 
   const onTabChange = useCallback(
     (tab: Tab) => {

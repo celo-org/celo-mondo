@@ -205,7 +205,7 @@ function TableTabs({
   activateStake: (g: Address) => void;
 }) {
   const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
-  const { tab, onTabChange } = useTabs<typeof tabs>(tabs[0]);
+  const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
     <div className="pt-2">
