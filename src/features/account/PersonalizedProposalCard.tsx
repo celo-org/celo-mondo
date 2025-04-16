@@ -12,11 +12,15 @@ export function PersonalizedProposalCard({
   className,
   accountVotes,
 }: {
-  propData: MergedProposalData;
+  propData?: MergedProposalData;
   isCompact?: boolean;
   className?: string;
   accountVotes: VoteAmounts;
 }) {
+  if (!propData) {
+    return null;
+  }
+
   const { id, metadata } = propData;
   const { title, cgp } = metadata || {};
 

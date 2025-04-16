@@ -38,7 +38,7 @@ export function ProposalVotesHistoryTable() {
         .sort(([a], [b]) => parseInt(b) - parseInt(a))
         .map(([id, votes]) => (
           <PersonalizedProposalCard
-            propData={proposals!.find((x) => x.id === parseInt(id, 10))!}
+            propData={proposals?.find((x) => x.id === parseInt(id, 10))}
             key={id}
             accountVotes={votes}
             className="border-b-[1px] border-taupe-300 pb-2"
