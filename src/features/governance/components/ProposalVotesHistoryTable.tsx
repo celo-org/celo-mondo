@@ -13,7 +13,6 @@ export function ProposalVotesHistoryTable() {
   const { proposalToVotes, isLoading: isLoadingHistory } = useDelegateeHistory(account.address!);
   const { proposals, isLoading: isLoadingProposals } = useGovernanceProposals();
   const isLoading = isLoadingHistory || isLoadingProposals;
-  console.log(proposals);
 
   if (isLoading) {
     return <FullWidthSpinner>Loading historical data</FullWidthSpinner>;
