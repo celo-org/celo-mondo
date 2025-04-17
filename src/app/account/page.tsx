@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
@@ -12,6 +11,7 @@ import { DelegationsTable } from 'src/features/delegation/components/Delegations
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { Delegatee, DelegationAmount } from 'src/features/delegation/types';
+import { ProposalVotesHistoryTable } from 'src/features/governance/components/ProposalVotesHistoryTable';
 import { LockActionType, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getTotalLockedCelo, getTotalUnlockedCelo } from 'src/features/locking/utils';
@@ -32,6 +32,7 @@ import LockIcon from 'src/images/icons/lock.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { usePageInvariant } from 'src/utils/navigation';
+import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
 export default function Page() {
@@ -203,20 +204,21 @@ function TableTabs({
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
 }) {
-  const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
+  const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
+  const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
     <div className="pt-2">
       <div className="flex space-x-10 border-b border-taupe-300 pb-2">
-        <TabHeaderButton isActive={tab === 'stakes'} onClick={() => setTab('stakes')}>
-          <span className="text-sm">Stakes</span>
-        </TabHeaderButton>
-        <TabHeaderButton isActive={tab === 'rewards'} onClick={() => setTab('rewards')}>
-          <span className="text-sm">Rewards</span>
-        </TabHeaderButton>
-        <TabHeaderButton isActive={tab === 'delegations'} onClick={() => setTab('delegations')}>
-          <span className="text-sm">Delegations</span>
-        </TabHeaderButton>
+        {tabs.map((tabName) => (
+          <TabHeaderButton
+            key={tabName}
+            isActive={tab === tabName}
+            onClick={() => onTabChange(tabName)}
+          >
+            <span className="text-sm capitalize">{tabName}</span>
+          </TabHeaderButton>
+        ))}
       </div>
       {tab === 'stakes' && (
         <ActiveStakesTable
@@ -235,6 +237,7 @@ function TableTabs({
           addressToDelegatee={addressToDelegatee}
         />
       )}
+      {tab === 'history' && <ProposalVotesHistoryTable />}
     </div>
   );
 }

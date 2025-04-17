@@ -1,7 +1,7 @@
 'use client';
 
 import BigNumber from 'bignumber.js';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 import { toast } from 'react-toastify';
 import { Spinner } from 'src/components/animation/Spinner';
@@ -43,6 +43,7 @@ import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
+import useTabs from 'src/utils/useTabs';
 import { isAddress } from 'viem';
 
 export default function Page({ address }: { address: Address }) {
@@ -234,21 +235,21 @@ function GovernanceStatBox({ group }: { group?: ValidatorGroup }) {
 // }
 
 function DetailsSection({ group }: { group?: ValidatorGroup }) {
-  const [tab, setTab] = useState<'members' | 'stakers'>('members');
+  const { tab, onTabChange } = useTabs<'members' | 'stakers'>('members');
 
   return (
     <div>
       <div className="flex space-x-10 border-b border-taupe-300 pb-2">
         <TabHeaderButton
           isActive={tab === 'members'}
-          onClick={() => setTab('members')}
+          onClick={() => onTabChange('members')}
           count={objLength(group?.members || {})}
         >
           <span className="text-sm">Group members</span>
         </TabHeaderButton>
         <TabHeaderButton
           isActive={tab === 'stakers'}
-          onClick={() => setTab('stakers')}
+          onClick={() => onTabChange('stakers')}
           count={getStakersHeaderCount(group)}
         >
           <span className="text-sm">Stakers</span>
