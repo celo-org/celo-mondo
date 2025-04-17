@@ -33,12 +33,14 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
     let minVotes = BigInt(1e40);
     let numValidators = 0;
     for (const g of groups) {
+      if (!g.eligible) continue;
       numValidators += objLength(g.members);
       const numElectedMembers = Object.values(g.members).filter(
         (m) => m.status === ValidatorStatus.Elected,
       ).length;
-      if (!numElectedMembers) continue;
+      if (!numElectedMembers || g.votes === 0n) continue;
       const votesPerMember = g.votes / BigInt(numElectedMembers);
+
       minVotes = bigIntMin(minVotes, votesPerMember);
     }
     return { minVotes, numValidators };

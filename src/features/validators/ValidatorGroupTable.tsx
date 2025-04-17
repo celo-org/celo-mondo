@@ -30,9 +30,10 @@ import { bigIntSum, mean, sum } from 'src/utils/math';
 const NUM_COLLAPSED_GROUPS = 9;
 const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
 enum Filter {
-  All = 'All',
+  All = 'All Eligible',
   Elected = 'Elected',
   Unelected = 'Unelected',
+  Ineligible = 'Ineligible',
 }
 
 export function ValidatorGroupTable({
@@ -75,9 +76,10 @@ export function ValidatorGroupTable({
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
     return {
-      [Filter.All]: groups.length,
+      [Filter.All]: groups.filter((g) => g.eligible).length,
       [Filter.Elected]: groups.filter((g) => isElected(g)).length,
       [Filter.Unelected]: groups.filter((g) => !isElected(g)).length,
+      [Filter.Ineligible]: groups.filter((g) => !g.eligible).length,
     };
   }, [groups]);
 
@@ -340,7 +342,8 @@ function useTableRows({
       .filter((g) => {
         if (filter === Filter.Elected) return isElected(g);
         else if (filter === Filter.Unelected) return !isElected(g);
-        else return true;
+        else if (filter === Filter.Ineligible) return !g.eligible;
+        else return g.eligible;
       })
       .filter(
         (g) =>
