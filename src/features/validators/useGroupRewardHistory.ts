@@ -68,6 +68,9 @@ async function fetchValidatorGroupRewardHistory(
   });
   const infuraBatchClient = createPublicClient({
     chain: config.chain,
+    batch: {
+      multicall: true,
+    },
     transport: config.chain.testnet ? http() : infuraTransport,
   });
 
