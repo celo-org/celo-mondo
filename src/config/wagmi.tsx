@@ -42,6 +42,7 @@ const connectors = connectorsForWallets(
 export const wagmiConfig = createConfig({
   chains: [config.chain],
   connectors,
+  syncConnectedChain: false, // only have 1 chain per deployment
   transports: {
     [celo.id]: fallback([http(config.chain.rpcUrls.default.http[0]), http(infuraRpcUrl)], {
       rank: true,

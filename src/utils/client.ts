@@ -5,6 +5,9 @@ export const createCeloPublicClient = () =>
   createPublicClient({
     chain: config.chain,
     transport: config.chain.testnet ? http() : http(fornoRpcUrl),
+    batch: {
+      multicall: true,
+    },
   });
 
 export const createCeloWalletClient = (account: Account) =>
