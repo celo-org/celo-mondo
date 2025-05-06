@@ -38,6 +38,8 @@ export function TransactionFlow<FormDefaults extends {}>({
     signingForAccount &&
     signingForAccount !== address;
 
+  console.info(FormComponent.name, 'signingForAccount', signingForAccount, address);
+
   const votingPower = useGovernanceVotingPower(address);
 
   const hasVotingPower =

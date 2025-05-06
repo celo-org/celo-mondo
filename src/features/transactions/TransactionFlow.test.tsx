@@ -136,7 +136,7 @@ describe('<TransactionFlow />', () => {
     describe('as a vote signer', () => {
       // Should not make "an exception" for any other form type than delegation
       // although in the future we should allow it
-      test('does renders <VoteForm />', async () => {
+      test('renders <VoteForm />', async () => {
         setupHooks({ voteSignerForAddress: TEST_ADDRESSES[1] });
 
         const flow = render(
@@ -198,6 +198,12 @@ const setupHooks = (options?: SetupHooksOptions) => {
     isRegistered: options?.isRegistered === true || false,
   } as any);
 
+  vi.spyOn(hooks, 'useIsAccount').mockReturnValue({
+    isError: false,
+    isLoading: false,
+    data: options?.isRegistered === true || false,
+  } as any);
+
   vi.spyOn(hooks, 'useLockedBalance').mockReturnValue({
     lockedBalance: options?.lockedGoldBalance || 0n,
     isLoading: false,
@@ -205,6 +211,6 @@ const setupHooks = (options?: SetupHooksOptions) => {
 
   vi.spyOn(hooks, 'useVoteSignerToAccount').mockReturnValue({
     isLoading: false,
-    voteSigner: options?.isRegistered === true ? TEST_ADDRESSES[0] : options?.voteSignerForAddress,
+    signingFor: options?.isRegistered === true ? TEST_ADDRESSES[0] : options?.voteSignerForAddress,
   } as any);
 };
