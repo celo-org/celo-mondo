@@ -4,6 +4,7 @@ import { gfmTable, gfmTableHtml } from 'micromark-extension-gfm-table';
 import {
   MetadataStatusToStage,
   ProposalMetadata,
+  ProposalStage,
   RawProposalMetadataSchema,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
@@ -57,7 +58,7 @@ export async function fetchProposalsFromRepo(
 
     // If it's in the cache, use it
     const cachedProposal = cache.find((p) => p.cgp === cgpNumber);
-    if (cachedProposal) {
+    if (cachedProposal && cachedProposal.stage >= ProposalStage.Executed) {
       validProposals.push(cachedProposal);
       continue;
     }
