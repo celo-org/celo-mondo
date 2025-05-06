@@ -2,11 +2,14 @@ import { render, waitFor } from '@testing-library/react';
 import * as hooks from 'src/features/account/hooks';
 import { DelegationForm } from 'src/features/delegation/DelegationForm';
 import * as useDelegatees from 'src/features/delegation/hooks/useDelegatees';
+import * as useValidatorGroups from 'src/features/validators/useValidatorGroups';
+
 import * as useDelegationBalances from 'src/features/delegation/hooks/useDelegationBalances';
 import * as useGovernanceProposals from 'src/features/governance/hooks/useGovernanceProposals';
 import * as votingHooks from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import * as useLockedStatus from 'src/features/locking/useLockedStatus';
+import { StakeForm } from 'src/features/staking/StakeForm';
 import * as useStakingBalances from 'src/features/staking/useStakingBalances';
 import { TransactionFlow } from 'src/features/transactions/TransactionFlow';
 import * as useWriteContractWithReceipt from 'src/features/transactions/useWriteContractWithReceipt';
@@ -158,6 +161,48 @@ describe('<TransactionFlow />', () => {
       });
     });
   });
+
+  describe('<StakeForm/>', () => {
+    describe('for registered account', () => {
+      test('renders <LockForm /> for account with no locked balance', async () => {
+        setupHooks({ isRegistered: true });
+
+        const flow = render(
+          <TransactionFlow header="Test header" FormComponent={StakeForm} closeModal={() => {}} />,
+        );
+
+        await waitFor(async () => {
+          expect(await flow.findByTestId('lock-form')).toBeTruthy();
+        });
+      });
+
+      test('renders <StakeForm /> for account with some locked balance', async () => {
+        setupHooks({ isRegistered: true, lockedGoldBalance: 1n });
+
+        const flow = render(
+          <TransactionFlow header="Election" FormComponent={StakeForm} closeModal={() => {}} />,
+        );
+
+        await waitFor(async () => expect(await flow.findByTestId('stake-form')).toBeTruthy());
+      });
+    });
+    describe('for voteSigner', () => {
+      test('renders <StakeForm /> for account with some locked balance', async () => {
+        setupHooks({
+          isRegistered: false,
+          lockedGoldBalance: 0n,
+          votingPower: 2n,
+          voteSignerForAddress: TEST_ADDRESSES[1],
+        });
+
+        const flow = render(
+          <TransactionFlow header="Election" FormComponent={StakeForm} closeModal={() => {}} />,
+        );
+
+        await waitFor(async () => expect(await flow.findByTestId('stake-form')).toBeTruthy());
+      });
+    });
+  });
 });
 
 type SetupHooksOptions = {
@@ -185,6 +230,7 @@ const setupHooks = (options?: SetupHooksOptions) => {
   vi.spyOn(useStakingBalances, 'useStakingBalances').mockReturnValue({} as any);
   vi.spyOn(useGovernanceProposals, 'useGovernanceProposals').mockReturnValue({} as any);
   vi.spyOn(useGovernanceProposals, 'useGovernanceProposal').mockReturnValue({} as any);
+  vi.spyOn(useValidatorGroups, 'useValidatorGroups').mockReturnValue({} as any);
 
   vi.spyOn(votingHooks, 'useGovernanceVotingPower').mockReturnValue({
     isLoading: false,
