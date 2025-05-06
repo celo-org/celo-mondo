@@ -136,14 +136,14 @@ describe('<TransactionFlow />', () => {
     describe('as a vote signer', () => {
       // Should not make "an exception" for any other form type than delegation
       // although in the future we should allow it
-      test('does not render <VoteForm /> for a vote signer with no account', async () => {
+      test('does renders <VoteForm />', async () => {
         setupHooks({ voteSignerForAddress: TEST_ADDRESSES[1] });
 
         const flow = render(
           <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
         );
 
-        await waitFor(async () => expect(await flow.findByTestId('register-form')).toBeTruthy());
+        await waitFor(async () => expect(await flow.findByTestId('vote-form')).toBeTruthy());
       });
     });
     describe('as a account which has been delegated votes', () => {
@@ -203,7 +203,7 @@ const setupHooks = (options?: SetupHooksOptions) => {
     isLoading: false,
   } as any);
 
-  vi.spyOn(hooks, 'useVoteSigner').mockReturnValue({
+  vi.spyOn(hooks, 'useVoteSignerToAccount').mockReturnValue({
     isLoading: false,
     voteSigner: options?.isRegistered === true ? TEST_ADDRESSES[0] : options?.voteSignerForAddress,
   } as any);
