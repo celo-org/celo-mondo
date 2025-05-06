@@ -126,7 +126,7 @@ describe('mergeProposalsWithMetadata', () => {
     ]);
 
     const merged = mergeProposalsWithMetadata(proposalsChain, proposalsGH, ids);
-    expect(merged.length).toBe((await import('src/config/proposals.json')).default.length);
+    expect(merged.length).toBe(proposalsGH.length);
     merged.forEach((proposal) => {
       if (proposal.id === 196) {
         // mento
