@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { BALANCE_REFRESH_INTERVAL, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { eqAddress } from 'src/utils/addresses';
 import { isCel2 } from 'src/utils/is-cel2';
 import { isNullish } from 'src/utils/typeof';
 import { ReadContractErrorType } from 'viem';
@@ -92,7 +93,8 @@ export function useVoteSignerToAccount(address: Address | undefined) {
     },
   });
   return {
-    signingFor: isRegistered.data ? address : account,
+    signingFor: isRegistered.data ? address : account || address,
+    isVoteSigner: account && address && !eqAddress(account, address),
     isError,
     isLoading,
     isFetched: isFetched,

@@ -63,7 +63,7 @@ function DropdownContent({
   disconnect: () => any;
   close: () => void;
 }) {
-  const { signingFor } = useVoteSignerToAccount(address);
+  const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(address);
   const { votingPower } = useGovernanceVotingPower(signingFor);
   const { lockedBalance } = useLockedBalance(signingFor);
@@ -74,8 +74,6 @@ function DropdownContent({
 
   const onClickCopy = useCopyHandler(address);
 
-  const isAVoteSigner = signingFor && signingFor !== address;
-
   return (
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">
       <div className="flex flex-col items-center">
@@ -84,11 +82,11 @@ function DropdownContent({
           {shortenAddress(address)}
         </button>
       </div>
-      {isAVoteSigner ? (
+      {isVoteSigner ? (
         <div className="flex flex-col items-center">
           <label className="font-italic text-sm italic">Votes on Behalf of </label>
           <span className="text-sm">
-            <ShortAddress address={signingFor} />
+            <ShortAddress address={signingFor!} />
           </span>
         </div>
       ) : (
@@ -101,25 +99,25 @@ function DropdownContent({
       <div className="flex w-full flex-col justify-stretch divide-y divide-taupe-300 border border-taupe-300">
         <ValueRow
           label="Wallet Balance"
-          address={isAVoteSigner ? address : undefined}
+          address={isVoteSigner ? address : undefined}
           valueWei={walletBalance}
         />
         <ValueRow
-          isHighlighted={isAVoteSigner}
+          isHighlighted={isVoteSigner}
           label="Voting Power"
-          address={isAVoteSigner ? signingFor : undefined}
+          address={isVoteSigner ? signingFor : undefined}
           valueWei={votingPower}
         />
         <ValueRow
-          isHighlighted={isAVoteSigner}
+          isHighlighted={isVoteSigner}
           label="Total Locked"
-          address={isAVoteSigner ? signingFor : undefined}
+          address={isVoteSigner ? signingFor : undefined}
           valueWei={lockedBalance}
         />
         <ValueRow
-          isHighlighted={isAVoteSigner}
+          isHighlighted={isVoteSigner}
           label="Total Earned"
-          address={isAVoteSigner ? signingFor : undefined}
+          address={isVoteSigner ? signingFor : undefined}
           value={totalRewards}
         />
       </div>
