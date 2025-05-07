@@ -1,8 +1,7 @@
 import { FunctionComponent, ReactNode, useCallback, useState } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
-import { useAccountDetails, useLockedBalance, useVoteSigner } from 'src/features/account/hooks';
-import { DelegationForm } from 'src/features/delegation/DelegationForm';
+import { useIsAccount, useLockedBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
@@ -14,7 +13,7 @@ import { useAccount } from 'wagmi';
 export interface TransactionFlowProps<FormDefaults extends {} = {}> {
   header: string;
   FormComponent: FunctionComponent<{ onConfirmed: OnConfirmedFn; defaultFormValues: FormDefaults }>;
-  requiresLockedFunds?: boolean;
+  requiresLockedFundsOrVoteSigner?: boolean;
   defaultFormValues?: FormDefaults;
 }
 
@@ -23,17 +22,17 @@ export interface TransactionFlowProps<FormDefaults extends {} = {}> {
 export function TransactionFlow<FormDefaults extends {}>({
   header,
   FormComponent,
-  requiresLockedFunds = true,
+  requiresLockedFundsOrVoteSigner = true,
   defaultFormValues = {} as FormDefaults,
   closeModal,
 }: TransactionFlowProps<FormDefaults> & { closeModal: () => void }) {
   const { address } = useAccount();
-  const { isRegistered, refetch: refetchAccountDetails } = useAccountDetails(address);
-  const { voteSigner, isLoading: isVoteSignerLoading } = useVoteSigner(address, isRegistered);
+  const { data: isRegistered, refetch: refetchAccountDetails } = useIsAccount(address);
+  const { signingFor: signingForAccount, isLoading: isAccountLoading } =
+    useVoteSignerToAccount(address);
   const { lockedBalance } = useLockedBalance(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
-  const isDelegatingAsVoteSigner =
-    FormComponent.name === DelegationForm.name && voteSigner && voteSigner !== address;
+  const isVoteSigner = Boolean(signingForAccount && signingForAccount !== address);
 
   const votingPower = useGovernanceVotingPower(address);
 
@@ -48,16 +47,16 @@ export function TransactionFlow<FormDefaults extends {}>({
     !address ||
     isNullish(lockedBalance) ||
     isNullish(isRegistered) ||
-    isVoteSignerLoading ||
+    isAccountLoading ||
     votingPower.isLoading
   ) {
     Component = <SpinnerWithLabel className="py-20">Loading account data...</SpinnerWithLabel>;
-  } else if (!isRegistered && !isDelegatingAsVoteSigner) {
+  } else if (!isRegistered && !isVoteSigner) {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
   } else if (
     lockedBalance <= 0n &&
-    requiresLockedFunds &&
-    !isDelegatingAsVoteSigner &&
+    requiresLockedFundsOrVoteSigner &&
+    !isVoteSigner &&
     !willVoteAndHasVotingPower
   ) {
     Component = <LockForm showTip={true} />;

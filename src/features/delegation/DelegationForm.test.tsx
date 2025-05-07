@@ -144,7 +144,7 @@ const setupHooks = (options?: SetupHooksOptions) => {
     isLoading: false,
   } as any);
 
-  vi.spyOn(hooks, 'useVoteSigner').mockReturnValue({
+  vi.spyOn(hooks, 'useVoteSignerToAccount').mockReturnValue({
     isLoading: false,
     voteSigner: options?.isRegistered === true ? TEST_ADDRESSES[0] : options?.voteSignerForAddress,
   } as any);

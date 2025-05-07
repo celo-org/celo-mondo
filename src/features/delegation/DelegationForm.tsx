@@ -5,7 +5,7 @@ import { RadioField } from 'src/components/input/RadioField';
 import { RangeField } from 'src/components/input/RangeField';
 import { TextField } from 'src/components/input/TextField';
 import { MAX_NUM_DELEGATEES, ZERO_ADDRESS } from 'src/config/consts';
-import { useAccountDetails, useVoteSigner } from 'src/features/account/hooks';
+import { useAccountDetails, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -43,11 +43,11 @@ export function DelegationForm({
 }) {
   const { address } = useAccount();
   const { addressToDelegatee } = useDelegatees();
-  const { isValidator, isValidatorGroup, isRegistered } = useAccountDetails(address);
-  const { voteSigner } = useVoteSigner(address, isRegistered);
-  const { delegations, refetch } = useDelegationBalances(address, voteSigner);
+  const { isValidator, isValidatorGroup } = useAccountDetails(address);
+  const { signingFor } = useVoteSignerToAccount(address);
+  const { delegations, refetch } = useDelegationBalances(address, signingFor);
   const { isValidator: isVoteSignerForValidator, isValidatorGroup: isVoteSignerForValidatorGroup } =
-    useAccountDetails(voteSigner);
+    useAccountDetails(signingFor);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<DelegateFormValues>({

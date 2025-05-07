@@ -1,6 +1,7 @@
 import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
+import { useVoteSignerToAccount } from 'src/features/account/hooks';
 import { ProposalFormDetails } from 'src/features/governance/components/ProposalFormDetails';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import {
@@ -28,10 +29,12 @@ export function VoteForm({
   onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
-  const { votingPower } = useGovernanceVotingPower(address);
+  const { isLoading: isSignerForLoading, signingFor } = useVoteSignerToAccount(address);
+  const votingAccount = !isSignerForLoading ? (signingFor ?? address) : undefined;
+  const { votingPower } = useGovernanceVotingPower(votingAccount);
   const { dequeue } = useProposalDequeue();
   const { refetch: refetchVoteRecord } = useGovernanceVoteRecord(
-    address,
+    votingAccount,
     defaultFormValues?.proposalId,
   );
 
@@ -54,7 +57,8 @@ export function VoteForm({
   const onSubmit = (values: VoteFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: VoteFormValues) => {
-    if (!address || !dequeue || isNullish(votingPower)) return { amount: 'Form data not ready' };
+    if (!votingAccount || !dequeue || isNullish(votingPower))
+      return { amount: 'Form data not ready' };
     return validateForm(values, dequeue, votingPower);
   };
 
