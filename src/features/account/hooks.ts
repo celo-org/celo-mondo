@@ -77,7 +77,7 @@ export function useVoteSignerToAccount(address: Address | undefined) {
     scopeKey: `voteSignerToAccount-${address}`,
     query: {
       staleTime: StaleTime.Long,
-      enabled: isRegistered.isFetched && isRegistered.data === false,
+      enabled: isRegistered.isFetched,
       // The contract will revert if given address is neither
       // - authorized to vote for any accounts (but is authorized for some other role)
       // - or not registered
