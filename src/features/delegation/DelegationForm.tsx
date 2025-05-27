@@ -236,7 +236,7 @@ function PercentField({
     <RangeField
       name="percent"
       label={`${values.percent}% voting power`}
-      maxValue={`${maxPercent}%`}
+      maxValue={maxPercent}
       maxDescription="Available:"
       disabled={disabled}
     />
