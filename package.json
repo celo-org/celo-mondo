@@ -13,10 +13,13 @@
     "type": "git",
     "url": "https://github.com/celo-org/celo-mondo"
   },
+  "type": "module",
   "homepage": "https://github.com/celo-org/celo-mondo",
   "dependencies": {
     "@celo/abis": "^12.0.3",
+    "@celo/actions": "^0.0.1-beta.0",
     "@celo/compliance": "^1.0.24",
+    "@celo/core": "^0.0.1-beta.0",
     "@headlessui/react": "^1.7.19",
     "@metamask/jazzicon": "https://github.com/jmrossy/jazzicon#7a8df28974b4e81129bfbe3cab76308b889032a6",
     "@metamask/post-message-stream": "6.1.2",

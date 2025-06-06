@@ -1,7 +1,6 @@
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { eqAddressSafe } from 'src/utils/addresses';
-import { fromWeiRounded } from 'src/utils/amount';
-import { bigIntMean } from 'src/utils/math';
+import { fromFixidity } from 'src/utils/numbers';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
 
 export function findGroup(groups?: ValidatorGroup[], address?: Address) {
@@ -21,8 +20,7 @@ export function getGroupStats(group?: ValidatorGroup) {
   if (!group) return { numMembers: 0, numElected: 0, avgScore: 0 };
   const members = Object.values(group.members);
   const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
-  const avgScore = electedMembers.length
-    ? parseFloat(fromWeiRounded(bigIntMean(electedMembers.map((m) => m.score)), 22, 0))
-    : 0;
+  // TODO: group.score is between 0 and 1
+  const avgScore = fromFixidity(group.score) * 100;
   return { numMembers: members.length, numElected: electedMembers.length, avgScore };
 }

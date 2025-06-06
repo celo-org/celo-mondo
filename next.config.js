@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-const { version } = require('./package.json');
+import { readFileSync } from 'node:fs';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -80,7 +80,7 @@ const securityHeaders = [
     : []),
 ];
 
-module.exports = {
+export default {
   webpack: (config, { isServer }) => {
     config.externals = [...config.externals, 'pino-pretty'];
     if (isServer && process.env.NODE_ENV === 'production') {
@@ -118,7 +118,7 @@ module.exports = {
   },
 
   env: {
-    NEXT_PUBLIC_VERSION: version,
+    NEXT_PUBLIC_VERSION: JSON.parse(readFileSync('./package.json').toString('utf-8')).version,
   },
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
