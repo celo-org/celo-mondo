@@ -1,11 +1,17 @@
-import { accountsABI, electionABI, lockedGoldABI, validatorsABI } from '@celo/abis';
-import { epochManagerABI } from '@celo/abis-12';
+import {
+  accountsABI,
+  electionABI,
+  epochManagerABI,
+  lockedGoldABI,
+  validatorsABI,
+} from '@celo/abis';
+import { PublicCeloClient } from '@celo/actions';
+import { getScoreManagerContract } from '@celo/actions/contracts/score-manager';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, MAX_NUM_ELECTABLE_VALIDATORS, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses, resolveAddress } from 'src/config/contracts';
-import { isCel2 } from 'src/utils/is-cel2';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
 import { PublicClient } from 'viem';
@@ -43,6 +49,9 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
 
   const validatorDetails = await fetchValidatorDetails(publicClient, validatorAddrs);
   const validatorNames = await fetchNamesForAccounts(publicClient, validatorAddrs);
+  const scoreManagerContract = await getScoreManagerContract({
+    public: publicClient as PublicCeloClient,
+  });
 
   if (
     validatorAddrs.length !== validatorDetails.length ||
@@ -69,6 +78,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
         capacity: 0n,
         votes: 0n,
         lastSlashed: null,
+        score: 0n,
       };
     }
     // Create new validator group member
@@ -78,7 +88,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     const validator: Validator = {
       address: valAddr,
       name: valName,
-      score: valDetails.score,
+      score: 0n,
       signer: valDetails.signer,
       status: validatorStatus,
     };
@@ -89,6 +99,43 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   if (groups[ZERO_ADDRESS]) {
     delete groups[ZERO_ADDRESS];
   }
+
+  // NOTE: is this the most efficient way of getting all the scores?
+  const groups_ = Object.values(groups);
+  const validators_ = groups_.flatMap((group) => Object.values(group.members));
+  const [groupScores, validatorScores] = await Promise.all([
+    publicClient.multicall({
+      allowFailure: false,
+      contracts: groups_.map(
+        (group) =>
+          ({
+            address: scoreManagerContract.address,
+            abi: scoreManagerContract.abi,
+            functionName: 'getGroupScore',
+            args: [group.address],
+          }) as const,
+      ),
+    }),
+    publicClient.multicall({
+      allowFailure: false,
+      contracts: validators_.map(
+        (validator) =>
+          ({
+            address: scoreManagerContract.address,
+            abi: scoreManagerContract.abi,
+            functionName: 'getGroupScore',
+            args: [validator.address],
+          }) as const,
+      ),
+    }),
+  ]);
+
+  groups_.forEach((group, i) => {
+    group.score = groupScores[i];
+  });
+  validators_.forEach((validator, i) => {
+    validator.score = validatorScores[i];
+  });
 
   // Fetch details about the validator groups
   const groupAddrs = Object.keys(groups) as Address[];
@@ -196,17 +243,11 @@ async function fetchValidatorAddresses(publicClient: PublicClient) {
         abi: validatorsABI,
         functionName: 'getRegisteredValidators',
       } as const,
-      (await isCel2(publicClient))
-        ? {
-            address: await resolveAddress('EpochManager'),
-            abi: epochManagerABI,
-            functionName: 'getElectedSigners',
-          }
-        : {
-            address: Addresses.Election,
-            abi: electionABI,
-            functionName: 'getCurrentValidatorSigners',
-          },
+      {
+        address: await resolveAddress('EpochManager'),
+        abi: epochManagerABI,
+        functionName: 'getElectedSigners',
+      },
     ],
   });
   if (validatorAddrsResp.status !== 'success' || !validatorAddrsResp.result?.length) {

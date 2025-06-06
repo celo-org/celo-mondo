@@ -7,7 +7,6 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { config } from 'src/config/config';
-import { useIsCel2 } from 'src/features/account/hooks';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
 
@@ -25,7 +24,6 @@ const BRIDGES: Bridge[] = [
     operator: 'Superbridge',
     href: `https://superbridge.app/celo${config.chain.testnet ? '-testnet' : ''}`,
     logo: '/logos/superbridge.jpg',
-    cel2Only: true,
   },
   {
     name: 'Squid Router',
@@ -42,11 +40,10 @@ const BRIDGES: Bridge[] = [
 ];
 
 export default function Page() {
-  const isCel2 = useIsCel2();
   return (
     <Section className="mt-6" containerClassName="space-y-6">
       <H1>Bridge to Celo</H1>
-      {BRIDGES.filter((x) => (x.cel2Only ? isCel2 : true)).map((bridge) => (
+      {BRIDGES.map((bridge) => (
         <BridgeLink key={bridge.name} {...bridge} />
       ))}
       <p className="text-center text-sm text-taupe-600">

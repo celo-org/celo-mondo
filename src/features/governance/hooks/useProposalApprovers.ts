@@ -1,4 +1,4 @@
-import { governanceABI, multiSigABI } from '@celo/abis-12';
+import { governanceABI, multiSigABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';

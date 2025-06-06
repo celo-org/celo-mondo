@@ -1,4 +1,4 @@
-import { registryABI } from '@celo/abis-12';
+import { registryABI } from '@celo/abis';
 import { config } from 'src/config/config';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { createCeloPublicClient } from 'src/utils/client';

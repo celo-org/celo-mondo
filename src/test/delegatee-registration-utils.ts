@@ -1,9 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { EIP712Delegatee, RegisterDelegateRequest } from 'src/features/delegation/types';
+import { fileURLToPath } from 'url';
 import { createWalletClient, http, sha256 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { celo } from 'viem/chains';
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 const TEST_ACCOUNT_PRIVATE_KEY =
   '0x8019ff07bebef2b77813d6ea4327f01ff64cdaf1718dab588e3460a0e4140f4d';

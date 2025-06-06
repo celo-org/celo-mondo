@@ -11,6 +11,7 @@ export interface ValidatorGroup {
   votes: bigint;
   lastSlashed: number | null; // timestamp
   members: AddressTo<Validator>;
+  score: bigint;
 }
 
 export enum ValidatorStatus {
