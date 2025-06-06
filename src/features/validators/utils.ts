@@ -20,7 +20,7 @@ export function getGroupStats(group?: ValidatorGroup) {
   if (!group) return { numMembers: 0, numElected: 0, avgScore: 0 };
   const members = Object.values(group.members);
   const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
-  // TODO: group.score is between 0 and 1
+  // NOTE: group.score is between 0 and 1
   const avgScore = fromFixidity(group.score) * 100;
   return { numMembers: members.length, numElected: electedMembers.length, avgScore };
 }
