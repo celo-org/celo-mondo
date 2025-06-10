@@ -123,7 +123,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
           ({
             address: scoreManagerContract.address,
             abi: scoreManagerContract.abi,
-            functionName: 'getGroupScore',
+            functionName: 'getValidatorScore',
             args: [validator.address],
           }) as const,
       ),
