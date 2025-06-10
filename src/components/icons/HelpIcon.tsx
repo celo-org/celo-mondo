@@ -1,4 +1,4 @@
-import { memo, useCallback } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -11,7 +11,7 @@ type HelpIconProps = {
   size?: number;
 };
 
-function _HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
+export function HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
   const isMobile = useIsMobile();
   if (isMobile) {
     type = 'button';
@@ -38,5 +38,3 @@ function _HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
     </div>
   );
 }
-
-export const HelpIcon = memo(_HelpIcon);

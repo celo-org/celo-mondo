@@ -149,10 +149,6 @@ export async function fetchThresholds(
     })),
   });
 
-  if (!results) {
-    return;
-  }
-
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
   const getConstitutionContract = {
@@ -172,10 +168,6 @@ export async function fetchThresholds(
       };
     }),
   });
-
-  if (!thresholds) {
-    return;
-  }
 
   // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1580-L1583
   return thresholds.map(fromFixidity);
