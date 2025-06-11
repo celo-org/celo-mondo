@@ -31,7 +31,7 @@ const getValidFormData = async () => {
   return data;
 };
 
-it('successfuly calls PR creation', async () => {
+it('successfully calls PR creation', async () => {
   const createDelegationPRMock = vi.spyOn(utils, 'createDelegationPR');
   const isAddressAnAccountMock = vi.spyOn(utils, 'isAddressAnAccount');
 
