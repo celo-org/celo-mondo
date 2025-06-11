@@ -1,6 +1,6 @@
+import { readFile } from 'fs/promises';
 import { ImageResponse } from 'next/og';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join } from 'path';
 import React from 'react';
 import { Background } from 'src/components/open-graph/Background';
 import { BasePage } from 'src/components/open-graph/BasePage';
