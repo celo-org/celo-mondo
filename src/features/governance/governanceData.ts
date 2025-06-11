@@ -294,7 +294,7 @@ export function pessimisticallyHandleMismatchedIDs(
       history: [proposal.id],
     };
   } else if (executedIds.includes(proposal.id)) {
-    // the proposal was exectuted so it is correct
+    // the proposal was executed so it is correct
     return {
       stage: ProposalStage.Executed,
       id: proposal.id,
