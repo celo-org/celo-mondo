@@ -88,4 +88,4 @@ PR should Be Tiltled "Adding Delegatee {YOUR GROUP NAME}"
 
 ## Care for your PR
 
-Please Check back reguarly on the status of your PR, once we enable checks to run if you see lint errors please fix them.
+Please Check back regularly on the status of your PR, once we enable checks to run if you see lint errors please fix them.
