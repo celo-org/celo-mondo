@@ -5,14 +5,14 @@ import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { DelegateeTableSection } from 'src/features/delegation/components/DelegateesTable';
 
-const basicTitleDecription = {
+const basicTitleDescription = {
   title: 'Celo Mondo | Delegatees',
   description: 'Delegate voting power to a delegatee of your choice.',
 };
 
 export const metadata: Metadata = {
-  ...basicTitleDecription,
-  openGraph: basicTitleDecription,
+  ...basicTitleDescription,
+  openGraph: basicTitleDescription,
   twitter: {
     title: 'Celo Mondo', // shown on twitter cards
     site: '@celo',
