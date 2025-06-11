@@ -1,12 +1,13 @@
 'use server';
 
 // DO NOT USE "use client" here as it breaks metadata for openGraph
+import { Metadata } from 'next';
 import ValidatorPage from 'src/features/staking/page';
 import { shortenAddress } from 'src/utils/addresses';
 
 type Params = Promise<{ address: Address }>;
 
-export async function generateMetadata(props: { params: Params }) {
+export async function generateMetadata(props: { params: Params }): Promise<Metadata> {
   const { address } = await props.params;
   return {
     openGraph: {

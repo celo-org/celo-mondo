@@ -1,4 +1,6 @@
 import { ImageResponse } from 'next/og';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import React from 'react';
 import { Background } from 'src/components/open-graph/Background';
 import { BasePage } from 'src/components/open-graph/BasePage';
@@ -15,15 +17,10 @@ export const size = {
 
 export const contentType = 'image/png';
 
+const alpina = readFile(join(process.cwd(), 'public/fonts/alpina-standard-regular.ttf'));
+
 // Image generation
 export async function OpenGraphImage({ children }: React.PropsWithChildren<{}>) {
-  // Font loading like this seems required to be absolute URL
-  const alpina = fetch(
-    new URL(
-      'https://github.com/celo-org/celo-mondo/raw/8db2b2c80bf3f4f6e26b2f060ec2846d40ea5e5f/public/fonts/alpina-standard-regular.ttf',
-    ).toString(),
-  ).then((res) => res.arrayBuffer());
-
   return new ImageResponse(
     <div style={{ display: 'flex', height: '100%', width: '100%' }}>{children}</div>,
     // ImageResponse options

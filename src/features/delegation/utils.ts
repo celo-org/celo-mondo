@@ -7,12 +7,10 @@ import {
   metadataToJSONString,
 } from 'src/features/delegation/delegateeMetadata';
 import { DelegateeMetadata, RegisterDelegateRequest } from 'src/features/delegation/types';
-import { createCeloPublicClient } from 'src/utils/client';
+import { celoPublicClient } from 'src/utils/client';
 
 export async function isAddressAnAccount(address: HexString) {
-  const client = createCeloPublicClient();
-
-  return await client.readContract({
+  return await celoPublicClient.readContract({
     address: Addresses.Accounts,
     abi: accountsABI,
     functionName: 'isAccount',

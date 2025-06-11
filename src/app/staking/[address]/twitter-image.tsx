@@ -5,14 +5,13 @@ import { MondoWithSubText } from 'src/components/open-graph/MondoLogo';
 import { Portrait } from 'src/components/open-graph/Portrait';
 import { Addresses } from 'src/config/contracts';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
-import { createCeloPublicClient } from 'src/utils/client';
+import { celoPublicClient } from 'src/utils/client';
 export { contentType, size } from 'src/app/twitter-image';
 
 export const alt = 'Stake';
 // cant use wagmi here as this is serverside
 async function fetchName(address: Address) {
-  const client = createCeloPublicClient();
-  const accountName = await client.readContract({
+  const accountName = await celoPublicClient.readContract({
     address: Addresses.Accounts,
     abi: accountsABI,
     functionName: 'getName',
