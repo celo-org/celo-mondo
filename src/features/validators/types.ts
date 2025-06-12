@@ -39,7 +39,6 @@ export enum ValidatorGroupStatus {
 */
 
 export interface ValidatorGroupRow extends ValidatorGroup {
-  avgScore: number;
   numElected: number;
   numMembers: number;
   isHidden: boolean;

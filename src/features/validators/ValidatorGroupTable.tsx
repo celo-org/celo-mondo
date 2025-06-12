@@ -28,7 +28,7 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 
 const NUM_COLLAPSED_GROUPS = 9;
-const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
+const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
 enum Filter {
   All = 'All Eligible',
   Elected = 'Elected',
@@ -298,7 +298,7 @@ function useTableColumns(totalVotes: bigint) {
           />
         ),
       }),
-      columnHelper.accessor('avgScore', {
+      columnHelper.accessor('score', {
         header: 'Score',
         cell: (props) => <div>{`${props.getValue()}%`}</div>,
       }),
