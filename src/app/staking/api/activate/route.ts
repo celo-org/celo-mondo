@@ -76,7 +76,7 @@ async function activateStake(request: StakeActivationRequest) {
   // if (!eqAddress(args.account, address))
   //   throw new Error('Transaction staker does not match request');
 
-  const hasActivatable = await client.readContract({
+  const hasActivatable = await celoPublicClient.readContract({
     address: Addresses.Election,
     abi: electionABI,
     functionName: 'hasActivatablePendingVotes',
