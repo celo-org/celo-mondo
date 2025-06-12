@@ -170,7 +170,7 @@ function TopGroupsRow({
       .slice(0, NUM_COLLAPSED_GROUPS);
     const topGroupStats = topGroups.map((g) => getGroupStats(g));
     const staked = bigIntSum(topGroups.map((g) => g.votes));
-    const score = mean(topGroupStats.map((g) => g.avgScore));
+    const score = mean(topGroupStats.map((g) => g.score));
     const numElected = sum(topGroupStats.map((g) => g.numElected));
     const numValidators = sum(topGroupStats.map((g) => g.numMembers));
     const elected = `${numElected} / ${numValidators}`;

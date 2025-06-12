@@ -17,9 +17,9 @@ export function isElected(group: ValidatorGroup) {
 }
 
 export function getGroupStats(group?: ValidatorGroup) {
-  if (!group) return { numMembers: 0, numElected: 0, groupScore: 0 };
+  if (!group) return { numMembers: 0, numElected: 0, score: 0 };
   const members = Object.values(group.members);
   const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
-  const groupScore = fromFixidity(group.score) * 100;
-  return { numMembers: members.length, numElected: electedMembers.length, groupScore };
+  const score = fromFixidity(group.score) * 100;
+  return { numMembers: members.length, numElected: electedMembers.length, score };
 }

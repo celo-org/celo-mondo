@@ -276,7 +276,7 @@ function Members({ group }: { group?: ValidatorGroup }) {
         </div>
         <div className="flex flex-col">
           <h4 className="text-sm">Group Score</h4>
-          <span className="mt-1 font-serif text-xl">{`${groupStats.groupScore.toFixed(2)}%`}</span>
+          <span className="mt-1 font-serif text-xl">{`${groupStats.score.toFixed(2)}%`}</span>
         </div>
         <div className="flex flex-col">
           <h4 className="text-sm">Locked CELO</h4>

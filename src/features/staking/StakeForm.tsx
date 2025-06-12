@@ -231,7 +231,7 @@ function GroupField({
     return Object.values(addressToGroup)
       .map((g) => ({
         ...g,
-        score: getGroupStats(g).avgScore,
+        score: getGroupStats(g).score,
       }))
       .sort((a, b) => b.score - a.score);
   }, [addressToGroup]);
