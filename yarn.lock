@@ -265,9 +265,9 @@ __metadata:
   resolution: "@celo-mondo/celo-mondo-web@workspace:."
   dependencies:
     "@celo/abis": "npm:^12.0.3"
-    "@celo/actions": "npm:^0.0.1-beta.0"
+    "@celo/actions": "npm:^0.0.1-beta.2"
     "@celo/compliance": "npm:^1.0.24"
-    "@celo/core": "npm:^0.0.1-beta.0"
+    "@celo/core": "npm:^0.0.1-beta.1"
     "@celo/devchain-anvil": "npm:12.0.0-canary.49"
     "@headlessui/react": "npm:^1.7.19"
     "@metamask/jazzicon": "npm:^2.0.0"
@@ -336,14 +336,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@celo/actions@npm:^0.0.1-beta.0":
-  version: 0.0.1-beta.0
-  resolution: "@celo/actions@npm:0.0.1-beta.0"
+"@celo/actions@npm:^0.0.1-beta.2":
+  version: 0.0.1-beta.2
+  resolution: "@celo/actions@npm:0.0.1-beta.2"
   dependencies:
     "@celo/abis": "npm:^12.0.3"
     "@celo/base": "npm:^7.0.3-beta.0"
-    "@celo/core": "npm:0.0.1-beta.0"
-  checksum: 10/fffff056d7047d0a5a60c54068bd2f201da64a83cde697cb80815e7ea872f11c43315e9421bb787f8ceea4ffdba1ba5b4eb74d77761c3145ae4f0b3f78d9282e
+    "@celo/core": "npm:0.0.1-beta.1"
+  checksum: 10/3694b634cc36fbe9a63043c8a45f71481078b1ee727ee778e21c06f2d3cfe01f6067ff3025b8d2d385ba94a3e6f0d3d3397ae486354bfb5f3b52f3bb387b3405
   languageName: node
   linkType: hard
 
@@ -361,12 +361,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@celo/core@npm:0.0.1-beta.0, @celo/core@npm:^0.0.1-beta.0":
-  version: 0.0.1-beta.0
-  resolution: "@celo/core@npm:0.0.1-beta.0"
+"@celo/core@npm:0.0.1-beta.1, @celo/core@npm:^0.0.1-beta.1":
+  version: 0.0.1-beta.1
+  resolution: "@celo/core@npm:0.0.1-beta.1"
   dependencies:
     "@celo/base": "npm:7.0.3-beta.0"
-  checksum: 10/49261ac08d57e7b52df55f6a5c874a38385342156b975b0f8682021b029f5dd309786822887328781497fd107d48774512df2835f833d2f661d683488217a894
+  checksum: 10/7a7ce032978e12fda5416c8a96880452ef326e2f06c004c94751b0b74a223389b60573f8dfcba7a98bcfe0d7be84fc06f60dbd6df3a8af8a9cdd08246455f742
   languageName: node
   linkType: hard
 
