@@ -1,6 +1,4 @@
-import { readFile } from 'fs/promises';
 import { ImageResponse } from 'next/og';
-import { join } from 'path';
 import React from 'react';
 import { Background } from 'src/components/open-graph/Background';
 import { BasePage } from 'src/components/open-graph/BasePage';
@@ -17,7 +15,13 @@ export const size = {
 
 export const contentType = 'image/png';
 
-const alpina = readFile(join(process.cwd(), 'public/fonts/alpina-standard-regular.ttf'));
+// NOTE: using readFile here fails because somehow webpack _realllly_
+// wants to bundle this file and `path`/`fs` both aren't importable
+const alpina = fetch(
+  new URL(
+    'https://github.com/celo-org/celo-mondo/raw/8db2b2c80bf3f4f6e26b2f060ec2846d40ea5e5f/public/fonts/alpina-standard-regular.ttf',
+  ).toString(),
+).then((res) => res.arrayBuffer());
 
 // Image generation
 export async function OpenGraphImage({ children }: React.PropsWithChildren<{}>) {

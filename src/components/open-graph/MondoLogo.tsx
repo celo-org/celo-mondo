@@ -49,6 +49,7 @@ export function Mondo({ baseSize }: { baseSize: number }) {
           marginBottom: size * 0.3,
         }}
       >
+        {/* Using `img` here instead of `Image` which isn't server-side happy */}
         <img
           src={'https://mondo.celo.org/logos/celo-full.svg'}
           width={size * 4}
