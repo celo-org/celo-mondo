@@ -138,7 +138,6 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   validators_.forEach((validator, i) => {
     validator.score = fromFixidity(validatorScores[i]);
   });
-  console.log(validatorScores);
 
   // Fetch details about the validator groups
   const groupAddrs = Object.keys(groups) as Address[];
