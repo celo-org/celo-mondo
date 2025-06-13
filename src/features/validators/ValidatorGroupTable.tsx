@@ -28,7 +28,7 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 
 const NUM_COLLAPSED_GROUPS = 9;
-const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
+const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
 enum Filter {
   All = 'All Eligible',
   Elected = 'Elected',
@@ -170,7 +170,7 @@ function TopGroupsRow({
       .slice(0, NUM_COLLAPSED_GROUPS);
     const topGroupStats = topGroups.map((g) => getGroupStats(g));
     const staked = bigIntSum(topGroups.map((g) => g.votes));
-    const score = mean(topGroupStats.map((g) => g.avgScore));
+    const score = mean(topGroupStats.map((g) => g.score));
     const numElected = sum(topGroupStats.map((g) => g.numElected));
     const numValidators = sum(topGroupStats.map((g) => g.numMembers));
     const elected = `${numElected} / ${numValidators}`;
@@ -211,7 +211,7 @@ function TopGroupsRow({
           />
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
-          {(score?.toFixed(0) || 0) + '%'}
+          {(score * 100)?.toFixed(0) + '%'}
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
@@ -298,9 +298,9 @@ function useTableColumns(totalVotes: bigint) {
           />
         ),
       }),
-      columnHelper.accessor('avgScore', {
+      columnHelper.accessor('score', {
         header: 'Score',
-        cell: (props) => <div>{`${props.getValue()}%`}</div>,
+        cell: (props) => <div>{`${(props.getValue() * 100).toFixed()}%`}</div>,
       }),
       columnHelper.accessor('numElected', {
         header: 'Elected',
