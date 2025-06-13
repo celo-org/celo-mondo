@@ -1,6 +1,5 @@
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { eqAddressSafe } from 'src/utils/addresses';
-import { fromFixidity } from 'src/utils/numbers';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
 
 export function findGroup(groups?: ValidatorGroup[], address?: Address) {
@@ -20,6 +19,5 @@ export function getGroupStats(group?: ValidatorGroup) {
   if (!group) return { numMembers: 0, numElected: 0, score: 0 };
   const members = Object.values(group.members);
   const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
-  const score = fromFixidity(group.score) * 100;
-  return { numMembers: members.length, numElected: electedMembers.length, score };
+  return { numMembers: members.length, numElected: electedMembers.length, score: group.score };
 }

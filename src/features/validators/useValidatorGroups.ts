@@ -14,6 +14,7 @@ import { GCTime, MAX_NUM_ELECTABLE_VALIDATORS, StaleTime, ZERO_ADDRESS } from 's
 import { Addresses, resolveAddress } from 'src/config/contracts';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
+import { fromFixidity } from 'src/utils/numbers';
 import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { Validator, ValidatorGroup, ValidatorStatus } from './types';
@@ -78,7 +79,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
         capacity: 0n,
         votes: 0n,
         lastSlashed: null,
-        score: 0n,
+        score: 0,
       };
     }
     // Create new validator group member
@@ -88,7 +89,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     const validator: Validator = {
       address: valAddr,
       name: valName,
-      score: 0n,
+      score: 0,
       signer: valDetails.signer,
       status: validatorStatus,
     };
@@ -131,11 +132,13 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   ]);
 
   groups_.forEach((group, i) => {
-    group.score = groupScores[i];
+    group.score = fromFixidity(groupScores[i]);
   });
+  console.log(groupScores);
   validators_.forEach((validator, i) => {
-    validator.score = validatorScores[i];
+    validator.score = fromFixidity(validatorScores[i]);
   });
+  console.log(validatorScores);
 
   // Fetch details about the validator groups
   const groupAddrs = Object.keys(groups) as Address[];

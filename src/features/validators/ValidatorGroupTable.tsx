@@ -211,7 +211,7 @@ function TopGroupsRow({
           />
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
-          {(score?.toFixed(0) || 0) + '%'}
+          {(score * 100)?.toFixed(0) + '%'}
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
@@ -300,7 +300,7 @@ function useTableColumns(totalVotes: bigint) {
       }),
       columnHelper.accessor('score', {
         header: 'Score',
-        cell: (props) => <div>{`${props.getValue()}%`}</div>,
+        cell: (props) => <div>{`${(props.getValue() * 100).toFixed()}%`}</div>,
       }),
       columnHelper.accessor('numElected', {
         header: 'Elected',

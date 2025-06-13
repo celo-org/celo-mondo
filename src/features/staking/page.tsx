@@ -38,7 +38,7 @@ import { Color } from 'src/styles/Color';
 import { tableClasses } from 'src/styles/common';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { shortenAddress } from 'src/utils/addresses';
-import { fromWei, fromWeiRounded } from 'src/utils/amount';
+import { fromWei } from 'src/utils/amount';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
@@ -276,7 +276,7 @@ function Members({ group }: { group?: ValidatorGroup }) {
         </div>
         <div className="flex flex-col">
           <h4 className="text-sm">Group Score</h4>
-          <span className="mt-1 font-serif text-xl">{`${groupStats.score.toFixed(2)}%`}</span>
+          <span className="mt-1 font-serif text-xl">{`${(groupStats.score * 100).toFixed(2)}%`}</span>
         </div>
         <div className="flex flex-col">
           <h4 className="text-sm">Locked CELO</h4>
@@ -302,7 +302,7 @@ function Members({ group }: { group?: ValidatorGroup }) {
                   </span>
                 </div>
               </td>
-              <td className={tableClasses.td}>{fromWeiRounded(member.score, 22, 0) + '%'}</td>
+              <td className={tableClasses.td}>{`${(member.score * 100).toFixed(2)}%`}</td>
               <td className={tableClasses.td}>
                 {member.status === ValidatorStatus.Elected ? (
                   <div className="badge badge-success gap-1 rounded-full bg-green-500 text-sm">
