@@ -6,6 +6,7 @@ import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVo
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 import { sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
+import { fileURLToPath } from 'url';
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -18,6 +19,9 @@ if (typeof process.env.NEXT_PUBLIC_CELOSCAN_API_KEY === 'string') {
     'Celoscan api key not loaded. Votes will not be updated. You probably need a .env file (not local.env). To pull secrets see https://vercel.com/docs/cli/env',
   );
 }
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 const PROPOSALS_OUT_PATH = path.resolve(__dirname, '../config/proposals.json');
 const MIN_PROPOSAL_ID_VOTES_FETCH = 212;

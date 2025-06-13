@@ -231,7 +231,7 @@ function GroupField({
     return Object.values(addressToGroup)
       .map((g) => ({
         ...g,
-        score: getGroupStats(g).avgScore,
+        score: getGroupStats(g).score,
       }))
       .sort((a, b) => b.score - a.score);
   }, [addressToGroup]);
@@ -285,7 +285,7 @@ function GroupField({
                 <ValidatorGroupLogo address={g.address} size={20} />
                 <span>{cleanGroupName(g.name)}</span>
               </div>
-              <span>{`${g.score}%`}</span>
+              <span>{`${(g.score * 100).toFixed(2)}%`}</span>
             </button>
           );
         })}
