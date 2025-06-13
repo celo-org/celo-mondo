@@ -17,7 +17,7 @@
   "homepage": "https://github.com/celo-org/celo-mondo",
   "dependencies": {
     "@celo/abis": "^12.0.3",
-    "@celo/actions": "^0.0.1-beta.2",
+    "@celo/actions": "^0.0.1-beta.3",
     "@celo/compliance": "^1.0.24",
     "@headlessui/react": "^1.7.19",
     "@metamask/jazzicon": "^2.0.0",
