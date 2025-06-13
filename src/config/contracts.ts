@@ -1,7 +1,7 @@
 import { registryABI } from '@celo/abis';
 import { config } from 'src/config/config';
 import { ZERO_ADDRESS } from 'src/config/consts';
-import { createCeloPublicClient } from 'src/utils/client';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { celo, celoAlfajores } from 'viem/chains';
 
@@ -45,9 +45,7 @@ export const resolveAddress = async (name: keyof typeof Addresses) => {
   if (Addresses[name] === ZERO_ADDRESS) {
     logger.info(`Resolving ${name} address from registry`);
 
-    const client = createCeloPublicClient();
-
-    return await client.readContract({
+    return await celoPublicClient.readContract({
       address: REGISTRY_ADDRESS,
       functionName: 'getAddressForStringOrDie',
       abi: registryABI,
