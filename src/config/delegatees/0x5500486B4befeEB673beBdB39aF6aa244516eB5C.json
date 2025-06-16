@@ -1,18 +1,18 @@
 {
   "name": "Africa DAO",
   "address": "0x5500486B4befeEB673beBdB39aF6aa244516eB5C",
-  "logoUri": "/logos/delegatees/0x5500486B4befeEB673beBdB39aF6aa244516eB5C.png",
-  "date": "2025-05-15",
+  "logoUri": "/logos/delegatees/0x5500486B4befeEB673beBdB39aF6aa244516eB5C.jpeg",
+  "date": "2025-06-16",
   "links": {
     "website": "https://www.celoafricadao.xyz/",
     "twitter": "https://x.com/CeloAfricaDao"
   },
   "interests": [
+    "Community",
     "Stablecoins",
-    "Education",
     "DeFi",
     "Public Goods",
-    "Community"
+    "Education"
   ],
-  "description": "Africa DAO is Celo's largest and pioneering DAO, dedicated to fostering the growth and adoption of the Celo blockchain across the African continent. By empowering local communities, supporting impactful projects, and advancing Web3 education, we play a vital role in realizing Celo’s mission of building a regenerative digital economy that creates prosperity for all.  As delegates, we are committed to advancing Africa DAO’s mission by strengthening community-driven governance, promoting local innovation, and ensuring that the unique perspectives and needs of African builders are represented within the Celo ecosystem. We believe Africa holds immense potential to lead in regenerative finance and decentralized technology, and we are passionate about unlocking that potential at scale. We’re excited to continue shaping Celo’s future and driving meaningful, lasting impact across the continent."
+  "description": "Africa DAO is Celo's largest and pioneering DAO, dedicated to fostering the growth and adoption of the Celo blockchain across the African continent. By empowering local communities, supporting impactful projects, and advancing Web3 education, we play a vital role in realizing Celo’s mission of building a regenerative digital economy that creates prosperity for all. As delegates, we are committed to advancing Africa DAO’s mission by strengthening community-driven governance, promoting local innovation, and ensuring that the unique perspectives and needs of African builders are represented within the Celo ecosystem. We believe Africa holds immense potential to lead in regenerative finance and decentralized technology, and we are passionate about unlocking that potential at scale. We’re excited to continue shaping Celo’s future and driving meaningful, lasting impact across the continent."
 }
