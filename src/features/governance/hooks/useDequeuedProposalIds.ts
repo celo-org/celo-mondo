@@ -1,8 +1,9 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
+import { fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
-import { TransactionLog } from 'src/features/explorers/types';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { decodeEventLog } from 'viem';
 
@@ -28,18 +29,7 @@ export function useDequeuedProposalIds() {
 }
 
 async function fetchDequeuedProposalIds(): Promise<Array<number>> {
-  // const topics = encodeEventTopics({
-  //   abi: governanceABI,
-  //   eventName: 'ProposalDequeued',
-  // });
-  // const approvalLogs = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
-  const urlParams = new URLSearchParams();
-  urlParams.append('eventName', 'ProposalDequeued');
-  urlParams.append('chainId', '42220');
-
-  const approvalLogs = await fetch(`/api/governance/events?${urlParams.toString()}`).then(
-    (x) => x.json() as Promise<TransactionLog[]>,
-  );
+  const approvalLogs = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalDequeued');
 
   const proposalIds: Array<number> = [];
   for (const log of approvalLogs) {
@@ -51,7 +41,7 @@ async function fetchDequeuedProposalIds(): Promise<Array<number>> {
   return proposalIds.sort((a, b) => a - b);
 }
 
-function decodeLog(log: TransactionLog) {
+function decodeLog(log: Awaited<ReturnType<typeof fetchProposalEvents>>[number]) {
   try {
     if (!log.topics || log.topics.length < 2) return null;
     const { eventName, args } = decodeEventLog({

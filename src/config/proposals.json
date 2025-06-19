@@ -2710,9 +2710,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0176.md",
     "title": "Celo Camp 2025 Season 0-1 Proposal",
     "author": "Immanuel Segol (immanuel@upright.gg), Alon Shavit (alon@upright.gg)",
-    "stage": 0,
+    "stage": 6,
+    "id": 228,
     "url": "https://forum.celo.org/t/celo-camp-2025-season-0-1-proposal",
-    "timestamp": 1742428800000
+    "timestamp": 1742428800000,
+    "timestampExecuted": 1746835200000,
+    "votes": {
+      "yes": "25364653767865659909191990",
+      "no": "54653693266706147666002",
+      "abstain": "607169625615751637006415"
+    }
   },
   {
     "cgp": 177,
@@ -2788,9 +2795,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0181.md",
     "title": "Extension of Score Management Committee and Additional Funding",
     "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
-    "stage": 0,
+    "stage": 6,
+    "id": 229,
     "url": "https://forum.celo.org/t/proposal-for-extension-of-score-management-committee-and-additional-funding",
-    "timestamp": 1744588800000
+    "timestamp": 1744588800000,
+    "timestampExecuted": 1747353600000,
+    "votes": {
+      "yes": "7842342464576791214183104",
+      "no": "502408192077104079669945",
+      "abstain": "95612367767761776126021"
+    }
   },
   {
     "cgp": 182,
@@ -2802,5 +2816,71 @@
     "id": 227,
     "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
     "timestamp": 1745539200000
+  },
+  {
+    "cgp": 183,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0183.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0183.md",
+    "title": "Celo Kreiva DAO Season 0-1 2025 Proposal",
+    "author": "Hawwal @hawwal , COTMusic @COT , Oracle @iamoracle , Emiri @emiridbest",
+    "stage": 8,
+    "id": 233,
+    "url": "https://forum.celo.org/t/celo-kreiva-dao-season-0-1-2025-proposal",
+    "timestamp": 1744761600000,
+    "votes": {
+      "yes": "2150000000000000000000",
+      "no": "1801890135041264162896401",
+      "abstain": "6108409806095459400"
+    }
+  },
+  {
+    "cgp": 184,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0184.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0184.md",
+    "title": "Mento Oracles Migration pt. 1",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 6,
+    "id": 231,
+    "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
+    "timestamp": 1747094400000,
+    "timestampExecuted": 1748822400000,
+    "votes": {
+      "yes": "26714445152230204017189907",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 185,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0185.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0185.md",
+    "title": "CeLatam Venture Studio",
+    "author": "CeLatam team",
+    "stage": 8,
+    "id": 230,
+    "url": "https://forum.celo.org/t/celatam-venture-studio/11200",
+    "timestamp": 1747267200000,
+    "votes": {
+      "yes": "136476588213980291524624",
+      "no": "1941694076315750540766555",
+      "abstain": "38067692034912402402217"
+    }
+  },
+  {
+    "cgp": 186,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0186.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0186.md",
+    "title": "Mento Oracles Migration pt. 2",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 6,
+    "id": 232,
+    "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
+    "timestamp": 1747872000000,
+    "timestampExecuted": 1748822400000,
+    "votes": {
+      "yes": "21093533543754249418217927",
+      "no": "0",
+      "abstain": "0"
+    }
   }
 ]

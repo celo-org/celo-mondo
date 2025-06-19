@@ -1,14 +1,15 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
+import { fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { GCTime, PROPOSAL_V1_MAX_ID, StaleTime } from 'src/config/consts';
-import { TransactionLog } from 'src/features/explorers/types';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { isValidAddress } from 'src/utils/addresses';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
 import { objFilter } from 'src/utils/objects';
-import { decodeEventLog, encodeEventTopics } from 'viem';
+import { decodeEventLog } from 'viem';
 
 export function useProposalVoters(id?: number) {
   const { isLoading, isError, error, data } = useQuery({
@@ -36,21 +37,13 @@ export async function fetchProposalVoters(id: number): Promise<{
   voters: AddressTo<VoteAmounts>;
   totals: VoteAmounts;
 }> {
-  // Get encoded topics
-  const { castVoteTopics } = id > PROPOSAL_V1_MAX_ID ? getV2Topics(id) : getV1Topics(id);
-
-  const voterToVotes: AddressTo<VoteAmounts> = {};
-  // const castVoteParams = `topic0=${castVoteTopics[0]}&topic1=${castVoteTopics[1]}&topic0_1_opr=and`;
-  // const castVoteEvents_ = await queryCeloscanLogs(Addresses.Governance, castVoteParams);
-  const urlParams = new URLSearchParams();
-  urlParams.append('eventName', id > PROPOSAL_V1_MAX_ID ? 'ProposalVotedV2' : 'ProposalVoted');
-  urlParams.append('proposalId', castVoteTopics[1] as string);
-  urlParams.append('chainId', '42220');
-
-  const castVoteEvents = await fetch(`/api/governance/events?${urlParams.toString()}`).then(
-    (x) => x.json() as Promise<TransactionLog[]>,
+  const castVoteEvents = await fetchProposalEvents(
+    celoPublicClient.chain.id,
+    'ProposalVoted',
+    BigInt(id),
   );
 
+  const voterToVotes: AddressTo<VoteAmounts> = {};
   reduceLogs(voterToVotes, castVoteEvents, true);
 
   // Skipping revoke vote events for now for performance since they are almost never used
@@ -78,7 +71,11 @@ export async function fetchProposalVoters(id: number): Promise<{
   return { voters, totals };
 }
 
-function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: TransactionLog[], isCast: boolean) {
+function reduceLogs(
+  voterToVotes: AddressTo<VoteAmounts>,
+  logs: Awaited<ReturnType<typeof fetchProposalEvents>>,
+  isCast: boolean,
+) {
   for (const log of logs) {
     const decoded = decodeVoteEventLog(log);
     if (!decoded) continue;
@@ -95,7 +92,7 @@ function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: TransactionLog[]
   }
 }
 
-export function decodeVoteEventLog(log: TransactionLog) {
+export function decodeVoteEventLog(log: Awaited<ReturnType<typeof fetchProposalEvents>>[number]) {
   try {
     if (!log.topics || log.topics.length < 3) return null;
     const { eventName, args } = decodeEventLog({
@@ -141,32 +138,4 @@ export function decodeVoteEventLog(log: TransactionLog) {
     logger.warn('Error decoding event log', error, log);
     return null;
   }
-}
-
-function getV1Topics(id: number) {
-  const castVoteTopics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalVoted',
-    args: { proposalId: BigInt(id) },
-  });
-  const revokeVoteTopics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalVoteRevoked',
-    args: { proposalId: BigInt(id) },
-  });
-  return { castVoteTopics, revokeVoteTopics };
-}
-
-function getV2Topics(id: number) {
-  const castVoteTopics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalVotedV2',
-    args: { proposalId: BigInt(id) },
-  });
-  const revokeVoteTopics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalVoteRevokedV2',
-    args: { proposalId: BigInt(id) },
-  });
-  return { castVoteTopics, revokeVoteTopics };
 }
