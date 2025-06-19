@@ -1,8 +1,6 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { isValidAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
@@ -38,8 +36,15 @@ async function fetchProposalUpvoters(id: number): Promise<AddressTo<bigint>> {
   });
 
   // Prep query URLs
-  const upvoteParams = `topic0=${upvoteTopics[0]}&topic1=${upvoteTopics[1]}&topic0_1_opr=and`;
-  const upvoteEvents = await queryCeloscanLogs(Addresses.Governance, upvoteParams);
+  // const upvoteParams = `topic0=${upvoteTopics[0]}&topic1=${upvoteTopics[1]}&topic0_1_opr=and`;
+  const urlParams = new URLSearchParams();
+  urlParams.append('eventName', 'ProposalUpvoted');
+  urlParams.append('proposalId', upvoteTopics[1] as string);
+  urlParams.append('chainId', '42220');
+
+  const upvoteEvents = await fetch(`/api/governance/events?${urlParams.toString()}`).then(
+    (x) => x.json() as Promise<TransactionLog[]>,
+  );
 
   // Reduce logs to a map of voters to upvotes
   const voterToUpvotes: AddressTo<bigint> = {};

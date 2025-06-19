@@ -2,11 +2,9 @@ import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { logger } from 'src/utils/logger';
-import { decodeEventLog, encodeEventTopics } from 'viem';
+import { decodeEventLog } from 'viem';
 
 // Returns the list of proposal IDs that were dequeued and therefore were ready to receive votes
 export function useDequeuedProposalIds() {
@@ -14,7 +12,7 @@ export function useDequeuedProposalIds() {
     queryKey: ['useApprovedProposalIds'],
     queryFn: () => {
       logger.debug(`Fetching approved proposal IDs`);
-      return fetchApprovedProposalIds();
+      return fetchDequeuedProposalIds();
     },
     gcTime: GCTime.Long,
     staleTime: StaleTime.Default,
@@ -29,13 +27,19 @@ export function useDequeuedProposalIds() {
   };
 }
 
-async function fetchApprovedProposalIds(): Promise<Array<number>> {
-  const topics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalDequeued',
-  });
+async function fetchDequeuedProposalIds(): Promise<Array<number>> {
+  // const topics = encodeEventTopics({
+  //   abi: governanceABI,
+  //   eventName: 'ProposalDequeued',
+  // });
+  // const approvalLogs = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
+  const urlParams = new URLSearchParams();
+  urlParams.append('eventName', 'ProposalDequeued');
+  urlParams.append('chainId', '42220');
 
-  const approvalLogs = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
+  const approvalLogs = await fetch(`/api/governance/events?${urlParams.toString()}`).then(
+    (x) => x.json() as Promise<TransactionLog[]>,
+  );
 
   const proposalIds: Array<number> = [];
   for (const log of approvalLogs) {

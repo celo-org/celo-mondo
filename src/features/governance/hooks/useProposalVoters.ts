@@ -2,8 +2,6 @@ import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, PROPOSAL_V1_MAX_ID, StaleTime } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { isValidAddress } from 'src/utils/addresses';
@@ -42,8 +40,17 @@ export async function fetchProposalVoters(id: number): Promise<{
   const { castVoteTopics } = id > PROPOSAL_V1_MAX_ID ? getV2Topics(id) : getV1Topics(id);
 
   const voterToVotes: AddressTo<VoteAmounts> = {};
-  const castVoteParams = `topic0=${castVoteTopics[0]}&topic1=${castVoteTopics[1]}&topic0_1_opr=and`;
-  const castVoteEvents = await queryCeloscanLogs(Addresses.Governance, castVoteParams);
+  // const castVoteParams = `topic0=${castVoteTopics[0]}&topic1=${castVoteTopics[1]}&topic0_1_opr=and`;
+  // const castVoteEvents_ = await queryCeloscanLogs(Addresses.Governance, castVoteParams);
+  const urlParams = new URLSearchParams();
+  urlParams.append('eventName', id > PROPOSAL_V1_MAX_ID ? 'ProposalVotedV2' : 'ProposalVoted');
+  urlParams.append('proposalId', castVoteTopics[1] as string);
+  urlParams.append('chainId', '42220');
+
+  const castVoteEvents = await fetch(`/api/governance/events?${urlParams.toString()}`).then(
+    (x) => x.json() as Promise<TransactionLog[]>,
+  );
+
   reduceLogs(voterToVotes, castVoteEvents, true);
 
   // Skipping revoke vote events for now for performance since they are almost never used
