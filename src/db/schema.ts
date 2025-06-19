@@ -35,7 +35,8 @@ export const eventsTable = pgTable(
     index().on(table.blockNumber),
     index().on(table.eventName),
     index().on(table.chainId),
-    index().on(sql`${table.topics}[2]`), // proposalId - pgArrays are 1-indexed
+    // https://www.postgresql.org/docs/current/gin.html#GIN-INTRO - suited for array columns indexing
+    index('events_topics_proposalId_index').using('gin', sql`${table.topics}[2]`), // proposalId - pgArrays are 1-indexed
   ],
 );
 
