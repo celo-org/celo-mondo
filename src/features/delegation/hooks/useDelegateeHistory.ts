@@ -1,16 +1,13 @@
-import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
+import { Event, fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
-import { TransactionLog } from 'src/features/explorers/types';
 import { decodeVoteEventLog } from 'src/features/governance/hooks/useProposalVoters';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
 import { objFilter } from 'src/utils/objects';
-import { encodeEventTopics } from 'viem';
 
 export function useDelegateeHistory(address?: Address) {
   const { isLoading, isError, error, data } = useQuery({
@@ -36,18 +33,12 @@ export function useDelegateeHistory(address?: Address) {
 export async function fetchDelegateeHistory(
   address: Address,
 ): Promise<Record<number, VoteAmounts>> {
-  const v1Topics = getV1Topics(address);
-  const v2Topics = getV2Topics(address);
-
-  const castVoteV1Params = `topic0=${v1Topics[0]}&topic2=${v1Topics[2]}&topic0_2_opr=and`;
-  const castVoteV1Events = await queryCeloscanLogs(Addresses.Governance, castVoteV1Params);
-
-  const castVoteV2Params = `topic0=${v2Topics[0]}&topic2=${v2Topics[2]}&topic0_2_opr=and`;
-  const castVoteV2Events = await queryCeloscanLogs(Addresses.Governance, castVoteV2Params);
+  const castVoteEvents = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalVoted', {
+    account: address,
+  });
 
   const proposalToVotes: Record<number, VoteAmounts> = {};
-  reduceLogs(proposalToVotes, castVoteV1Events);
-  reduceLogs(proposalToVotes, castVoteV2Events);
+  reduceLogs(proposalToVotes, castVoteEvents);
 
   // Filter out voters with no current votes
   return objFilter(
@@ -56,7 +47,7 @@ export async function fetchDelegateeHistory(
   );
 }
 
-function reduceLogs(proposalToVotes: Record<number, VoteAmounts>, logs: TransactionLog[]) {
+function reduceLogs(proposalToVotes: Record<number, VoteAmounts>, logs: Event[]) {
   for (const log of logs) {
     const decoded = decodeVoteEventLog(log);
     if (!decoded) continue;
@@ -67,20 +58,4 @@ function reduceLogs(proposalToVotes: Record<number, VoteAmounts>, logs: Transact
       [VoteType.Abstain]: abstainVotes,
     };
   }
-}
-
-function getV1Topics(account: Address) {
-  return encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalVoted',
-    args: { account },
-  });
-}
-
-function getV2Topics(account: Address) {
-  return encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalVotedV2',
-    args: { account },
-  });
 }

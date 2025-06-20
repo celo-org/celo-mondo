@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 
+import type { NextConfig } from 'next';
 import { readFileSync } from 'node:fs';
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -122,4 +123,7 @@ export default {
   },
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
-};
+  experimental: {
+    reactCompiler: true,
+  },
+} as NextConfig;

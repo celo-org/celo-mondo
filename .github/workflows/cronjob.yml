@@ -1,0 +1,48 @@
+name: Check for events
+
+on:
+  schedule:
+    - cron: '*/1 * * * *' # Runs every 1 minutes
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: yarn-install
+        # Check out the lockfile from main, reinstall, and then
+        # verify the lockfile matches what was committed.
+        run: |
+          yarn install --immutable
+          CHANGES=$(git status -s)
+          if [[ ! -z $CHANGES ]]; then
+            echo "Changes found: $CHANGES"
+            git diff
+            exit 1
+          fi
+
+  fetch-historical-events:
+    runs-on: ubuntu-latest
+    needs: [install]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: backfill-db
+        run: yarn backfill-db
+        env:
+          # TODO: add these to github
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
