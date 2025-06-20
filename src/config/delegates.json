@@ -1190,7 +1190,7 @@
   "0xda8894b8761E3a876E4311265826599DC84b82D5": {
     "name": "Blockchain at Emory",
     "address": "0xda8894b8761E3a876E4311265826599DC84b82D5",
-    "logoUri": "logos/delegatees/emoryblockchainlogosquare.png",
+    "logoUri": "/logos/delegatees/emoryblockchainlogosquare.png",
     "date": "2025-03-24",
     "links": {
       "website": "https://www.linkedin.com/company/emoryblockchain/?viewAsMember=true",
