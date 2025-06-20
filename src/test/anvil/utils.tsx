@@ -32,7 +32,6 @@ export const testClient = createTestClient({
   transport: http(),
 });
 
-// @ts-expect-error
 export const publicClient = createPublicClient({
   chain: anvil,
   // For some reason if we don't set a batch size it fails on anvil?
@@ -40,7 +39,6 @@ export const publicClient = createPublicClient({
   transport: http(),
 }) as PublicClient;
 
-// @ts-expect-error
 export const publicArchiveClient = createPublicClient({
   chain: celo,
   transport: http(ANVIL_FORK_URL),

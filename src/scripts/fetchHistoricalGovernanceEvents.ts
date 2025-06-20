@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 import { governanceABI } from '@celo/abis';
 import { resolveAddress } from '@celo/actions';
 import { sql } from 'drizzle-orm';
@@ -58,6 +60,7 @@ async function fetchEvents(
   const query = {
     abi: governanceABI,
     eventName,
+    // @ts-expect-error - not sure why client isn't happy honestly
     address: await resolveAddress(client, 'Governance'),
   } as const;
 
@@ -75,6 +78,7 @@ async function fetchEvents(
         if (events.length) {
           const { count } = await database
             .insert(eventsTable)
+            // @ts-expect-error
             .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
             .onConflictDoNothing();
           console.log({ inserts: count });

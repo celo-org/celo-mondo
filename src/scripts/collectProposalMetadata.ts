@@ -65,5 +65,11 @@ async function main() {
 }
 
 main()
-  .then(() => logger.info('Done fetching proposals'))
-  .catch((error) => logger.warn('Error fetching proposals', error));
+  .then(() => {
+    logger.info('Done fetching proposals');
+    process.exit(0);
+  })
+  .catch((error) => {
+    logger.warn('Error fetching proposals', error);
+    process.exit(1);
+  });
