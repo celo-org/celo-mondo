@@ -1,6 +1,6 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
-import { fetchProposalEvents } from 'src/app/governance/events';
+import { Event, fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { isValidAddress } from 'src/utils/addresses';
 import { celoPublicClient } from 'src/utils/client';
@@ -29,11 +29,9 @@ export function useProposalUpvoters(id?: number) {
 }
 
 async function fetchProposalUpvoters(id: number): Promise<AddressTo<bigint>> {
-  const upvoteEvents = await fetchProposalEvents(
-    celoPublicClient.chain.id,
-    'ProposalUpvoted',
-    BigInt(id),
-  );
+  const upvoteEvents = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalUpvoted', {
+    proposalId: BigInt(id),
+  });
 
   // Reduce logs to a map of voters to upvotes
   const voterToUpvotes: AddressTo<bigint> = {};
@@ -43,10 +41,7 @@ async function fetchProposalUpvoters(id: number): Promise<AddressTo<bigint>> {
   return objFilter(voterToUpvotes, (_, votes): votes is bigint => votes > 0n);
 }
 
-function reduceLogs(
-  voterToUpvotes: AddressTo<bigint>,
-  logs: Awaited<ReturnType<typeof fetchProposalEvents>>,
-) {
+function reduceLogs(voterToUpvotes: AddressTo<bigint>, logs: Event[]) {
   for (const log of logs) {
     try {
       if (!log.topics || log.topics.length < 3) continue;

@@ -1,6 +1,6 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
-import { fetchProposalEvents } from 'src/app/governance/events';
+import { Event, fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { celoPublicClient } from 'src/utils/client';
@@ -41,7 +41,7 @@ async function fetchDequeuedProposalIds(): Promise<Array<number>> {
   return proposalIds.sort((a, b) => a - b);
 }
 
-function decodeLog(log: Awaited<ReturnType<typeof fetchProposalEvents>>[number]) {
+function decodeLog(log: Event) {
   try {
     if (!log.topics || log.topics.length < 2) return null;
     const { eventName, args } = decodeEventLog({

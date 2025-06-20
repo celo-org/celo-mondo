@@ -1,37 +1,60 @@
 'use server';
 
 import { governanceABI } from '@celo/abis';
-import { and, eq, sql } from 'drizzle-orm';
-import { PROPOSAL_V1_MAX_ID } from 'src/config/consts';
+import { and, eq, or, SQL, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable } from 'src/db/schema';
 import { encodeEventTopics } from 'viem';
 
-type Event =
+type EventName =
   | 'ProposalQueued'
   | 'ProposalDequeued'
   | 'ProposalApproved'
   | 'ProposalExecuted'
   | 'ProposalVoted'
   | 'ProposalVoteRevoked'
-  | 'ProposalVotedV2'
-  | 'ProposalVoteRevokedV2'
+  // | 'ProposalVotedV2' -- auto aliasing
+  // | 'ProposalVoteRevokedV2' -- auto aliasing
   | 'ProposalUpvoted'
   | 'ProposalUpvoteRevoked'
   | 'ProposalExpired';
 
-export async function fetchProposalEvents(chainId: number, event: Event, proposalId?: bigint) {
-  if (event === 'ProposalVoted') {
-    event = proposalId! > PROPOSAL_V1_MAX_ID ? 'ProposalVotedV2' : 'ProposalVoted';
-  } else if (event === 'ProposalVoteRevoked') {
-    event = proposalId! > PROPOSAL_V1_MAX_ID ? 'ProposalVoteRevokedV2' : 'ProposalVoteRevoked';
-  }
-  const topics = getTopics(event, proposalId);
+export type Event = Awaited<ReturnType<typeof fetchProposalEvents>>[number];
 
-  const filters = [eq(eventsTable.eventName, event), eq(eventsTable.chainId, chainId)];
+export async function fetchProposalEvents(
+  chainId: number,
+  event: EventName,
+  { proposalId, account }: { proposalId?: bigint; account?: `0x${string}` } = {},
+) {
+  const topics = getTopics(event, { proposalId, account });
+
+  const filters: SQL[] = [eq(eventsTable.chainId, chainId)];
+
+  if (event === 'ProposalVoted') {
+    filters.push(
+      or(
+        ...[
+          eq(eventsTable.eventName, 'ProposalVotedV2'),
+          eq(eventsTable.eventName, 'ProposalVoted'),
+        ],
+      )!,
+    );
+  } else if (event === 'ProposalVoteRevoked') {
+    filters.push(
+      or(
+        eq(eventsTable.eventName, 'ProposalVoteRevokedV2'),
+        eq(eventsTable.eventName, 'ProposalVoteRevoked'),
+      )!,
+    );
+  } else {
+    filters.push(eq(eventsTable.eventName, event));
+  }
 
   if (proposalId !== undefined) {
     filters.push(eq(sql`${eventsTable.topics}[2]`, topics[1]));
+  }
+  if (account !== undefined) {
+    filters.push(eq(sql`${eventsTable.topics}[3]`, topics[2]));
   }
 
   const events = await database
@@ -43,10 +66,13 @@ export async function fetchProposalEvents(chainId: number, event: Event, proposa
   return events;
 }
 
-function getTopics(eventName: Event, proposalId?: bigint) {
+function getTopics(
+  eventName: EventName,
+  { proposalId, account }: { proposalId?: bigint; account?: `0x${string}` } = {},
+) {
   return encodeEventTopics({
     abi: governanceABI,
     eventName,
-    args: { proposalId },
+    args: { proposalId, account },
   });
 }

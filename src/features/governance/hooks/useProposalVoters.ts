@@ -1,6 +1,6 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
-import { fetchProposalEvents } from 'src/app/governance/events';
+import { Event, fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/types';
@@ -37,11 +37,9 @@ export async function fetchProposalVoters(id: number): Promise<{
   voters: AddressTo<VoteAmounts>;
   totals: VoteAmounts;
 }> {
-  const castVoteEvents = await fetchProposalEvents(
-    celoPublicClient.chain.id,
-    'ProposalVoted',
-    BigInt(id),
-  );
+  const castVoteEvents = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalVoted', {
+    proposalId: BigInt(id),
+  });
 
   const voterToVotes: AddressTo<VoteAmounts> = {};
   reduceLogs(voterToVotes, castVoteEvents, true);
@@ -71,11 +69,7 @@ export async function fetchProposalVoters(id: number): Promise<{
   return { voters, totals };
 }
 
-function reduceLogs(
-  voterToVotes: AddressTo<VoteAmounts>,
-  logs: Awaited<ReturnType<typeof fetchProposalEvents>>,
-  isCast: boolean,
-) {
+function reduceLogs(voterToVotes: AddressTo<VoteAmounts>, logs: Event[], isCast: boolean) {
   for (const log of logs) {
     const decoded = decodeVoteEventLog(log);
     if (!decoded) continue;
@@ -92,7 +86,7 @@ function reduceLogs(
   }
 }
 
-export function decodeVoteEventLog(log: Awaited<ReturnType<typeof fetchProposalEvents>>[number]) {
+export function decodeVoteEventLog(log: Event) {
   try {
     if (!log.topics || log.topics.length < 3) return null;
     const { eventName, args } = decodeEventLog({
