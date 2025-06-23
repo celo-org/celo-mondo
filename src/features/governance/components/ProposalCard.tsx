@@ -11,7 +11,7 @@ import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
-import { fromWei } from 'src/utils/amount';
+import { numberFromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase, trimToLength } from 'src/utils/strings';
 import { getEndHumanEndTime } from 'src/utils/time';
@@ -41,7 +41,7 @@ export function ProposalCard({
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {}).map(([vote, amount]) => ({
     label: toTitleCase(vote),
-    value: fromWei(amount),
+    value: numberFromWei(amount), // Assuming StackedBarChart expects number for value
     percentage: percent(amount, sum),
     color: VoteToColor[vote as VoteType],
   }));

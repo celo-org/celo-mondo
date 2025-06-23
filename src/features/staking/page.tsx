@@ -38,7 +38,7 @@ import { Color } from 'src/styles/Color';
 import { tableClasses } from 'src/styles/common';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { shortenAddress } from 'src/utils/addresses';
-import { fromWei } from 'src/utils/amount';
+import { fromWei, numberFromWei } from 'src/utils/amount';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
@@ -369,7 +369,16 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
                   </div>
                 </td>
                 <td className={tableClasses.td}>
-                  {((data.value / fromWei(group?.votes || 1)) * 100).toFixed(2) + '%'}
+                  {(() => {
+                    // data.value is number (from useValidatorStakers, which now does Number(fromWei(...)))
+                    // fromWei(group?.votes) is bigint, so numberFromWei is used for the number conversion
+                    const denominatorNumber = numberFromWei(group?.votes || 1n); // Use 1n to avoid fromWei(0) if votes is 0
+                    if (denominatorNumber === 0) {
+                      return '0.00%'; // Or handle as appropriate for zero total votes
+                    }
+                    const percentage = (data.value / denominatorNumber) * 100; // data.value is already number
+                    return percentage.toFixed(2) + '%';
+                  })()}
                 </td>
                 <td className={tableClasses.td}>{formatNumberString(data.value)}</td>
               </tr>

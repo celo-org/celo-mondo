@@ -46,18 +46,23 @@ export function ActiveStakesTable({
 
     const tableData = objKeys(groupToStake)
       .map((address) => {
-        const stake = fromWei(groupToStake[address].active + groupToStake[address].pending);
-        const percentage = percent(stake, total);
+        const stakeBigInt = fromWei(groupToStake[address].active + groupToStake[address].pending);
+        // Assuming percent function expects numbers if its inputs were previously from fromWei pre-bigint change
+        const percentage = percent(Number(stakeBigInt), Number(total));
         const name = addressToGroup?.[address]?.name;
-        return { address, name, stake, percentage };
+        return { address, name, stake: stakeBigInt, percentage };
       })
-      .sort((a, b) => b.stake - a.stake)
-      .filter((d) => d.stake >= 0.01);
+      .sort((a, b) => { // stake is bigint
+        if (b.stake > a.stake) return 1;
+        if (b.stake < a.stake) return -1;
+        return 0;
+      })
+      .filter((d) => d.stake > 0n); // Only show if stake is at least 1 whole unit (after fromWei truncation)
 
     const chartData = sortAndCombineChartData(
       tableData.map(({ address, stake, percentage }) => ({
         label: addressToGroup[address]?.name || 'Unknown Group',
-        value: stake,
+        value: Number(stake), // Assuming chart expects number, stake is bigint
         percentage,
       })),
     );

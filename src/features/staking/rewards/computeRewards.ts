@@ -1,5 +1,5 @@
 import { GroupToStake, StakeEvent, StakeEventType } from 'src/features/staking/types';
-import { fromWei } from 'src/utils/amount';
+import { numberFromWei } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { objKeys } from 'src/utils/objects';
 import { getDaysBetween } from 'src/utils/time';
@@ -32,7 +32,8 @@ function computeRewardAmount(stakeEvents: StakeEvent[], stakes: GroupToStake) {
     const totalVoted = groupTotals[group];
     const rewardWei = currentVotes + totalVoted;
     if (rewardWei > 0n) {
-      groupRewards[group] = fromWei(rewardWei);
+      // groupRewards is AddressTo<number>
+      groupRewards[group] = numberFromWei(rewardWei);
     } else {
       logger.warn('Reward for group < 0, should never happen', rewardWei.toString(), group);
       groupRewards[group] = 0;
@@ -75,7 +76,8 @@ export function getTimeWeightedAverageActive(events: StakeEvent[]) {
   let totalDays = 0;
   for (let i = 0; i < numEvents; i++) {
     const { type, value: valueInWei, timestamp } = sortedEvents[i];
-    const value = fromWei(valueInWei);
+    // Keep activeVotes, sum, avgActive as numbers for APY calculation simplicity
+    const value = numberFromWei(valueInWei);
     // has next event ? its timestamp : today
     const nextTimestamp = i < numEvents - 1 ? sortedEvents[i + 1].timestamp : Date.now();
     const numDays = getDaysBetween(timestamp, nextTimestamp);

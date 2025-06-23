@@ -57,11 +57,11 @@ function VoterTableContent({
       const label = groupName || shortenAddress(account);
       for (const type of objKeys(voters[account])) {
         const amount = fromWei(voters[account][type]);
-        if (amount <= 0) continue;
+        if (amount <= 0n) continue; // amount is bigint
         const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
         votesByType[type]?.push({
           label,
-          value: amount,
+          value: amount, // amount is bigint
           percentage,
           address: normalizeAddress(account),
         });
@@ -75,8 +75,12 @@ function VoterTableContent({
     const combined = objKeys(combinedByType)
       .map((type) => combinedByType[type].map((v) => ({ ...v, type })))
       .flat();
-    // Sort by value and take the top NUM_VOTERS_TO_SHOW
-    const sorted = combined.sort((a, b) => b.value - a.value);
+    // Sort by value (which is bigint) and take the top NUM_VOTERS_TO_SHOW
+    const sorted = combined.sort((a, b) => {
+      if (b.value > a.value) return 1;
+      if (b.value < a.value) return -1;
+      return 0;
+    });
     return sorted.slice(0, NUM_TO_SHOW);
   }, [voters, totals, addressToGroup]);
 
