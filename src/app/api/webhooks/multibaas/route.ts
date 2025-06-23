@@ -22,7 +22,7 @@ type MultibassEvent = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  const body = (await request.json()) as Object;
+  const body = (await request.json()) as object;
   if (
     !assertSignature(
       body,
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 }
 
 function assertSignature(
-  payload: Object,
+  payload: object,
   signature: string | null,
   timestamp: string | null,
 ): payload is MultibassEvent {
