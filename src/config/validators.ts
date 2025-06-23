@@ -481,4 +481,11 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       twitter: 'https://x.com/ethichub',
     },
   },
+  '0x6F769BcC21A867b839b6cA59dDe6c6C90c1DF18D': {
+    logo: '/logos/validators/celo-pg.jpg',
+    links: {
+      website: 'https://www.celopg.eco/',
+      twitter: 'https://x.com/CeloPublicGoods',
+    },
+  },
 };
