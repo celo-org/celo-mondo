@@ -474,4 +474,11 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       twitter: 'https://twitter.com/Telefonica',
     },
   },
+  '0xC80AF7298642bE7eb156F51311D3C4A314688909': {
+    logo: '/logos/validators/ethichub.png',
+    links: {
+      website: 'https://ethichub.com',
+      twitter: 'https://x.com/ethichub',
+    },
+  },
 };
