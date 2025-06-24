@@ -61,7 +61,7 @@ export default function Page() {
 
 function BridgeLink({ name, operator, href, logo, description }: Bridge) {
   return (
-    <div className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:gap-32 sm:p-5">
+    <div className="flex items-center justify-between border border-taupe-300 bg-white mx-auto max-w-xl p-4 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
         <div className="flex flex-col gap-1">

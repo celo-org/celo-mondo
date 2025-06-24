@@ -134,7 +134,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   groups_.forEach((group, i) => {
     group.score = fromFixidity(groupScores[i]);
   });
-  console.log(groupScores);
+
   validators_.forEach((validator, i) => {
     validator.score = fromFixidity(validatorScores[i]);
   });
