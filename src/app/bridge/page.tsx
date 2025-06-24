@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
-import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { config } from 'src/config/config';
@@ -62,15 +61,13 @@ export default function Page() {
 
 function BridgeLink({ name, operator, href, logo, description }: Bridge) {
   return (
-    <div className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:gap-32 sm:p-5">
+    <div className="mx-auto flex max-w-xl items-center justify-between border border-taupe-300 bg-white p-4 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <h2 className="font-serif text-xl">{name}</h2>
-          <div className="flex flex-row gap-2">
-            <h3 className="text-sm">{`By ${operator}`}</h3>
-            <HelpIcon text={description} type="tooltip" />
-          </div>
+          <h3 className="text-sm">{`By ${operator}`}</h3>
+          <p className="text-sm">{description}</p>
         </div>
       </div>
       <SolidButton className="all:p-0">
