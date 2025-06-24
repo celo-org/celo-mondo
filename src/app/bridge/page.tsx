@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
-import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { config } from 'src/config/config';
