@@ -65,12 +65,10 @@ function BridgeLink({ name, operator, href, logo, description }: Bridge) {
     <div className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:gap-32 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <h2 className="font-serif text-xl">{name}</h2>
-          <div className="flex flex-row gap-2">
-            <h3 className="text-sm">{`By ${operator}`}</h3>
-            <HelpIcon text={description} type="tooltip" />
-          </div>
+          <h3 className="text-sm">{`By ${operator}`}</h3>
+          <p className='text-sm'>{description}</p>
         </div>
       </div>
       <SolidButton className="all:p-0">
