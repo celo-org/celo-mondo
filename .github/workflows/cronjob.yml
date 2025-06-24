@@ -43,6 +43,5 @@ jobs:
       - name: backfill-db
         run: yarn backfill-db
         env:
-          # TODO: add these to github
           PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
