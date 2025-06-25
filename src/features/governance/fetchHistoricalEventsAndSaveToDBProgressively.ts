@@ -24,7 +24,7 @@ const bigintMath = {
   max: (...args: bigint[]) => args.reduce((max_, x) => (x > max_ ? x : max_)),
 };
 
-export default async function fetchHistoricalEvents(
+export default async function fetchHistoricalEventsAndSaveToDBProgressively(
   eventName: GetContractEventsParameters<typeof governanceABI>['eventName'],
   client: PublicClient<Transport, Chain>,
   fromBlock?: bigint,

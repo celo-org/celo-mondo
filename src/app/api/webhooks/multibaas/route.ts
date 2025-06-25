@@ -1,7 +1,7 @@
 import { governanceABI } from '@celo/abis';
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
-import fetchHistoricalEvents from 'src/features/governance/fetchHistoricalGovernanceEvents';
+import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
 import { celoPublicClient } from 'src/utils/client';
 import { GetContractEventsParameters } from 'viem';
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   // in theory we _could_ just insert the `event.rawFields` directly in the db...
-  await fetchHistoricalEvents(body.data.event.name, celoPublicClient);
+  await fetchHistoricalEventsAndSaveToDBProgressively(body.data.event.name, celoPublicClient);
 
   return new Response(null, { status: 200 });
 }

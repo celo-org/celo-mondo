@@ -1,4 +1,4 @@
-import fetchHistoricalEvents from 'src/features/governance/fetchHistoricalGovernanceEvents';
+import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
@@ -18,17 +18,17 @@ async function main() {
     }),
   }) as PublicClient<Transport, Chain>;
 
-  await fetchHistoricalEvents('ProposalQueued', client, fromBlock);
-  await fetchHistoricalEvents('ProposalDequeued', client, fromBlock);
-  await fetchHistoricalEvents('ProposalApproved', client, fromBlock);
-  await fetchHistoricalEvents('ProposalExecuted', client, fromBlock);
-  await fetchHistoricalEvents('ProposalVoted', client, fromBlock);
-  await fetchHistoricalEvents('ProposalVoteRevoked', client, fromBlock);
-  await fetchHistoricalEvents('ProposalVotedV2', client, fromBlock);
-  await fetchHistoricalEvents('ProposalVoteRevokedV2', client, fromBlock);
-  await fetchHistoricalEvents('ProposalUpvoted', client, fromBlock);
-  await fetchHistoricalEvents('ProposalUpvoteRevoked', client, fromBlock);
-  await fetchHistoricalEvents('ProposalExpired', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalQueued', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalDequeued', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalApproved', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalExecuted', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoted', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoteRevoked', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVotedV2', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoteRevokedV2', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalUpvoted', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalUpvoteRevoked', client, fromBlock);
+  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalExpired', client, fromBlock);
 
   process.exit(0);
 }
