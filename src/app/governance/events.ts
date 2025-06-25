@@ -60,8 +60,7 @@ export async function fetchProposalEvents(
   const events = await database
     .select()
     .from(eventsTable)
-    .where(and(...filters))
-    .limit(1000);
+    .where(and(...filters));
 
   return events;
 }
