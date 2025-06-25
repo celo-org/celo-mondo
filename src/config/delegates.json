@@ -778,5 +778,121 @@
     },
     "interests": ["Public Goods", "DeSci", "Asia", "Gitcoin", "GreenPill"],
     "description": "Co-founder of DeSci Asia, Gitcoin Grant 20, 21, 23 DeSci community round core operator, GreenPill Network DeSci Pod Mod, GreenSofa(Greenpill Taiwan) Steward"
+  },
+  "0x0579A616689f7ed748dC07692A3F150D44b0CA09": {
+    "name": "Arana Digital",
+    "address": "0x0579A616689f7ed748dC07692A3F150D44b0CA09",
+    "logoUri": "/logos/delegatees/0x0579A616689f7ed748dC07692A3F150D44b0CA09.png",
+    "date": "2025-05-06",
+    "links": {
+      "twitter": "https://x.com/AranaVentures"
+    },
+    "interests": ["DeFi", "Governance", "Research"],
+    "description": "Arana Digital is a team experienced in DAO governance, operations, growth and research. Our members are deeply steeped in the crypto space and have multiple years of participation in protocol governance. With delegation history for DEXs, money markets, L2s, liquid staking protocols, and stablecoins, we’re acclimated with a breadth of sectors. We bring a diversity of experience to DAOs–our members have consulted for companies like Immutable and dYdX, worked at crypto investment and trading firms, set up various validator nodes, and run educational events for university students."
+  },
+  "0x07fA3338a53CFAA1911A255F0c3054E800873e77": {
+    "name": "ODTU Blockchain",
+    "address": "0x07fA3338a53CFAA1911A255F0c3054E800873e77",
+    "logoUri": "/logos/delegatees/0x07fA3338a53CFAA1911A255F0c3054E800873e77.JPG",
+    "date": "2025-05-31",
+    "links": {
+      "twitter": "https://x.com/odtublockchain"
+    },
+    "interests": ["Blockchain"],
+    "description": "Building a blockchain community"
+  },
+  "0x107822dBc14f76631DDE0ebecb23d40f733C3D98": {
+    "name": "TUM Blockchain Club",
+    "address": "0x107822dBc14f76631DDE0ebecb23d40f733C3D98",
+    "logoUri": "/logos/delegatees/0x107822dBc14f76631DDE0ebecb23d40f733C3D98.png",
+    "date": "2025-03-30",
+    "links": {
+      "website": "https://www.tum-blockchain.com/",
+      "twitter": "https://x.com/tbc_munich"
+    },
+    "interests": ["Blockchain", "Education", "Community", "Governance"],
+    "description": "Leading student-run Blockchain Club in Germany"
+  },
+  "0x214348e96A9F8ca3e4E7B02f668b9053803626F3": {
+    "name": "yomfana",
+    "address": "0x214348e96A9F8ca3e4E7B02f668b9053803626F3",
+    "logoUri": "/logos/delegatees/0x214348e96A9F8ca3e4E7B02f668b9053803626F3.jpeg",
+    "date": "2025-04-20",
+    "links": {
+      "website": "https://forum.celo.org/u/yomfana"
+    },
+    "interests": ["Engineering", "Celo in Africa", "Transparency", "Accountability", "Governance"],
+    "description": "I'm Ken. EVM protocol researcher from South Africa with a strong track record in blockchain infrastructure. I am deeply committed to Celo’s long-term success and growth. As a delegate, my goal is to champion transparent governance, advocate for accountability across the ecosystem, and support initiatives that drive meaningful adoption and impact."
+  },
+  "0x3d958C62b36e01018644538Bd1998C1E9BE1dDD8": {
+    "name": "Luiz Fernando",
+    "address": "0x3d958C62b36e01018644538Bd1998C1E9BE1dDD8",
+    "logoUri": "/logos/delegatees/0x3d958C62b36e01018644538Bd1998C1E9BE1dDD8.jpg",
+    "date": "2025-05-21",
+    "links": {
+      "twitter": "https://x.com/louizfe"
+    },
+    "interests": ["ReFi", "DAOs", "BioFi", "Ethereum Localism"],
+    "description": "Hi there! I'm Luiz Fernando ✨  Currently founder & lead at ReFi Barcelona and operations lead at ReFi DAO, I've spent the last 3 years organizing and supporting communities and programs across the Celo & ReFi space — initially with PrimeDAO and now through ReFi DAO, Regen Coordination and ReFi Barcelona. I'd like to promote interconnection within and between ReFi, Regen and local ecosystems - catalyzing grounded real‑world adoption by local communities and economies, in the spirit of Ethereum Localism and Regen Coordination. 🌿"
+  },
+  "0x5500486B4befeEB673beBdB39aF6aa244516eB5C": {
+    "name": "Africa DAO",
+    "address": "0x5500486B4befeEB673beBdB39aF6aa244516eB5C",
+    "logoUri": "/logos/delegatees/0x5500486B4befeEB673beBdB39aF6aa244516eB5C.png",
+    "date": "2025-05-15",
+    "links": {
+      "website": "https://www.celoafricadao.xyz/",
+      "twitter": "https://x.com/CeloAfricaDao"
+    },
+    "interests": ["Stablecoins", "Education", "DeFi", "Public Goods", "Community"],
+    "description": "Africa DAO is Celo's largest and pioneering DAO, dedicated to fostering the growth and adoption of the Celo blockchain across the African continent. By empowering local communities, supporting impactful projects, and advancing Web3 education, we play a vital role in realizing Celo’s mission of building a regenerative digital economy that creates prosperity for all.  As delegates, we are committed to advancing Africa DAO’s mission by strengthening community-driven governance, promoting local innovation, and ensuring that the unique perspectives and needs of African builders are represented within the Celo ecosystem. We believe Africa holds immense potential to lead in regenerative finance and decentralized technology, and we are passionate about unlocking that potential at scale. We’re excited to continue shaping Celo’s future and driving meaningful, lasting impact across the continent."
+  },
+  "0x99bBBD148E6FF643E7692fEFF690beb72857eefc": {
+    "name": "Boiler Blockchain",
+    "address": "0x99bBBD148E6FF643E7692fEFF690beb72857eefc",
+    "logoUri": "/logos/delegatees/0x99bBBD148E6FF643E7692fEFF690beb72857eefc.png",
+    "date": "2025-03-31",
+    "links": {
+      "website": "https://www.boilerblockchain.org/",
+      "twitter": "https://x.com/BoilerChain"
+    },
+    "interests": ["Blockchain,Decentralization,Education,Governance"],
+    "description": "Club at Purdue University dedicated to Blockchain Education and Innovation"
+  },
+  "0xF51a8e9b603940e65e7aCE14C40Bf465a2295F3f": {
+    "name": "College DAO",
+    "address": "0xF51a8e9b603940e65e7aCE14C40Bf465a2295F3f",
+    "logoUri": "/logos/delegatees/CollegeDAO.png",
+    "date": "2025-03-22",
+    "links": {
+      "website": "https://collegedao.io",
+      "twitter": "https://x.com/collegedao_hub"
+    },
+    "interests": ["Blockchain", "Education", "Infrastructure", "Community", "Governance"],
+    "description": "College DAO is the largest university blockchain network at 130+ top universities and Ivy Leagues worldwide. We enable the most forward-thinking protocols to accelerate adoption, education, and community building in the university ecosystem across every touch point - from hackathons and events, to validator programs and a network of permanent on-campus hacker houses."
+  },
+  "0xcc0549f9dc6D8c5BD1EeC10d9E70eEEA32c818D7": {
+    "name": "katenora",
+    "address": "0xcc0549f9dc6D8c5BD1EeC10d9E70eEEA32c818D7",
+    "logoUri": "/logos/delegatees/0xcc0549f9dc6D8c5BD1EeC10d9E70eEEA32c818D7.jpg",
+    "date": "2025-04-04",
+    "links": {
+      "website": "https://celo.org ",
+      "twitter": "https://x.com/KateEldaly"
+    },
+    "interests": ["blockchain", "governance", "research", "rollups"],
+    "description": "Kate is a Product Marketing Manager and Board Member at cLabs, and has been an integral part of the Celo ecosystem since January 2021. With over four years at cLabs contributing to Celo, she is deeply passionate about the mission and committed to ensuring the network’s long-term success."
+  },
+  "0xda8894b8761E3a876E4311265826599DC84b82D5": {
+    "name": "Blockchain at Emory",
+    "address": "0xda8894b8761E3a876E4311265826599DC84b82D5",
+    "logoUri": "/logos/delegatees/emoryblockchainlogosquare.png",
+    "date": "2025-03-24",
+    "links": {
+      "website": "https://www.linkedin.com/company/emoryblockchain/?viewAsMember=true",
+      "twitter": "https://x.com/blockchainemory"
+    },
+    "interests": ["Blockchain", "Education", "Growth", "Community", "Treasury Management"],
+    "description": "​The Blockchain at Emory is a student-led interest group dedicated to exploring everything related to blockchain technology. Our mission is to bridge the gap between the complex fintech industry and our members by fostering a deeper understanding of blockchain. Through engaging lesson plans, talks with industry experts, and networking events, we equip our members with the knowledge and skills necessary to navigate the ever-evolving landscape of the blockchain industry. The interest group is a dynamic platform for students passionate about blockchain, providing valuable insights and preparing them for future opportunities in this transformative space."
   }
 }

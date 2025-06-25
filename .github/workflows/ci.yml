@@ -47,7 +47,7 @@ jobs:
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: build
-        run: yarn run build
+        run: yarn run build:ci
         env:
           NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
 
@@ -105,7 +105,7 @@ jobs:
       - uses: foundry-rs/foundry-toolchain@v1
 
       - name: build
-        run: yarn run build
+        run: yarn run build:ci
         env:
           NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
       - name: test
