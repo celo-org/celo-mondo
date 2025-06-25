@@ -90,6 +90,7 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
         }
 
         console.log(`Halved the block step down to ${step}`);
+        // Continue the loop without incrementing fromBlock nor saving progress to DB
         continue;
       }
       throw e;
