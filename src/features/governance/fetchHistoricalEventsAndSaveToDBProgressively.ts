@@ -65,7 +65,7 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
       const events = await client.getContractEvents({
         ...query,
         fromBlock,
-        toBlock: fromBlock + step,
+        toBlock: fromBlock + step >= latestBlock ? 'latest' : fromBlock + step,
       });
 
       // If there was any events, save them in the db
