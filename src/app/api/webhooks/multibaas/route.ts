@@ -22,7 +22,7 @@ type MultibassEvent = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  const body = (await request.json()) as object;
+  const body = await request.json();
   if (
     !assertSignature(
       body,
@@ -33,17 +33,21 @@ export async function POST(request: NextRequest): Promise<Response> {
     return new Response(null, { status: 403 });
   }
 
-  // in theory we _could_ just insert the `event.rawFields` directly in the db...
-  await fetchHistoricalEventsAndSaveToDBProgressively(body.data.event.name, celoPublicClient);
+  for (const {
+    data: { event },
+  } of body) {
+    // in theory we _could_ just insert the `event.rawFields` directly in the db...
+    await fetchHistoricalEventsAndSaveToDBProgressively(event.name, celoPublicClient);
+  }
 
   return new Response(null, { status: 200 });
 }
 
 function assertSignature(
-  payload: object,
+  payload: unknown,
   signature: string | null,
   timestamp: string | null,
-): payload is MultibassEvent {
+): payload is MultibassEvent[] {
   if (!payload || !signature || !timestamp) {
     return false;
   }
@@ -53,11 +57,14 @@ function assertSignature(
   hmac.update(timestamp);
   const signature_ = hmac.digest().toString('hex');
 
-  console.log({ payload, signature, timestamp, signature_ });
-
   if (signature !== signature_) {
+    console.log({
+      payload,
+      json: JSON.stringify(payload),
+      signature,
+      signature_,
+    });
     return false;
   }
-
   return true;
 }

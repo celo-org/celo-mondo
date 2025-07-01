@@ -86,6 +86,7 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
       ) {
         step /= 2n;
         if (step <= 1_000) {
+          console.log(e);
           throw new Error('Retried too many times now...');
         }
 
