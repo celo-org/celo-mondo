@@ -124,6 +124,6 @@ export default {
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
   experimental: {
-    reactCompiler: true,
+    // reactCompiler: true,
   },
 } as NextConfig;

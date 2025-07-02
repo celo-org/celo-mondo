@@ -93,6 +93,10 @@ export function ValidatorGroupTable({
     }
   }, [isMobile, table]);
 
+  useEffect(() => {
+    setIsTopGroupsExpanded(false);
+  }, [filter]);
+
   return (
     <div>
       <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-end md:justify-between">
@@ -136,7 +140,10 @@ export function ValidatorGroupTable({
             expand={() => setIsTopGroupsExpanded(true)}
           />
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className={clsx(classNames.tr, row.original.isHidden && 'hidden')}>
+            <tr
+              key={row.original.address}
+              className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
+            >
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={classNames.td}>
                   <Link href={`/staking/${row.original.address}`} className="flex px-4 py-4">
@@ -278,6 +285,7 @@ function useTableColumns(totalVotes: bigint) {
       }),
       columnHelper.accessor('votes', {
         header: 'Staked',
+        enableSorting: true,
         cell: (props) => (
           <Amount
             valueWei={props.getValue()}
@@ -375,6 +383,9 @@ function computeCumulativeShare(
   if (!groups?.length || !address || !totalVotes) return 0;
   const index = groups.findIndex((g) => g.address === address);
   const sum = groups.slice(0, index + 1).reduce((acc, group) => acc + group.votes, 0n);
+
+  // NOTE: could remove BigNumber here
+  // Number(sum * 100_000n) / totalVotes)) / 1000
   return BigNumber(sum.toString())
     .dividedBy(totalVotes.toString())
     .times(100)
