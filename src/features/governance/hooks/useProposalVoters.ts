@@ -105,15 +105,15 @@ export function decodeVoteEventLog(log: Event) {
     if (eventName === 'ProposalVoted' || eventName === 'ProposalVoteRevoked') {
       proposalId = Number(args.proposalId);
       account = args.account;
-      yesVotes = (args.value === 3n && args.weight) || 0n;
-      noVotes = (args.value === 2n && args.weight) || 0n;
-      abstainVotes = (args.value === 1n && args.weight) || 0n;
+      yesVotes = (BigInt(args.value!) === 3n && BigInt(args.weight!)) || 0n;
+      noVotes = (BigInt(args.value!) === 2n && BigInt(args.weight!)) || 0n;
+      abstainVotes = (BigInt(args.value!) === 1n && BigInt(args.weight!)) || 0n;
     } else if (eventName === 'ProposalVotedV2' || eventName === 'ProposalVoteRevokedV2') {
       proposalId = Number(args.proposalId);
       account = args.account;
-      yesVotes = args.yesVotes || 0n;
-      noVotes = args.noVotes || 0n;
-      abstainVotes = args.abstainVotes || 0n;
+      yesVotes = BigInt(args.yesVotes!) || 0n;
+      noVotes = BigInt(args.noVotes!) || 0n;
+      abstainVotes = BigInt(args.abstainVotes!) || 0n;
     } else {
       logger.warn('Invalid event name, expected ProposalVoted', eventName);
       return null;

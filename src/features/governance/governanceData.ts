@@ -1,4 +1,5 @@
 import { governanceABI } from '@celo/abis';
+import { fetchProposalEvents } from 'src/app/governance/events';
 import {
   APPROVAL_STAGE_EXPIRY_TIME,
   EXECUTION_STAGE_EXPIRY_TIME,
@@ -7,7 +8,6 @@ import {
 } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import CachedMetadata from 'src/config/proposals.json';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import {
   ACTIVE_PROPOSAL_STAGES,
@@ -16,6 +16,7 @@ import {
   ProposalStage,
   VoteType,
 } from 'src/features/governance/types';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
 import { PublicClient, encodeEventTopics } from 'viem';
@@ -173,7 +174,7 @@ export async function fetchExecutedProposalIds(): Promise<number[]> {
     eventName: 'ProposalExecuted',
   });
 
-  const events = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
+  const events = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalExecuted');
   return events.map((e) => parseInt(e.topics[1], 16));
 } /*
  * merges onchain data with metadata
