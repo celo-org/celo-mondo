@@ -10,11 +10,6 @@ import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
 async function main() {
-  let fromBlock: bigint | undefined;
-
-  if (process.env.RESUME_FROM_BLOCK) {
-    fromBlock = BigInt(process.env.RESUME_FROM_BLOCK);
-  }
   const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
 
   const client = createPublicClient({
@@ -29,7 +24,7 @@ async function main() {
 
   const groupedEvents = await database
     .select({
-      proposalId: proposalIdSql.mapWith(BigInt),
+      proposalId: proposalIdSql.mapWith(Number),
       events: sql<(typeof eventsTable.$inferSelect)[]>`JSON_AGG(events)`,
     })
     .from(eventsTable)
@@ -63,6 +58,7 @@ async function main() {
     ),
   });
 
+  const rowsToInsert = [] as (typeof proposalsTable.$inferInsert)[];
   for (let i = 0; i < groupedEvents.length; i++) {
     const { proposalId, events } = groupedEvents[i];
     events.sort((a, b) => Number(a.blockNumber - b.blockNumber));
@@ -93,25 +89,25 @@ async function main() {
         throw new Error('Unknown event: ' + events.at(-1)?.eventName);
     }
 
-    const [proposer, deposit, timestampSec, numTransactions, url, networkWeight, isApproved] =
+    const [_proposer, _deposit, _timestampSec, _numTransactions, url, _networkWeight, _isApproved] =
       properties[i];
 
     const cgpMatch = url.match(/cgp-(\d+)\.md/);
 
     const metadata = proposalsMetadata.find(
-      ({ id, cgp }) =>
-        BigInt(id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
+      ({ id, cgp }) => (id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
     );
 
     if (!metadata) {
       console.log('-metadata not found for', { proposalId, cgp: cgpMatch?.[1] });
       continue;
     }
-    await database.insert(proposalsTable).values({
+
+    rowsToInsert.push({
       id: proposalId,
       chainId: client.chain.id,
       createdAt: parseInt((events.at(0)!.args as any).timestamp as string, 10),
-      cgp: BigInt(metadata.cgp),
+      cgp: metadata.cgp,
       author: metadata.author,
       url: metadata.url!,
       cgpUrl: metadata.cgpUrl,
@@ -120,6 +116,23 @@ async function main() {
       title: metadata.title,
     });
   }
+
+  const { count } = await database
+    .insert(proposalsTable)
+    .values(rowsToInsert)
+    .onConflictDoUpdate({
+      set: {
+        cgp: sql`excluded."cgp"`,
+        author: sql`excluded."author"`,
+        url: sql`excluded."url"`,
+        cgpUrl: sql`excluded."cgpUrl"`,
+        cgpUrlRaw: sql`excluded."cgpUrlRaw"`,
+        stage: sql`excluded."stage"`,
+        title: sql`excluded."title"`,
+      },
+      target: [proposalsTable.chainId, proposalsTable.id],
+    });
+  console.log(`Upserted ${count} proposals`);
 
   process.exit(0);
 }

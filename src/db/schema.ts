@@ -1,5 +1,5 @@
 import { governanceABI } from '@celo/abis';
-import { relations, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import {
   bigint,
   foreignKey,
@@ -32,7 +32,7 @@ export const eventsTable = pgTable(
     address: varchar({ length: 42 }).notNull(),
     topics: text().array().notNull().$type<[signature: `0x${string}`, ...args: `0x${string}`[]]>(),
     data: text().notNull().$type<`0x${string}`>(),
-    blockNumber: bigint({ mode: 'bigint' }).notNull(),
+    blockNumber: numeric({ mode: 'bigint' }).notNull(),
     transactionHash: varchar({ length: 66 }).notNull(),
   },
   (table) => [
@@ -52,7 +52,7 @@ export const blocksProcessedTable = pgTable(
   {
     chainId: integer().notNull(),
     eventName: text().notNull(),
-    blockNumber: bigint({ mode: 'bigint' }).notNull(),
+    blockNumber: numeric({ mode: 'bigint' }).notNull(),
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
@@ -64,10 +64,10 @@ export const proposalsTable = pgTable(
   'proposals',
   {
     chainId: integer().notNull(),
-    id: bigint({ mode: 'bigint' }).notNull(),
-    pastId: bigint({ mode: 'bigint' }),
+    id: bigint({ mode: 'number' }).notNull(),
+    pastId: bigint({ mode: 'number' }),
     stage: text().notNull().$type<ProposalStage>(),
-    cgp: bigint({ mode: 'bigint' }).notNull(),
+    cgp: bigint({ mode: 'number' }).notNull(),
     url: text(),
     cgpUrl: text(), // url in repo
     cgpUrlRaw: text(), // for downloading content
@@ -78,8 +78,11 @@ export const proposalsTable = pgTable(
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
-    foreignKey({ columns: [table.pastId], foreignColumns: [table.id] }).onDelete('restrict'),
-    primaryKey({ columns: [table.id] }),
+    foreignKey({
+      columns: [table.pastId, table.chainId],
+      foreignColumns: [table.id, table.chainId],
+    }).onDelete('cascade'),
+    primaryKey({ columns: [table.id, table.chainId] }),
   ],
 );
 
@@ -95,24 +98,13 @@ export const votesTable = pgTable(
     chainId: integer().notNull(),
     type: VoteTypeEnum().notNull(),
     count: numeric({ mode: 'bigint' }).notNull(),
-    proposalId: bigint({ mode: 'bigint' }).notNull(),
+    proposalId: bigint({ mode: 'number' }).notNull(),
   },
   (table) => [
-    foreignKey({ columns: [table.proposalId], foreignColumns: [proposalsTable.id] }).onDelete(
-      'restrict',
-    ),
+    foreignKey({
+      columns: [table.proposalId, table.chainId],
+      foreignColumns: [proposalsTable.id, proposalsTable.chainId],
+    }).onDelete('cascade'),
     primaryKey({ columns: [table.chainId, table.type, table.proposalId] }),
   ],
 );
-
-// export const proposalRelations = relations(proposalsTable, ({ many }) => ({
-//   votes: many(votesTable, {
-//     relationName: 'votes',
-//   }),
-// }));
-export const votesRelations = relations(votesTable, ({ one }) => ({
-  votes: one(proposalsTable, {
-    fields: [votesTable.proposalId],
-    references: [proposalsTable.id],
-  }),
-}));
