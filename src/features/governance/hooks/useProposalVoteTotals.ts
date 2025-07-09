@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage } from 'src/features/governance/types';
+import { fetchProposalVoters } from 'src/features/governance/utils/votes';
 import { logger } from 'src/utils/logger';
 
 export function useHistoricalProposalVoteTotals(id: number) {

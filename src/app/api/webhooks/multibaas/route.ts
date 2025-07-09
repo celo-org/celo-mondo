@@ -5,11 +5,8 @@ import { createHmac } from 'node:crypto';
 import database from 'src/config/database';
 import { votesTable } from 'src/db/schema';
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
-import {
-  decodeVoteEventLog,
-  fetchProposalVoters,
-} from 'src/features/governance/hooks/useProposalVoters';
 import { VoteType } from 'src/features/governance/types';
+import { decodeVoteEventLog, fetchProposalVoters } from 'src/features/governance/utils/votes';
 import { celoPublicClient } from 'src/utils/client';
 import { GetContractEventsParameters } from 'viem';
 
