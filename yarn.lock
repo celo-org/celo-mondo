@@ -312,7 +312,7 @@ __metadata:
     react-minimal-pie-chart: "npm:^8.4.0"
     react-toastify: "npm:^10.0.5"
     sharp: "npm:^0.33.5"
-    tailwindcss: "npm:^3.4.16"
+    tailwindcss: "npm:^3.4.17"
     ts-jest: "npm:^29.1.2"
     ts-node: "npm:^10.9.2"
     tsx: "npm:^4.20.3"
@@ -11112,7 +11112,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tailwindcss@npm:^3.4.16":
+"tailwindcss@npm:^3.4.17":
   version: 3.4.17
   resolution: "tailwindcss@npm:3.4.17"
   dependencies:
