@@ -49,7 +49,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@celo/devchain-anvil": "12.0.0-canary.49",
+    "@celo/devchain-anvil": "12.0.5",
     "@tanstack/eslint-plugin-query": "^5.28.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

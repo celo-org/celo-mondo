@@ -260,7 +260,7 @@ __metadata:
     "@celo/abis": "npm:^12.0.3"
     "@celo/actions": "npm:^0.0.1-beta.3"
     "@celo/compliance": "npm:^1.0.24"
-    "@celo/devchain-anvil": "npm:12.0.0-canary.49"
+    "@celo/devchain-anvil": "npm:12.0.5"
     "@headlessui/react": "npm:^1.7.19"
     "@metamask/jazzicon": "npm:^2.0.0"
     "@metamask/post-message-stream": "npm:6.1.2"
@@ -367,10 +367,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@celo/devchain-anvil@npm:12.0.0-canary.49":
-  version: 12.0.0-canary.49
-  resolution: "@celo/devchain-anvil@npm:12.0.0-canary.49"
-  checksum: 10/7f3e359a41dde6f50b64eab91f8d3fc5aa16892767d34ae172a703eae499dc0d98df2527b2ff25fb2240a846d0b6364f6acea274cd2269c1dbccb584e9f6f83c
+"@celo/devchain-anvil@npm:12.0.5":
+  version: 12.0.5
+  resolution: "@celo/devchain-anvil@npm:12.0.5"
+  checksum: 10/b230e0c3543d02576b75ef063705b1e5a6213f573785778b9f0c6c5091b9c00c80abb03f963d02f42e67ecaeabc4045a6b76f8037154fa5f8b762957af46088a
   languageName: node
   linkType: hard
 
