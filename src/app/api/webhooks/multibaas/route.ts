@@ -31,14 +31,13 @@ type MultibassEvent = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  const body = await request.json();
-  if (
-    !assertSignature(
-      body,
-      request.headers.get('X-MultiBaas-Signature'),
-      request.headers.get('X-MultiBaas-Timestamp'),
-    )
-  ) {
+  const rawBody = await request.text();
+  const body = assertSignature(
+    rawBody,
+    request.headers.get('X-MultiBaas-Signature'),
+    request.headers.get('X-MultiBaas-Timestamp'),
+  );
+  if (!body) {
     return new Response(null, { status: 403 });
   }
 
@@ -56,41 +55,37 @@ export async function POST(request: NextRequest): Promise<Response> {
 }
 
 function assertSignature(
-  payload: unknown,
+  payload: string,
   signature: string | null,
   timestamp: string | null,
-): payload is MultibassEvent[] {
+): MultibassEvent[] | false {
   if (!payload || !signature || !timestamp) {
     return false;
   }
 
   const hmac = createHmac('sha256', process.env.MULTIBAAS_WEBHOOK_SECRET!);
-  hmac.update(Buffer.from(JSON.stringify(payload)));
+  hmac.update(Buffer.from(payload));
   hmac.update(timestamp);
   const signature_ = hmac.digest().toString('hex');
 
   if (signature !== signature_) {
     console.log({
       payload,
-      json: JSON.stringify(payload),
+      json: payload,
       signature,
       signature_,
     });
     return false;
   }
-  return true;
+  return JSON.parse(payload);
 }
 
 async function handleVoteEvent(event: MultibassEvent['data']['event']): Promise<void> {
   if (
-    !(
-      [
-        'ProposalVoted',
-        'ProposalVotedV2',
-        'ProposalVoteRevoked',
-        'ProposalVoteRevokedV2',
-      ] as EventName[]
-    ).includes(event.name)
+    !assertEvent(
+      ['ProposalVoted', 'ProposalVotedV2', 'ProposalVoteRevoked', 'ProposalVoteRevokedV2'] as const,
+      event.name,
+    )
   ) {
     return;
   }
@@ -101,7 +96,7 @@ async function handleVoteEvent(event: MultibassEvent['data']['event']): Promise<
   }
 
   const { totals } = await fetchProposalVoters(proposal.proposalId);
-  await database
+  const { count } = await database
     .insert(votesTable)
     .values(
       Object.entries(totals).map(([type, count]) => ({
@@ -115,19 +110,22 @@ async function handleVoteEvent(event: MultibassEvent['data']['event']): Promise<
       set: { count: sql`excluded.count` },
       target: [votesTable.proposalId, votesTable.type, votesTable.chainId],
     });
+
+  console.log(`Inserted ${count} vote records for proposal ${proposal.proposalId}`);
 }
 
 async function handleProposalEvent(event: MultibassEvent['data']['event']): Promise<void> {
   if (
-    !(
+    !assertEvent(
       [
         'ProposalExecuted',
         'ProposalApproved',
         'ProposalExpired',
         'ProposalDequeued',
         'ProposalQueued',
-      ] as EventName[]
-    ).includes(event.name)
+      ] as const,
+      event.name,
+    )
   ) {
     return;
   }
@@ -139,12 +137,7 @@ async function handleProposalEvent(event: MultibassEvent['data']['event']): Prom
     abi: governanceABI,
     topics,
     data,
-    eventName: event.name as
-      | 'ProposalExecuted'
-      | 'ProposalApproved'
-      | 'ProposalExpired'
-      | 'ProposalDequeued'
-      | 'ProposalQueued',
+    eventName: event.name,
   });
   if (!proposalId) {
     throw new Error('Couldnt update the proposal');
@@ -185,6 +178,22 @@ async function handleProposalEvent(event: MultibassEvent['data']['event']): Prom
     default:
       throw new Error('Unknown event: ' + event.name);
   }
+  const blockchainStage = await celoPublicClient.readContract({
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'getProposalStage',
+    args: [proposalId],
+  });
+
+  // NOTE: it actually is the case `ProposalExpired` never gets called
+  // according to Martin Volpe
+  // >> nicolas: is it possible the ProposalExpired never gets emitted?
+  // >> martin: probably because nobody takes the time to execute a expired proposal
+  // >>         or the tx reverts, so it can’t even be emitted
+  if (blockchainStage === ProposalStage.Expiration && stage !== ProposalStage.Executed) {
+    stage = ProposalStage.Expiration;
+  }
+
   const cgpMatch = url.match(/cgp-(\d+)\.md/);
 
   const metadata = proposalsMetadata.find(
@@ -201,14 +210,24 @@ async function handleProposalEvent(event: MultibassEvent['data']['event']): Prom
   const createdAt =
     event.name === 'ProposalQueued'
       ? parseInt(event.inputs.find((x) => x.name == 'timestamp')!.value!, 10)
-      : Date.now(); // createdAt will only be inserted if raw doesnt exist yet
+      : 0; // createdAt will only be inserted if raw doesnt exist yet
+  const proposer =
+    event.name === 'ProposalQueued' ? event.inputs.find((x) => x.name == 'proposer')!.value! : ''; // proposer will only be inserted if raw doesnt exist yet
+  const deposit =
+    event.name === 'ProposalQueued'
+      ? BigInt(event.inputs.find((x) => x.name == 'deposit')!.value!)
+      : 0n; // deposit will only be inserted if raw doesnt exist yet
+  const transactionCount =
+    event.name === 'ProposalQueued'
+      ? parseInt(event.inputs.find((x) => x.name == 'transactionCount')!.value!, 10)
+      : 0; // transactionCount will only be inserted if raw doesnt exist yet
 
   await database
     .insert(proposalsTable)
     .values({
       id: Number(proposalId),
       chainId: celoPublicClient.chain.id,
-      createdAt,
+      timestamp: createdAt,
       cgp: metadata.cgp,
       author: metadata.author,
       url: metadata.url!,
@@ -216,12 +235,45 @@ async function handleProposalEvent(event: MultibassEvent['data']['event']): Prom
       cgpUrlRaw: metadata.cgpUrlRaw,
       stage,
       title: metadata.title,
+      proposer,
+      deposit,
+      executedAt: metadata.timestampExecuted ? metadata.timestampExecuted / 1000 : null,
+      transactionCount,
     })
     .onConflictDoUpdate({
       set: {
         // NOTE: normally only the stage should be updated over time...
         stage: sql`excluded."stage"`,
+        // NOTE: but maybe otherthings were updated in github?
+        author: sql`excluded."author"`,
+        url: sql`excluded."url"`,
+        cgpUrl: sql`excluded."cgpUrl"`,
+        cgpUrlRaw: sql`excluded."cgpUrlRaw"`,
+        title: sql`excluded."title"`,
       },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
+
+  console.log(`Upserted proposal ${proposalId} to stage ${stage}`);
+
+  const allProposals = await database
+    .select({
+      id: proposalsTable.id,
+    })
+    .from(proposalsTable)
+    .where(sql`${proposalsTable.cgp} = ${metadata.cgp}`)
+    .groupBy(proposalsTable.cgp);
+
+  const ids = allProposals.map((x) => x.id);
+  while (ids.length > 1) {
+    const [pastId] = ids.splice(0, 1);
+    await database
+      .update(proposalsTable)
+      .set({ pastId: pastId })
+      .where(sql`${proposalsTable.id} = ${ids.at(0)}`);
+  }
+}
+
+function assertEvent<T>(eventNames: readonly T[], eventName: any): eventName is T {
+  return eventNames.includes(eventName);
 }

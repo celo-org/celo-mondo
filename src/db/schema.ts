@@ -66,15 +66,18 @@ export const proposalsTable = pgTable(
     chainId: integer().notNull(),
     id: bigint({ mode: 'number' }).notNull(),
     pastId: bigint({ mode: 'number' }),
-    stage: text().notNull().$type<ProposalStage>(),
+    stage: integer().notNull().$type<ProposalStage>(),
     cgp: bigint({ mode: 'number' }).notNull(),
     url: text(),
     cgpUrl: text(), // url in repo
     cgpUrlRaw: text(), // for downloading content
     title: text().notNull(),
     author: text().notNull(),
-    createdAt: integer().notNull(),
+    timestamp: integer().notNull(),
     executedAt: integer(),
+    proposer: text(),
+    deposit: numeric({ mode: 'bigint' }),
+    transactionCount: integer(),
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),

@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
-import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { VoteType } from 'src/features/governance/types';
+import { fetchProposalVoters } from 'src/features/governance/utils/votes';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 

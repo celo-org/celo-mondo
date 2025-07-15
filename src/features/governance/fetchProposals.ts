@@ -1,13 +1,58 @@
 'use server';
 
-import { sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import database from 'src/config/database';
-import { proposalsTable } from 'src/db/schema';
+import { proposalsTable, votesTable } from 'src/db/schema';
+import { VoteType } from 'src/features/governance/types';
 
 export async function fetchProposals(chainId: number) {
-  return database
-    .select()
+  const results = await database
+    .select({
+      proposal: proposalsTable,
+      votes: votesTable,
+    })
     .from(proposalsTable)
     .where(sql`${proposalsTable.chainId} = ${chainId}`)
-    .orderBy(sql`${proposalsTable.id} DESC`);
+    .orderBy(sql`${proposalsTable.id} DESC`)
+    .leftJoin(
+      votesTable,
+      and(
+        eq(votesTable.proposalId, proposalsTable.id),
+        eq(votesTable.chainId, proposalsTable.chainId),
+      ),
+    );
+
+  const proposalsMap = results.reduce(
+    (acc, row) => {
+      const { proposal, votes } = row;
+      if (!acc.has(proposal.id)) {
+        acc.set(proposal.id, {
+          ...proposal,
+          votes: {
+            [VoteType.Yes]: 0n,
+            [VoteType.No]: 0n,
+            [VoteType.Abstain]: 0n,
+            [VoteType.None]: 0n,
+          },
+          history: [],
+        });
+      }
+      if (votes) {
+        acc.get(proposal.id)!.votes[votes.type] = votes.count;
+      }
+      if (proposal.pastId && acc.has(proposal.pastId)) {
+        acc.get(proposal.id)!.history.push(proposal.pastId);
+      }
+      return acc;
+    },
+    new Map<
+      number,
+      typeof proposalsTable.$inferSelect & {
+        votes: Record<VoteType, bigint>;
+        history: number[];
+      }
+    >(),
+  );
+
+  return [...proposalsMap.entries()].map((x) => x[1]);
 }

@@ -4,17 +4,34 @@
 import { Metadata } from 'next';
 import { Section } from 'src/components/layout/Section';
 import { Proposal } from 'src/features/governance/components/Proposal';
-import { collectProposals, findProposal } from 'src/features/governance/governanceData';
+import { fetchProposals } from 'src/features/governance/fetchProposals';
 import { celoPublicClient } from 'src/utils/client';
 
 // id might be just a number as a string or can be cgp-N
 type Params = Promise<{ id: string }>;
 
+// TODO: DEDUP
+function findProposal(
+  proposals: Awaited<ReturnType<typeof fetchProposals>> | undefined,
+  id: string,
+) {
+  if (!proposals || !id) return undefined;
+  const matches = new RegExp(/^(cgp-)?(\d+)$/).exec(id);
+  if (matches?.[1] === 'cgp-') {
+    const cgpId = parseInt(matches[2]);
+    return proposals.find((p) => p.cgp === cgpId);
+  } else if (matches?.[2]) {
+    const propId = parseInt(matches[2]);
+    return proposals.find((p) => p.id === propId);
+  } else {
+    return undefined;
+  }
+}
 export async function generateMetadata(props: { params: Params }): Promise<Metadata> {
   const { id } = await props.params;
-  const proposals = await collectProposals(celoPublicClient);
+  const proposals = await fetchProposals(celoPublicClient.chain.id);
   const proposal = findProposal(proposals, id);
-  const title = `${id}: ${proposal?.metadata?.title}`;
+  const title = `${id}: ${proposal?.title}`;
   const description = `View and Vote on Celo Governance Proposal ${proposal?.metadata?.cgp} - #${proposal?.id} on Celo Mondo`;
   return {
     title,

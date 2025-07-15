@@ -19,7 +19,7 @@ import {
 import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
-import { PublicClient, encodeEventTopics } from 'viem';
+import { PublicClient } from 'viem';
 
 export const collectProposals = async (publicClient: PublicClient) => {
   const [proposals, metadata, executedIds] = await Promise.all([
@@ -169,14 +169,16 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
 // so this query is used to double-check the status of proposals
 
 export async function fetchExecutedProposalIds(): Promise<number[]> {
-  const topics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalExecuted',
-  });
+  // const topics = encodeEventTopics({
+  //   abi: governanceABI,
+  //   eventName: 'ProposalExecuted',
+  // });
 
   const events = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalExecuted');
   return events.map((e) => parseInt(e.topics[1], 16));
-} /*
+}
+
+/*
  * merges onchain data with metadata
  * @param proposals - onchain proposals
  * @param metadata - metadata from the repo
@@ -188,10 +190,10 @@ export function mergeProposalsWithMetadata(
   proposals: Proposal[],
   metadata: ProposalMetadata[],
   executedIds: number[],
-): Array<MergedProposalData> {
+): MergedProposalData[] {
   const sortedProposals = [...proposals].sort((a, b) => b.id - a.id);
   const sortedMetadata = [...metadata].sort((a, b) => b.cgp - a.cgp);
-  const merged: Array<MergedProposalData> = [];
+  const merged: MergedProposalData[] = [];
   const proposalMap = new Map(sortedProposals.map((p) => [p.id, p]));
 
   // One day deduping proposals first will might be a better approach
