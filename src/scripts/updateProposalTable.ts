@@ -120,7 +120,6 @@ async function main() {
       ({ id, cgp }) => (id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
     );
 
-    // TODO: add this to the webhook
     if (!metadata) {
       console.log('metadata not found, trying to query old block', { proposalId });
       // NOTE: if `url` is empty, it means it's not available on the blockchain

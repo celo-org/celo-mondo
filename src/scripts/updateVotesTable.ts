@@ -21,10 +21,10 @@ async function main() {
 
   const rowsToInsert = [] as (typeof votesTable.$inferInsert)[];
   for (const proposal of proposals) {
-    const votes = await fetchProposalVoters(proposal.id);
+    const { totals } = await fetchProposalVoters(proposal.id);
 
     rowsToInsert.push(
-      ...Object.entries(votes.totals).map(([type, count]) => ({
+      ...Object.entries(totals).map(([type, count]) => ({
         type: type as VoteType,
         count,
         chainId: client.chain.id,
@@ -32,7 +32,7 @@ async function main() {
       })),
     );
 
-    console.log('processed proposalId: ', proposal.id, votes.totals);
+    console.log('processed proposalId: ', proposal.id, totals);
   }
 
   const { count } = await database
