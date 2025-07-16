@@ -59,8 +59,9 @@ export async function POST(request: NextRequest): Promise<Response> {
           .values(proposal)
           .onConflictDoUpdate({
             set: {
-              // NOTE: normally only the stage should be updated over time...
+              // NOTE: normally only the stage and neworkWeight should be updated over time...
               stage: sql`excluded."stage"`,
+              networkWeight: sql`excluded."networkWeight"`,
               // NOTE: but maybe other things were updated in github?
               author: sql`excluded."author"`,
               url: sql`excluded."url"`,

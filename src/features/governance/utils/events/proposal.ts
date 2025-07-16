@@ -85,18 +85,14 @@ export async function handleProposalEvent(
     stage = ProposalStage.Expiration;
   }
 
-  let url: string | undefined;
-  const urlIndex = 4;
-  if (stage === ProposalStage.Queued) {
-    url = (
-      await client.readContract({
-        address: Addresses.Governance,
-        abi: governanceABI,
-        functionName: 'getProposal',
-        args: [proposalId],
-      })
-    )[urlIndex];
-  }
+  const blockchainProposal = await client.readContract({
+    address: Addresses.Governance,
+    abi: governanceABI,
+    functionName: 'getProposal',
+    args: [proposalId],
+  });
+  const url = blockchainProposal[4];
+  const networkWeight = blockchainProposal[5];
   const cgpMatch = url?.match(/cgp-(\d+)\.md/);
 
   const metadata = proposalsMetadata.find(
@@ -139,6 +135,7 @@ export async function handleProposalEvent(
     title: metadata.title,
     proposer,
     deposit,
+    networkWeight,
     executedAt: metadata.timestampExecuted ? metadata.timestampExecuted / 1000 : null,
     transactionCount,
   };

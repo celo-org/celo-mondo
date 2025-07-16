@@ -165,14 +165,24 @@ async function main() {
       }
     }
 
-    if (proposalId === 131) {
-      console.log(events, url);
-    }
-
     if (!metadata) {
       console.log('-metadata not found for', { proposalId });
       continue;
     }
+
+    // NOTE: use last block where the proposal was still on chain to know about network weight
+    const networkWeight =
+      properties[i][5] ||
+      (await client
+        .readContract({
+          blockNumber: BigInt(events.at(-1)!.blockNumber!) - 1n,
+          abi: governanceABI,
+          address: Addresses.Governance,
+          functionName: 'getProposal',
+          args: [BigInt(proposalId)],
+        })
+        .then((x) => x[5])
+        .catch((_) => 0n));
 
     const proposalEventQueuedArgs = events.at(0)!.args as Awaited<
       ReturnType<typeof parseEventLogs<typeof governanceABI, true, 'ProposalQueued'>>
@@ -191,6 +201,7 @@ async function main() {
       title: metadata!.title,
       proposer: proposalEventQueuedArgs.proposer,
       deposit: BigInt(proposalEventQueuedArgs.deposit),
+      networkWeight,
       executedAt: metadata?.timestampExecuted ? metadata.timestampExecuted / 1000 : null,
       transactionCount: parseInt(proposalEventQueuedArgs.transactionCount.toString(), 10),
     });
@@ -214,6 +225,7 @@ async function main() {
         title: sql`excluded."title"`,
         proposer: sql`excluded."proposer"`,
         deposit: sql`excluded."deposit"`,
+        networkWeight: sql`excluded."networkWeight"`,
         executedAt: sql`excluded."executedAt"`,
         transactionCount: sql`excluded."transactionCount"`,
       },

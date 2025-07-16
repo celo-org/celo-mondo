@@ -77,6 +77,7 @@ export const proposalsTable = pgTable(
     executedAt: integer(),
     proposer: text(),
     deposit: numeric({ mode: 'bigint' }),
+    networkWeight: numeric({ mode: 'bigint' }),
     transactionCount: integer(),
   },
   (table) => [

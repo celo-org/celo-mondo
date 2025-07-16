@@ -58,7 +58,7 @@ export async function fetchProposalsFromRepo(
 
     // If it's in the cache, use it
     const cachedProposal = cache.find((p) => p.cgp === cgpNumber);
-    if (cachedProposal && cachedProposal.stage >= ProposalStage.Executed) {
+    if (cachedProposal && cachedProposal.stage >= ProposalStage.None) {
       validProposals.push(cachedProposal);
       continue;
     }
