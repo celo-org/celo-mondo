@@ -67,7 +67,7 @@ export async function fetchProposalsFromRepo(
     const content = await fetchGithubFile(file.download_url, true)
       // NOTE: try to fetch via our own proxy, which is slower, but will prevent
       // CORS errors, especially useful on localhost
-      .catch(() => fetchFromProxy(cgpNumber))
+      // .catch(() => fetchFromProxy(cgpNumber))
       .catch(() => null);
     if (!content) {
       errorUrls.push(file.download_url);

@@ -5,16 +5,15 @@ import { resolveAddress } from '@celo/actions';
 import { sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { blocksProcessedTable, eventsTable } from 'src/db/schema';
+import { assertEvent } from 'src/features/governance/utils/votes';
 import {
   Chain,
-  GetContractEventsParameters,
   HttpRequestError,
   PublicClient,
   RpcRequestError,
   TimeoutError,
   Transport,
 } from 'viem';
-
 import '../../vendor/polyfill.js';
 
 const default_step = 100_000n;
@@ -24,11 +23,29 @@ const bigintMath = {
   max: (...args: bigint[]) => args.reduce((max_, x) => (x > max_ ? x : max_)),
 };
 
+const VALID_EVENTS = [
+  'ProposalQueued',
+  'ProposalDequeued',
+  'ProposalApproved',
+  'ProposalExecuted',
+  'ProposalVoted',
+  'ProposalVoteRevoked',
+  'ProposalVotedV2',
+  'ProposalVoteRevokedV2',
+  'ProposalUpvoted',
+  'ProposalUpvoteRevoked',
+  'ProposalExpired',
+] as const;
+
 export default async function fetchHistoricalEventsAndSaveToDBProgressively(
-  eventName: GetContractEventsParameters<typeof governanceABI>['eventName'],
+  eventName: string,
   client: PublicClient<Transport, Chain>,
   fromBlock?: bigint,
 ) {
+  if (!assertEvent(VALID_EVENTS, eventName)) {
+    console.info('Not a valid event', eventName);
+    return;
+  }
   const latestBlock = await client.getBlockNumber();
 
   if (!fromBlock) {
@@ -72,7 +89,6 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
       if (events.length) {
         const { count } = await database
           .insert(eventsTable)
-          // @ts-expect-error
           .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
           .onConflictDoNothing();
         console.log({ inserts: count });

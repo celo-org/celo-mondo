@@ -122,3 +122,7 @@ export function decodeVoteEventLog(log: Event) {
     return null;
   }
 }
+
+export function assertEvent<T>(eventNames: readonly T[], eventName: any): eventName is T {
+  return eventNames.includes(eventName);
+}

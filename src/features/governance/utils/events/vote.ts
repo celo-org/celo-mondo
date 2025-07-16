@@ -3,21 +3,24 @@ import 'server-only';
 import { Event } from 'src/app/governance/events';
 import { votesTable } from 'src/db/schema';
 import { VoteType } from 'src/features/governance/types';
-import { decodeVoteEventLog, fetchProposalVoters } from 'src/features/governance/utils/votes';
-import { Chain, PublicClient, Transport } from 'viem';
+import {
+  assertEvent,
+  decodeVoteEventLog,
+  fetchProposalVoters,
+} from 'src/features/governance/utils/votes';
 
 const ALLOWED_EVENTS = [
   'ProposalVoted',
   'ProposalVotedV2',
   'ProposalVoteRevoked',
   'ProposalVoteRevokedV2',
-];
+] as const;
 export async function handleVoteEvent(
   eventName: string,
   event: Event,
-  client: PublicClient<Transport, Chain>,
+  chainId: number,
 ): Promise<(typeof votesTable)['$inferInsert'][]> {
-  if (!ALLOWED_EVENTS.includes(eventName)) {
+  if (!assertEvent(ALLOWED_EVENTS, eventName)) {
     console.info('Not a vote event');
     return [];
   }
@@ -32,7 +35,7 @@ export async function handleVoteEvent(
   return Object.entries(totals).map(([type, count]) => ({
     type: type as VoteType,
     count,
-    chainId: client.chain.id,
+    chainId,
     proposalId: proposal.proposalId,
   }));
 }

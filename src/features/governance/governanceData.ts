@@ -169,11 +169,6 @@ export async function fetchGovernanceProposals(publicClient: PublicClient): Prom
 // so this query is used to double-check the status of proposals
 
 export async function fetchExecutedProposalIds(): Promise<number[]> {
-  // const topics = encodeEventTopics({
-  //   abi: governanceABI,
-  //   eventName: 'ProposalExecuted',
-  // });
-
   const events = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalExecuted');
   return events.map((e) => parseInt(e.topics[1], 16));
 }

@@ -157,6 +157,11 @@ export async function fetchThresholds(
     functionName: 'getConstitution',
   } as const;
 
+  if (results.length === 0) {
+    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1730
+    results.push([0n, '0x0000000000000000000000000000000000000000', '0x00000000']);
+  }
+
   const thresholds = await publicClient?.multicall({
     ...getRuntimeBlock(),
     allowFailure: false,

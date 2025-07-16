@@ -32,7 +32,7 @@ async function main() {
       })),
     );
 
-    console.log('processed proposalId: ', proposal.id, totals);
+    console.info('processed proposalId: ', proposal.id, totals);
   }
 
   const { count } = await database
@@ -43,7 +43,7 @@ async function main() {
       target: [votesTable.proposalId, votesTable.type, votesTable.chainId],
     });
 
-  console.log(`Updated all votes (inserts: ${count}) for ${proposals.length} proposals`);
+  console.info(`Updated all votes (inserts: ${count}) for ${proposals.length} proposals`);
   process.exit(0);
 }
 
