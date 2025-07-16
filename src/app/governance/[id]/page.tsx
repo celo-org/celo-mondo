@@ -32,7 +32,7 @@ export async function generateMetadata(props: { params: Params }): Promise<Metad
   const proposals = await fetchProposals(celoPublicClient.chain.id);
   const proposal = findProposal(proposals, id);
   const title = `${id}: ${proposal?.title}`;
-  const description = `View and Vote on Celo Governance Proposal ${proposal?.metadata?.cgp} - #${proposal?.id} on Celo Mondo`;
+  const description = `View and Vote on Celo Governance Proposal ${proposal?.cgp} - #${proposal?.id} on Celo Mondo`;
   return {
     title,
     description,
