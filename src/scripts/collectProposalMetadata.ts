@@ -4,7 +4,6 @@ import path from 'path';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 import { fetchProposalVoters } from 'src/features/governance/utils/votes';
-import { sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
 import { fileURLToPath } from 'url';
 // @ts-ignore
@@ -53,7 +52,6 @@ async function main() {
       logger.info(`Fetching votes for proposal ${proposal.id}`);
       const { totals } = await fetchProposalVoters(proposal.id);
       logger.info(totals);
-      await sleep(300); // for rate limits
       proposal.votes = totals;
     } catch (error) {
       logger.error(`Error fetching votes for proposal ${proposal.id}`, error);
