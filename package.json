@@ -93,7 +93,7 @@
     "prepare": "husky",
     "clean": "rm -rf dist cache .next",
     "dev": "next dev",
-    "build": "yarn backfill-db && yarn build:ci",
+    "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
     "build:ci": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
     "build:delegatees-json": "tsx ./src/scripts/combineDelegateesMetadata.ts",

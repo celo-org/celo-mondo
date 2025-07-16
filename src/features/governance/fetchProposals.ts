@@ -3,7 +3,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
-import { VoteType } from 'src/features/governance/types';
+import { VoteAmounts, VoteType } from 'src/features/governance/types';
 
 export async function fetchProposals(chainId: number) {
   const results = await database
@@ -32,13 +32,14 @@ export async function fetchProposals(chainId: number) {
             [VoteType.Yes]: 0n,
             [VoteType.No]: 0n,
             [VoteType.Abstain]: 0n,
-            [VoteType.None]: 0n,
           },
           history: [],
         });
       }
       if (votes) {
-        acc.get(proposal.id)!.votes[votes.type] = votes.count;
+        // NOTE: trim VoteType.None
+        const type = votes.type as keyof VoteAmounts;
+        acc.get(proposal.id)!.votes[type] = votes.count;
       }
       if (proposal.pastId && acc.has(proposal.pastId)) {
         acc.get(proposal.id)!.history.push(proposal.pastId);
@@ -48,7 +49,7 @@ export async function fetchProposals(chainId: number) {
     new Map<
       number,
       typeof proposalsTable.$inferSelect & {
-        votes: Record<VoteType, bigint>;
+        votes: VoteAmounts;
         history: number[];
       }
     >(),
