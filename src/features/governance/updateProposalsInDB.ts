@@ -30,7 +30,7 @@ export default async function updateProposalsInDB(
   ];
 
   if (proposalIds && proposalIds.length) {
-    conditions.push(inArray(sql`${eventsTable.args}->>'proposalId'`, proposalIds));
+    conditions.push(inArray(proposalIdSql, proposalIds));
   }
 
   const groupedEvents = await database
