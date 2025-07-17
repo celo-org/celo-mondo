@@ -41,12 +41,13 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
   eventName: string,
   client: PublicClient<Transport, Chain>,
   fromBlock?: bigint,
-) {
+): Promise<bigint[]> {
   if (!assertEvent(VALID_EVENTS, eventName)) {
     console.info('Not a valid event', eventName);
-    return;
+    return [];
   }
   const latestBlock = await client.getBlockNumber();
+  const proposalIds: bigint[] = [];
 
   if (!fromBlock) {
     const [lastBlock] = await database
@@ -87,6 +88,9 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
 
       // If there was any events, save them in the db
       if (events.length) {
+        proposalIds.push(
+          ...events.map((x) => x.args.proposalId).filter((x) => typeof x === 'bigint'),
+        );
         const { count } = await database
           .insert(eventsTable)
           .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
@@ -131,4 +135,6 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
     // increment the fromBlock to fetch more recent events
     fromBlock += step;
   }
+
+  return proposalIds;
 }

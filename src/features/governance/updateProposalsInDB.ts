@@ -18,7 +18,7 @@ export default async function updateProposalsInDB(
 ): Promise<void> {
   const proposalIdSql = sql`(${eventsTable.args}->>'proposalId')::bigint`;
 
-  const conditions = and(
+  const conditions = [
     eq(eventsTable.chainId, client.chain.id),
     inArray(eventsTable.eventName, [
       'ProposalQueued',
@@ -27,10 +27,10 @@ export default async function updateProposalsInDB(
       'ProposalExecuted',
       'ProposalExpired',
     ]),
-  );
+  ];
 
   if (proposalIds && proposalIds.length) {
-    conditions!.append(and(inArray(sql`${eventsTable.args}->>'proposalId'`, proposalIds))!);
+    conditions.push(inArray(sql`${eventsTable.args}->>'proposalId'`, proposalIds));
   }
 
   const groupedEvents = await database
@@ -39,7 +39,7 @@ export default async function updateProposalsInDB(
       events: sql<(typeof eventsTable.$inferSelect)[]>`JSON_AGG(events)`,
     })
     .from(eventsTable)
-    .where(conditions)
+    .where(and(...conditions))
     .groupBy(proposalIdSql)
     .orderBy(proposalIdSql);
 
