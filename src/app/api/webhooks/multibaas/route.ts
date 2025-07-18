@@ -41,7 +41,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     return new Response(null, { status: 403 });
   }
 
-  const proposalIdsToUpdate: bigint[] = [];
+  const proposalIdsToUpdate: Set<bigint> = new Set();
   for (const {
     data: { event },
   } of body) {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     // since they just exit early when the event doesnt match
     const proposalId = await handleProposalEvent(event.name!, eventData);
     if (proposalId) {
-      proposalIdsToUpdate.push(proposalId);
+      proposalIdsToUpdate.add(proposalId);
     }
 
     await handleVoteEvent(event.name!, eventData, celoPublicClient.chain.id).then(async (rows) => {
@@ -68,11 +68,14 @@ export async function POST(request: NextRequest): Promise<Response> {
           target: [votesTable.proposalId, votesTable.type, votesTable.chainId],
         });
       console.info(`Inserted ${count} vote records for proposal: ${rows[0].proposalId}`);
+      // NOTE: we're pushing the proposalId because voting for a proposal means the
+      // networkWeight will be changed and needs to be updated
+      proposalIdsToUpdate.add(BigInt(rows[0].proposalId));
     });
   }
 
-  if (proposalIdsToUpdate.length) {
-    await updateProposalsInDB(celoPublicClient, proposalIdsToUpdate);
+  if (proposalIdsToUpdate.size) {
+    await updateProposalsInDB(celoPublicClient, [...proposalIdsToUpdate], 'update');
   }
 
   return new Response(null, { status: 200 });

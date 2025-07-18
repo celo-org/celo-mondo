@@ -15,6 +15,7 @@ import '../../vendor/polyfill.js';
 export default async function updateProposalsInDB(
   client: PublicClient<Transport, Chain>,
   proposalIds?: bigint[],
+  intent: 'update' | 'replay' = 'update',
 ): Promise<void> {
   const proposalIdSql = sql`(${eventsTable.args}->>'proposalId')::bigint`;
 
@@ -65,46 +66,32 @@ export default async function updateProposalsInDB(
     .insert(proposalsTable)
     .values(rowsToInsert)
     .onConflictDoUpdate({
-      set: {
-        cgp: sql`excluded."cgp"`,
-        author: sql`excluded."author"`,
-        url: sql`excluded."url"`,
-        cgpUrl: sql`excluded."cgpUrl"`,
-        cgpUrlRaw: sql`excluded."cgpUrlRaw"`,
-        stage: sql`excluded."stage"`,
-        title: sql`excluded."title"`,
-        proposer: sql`excluded."proposer"`,
-        deposit: sql`excluded."deposit"`,
-        networkWeight: sql`excluded."networkWeight"`,
-        executedAt: sql`excluded."executedAt"`,
-        transactionCount: sql`excluded."transactionCount"`,
-      },
+      set:
+        intent === 'replay'
+          ? {
+              cgp: sql`excluded."cgp"`,
+              author: sql`excluded."author"`,
+              url: sql`excluded."url"`,
+              cgpUrl: sql`excluded."cgpUrl"`,
+              cgpUrlRaw: sql`excluded."cgpUrlRaw"`,
+              stage: sql`excluded."stage"`,
+              title: sql`excluded."title"`,
+              proposer: sql`excluded."proposer"`,
+              deposit: sql`excluded."deposit"`,
+              networkWeight: sql`excluded."networkWeight"`,
+              executedAt: sql`excluded."executedAt"`,
+              transactionCount: sql`excluded."transactionCount"`,
+            }
+          : {
+              stage: sql`excluded."stage"`,
+              networkWeight: sql`excluded."networkWeight"`,
+            },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
 
   console.info(`Upserted ${count} proposals`);
 
-  const allProposals = await database
-    .select({
-      ids: sql<number[]>`JSON_AGG(${proposalsTable.id} ORDER BY ${proposalsTable.id})`,
-    })
-    .from(proposalsTable)
-    .groupBy(proposalsTable.cgp);
-
-  for (const { ids } of allProposals) {
-    if (ids.length < 2) {
-      continue;
-    }
-    // chain update the proposals to link to each other
-    while (ids.length > 1) {
-      const [pastId] = ids.splice(0, 1);
-      console.info(`UPDATE proposals SET pastId = ${pastId} WHERE id = ${ids[0]}`);
-      await database
-        .update(proposalsTable)
-        .set({ pastId })
-        .where(sql`${proposalsTable.id} = ${ids[0]}`);
-    }
-  }
+  await relinkProposals();
 }
 
 async function mergeProposalDataIntoPGRow({
@@ -315,4 +302,28 @@ async function getProposalStage(
     }
   }
   return stage;
+}
+
+async function relinkProposals() {
+  const allProposals = await database
+    .select({
+      ids: sql<number[]>`JSON_AGG(${proposalsTable.id} ORDER BY ${proposalsTable.id})`,
+    })
+    .from(proposalsTable)
+    .groupBy(proposalsTable.cgp);
+
+  for (const { ids } of allProposals) {
+    if (ids.length < 2) {
+      continue;
+    }
+    // chain update the proposals to link to each other
+    while (ids.length > 1) {
+      const [pastId] = ids.splice(0, 1);
+      console.info(`UPDATE proposals SET pastId = ${pastId} WHERE id = ${ids[0]}`);
+      await database
+        .update(proposalsTable)
+        .set({ pastId })
+        .where(sql`${proposalsTable.id} = ${ids[0]}`);
+    }
+  }
 }

@@ -13,7 +13,7 @@ async function main() {
     }),
   }) as PublicClient<Transport, Chain>;
 
-  await updateProposalsInDB(client);
+  await updateProposalsInDB(client, undefined, 'replay');
   process.exit(0);
 }
 
