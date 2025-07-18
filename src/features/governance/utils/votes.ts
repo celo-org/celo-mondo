@@ -8,7 +8,7 @@ import { bigIntSum } from 'src/utils/math';
 import { objFilter } from 'src/utils/objects';
 import { decodeEventLog } from 'viem';
 
-export async function fetchProposalVoters(id: number): Promise<{
+export async function sumProposalVotes(id: number): Promise<{
   voters: AddressTo<VoteAmounts>;
   totals: VoteAmounts;
 }> {

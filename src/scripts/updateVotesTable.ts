@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
 import { VoteType } from 'src/features/governance/types';
-import { fetchProposalVoters } from 'src/features/governance/utils/votes';
+import { sumProposalVotes } from 'src/features/governance/utils/votes';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
@@ -21,7 +21,7 @@ async function main() {
 
   const rowsToInsert = [] as (typeof votesTable.$inferInsert)[];
   for (const proposal of proposals) {
-    const { totals } = await fetchProposalVoters(proposal.id);
+    const { totals } = await sumProposalVotes(proposal.id);
 
     rowsToInsert.push(
       ...Object.entries(totals).map(([type, count]) => ({

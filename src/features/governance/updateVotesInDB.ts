@@ -6,7 +6,7 @@ import { votesTable } from 'src/db/schema';
 
 import { VoteType } from 'src/features/governance/types';
 
-import { fetchProposalVoters } from 'src/features/governance/utils/votes.js';
+import { sumProposalVotes } from 'src/features/governance/utils/votes.js';
 import '../../vendor/polyfill.js';
 
 export default async function updateVotesInDB(
@@ -14,7 +14,7 @@ export default async function updateVotesInDB(
   proposalIds: bigint[],
 ): Promise<void> {
   for (const proposalId of proposalIds) {
-    const { totals } = await fetchProposalVoters(Number(proposalId));
+    const { totals } = await sumProposalVotes(Number(proposalId));
 
     const rows = Object.entries(totals).map(([type, count]) => ({
       type: type as VoteType,

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
-import { fetchProposalVoters } from 'src/features/governance/utils/votes';
+import { sumProposalVotes } from 'src/features/governance/utils/votes';
 import { logger } from 'src/utils/logger';
 
 export function useProposalVoters(id?: number) {
@@ -10,7 +10,7 @@ export function useProposalVoters(id?: number) {
     queryFn: () => {
       if (!id) return null;
       logger.debug(`Fetching proposals voters for ${id}`);
-      return fetchProposalVoters(id);
+      return sumProposalVotes(id);
     },
     gcTime: GCTime.Long,
     staleTime: StaleTime.Default,

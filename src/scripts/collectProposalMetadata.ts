@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
-import { fetchProposalVoters } from 'src/features/governance/utils/votes';
+import { sumProposalVotes } from 'src/features/governance/utils/votes';
 import { logger } from 'src/utils/logger';
 import { fileURLToPath } from 'url';
 // @ts-ignore
@@ -50,7 +50,7 @@ async function main() {
 
     try {
       logger.info(`Fetching votes for proposal ${proposal.id}`);
-      const { totals } = await fetchProposalVoters(proposal.id);
+      const { totals } = await sumProposalVotes(proposal.id);
       logger.info(totals);
       proposal.votes = totals;
     } catch (error) {

@@ -6,7 +6,7 @@ import { VoteType } from 'src/features/governance/types';
 import {
   assertEvent,
   decodeVoteEventLog,
-  fetchProposalVoters,
+  sumProposalVotes,
 } from 'src/features/governance/utils/votes';
 
 const ALLOWED_EVENTS = [
@@ -30,7 +30,7 @@ export async function handleVoteEvent(
     throw new Error('Couldnt decode the vote event: ' + JSON.stringify(event));
   }
 
-  const { totals } = await fetchProposalVoters(proposal.proposalId);
+  const { totals } = await sumProposalVotes(proposal.proposalId);
 
   return Object.entries(totals).map(([type, count]) => ({
     type: type as VoteType,
