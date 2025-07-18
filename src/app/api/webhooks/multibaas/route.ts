@@ -2,7 +2,6 @@ import { governanceABI } from '@celo/abis';
 import { sql } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
 import { Event } from 'src/app/governance/events';
 import database from 'src/config/database';
 import { votesTable } from 'src/db/schema';
@@ -102,16 +101,6 @@ function assertSignature(
       signature,
       signature_,
     });
-    writeFileSync(
-      '/Users/nicolasbrugneaux/workspace/celo-mondo/logs/' + Date.now() + '-error.json',
-      JSON.stringify({
-        payload,
-        signature,
-        signature_,
-        timestamp,
-        secret: process.env.MULTIBAAS_WEBHOOK_SECRET!,
-      }),
-    );
     return false;
   }
   return JSON.parse(payload);
