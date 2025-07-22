@@ -6,6 +6,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { useGovernanceProposal } from './useGovernanceProposals';
 
 beforeEach(() => {
+  vi.mock('react', async (importActual) => ({
+    ...(await importActual()),
+    useMemo: (fn: () => any) => fn(),
+  }));
   vi.mock('wagmi', async (importActual) => ({
     ...(await importActual()),
     usePublicClient: () => publicClient,
