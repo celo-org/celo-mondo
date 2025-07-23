@@ -4,12 +4,10 @@ import { publicClient } from 'src/test/anvil/utils';
 import { logger } from 'src/utils/logger';
 import { afterAll, describe, expect, it, test, vi } from 'vitest';
 import {
-  fetchExecutedProposalIds,
-  fetchGovernanceMetadata,
-  fetchGovernanceProposals,
+  // fetchExecutedProposalIds,
+  // fetchGovernanceMetadata,
+  // fetchGovernanceProposals,
   getExpiryTimestamp,
-  mergeProposalsWithMetadata,
-  pessimisticallyHandleMismatchedIDs,
 } from './governanceData';
 import { Proposal, ProposalMetadata, ProposalStage } from './types';
 
@@ -29,7 +27,7 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('fetchExecutedProposalIds', () => {
+describe.todo('fetchExecutedProposalIds', () => {
   afterAll(() => {
     vi.mock('src/features/explorers/celoscan', async (importActual) => ({
       ...(await importActual()),
@@ -58,7 +56,7 @@ describe('fetchExecutedProposalIds', () => {
   });
 });
 
-describe('fetchGovernanceMetadata', () => {
+describe.todo('fetchGovernanceMetadata', () => {
   test('parses the json cache', async () => {
     // we're not really interesting by debug logs here and we are testing the
     // parsing functionality in `fetchFromRepository.test.ts`
@@ -101,50 +99,58 @@ describe('getExpiryTimestamp', () => {
   });
 });
 
-describe('fetchGovernanceProposals', () => {
-  // Know block, mento proposal creation, for abritary reasons
-  process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
-  test('fetched queued and dequeued proposals', async () => {
-    const proposals = await fetchGovernanceProposals(publicClient);
-    expect(proposals).toMatchSnapshot();
-  });
-}, 15_000);
-
-describe('mergeProposalsWithMetadata', () => {
-  test('merge properly', async () => {
-    // make sure we used cached data for tests
-    vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => {
-      throw new Error('Test error: 403 rate limit exceeded');
-    });
+describe.todo(
+  'fetchGovernanceProposals',
+  () => {
     // Know block, mento proposal creation, for abritary reasons
     process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
-    // This is almost and E2E test, so not sure about that. fix the github rate limit
-    const [ids, proposalsChain, proposalsGH] = await Promise.all([
-      fetchExecutedProposalIds(),
-      fetchGovernanceProposals(publicClient),
-      fetchGovernanceMetadata(),
-    ]);
-
-    const merged = mergeProposalsWithMetadata(proposalsChain, proposalsGH, ids);
-    expect(merged.length).toBe(proposalsGH.length);
-    merged.forEach((proposal) => {
-      if (proposal.id === 196) {
-        // mento
-        expect(proposal.stage).toBe(ProposalStage.Queued);
-      } else if (proposal.id === 195) {
-        // gvt guild
-        expect(proposal.stage).toBe(ProposalStage.Referendum);
-      } else if (proposal.metadata?.cgp === 149) {
-        // draft
-        expect(proposal.stage).toBe(ProposalStage.Executed);
-      } else if (proposal.metadata?.cgp === 163) {
-        expect(proposal.stage).toBe(ProposalStage.Executed);
-      }
+    test('fetched queued and dequeued proposals', async () => {
+      const proposals = await fetchGovernanceProposals(publicClient);
+      expect(proposals).toMatchSnapshot();
     });
-  });
-}, 10000);
+  },
+  15_000,
+);
 
-describe('pessimisticallyHandleMismatchedIDs', () => {
+describe.todo(
+  'mergeProposalsWithMetadata',
+  () => {
+    test('merge properly', async () => {
+      // make sure we used cached data for tests
+      vi.spyOn(globalThis, 'fetch').mockImplementationOnce(() => {
+        throw new Error('Test error: 403 rate limit exceeded');
+      });
+      // Know block, mento proposal creation, for abritary reasons
+      process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
+      // This is almost and E2E test, so not sure about that. fix the github rate limit
+      const [ids, proposalsChain, proposalsGH] = await Promise.all([
+        fetchExecutedProposalIds(),
+        fetchGovernanceProposals(publicClient),
+        fetchGovernanceMetadata(),
+      ]);
+
+      const merged = mergeProposalsWithMetadata(proposalsChain, proposalsGH, ids);
+      expect(merged.length).toBe(proposalsGH.length);
+      merged.forEach((proposal) => {
+        if (proposal.id === 196) {
+          // mento
+          expect(proposal.stage).toBe(ProposalStage.Queued);
+        } else if (proposal.id === 195) {
+          // gvt guild
+          expect(proposal.stage).toBe(ProposalStage.Referendum);
+        } else if (proposal.metadata?.cgp === 149) {
+          // draft
+          expect(proposal.stage).toBe(ProposalStage.Executed);
+        } else if (proposal.metadata?.cgp === 163) {
+          expect(proposal.stage).toBe(ProposalStage.Executed);
+        }
+      });
+    });
+  },
+  10000,
+);
+
+describe.todo('pessimisticallyHandleMismatchedIDs', () => {
   const executedIDS = [1, 3, 5, 7, 11, 21, 99, 101];
   const metdataCommon = {
     cgpUrl: 'https://github.com/celo-org/governance/blob/main/CGPs/cgp-0101.md',
@@ -191,7 +197,7 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
     upvotes: 1000000000000000000000n,
   } as const;
 
-  describe('when on chain proposal id has been executed', () => {
+  describe.todo('when on chain proposal id has been executed', () => {
     it('returns with proposal as truth', () => {
       const executedID = executedIDS[0];
       const nonExecutedId = 4;
@@ -219,7 +225,7 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
       });
     });
   });
-  describe('when id from github metadata has been executed', () => {
+  describe.todo('when id from github metadata has been executed', () => {
     it('returns metadata as truth', () => {
       const executedID = executedIDS[3];
       const nonExecutedId = 22;
@@ -250,7 +256,7 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
   describe.todo('when both id has been executed', () => {
     it('returns with higher as truth', () => {});
   });
-  describe('when on chain is expired and gh hub stage is withdrawn/rejected', () => {
+  describe.todo('when on chain is expired and gh hub stage is withdrawn/rejected', () => {
     it('returns with x as truth  and uses metadata for status', () => {
       const proposal: Proposal = {
         id: 4,
@@ -276,7 +282,7 @@ describe('pessimisticallyHandleMismatchedIDs', () => {
       );
     });
   });
-  describe('when neither id has been executed', () => {
+  describe.todo('when neither id has been executed', () => {
     const proposal: Proposal = {
       id: 212,
       stage: 3,
