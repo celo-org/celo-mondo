@@ -1,5 +1,3 @@
-import 'server-only';
-
 import { Event } from 'src/app/governance/events';
 import { votesTable } from 'src/db/schema';
 import { VoteType } from 'src/features/governance/types';
@@ -15,7 +13,7 @@ const ALLOWED_EVENTS = [
   'ProposalVoteRevoked',
   'ProposalVoteRevokedV2',
 ] as const;
-export async function handleVoteEvent(
+export async function decodeAndPrepareVoteEvent(
   eventName: string,
   event: Event,
   chainId: number,

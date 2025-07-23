@@ -5,7 +5,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import { fetchProposals } from 'src/features/governance/fetchProposals';
+import { getProposals } from 'src/features/governance/getProposals';
 import { getExpiryTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
 import { ProposalMetadata, ProposalStage, VoteAmounts } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
@@ -54,7 +54,7 @@ export function useGovernanceProposals() {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
       // Fetch on-chain data
-      const proposals = await fetchProposals(publicClient.chain!.id);
+      const proposals = await getProposals(publicClient.chain!.id);
       const [ids, upvotesArr] = await publicClient.readContract({
         address: Addresses.Governance,
         abi: governanceABI,

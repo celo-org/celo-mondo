@@ -1,5 +1,3 @@
-import 'server-only';
-
 import { governanceABI } from '@celo/abis';
 import { Event } from 'src/app/governance/events';
 import { assertEvent } from 'src/features/governance/utils/votes';
@@ -12,7 +10,11 @@ const ALLOWED_EVENTS = [
   'ProposalDequeued',
   'ProposalQueued',
 ] as const;
-export async function handleProposalEvent(eventName: string, event: Event): Promise<bigint | null> {
+
+export async function decodeAndPrepareProposalEvent(
+  eventName: string,
+  event: Event,
+): Promise<bigint | null> {
   if (!assertEvent(ALLOWED_EVENTS, eventName)) {
     console.info('Not a proposal event');
     return null;

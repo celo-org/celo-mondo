@@ -5,7 +5,7 @@ import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 
-export async function fetchProposals(chainId: number) {
+export async function getProposals(chainId: number) {
   const results = await database
     .select({
       proposal: proposalsTable,
