@@ -5,6 +5,16 @@ import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 
+function findPastId(
+  proposals: (typeof proposalsTable.$inferSelect)[],
+  pastId?: number | null,
+): number[] {
+  if (!pastId) {
+    return [];
+  }
+  return [pastId, ...findPastId(proposals, proposals.find((p) => p.id === pastId)?.pastId)];
+}
+
 export async function getProposals(chainId: number) {
   const results = await database
     .select({
@@ -13,7 +23,7 @@ export async function getProposals(chainId: number) {
     })
     .from(proposalsTable)
     .where(sql`${proposalsTable.chainId} = ${chainId}`)
-    .orderBy(sql`${proposalsTable.id} DESC`)
+    .orderBy(sql`${proposalsTable.id} ASC`)
     .leftJoin(
       votesTable,
       and(
@@ -41,8 +51,9 @@ export async function getProposals(chainId: number) {
         const type = votes.type as keyof VoteAmounts;
         acc.get(proposal.id)!.votes[type] = votes.count;
       }
-      if (proposal.pastId && acc.has(proposal.pastId)) {
-        acc.get(proposal.id)!.history.push(proposal.pastId);
+      const history = acc.get(proposal.id)!.history;
+      if (proposal.pastId && !history.includes(proposal.pastId)) {
+        history.unshift(proposal.pastId); // more recent ids first in the array
       }
       return acc;
     },
@@ -55,5 +66,9 @@ export async function getProposals(chainId: number) {
     >(),
   );
 
-  return [...proposalsMap.entries()].map((x) => x[1]);
+  const proposals = [...proposalsMap.entries()].map((x) => x[1]);
+  proposals.forEach((p) => {
+    p.history = findPastId(proposals, p.pastId);
+  });
+  return proposals.sort((a, b) => b.id - a.id);
 }

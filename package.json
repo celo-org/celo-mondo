@@ -35,7 +35,7 @@
     "isomorphic-dompurify": "^2.22.0",
     "micromark": "^4.0.0",
     "micromark-extension-gfm-table": "^2.0.0",
-    "next": "15.2.4",
+    "next": "15.4.2",
     "octokit": "^5.0.3",
     "postgres": "^3.4.7",
     "react": "^19.0.0",
@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@celo/devchain-anvil": "12.0.0-canary.49",
+    "@electric-sql/pglite": "^0.3.5",
     "@tanstack/eslint-plugin-query": "^5.28.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
