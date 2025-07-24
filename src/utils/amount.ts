@@ -5,16 +5,37 @@ import { formatUnits, parseUnits } from 'viem';
 /**
  * Convert the given Wei value to Ether value
  * @param value The value to convert.
- * @returns Converted value in string type.
+ * @returns Converted value as a bigint, representing the whole units of the token (e.g., Ether).
+ *          This function effectively truncates any fractional part of the token.
  */
 export function fromWei(
   value: BigNumber.Value | bigint | null | undefined,
   decimals = DEFAULT_TOKEN_DECIMALS,
-): number {
-  if (!value) return 0;
+): bigint {
+  if (!value) return 0n;
+  // Wei value is expected to be an integer.
+  // toString(10) is important for BigNumber instances to prevent scientific notation.
   const valueString = value.toString(10).trim();
-  const flooredValue = BigNumber(valueString).toFixed(0, BigNumber.ROUND_FLOOR);
-  return parseFloat(formatUnits(BigInt(flooredValue), decimals));
+  const weiAsBigInt = BigInt(valueString);
+
+  const divisor = 10n ** BigInt(decimals);
+  // Perform integer division to get the whole number of Ether units
+  return weiAsBigInt / divisor;
+}
+
+/**
+ * Convert the given Wei value to Ether value and return as a number.
+ * This function reuses `fromWei` (which returns bigint) and converts the result to a number.
+ * Be mindful of potential precision loss for very large values that exceed Number.MAX_SAFE_INTEGER.
+ * @param value The value to convert.
+ * @param decimals The number of decimals for the token (default is DEFAULT_TOKEN_DECIMALS).
+ * @returns Converted value as a number.
+ */
+export function numberFromWei(
+  value: BigNumber.Value | bigint | null | undefined,
+  decimals = DEFAULT_TOKEN_DECIMALS,
+): number {
+  return Number(fromWei(value, decimals));
 }
 
 /**
