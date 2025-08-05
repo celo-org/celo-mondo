@@ -153,12 +153,12 @@
     "description": "Staking Fund operates block producing validation nodes on Proof-of-Stake protocols.  We've been actively engaging in the validating role for numerous novel Proof-of-Stake protocols since 2018 and proving our commitment to secure decentralized blockchain networks with high availability and zero slashing."
   },
   "0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf": {
-    "name": "Chain Vibes",
+    "name": "Chainvibes",
     "address": "0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf",
-    "logoUri": "/logos/validators/chain-vibes.jpg",
+    "logoUri": "/logos/validators/chain-vibes.png",
     "date": "2024-01-01",
     "links": {
-      "website": "https://chainvibes.com/decloud.html",
+      "website": "https://chainvibes.com",
       "twitter": "https://twitter.com/chain_vibes"
     },
     "interests": ["Transparency", "Accountability", "Good Vibes"],
