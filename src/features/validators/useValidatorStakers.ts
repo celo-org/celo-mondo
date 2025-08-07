@@ -6,7 +6,7 @@ import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
 import { isValidAddress } from 'src/utils/addresses';
-import { fromWei } from 'src/utils/amount';
+import { numberFromWei } from 'src/utils/amount';
 import { sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
 import { objFilter } from 'src/utils/objects';
@@ -55,7 +55,8 @@ export function useValidatorStakers(group?: Address) {
       .map(({ result }, index) => {
         const address = accounts[index];
         const staked = result;
-        return [address, fromWei(staked as unknown as bigint)];
+        // aggregateData is Array<[Address, number]>
+        return [address, numberFromWei(staked as unknown as bigint)];
       });
   }
   useToastError(accurateStakes.error, 'Error fetching staked amounts');
@@ -127,7 +128,8 @@ function reduceLogs(stakerToVotes: AddressTo<number>, logs: TransactionLog[], is
       const { account: staker, value: valueWei } = args;
       if (!valueWei || !staker || !isValidAddress(staker)) continue;
 
-      const value = fromWei(valueWei);
+      // stakerToVotes is AddressTo<number>
+      const value = numberFromWei(valueWei);
       stakerToVotes[staker] ||= 0;
       if (isAdd) stakerToVotes[staker] += value;
       else stakerToVotes[staker] -= value;
