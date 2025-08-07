@@ -33,7 +33,6 @@ export function Proposal({ id }: { id: string }) {
   const { proposals } = useGovernanceProposals();
 
   const propData = useMemo(() => findProposal(proposals, id), [proposals, id]);
-
   usePageInvariant(!proposals || propData, '/governance', 'Proposal not found');
 
   if (!propData) {

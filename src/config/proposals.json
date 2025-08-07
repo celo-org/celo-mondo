@@ -2378,15 +2378,10 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0156.md",
     "title": "Enabling MENTO Governance",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>",
-    "stage": 8,
-    "id": 206,
+    "stage": 1,
+    "id": 235,
     "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community/9526",
-    "timestamp": 1732492800000,
-    "votes": {
-      "yes": "2784824418573596865622453",
-      "no": "62369225413955859079054",
-      "abstain": "24840293686487090470784"
-    }
+    "timestamp": 1732492800000
   },
   {
     "cgp": 157,
@@ -2550,7 +2545,7 @@
     "stage": 6,
     "id": 214,
     "url": "https://forum.celo.org/t/contracts-release-12",
-    "timestamp": 1708128000000,
+    "timestamp": 1739750400000,
     "timestampExecuted": 1742256000000,
     "votes": {
       "yes": "24988224679516513377726807",
@@ -2882,5 +2877,35 @@
       "no": "0",
       "abstain": "0"
     }
+  },
+  {
+    "cgp": 187,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0187.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0187.md",
+    "title": "Streamlining Mento Reserve Pairs",
+    "author": "@mentoLabs",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/streamlining-mento-reserve-pairs",
+    "timestamp": 1749340800000
+  },
+  {
+    "cgp": 188,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0188.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0188.md",
+    "title": "Contracts Release 13",
+    "author": "cLabs Primitives Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-core-contracts-release-13",
+    "timestamp": 1749772800000
+  },
+  {
+    "cgp": 189,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0189.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0189.md",
+    "title": "Ratify Season 1 Intent and Ecosystem Budget",
+    "author": "Celo Foundation",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-governance-season-1-intent",
+    "timestamp": 1751846400000
   }
 ]
