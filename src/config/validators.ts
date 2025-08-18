@@ -347,6 +347,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     logo: '/logos/validators/atweb3.jpg',
     links: {
       website: 'https://atweb3.co',
+      twitter: 'https://x.com/atweb3_gmbh',
     },
   },
   '0xD19FB36B7F433fe13820767ef6d0E26FDbaB68CC': {
