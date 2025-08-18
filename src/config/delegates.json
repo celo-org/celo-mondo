@@ -413,21 +413,22 @@
     "description": "Hey Frens, I am dedicated to driving community growth and promoting Celo vision of a regenerative economy that benefits all. As a core contributor to the Africa DAO and an active builder in the Celo ecosystem for the past 4 years, I aim to strengthen Celo governance through inclusive decision-making. My experience in fostering Web3 communities and supporting DAO initiatives positions me to help advance Celo's development and governance."
   },
   "0x9c868c1A597d08C76406E012f6EBf44A42864D75": {
-    "name": "clemens.eth",
+    "name": "clemens.eth | atweb3",
     "address": "0x9c868c1A597d08C76406E012f6EBf44A42864D75",
     "logoUri": "/logos/delegatees/0x9c868c1A597d08C76406E012f6EBf44A42864D75.jpg",
     "date": "2024-11-05",
     "links": {
-      "website": "https://clemensot.to",
-      "twitter": "https://x.com/clemensvienna"
+      "website": "https://celo.clemens.fi",
+      "twitter": "https://x.com/clemensvienna",
+      "github": "https://github.com/cleot"
     },
     "interests": [
+      "Node Operator",
       "Blockchain Infrastructure",
       "High Availability",
-      "Proof-of-Stake",
-      "Decentralization"
+      "Proof-of-Stake"
     ],
-    "description": "Blockchain Infrastructure Enthusiast. Validator Operator @ atweb3.io"
+    "description": "Blockchain Infrastructure Enthusiast. Node Operator @ atweb3.co"
   },
   "0xB52e0e3fCe591ac274438d0D96b2373DE26C7FF0": {
     "name": "Wolfcito",
