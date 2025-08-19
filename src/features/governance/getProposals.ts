@@ -14,15 +14,17 @@ function findHistory(
     return history;
   }
 
-  while (pastId) {
-    if (history.includes(pastId)) {
-      // NOTE: this should never happen, however since the DB can be edited manually
-      // there could be a infinite loop due to a typo (eg: 1->2, 2->1)
-      break;
-    }
+  const initialPastId = pastId!;
+  do {
     history.push(pastId);
     pastId = proposals.find((proposal) => proposal.id === pastId)?.pastId;
-  }
+
+    if (pastId && pastId >= initialPastId) {
+      // NOTE: this should never happen, however since the DB can be edited manually
+      // there could be a infinite loop due to a typo (eg: 1->2->1 or 1->1)
+      break;
+    }
+  } while (pastId);
 
   return history;
 }
