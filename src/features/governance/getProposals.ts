@@ -5,14 +5,26 @@ import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 
-function findPastId(
+function findHistory(
   proposals: (typeof proposalsTable.$inferSelect)[],
   pastId?: number | null,
 ): number[] {
+  const history: number[] = [];
   if (!pastId) {
-    return [];
+    return history;
   }
-  return [pastId, ...findPastId(proposals, proposals.find((p) => p.id === pastId)?.pastId)];
+
+  while (pastId) {
+    if (history.includes(pastId)) {
+      // NOTE: this should never happen, however since the DB can be edited manually
+      // there could be a infinite loop due to a typo (eg: 1->2, 2->1)
+      break;
+    }
+    history.push(pastId);
+    pastId = proposals.find((proposal) => proposal.id === pastId)?.pastId;
+  }
+
+  return history;
 }
 
 export async function getProposals(chainId: number) {
@@ -68,7 +80,7 @@ export async function getProposals(chainId: number) {
 
   const proposals = [...proposalsMap.entries()].map((x) => x[1]);
   proposals.forEach((p) => {
-    p.history = findPastId(proposals, p.pastId);
+    p.history = findHistory(proposals, p.pastId);
   });
   return proposals.sort((a, b) => b.id - a.id);
 }

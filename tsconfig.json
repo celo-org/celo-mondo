@@ -26,7 +26,10 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "src/*": ["./src/*"]
+    }
   },
   "include": [
     "next-env.d.ts",

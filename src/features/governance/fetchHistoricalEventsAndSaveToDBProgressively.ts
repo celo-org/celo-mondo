@@ -78,12 +78,13 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
 
   let step = default_step;
   while (fromBlock < latestBlock) {
+    const toBlock = fromBlock + step >= latestBlock ? 'latest' : fromBlock + step;
     try {
       // Fetch events from `fromBlock` to `fromBlock+step`
       const events = await client.getContractEvents({
         ...query,
         fromBlock,
-        toBlock: fromBlock + step >= latestBlock ? 'latest' : fromBlock + step,
+        toBlock: toBlock,
       });
 
       // If there was any events, save them in the db
@@ -117,7 +118,9 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
       throw e;
     }
 
-    console.log(`Saving last processed block for ${eventName}: ${latestBlock}`);
+    console.log(
+      `Saving last processed block for ${eventName}: ${toBlock === 'latest' ? latestBlock : toBlock}`,
+    );
     await database
       .insert(blocksProcessedTable)
       .values({
