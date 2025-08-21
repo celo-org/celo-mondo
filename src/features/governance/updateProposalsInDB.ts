@@ -37,7 +37,9 @@ export default async function updateProposalsInDB(
   const groupedEvents = await database
     .select({
       proposalId: proposalIdSql.mapWith(Number),
-      events: sql<(typeof eventsTable.$inferSelect)[]>`JSON_AGG(events)`,
+      events: sql<
+        (typeof eventsTable.$inferSelect)[]
+      >`JSON_AGG(events ORDER BY ${eventsTable.blockNumber} ASC)`,
     })
     .from(eventsTable)
     .where(and(...conditions))
@@ -105,8 +107,6 @@ async function mergeProposalDataIntoPGRow({
   events: (typeof eventsTable.$inferSelect)[];
   proposalsMetadata: ProposalMetadata[];
 }): Promise<typeof proposalsTable.$inferInsert | null> {
-  events.sort((a, b) => Number(a.blockNumber - b.blockNumber));
-
   const proposalQueuedEvent = events[0]! as (typeof events)[0] & {
     args: {
       transactionCount: string;
