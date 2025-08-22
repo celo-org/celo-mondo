@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import { sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';

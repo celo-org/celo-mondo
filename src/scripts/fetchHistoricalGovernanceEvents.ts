@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
 import updateVotesInDB from 'src/features/governance/updateVotesInDB';

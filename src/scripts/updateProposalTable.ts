@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';

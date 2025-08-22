@@ -93,7 +93,8 @@
   "scripts": {
     "prepare": "husky",
     "clean": "rm -rf dist cache .next",
-    "dev": "next dev",
+    "migrate": "tsx ./src/scripts/migrate.ts",
+    "dev": "yarn migrate && next dev",
     "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
     "build:ci": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
@@ -102,7 +103,7 @@
     "build:app": "next build",
     "typecheck": "tsc",
     "lint": "next lint",
-    "start": "next start",
+    "start": "yarn migrate && next start",
     "test": "vitest",
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build:app"
