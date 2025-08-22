@@ -27,13 +27,10 @@ CREATE TABLE "votes" (
 	CONSTRAINT "votes_chainId_type_proposalId_pk" PRIMARY KEY("chainId","type","proposalId")
 );
 --> statement-breakpoint
-ALTER TABLE "blocksProcessed" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "chains" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "events" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP INDEX "events_blockNumber_index";--> statement-breakpoint
 DROP INDEX "events_chainId_index";--> statement-breakpoint
 DROP INDEX "events_eventName_index";--> statement-breakpoint
-DROP INDEX "events_topics_proposalId_index";--> statement-breakpoint
+-- DROP INDEX "events_topics_proposalId_index";--> statement-breakpoint
 ALTER TABLE "blocksProcessed" ALTER COLUMN "blockNumber" SET DATA TYPE numeric;--> statement-breakpoint
 ALTER TABLE "events" ALTER COLUMN "blockNumber" SET DATA TYPE numeric;--> statement-breakpoint
 ALTER TABLE "proposals" ADD CONSTRAINT "proposals_chainId_chains_id_fk" FOREIGN KEY ("chainId") REFERENCES "public"."chains"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
@@ -42,7 +39,7 @@ ALTER TABLE "votes" ADD CONSTRAINT "votes_proposalId_chainId_proposals_id_chainI
 CREATE INDEX "events_blockNumber_index" ON "events" USING btree ("blockNumber");--> statement-breakpoint
 CREATE INDEX "events_chainId_index" ON "events" USING btree ("chainId");--> statement-breakpoint
 CREATE INDEX "events_eventName_index" ON "events" USING btree ("eventName");--> statement-breakpoint
-CREATE INDEX "events_topics_proposalId_index" ON "events" USING gin ("topics"[2]);--> statement-breakpoint
+-- CREATE INDEX "events_topics_proposalId_index" ON "events" USING gin ("topics"[2]);--> statement-breakpoint
 ALTER TABLE "blocksProcessed" DROP CONSTRAINT "blocksProcessed_eventName_chainId_pk";
 --> statement-breakpoint
 ALTER TABLE "blocksProcessed" ADD CONSTRAINT "blocksProcessed_eventName_chainId_pk" PRIMARY KEY("eventName","chainId");

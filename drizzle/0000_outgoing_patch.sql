@@ -1,6 +1,3 @@
--- Current sql file was generated after introspecting the database
--- If you want to run this migration please uncomment this code before executing migrations
-
 -- CREATE TABLE "chains" (
 -- 	"id" integer PRIMARY KEY NOT NULL,
 -- 	"name" text NOT NULL
@@ -33,4 +30,3 @@
 -- CREATE INDEX "events_blockNumber_index" ON "events" USING btree ("blockNumber" int8_ops);--> statement-breakpoint
 -- CREATE INDEX "events_chainId_index" ON "events" USING btree ("chainId" int4_ops);--> statement-breakpoint
 -- CREATE INDEX "events_eventName_index" ON "events" USING btree ("eventName" text_ops);--> statement-breakpoint
--- CREATE INDEX "events_topics_proposalId_index" ON "events" USING gin ((topics[2]) text_ops);
