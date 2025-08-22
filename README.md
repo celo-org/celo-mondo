@@ -34,5 +34,5 @@ This section is a short explanation for the governance fetching and displaying. 
 Now, since the introduction of the backend we set-up a flow to make the front-end a bit simpler.
 
 Events are indexed in the `events` table (for redundancy, data is fetched from both [webhooks](https://t3bb35o5zzb6zpgwizsfvu6r2a.multibaas.com/webhooks/2) and a [github action cronjob](./.github/workflows/cronjob.yml) just in case).
-When a new events is received, we can decode it and update the `proposals` table according the event to have an always up to date table that the each front-end client can fetch without further data manipulation.
+When a new events is received, we can decode it and update the `proposals` table according the event to have an always up to date table that the each front-end client can fetch without further data manipulation. See `src/app/api/webhooks/multibaas/route.ts` to see the webhook and the function calls.
 There's a small schema explaining each table in more details here: [<img src="./readme-schema.svg" alt="celo-mondo excalidraw">](https://excalidraw.com/#json=cKbblqlCm0IvTZaW1u232,ZQcreoxqt3tt1jShIbwgIw)
