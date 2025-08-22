@@ -1,62 +1,9 @@
 {
-  "id": "50d13aa4-6a78-468e-9da1-d3af28770340",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.blocksProcessed": {
-      "name": "blocksProcessed",
-      "schema": "",
-      "columns": {
-        "chainId": {
-          "name": "chainId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "eventName": {
-          "name": "eventName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "blockNumber": {
-          "name": "blockNumber",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "blocksProcessed_chainId_chains_id_fk": {
-          "name": "blocksProcessed_chainId_chains_id_fk",
-          "tableFrom": "blocksProcessed",
-          "tableTo": "chains",
-          "columnsFrom": [
-            "chainId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "blocksProcessed_eventName_chainId_pk": {
-          "name": "blocksProcessed_eventName_chainId_pk",
-          "columns": [
-            "eventName",
-            "chainId"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.chains": {
       "name": "chains",
       "schema": "",
@@ -78,12 +25,12 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "policies": {},
+      "isRLSEnabled": true
     },
-    "public.events": {
-      "name": "events",
+    "public.blocksProcessed": {
+      "name": "blocksProcessed",
       "schema": "",
       "columns": {
         "chainId": {
@@ -92,6 +39,54 @@
           "primaryKey": false,
           "notNull": true
         },
+        "eventName": {
+          "name": "eventName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blockNumber": {
+          "name": "blockNumber",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "blocksProcessed_chainId_chains_id_fk": {
+          "name": "blocksProcessed_chainId_chains_id_fk",
+          "tableFrom": "blocksProcessed",
+          "tableTo": "chains",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "chainId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "blocksProcessed_eventName_chainId_pk": {
+          "name": "blocksProcessed_eventName_chainId_pk",
+          "columns": [
+            "chainId",
+            "eventName"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {},
+      "policies": {},
+      "isRLSEnabled": true
+    },
+    "public.events": {
+      "name": "events",
+      "schema": "",
+      "columns": {
         "eventName": {
           "name": "eventName",
           "type": "text",
@@ -124,13 +119,19 @@
         },
         "blockNumber": {
           "name": "blockNumber",
-          "type": "numeric",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
         "transactionHash": {
           "name": "transactionHash",
           "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainId": {
+          "name": "chainId",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
@@ -141,24 +142,10 @@
           "columns": [
             {
               "expression": "blockNumber",
-              "isExpression": false,
               "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "events_eventName_index": {
-          "name": "events_eventName_index",
-          "columns": [
-            {
-              "expression": "eventName",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "int8_ops",
+              "isExpression": false
             }
           ],
           "isUnique": false,
@@ -171,9 +158,26 @@
           "columns": [
             {
               "expression": "chainId",
-              "isExpression": false,
               "asc": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "events_eventName_index": {
+          "name": "events_eventName_index",
+          "columns": [
+            {
+              "expression": "eventName",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": false
             }
           ],
           "isUnique": false,
@@ -185,10 +189,11 @@
           "name": "events_topics_proposalId_index",
           "columns": [
             {
-              "expression": "\"topics\"[2]",
+              "expression": "(topics[2])",
               "asc": true,
-              "isExpression": true,
-              "nulls": "last"
+              "nulls": "last",
+              "opclass": "text_ops",
+              "isExpression": true
             }
           ],
           "isUnique": false,
@@ -202,6 +207,7 @@
           "name": "events_chainId_chains_id_fk",
           "tableFrom": "events",
           "tableTo": "chains",
+          "schemaTo": "public",
           "columnsFrom": [
             "chainId"
           ],
@@ -223,240 +229,33 @@
         }
       },
       "uniqueConstraints": {},
-      "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.proposals": {
-      "name": "proposals",
-      "schema": "",
-      "columns": {
-        "chainId": {
-          "name": "chainId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "id": {
-          "name": "id",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pastId": {
-          "name": "pastId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stage": {
-          "name": "stage",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "cgp": {
-          "name": "cgp",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cgpUrl": {
-          "name": "cgpUrl",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cgpUrlRaw": {
-          "name": "cgpUrlRaw",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "author": {
-          "name": "author",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "timestamp": {
-          "name": "timestamp",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "executedAt": {
-          "name": "executedAt",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "proposer": {
-          "name": "proposer",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deposit": {
-          "name": "deposit",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkWeight": {
-          "name": "networkWeight",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "transactionCount": {
-          "name": "transactionCount",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "proposals_chainId_chains_id_fk": {
-          "name": "proposals_chainId_chains_id_fk",
-          "tableFrom": "proposals",
-          "tableTo": "chains",
-          "columnsFrom": [
-            "chainId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "proposals_pastId_chainId_proposals_id_chainId_fk": {
-          "name": "proposals_pastId_chainId_proposals_id_chainId_fk",
-          "tableFrom": "proposals",
-          "tableTo": "proposals",
-          "columnsFrom": [
-            "pastId",
-            "chainId"
-          ],
-          "columnsTo": [
-            "id",
-            "chainId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "proposals_id_chainId_pk": {
-          "name": "proposals_id_chainId_pk",
-          "columns": [
-            "id",
-            "chainId"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.votes": {
-      "name": "votes",
-      "schema": "",
-      "columns": {
-        "chainId": {
-          "name": "chainId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "type": {
-          "name": "type",
-          "type": "voteType",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "count": {
-          "name": "count",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "proposalId": {
-          "name": "proposalId",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "votes_proposalId_chainId_proposals_id_chainId_fk": {
-          "name": "votes_proposalId_chainId_proposals_id_chainId_fk",
-          "tableFrom": "votes",
-          "tableTo": "proposals",
-          "columnsFrom": [
-            "proposalId",
-            "chainId"
-          ],
-          "columnsTo": [
-            "id",
-            "chainId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "votes_chainId_type_proposalId_pk": {
-          "name": "votes_chainId_type_proposalId_pk",
-          "columns": [
-            "chainId",
-            "type",
-            "proposalId"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     }
   },
-  "enums": {
-    "public.voteType": {
-      "name": "voteType",
-      "schema": "public",
-      "values": [
-        "abstain",
-        "no",
-        "none",
-        "yes"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "roles": {},
   "policies": {},
   "views": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "events": {
+        "columns": {
+          "topics": {
+            "isArray": true,
+            "dimensions": 1,
+            "rawType": "text"
+          }
+        }
+      }
+    }
   }
 }
