@@ -70,10 +70,10 @@ async function main() {
   );
 
   if (proposalIdsChanged.length) {
-    await updateProposalsInDB(client, proposalIdsChanged, 'update');
+    await updateProposalsInDB(client, [...new Set(proposalIdsChanged)], 'update');
   }
   if (proposalIdsVoteChanged.length) {
-    await updateVotesInDB(client.chain.id, proposalIdsVoteChanged);
+    await updateVotesInDB(client.chain.id, [...new Set(proposalIdsVoteChanged)]);
   }
 
   process.exit(0);
