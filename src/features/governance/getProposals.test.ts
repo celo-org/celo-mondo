@@ -435,4 +435,47 @@ describe('getProposals', () => {
       ]
     `);
   });
+
+  it('handles no votes', async () => {
+    await database.insert(proposalsTable).values([
+      {
+        id: 1,
+        author: 'test author',
+        cgp: 1,
+        chainId: TEST_CHAIN_ID,
+        stage: ProposalStage.Expiration,
+        timestamp: 1753277605,
+        title: 'test 1',
+      },
+    ]);
+
+    await expect(getProposals(42220)).resolves.toMatchInlineSnapshot(`
+      [
+        {
+          "author": "test author",
+          "cgp": 1,
+          "cgpUrl": null,
+          "cgpUrlRaw": null,
+          "chainId": 42220,
+          "deposit": null,
+          "executedAt": null,
+          "history": [],
+          "id": 1,
+          "networkWeight": null,
+          "pastId": null,
+          "proposer": null,
+          "stage": 5,
+          "timestamp": 1753277605,
+          "title": "test 1",
+          "transactionCount": null,
+          "url": null,
+          "votes": {
+            "abstain": 0n,
+            "no": 0n,
+            "yes": 0n,
+          },
+        },
+      ]
+    `);
+  });
 });
