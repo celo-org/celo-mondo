@@ -178,9 +178,9 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     },
   },
   '0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf': {
-    logo: '/logos/validators/chain-vibes.jpg',
+    logo: '/logos/validators/chain-vibes.png',
     links: {
-      website: 'https://chainvibes.com/decloud.html',
+      website: 'https://chainvibes.com',
       twitter: 'https://twitter.com/chain_vibes',
     },
   },
@@ -346,7 +346,8 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
   '0xb434FeB47D6154B4B4058DF5C9fCeD123dB9aBF6': {
     logo: '/logos/validators/atweb3.jpg',
     links: {
-      website: 'https://www.atweb3.io',
+      website: 'https://atweb3.co',
+      twitter: 'https://x.com/atweb3_gmbh',
     },
   },
   '0xD19FB36B7F433fe13820767ef6d0E26FDbaB68CC': {
