@@ -72,7 +72,7 @@ async function main() {
   if (proposalIdsChanged.length) {
     await updateProposalsInDB(client, proposalIdsChanged, 'update');
   }
-  if (proposalIdsChanged.length) {
+  if (proposalIdsVoteChanged.length) {
     await updateVotesInDB(client.chain.id, proposalIdsVoteChanged);
   }
 
