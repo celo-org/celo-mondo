@@ -269,7 +269,7 @@ export function mergeProposalsWithMetadata(
           during voting
           after upvoting
 
-        the proposals failed to recieve sufficient votes
+        the proposals failed to receive sufficient votes
         the proposal passed but was not approved or executed
    
         in all cases the higher id Should be the correct one
