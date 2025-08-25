@@ -35,7 +35,7 @@
     "isomorphic-dompurify": "^2.22.0",
     "micromark": "^4.0.0",
     "micromark-extension-gfm-table": "^2.0.0",
-    "next": "15.2.4",
+    "next": "15.4.2",
     "octokit": "^5.0.3",
     "postgres": "^3.4.7",
     "react": "^19.0.0",
@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@celo/devchain-anvil": "12.0.0-canary.49",
+    "@electric-sql/pglite": "^0.3.5",
     "@tanstack/eslint-plugin-query": "^5.28.6",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -92,8 +93,9 @@
   "scripts": {
     "prepare": "husky",
     "clean": "rm -rf dist cache .next",
-    "dev": "next dev",
-    "build": "yarn backfill-db && yarn build:ci",
+    "migrate": "tsx ./src/scripts/migrate.ts",
+    "dev": "yarn migrate && next dev",
+    "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
     "build:ci": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
     "build:delegatees-json": "tsx ./src/scripts/combineDelegateesMetadata.ts",
@@ -101,7 +103,7 @@
     "build:app": "next build",
     "typecheck": "tsc",
     "lint": "next lint",
-    "start": "next start",
+    "start": "yarn migrate && next start",
     "test": "vitest",
     "prettier": "prettier --write ./src",
     "checks": "yarn typecheck && yarn lint && yarn test && yarn prettier && yarn build:app"

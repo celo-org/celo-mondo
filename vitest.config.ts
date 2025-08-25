@@ -11,7 +11,7 @@ export default defineConfig({
   test: {
     globals: true,
     globalSetup: ['./src/test/globalSetup.ts'],
-    setupFiles: ['./src/test/anvil/setup.ts'],
+    setupFiles: ['./src/test/setup-db.ts', './src/test/anvil/setup.ts', './src/vendor/polyfill.js'],
     environment: 'happy-dom',
     alias: {
       src: path.resolve(__dirname, 'src'),

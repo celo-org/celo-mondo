@@ -1,4 +1,8 @@
+import 'dotenv/config';
+
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
+import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
+import updateVotesInDB from 'src/features/governance/updateVotesInDB';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
@@ -18,17 +22,61 @@ async function main() {
     }),
   }) as PublicClient<Transport, Chain>;
 
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalQueued', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalDequeued', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalApproved', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalExecuted', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoted', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoteRevoked', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVotedV2', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoteRevokedV2', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalUpvoted', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalUpvoteRevoked', client, fromBlock);
-  await fetchHistoricalEventsAndSaveToDBProgressively('ProposalExpired', client, fromBlock);
+  const proposalIdsChanged: bigint[] = [];
+  proposalIdsChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalQueued', client, fromBlock)),
+  );
+  proposalIdsChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalDequeued', client, fromBlock)),
+  );
+  proposalIdsChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalApproved', client, fromBlock)),
+  );
+  proposalIdsChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalExecuted', client, fromBlock)),
+  );
+  proposalIdsChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalExpired', client, fromBlock)),
+  );
+
+  const proposalIdsVoteChanged: bigint[] = [];
+  proposalIdsVoteChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVoted', client, fromBlock)),
+  );
+  proposalIdsVoteChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively(
+      'ProposalVoteRevoked',
+      client,
+      fromBlock,
+    )),
+  );
+  proposalIdsVoteChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalVotedV2', client, fromBlock)),
+  );
+  proposalIdsVoteChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively(
+      'ProposalVoteRevokedV2',
+      client,
+      fromBlock,
+    )),
+  );
+  proposalIdsVoteChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively('ProposalUpvoted', client, fromBlock)),
+  );
+  proposalIdsVoteChanged.push(
+    ...(await fetchHistoricalEventsAndSaveToDBProgressively(
+      'ProposalUpvoteRevoked',
+      client,
+      fromBlock,
+    )),
+  );
+
+  if (proposalIdsChanged.length) {
+    await updateProposalsInDB(client, [...new Set(proposalIdsChanged)], 'update');
+  }
+  if (proposalIdsVoteChanged.length) {
+    await updateVotesInDB(client.chain.id, [...new Set(proposalIdsVoteChanged)]);
+  }
 
   process.exit(0);
 }

@@ -5,16 +5,15 @@ import { resolveAddress } from '@celo/actions';
 import { sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { blocksProcessedTable, eventsTable } from 'src/db/schema';
+import { assertEvent } from 'src/features/governance/utils/votes';
 import {
   Chain,
-  GetContractEventsParameters,
   HttpRequestError,
   PublicClient,
   RpcRequestError,
   TimeoutError,
   Transport,
 } from 'viem';
-
 import '../../vendor/polyfill.js';
 
 const default_step = 100_000n;
@@ -24,12 +23,31 @@ const bigintMath = {
   max: (...args: bigint[]) => args.reduce((max_, x) => (x > max_ ? x : max_)),
 };
 
+const VALID_EVENTS = [
+  'ProposalQueued',
+  'ProposalDequeued',
+  'ProposalApproved',
+  'ProposalExecuted',
+  'ProposalVoted',
+  'ProposalVoteRevoked',
+  'ProposalVotedV2',
+  'ProposalVoteRevokedV2',
+  'ProposalUpvoted',
+  'ProposalUpvoteRevoked',
+  'ProposalExpired',
+] as const;
+
 export default async function fetchHistoricalEventsAndSaveToDBProgressively(
-  eventName: GetContractEventsParameters<typeof governanceABI>['eventName'],
+  eventName: string,
   client: PublicClient<Transport, Chain>,
   fromBlock?: bigint,
-) {
+): Promise<bigint[]> {
+  if (!assertEvent(VALID_EVENTS, eventName)) {
+    console.info('Not a valid event', eventName);
+    return [];
+  }
   const latestBlock = await client.getBlockNumber();
+  const proposalIds: bigint[] = [];
 
   if (!fromBlock) {
     const [lastBlock] = await database
@@ -60,19 +78,22 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
 
   let step = default_step;
   while (fromBlock < latestBlock) {
+    const toBlock = fromBlock + step >= latestBlock ? 'latest' : fromBlock + step;
     try {
       // Fetch events from `fromBlock` to `fromBlock+step`
       const events = await client.getContractEvents({
         ...query,
         fromBlock,
-        toBlock: fromBlock + step >= latestBlock ? 'latest' : fromBlock + step,
+        toBlock: toBlock,
       });
 
       // If there was any events, save them in the db
       if (events.length) {
+        proposalIds.push(
+          ...events.map((x) => x.args.proposalId).filter((x) => typeof x === 'bigint'),
+        );
         const { count } = await database
           .insert(eventsTable)
-          // @ts-expect-error
           .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
           .onConflictDoNothing();
         console.log({ inserts: count });
@@ -97,7 +118,9 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
       throw e;
     }
 
-    console.log(`Saving last processed block for ${eventName}: ${latestBlock}`);
+    console.log(
+      `Saving last processed block for ${eventName}: ${toBlock === 'latest' ? latestBlock : toBlock}`,
+    );
     await database
       .insert(blocksProcessedTable)
       .values({
@@ -115,4 +138,6 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
     // increment the fromBlock to fetch more recent events
     fromBlock += step;
   }
+
+  return proposalIds;
 }
