@@ -3,21 +3,22 @@
 import { and, eq, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { proposalsTable, votesTable } from 'src/db/schema';
-import { VoteAmounts, VoteType } from 'src/features/governance/types';
+import { ProposalStage, VoteAmounts, VoteType } from 'src/features/governance/types';
 
 function findHistory(
   proposals: (typeof proposalsTable.$inferSelect)[],
   pastId?: number | null,
-): number[] {
-  const history: number[] = [];
+): { id: number; stage: ProposalStage }[] {
+  const history: { id: number; stage: ProposalStage }[] = [];
   if (!pastId) {
     return history;
   }
 
   const initialPastId = pastId!;
   do {
-    history.push(pastId);
-    pastId = proposals.find((proposal) => proposal.id === pastId)?.pastId;
+    const pastProposal = proposals.find((proposal) => proposal.id === pastId);
+    history.push({ id: pastId, stage: pastProposal!.stage });
+    pastId = pastProposal!.pastId;
 
     if (pastId && pastId >= initialPastId) {
       // NOTE: this should never happen, however since the DB can be edited manually
@@ -65,17 +66,13 @@ export async function getProposals(chainId: number) {
         const type = votes.type as keyof VoteAmounts;
         acc.get(proposal.id)!.votes[type] = votes.count;
       }
-      const history = acc.get(proposal.id)!.history;
-      if (proposal.pastId && !history.includes(proposal.pastId)) {
-        history.unshift(proposal.pastId); // more recent ids first in the array
-      }
       return acc;
     },
     new Map<
       number,
       typeof proposalsTable.$inferSelect & {
         votes: VoteAmounts;
-        history: number[];
+        history: { id: number; stage: ProposalStage }[];
       }
     >(),
   );

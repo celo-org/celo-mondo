@@ -4,13 +4,19 @@ import { governanceABI } from '@celo/abis';
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
-import { Address, Chain, PublicClient, Transport } from 'viem';
+import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from 'viem';
 
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 import '../../vendor/polyfill.js';
+
+// Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
+type Event = typeof eventsTable.$inferSelect;
+interface JsonAggEvent extends Omit<Event, 'blockNumber'> {
+  blockNumber: number;
+}
 
 export default async function updateProposalsInDB(
   client: PublicClient<Transport, Chain>,
@@ -37,9 +43,7 @@ export default async function updateProposalsInDB(
   const groupedEvents = await database
     .select({
       proposalId: proposalIdSql.mapWith(Number),
-      events: sql<
-        (typeof eventsTable.$inferSelect)[]
-      >`JSON_AGG(events ORDER BY ${eventsTable.blockNumber} ASC)`,
+      events: sql<JsonAggEvent[]>`JSON_AGG(events ORDER BY ${eventsTable.blockNumber} ASC)`,
     })
     .from(eventsTable)
     .where(and(...conditions))
@@ -104,10 +108,10 @@ async function mergeProposalDataIntoPGRow({
 }: {
   client: PublicClient<Transport, Chain>;
   proposalId: number;
-  events: (typeof eventsTable.$inferSelect)[];
+  events: JsonAggEvent[];
   proposalsMetadata: ProposalMetadata[];
 }): Promise<typeof proposalsTable.$inferInsert | null> {
-  const proposalQueuedEvent = events[0]! as (typeof events)[0] & {
+  const proposalQueuedEvent = events[0]! as (typeof events)[number] & {
     args: {
       transactionCount: string;
       timestamp: string;
@@ -120,20 +124,15 @@ async function mergeProposalDataIntoPGRow({
   const proposalOnChainAtCreation = await getProposalOnChain(
     client,
     proposalId,
-    proposalQueuedEvent.blockNumber,
+    BigInt(proposalQueuedEvent.blockNumber),
   );
   const proposalOnChainAtEvent = await getProposalOnChain(
     client,
     proposalId,
-    lastProposalEvent.blockNumber,
+    BigInt(lastProposalEvent.blockNumber),
   );
 
-  const stage = await getProposalStage(
-    client,
-    proposalId,
-    lastProposalEvent.eventName,
-    lastProposalEvent.blockNumber,
-  );
+  const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
 
   const urlIndex = 4;
   let url = proposalOnChainAtEvent[urlIndex];
@@ -141,6 +140,7 @@ async function mergeProposalDataIntoPGRow({
   let metadata = proposalsMetadata.find(
     ({ id, cgp }) => (id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
   );
+
   if (!metadata) {
     console.info(
       'metadata not found, trying to find a url in oldest possible block for ',
@@ -221,42 +221,40 @@ async function getProposalOnChain(
     approved: boolean,
   ]
 > {
-  return client
-    .readContract({
+  try {
+    return await client.readContract({
       blockNumber,
       abi: governanceABI,
       address: Addresses.Governance,
       functionName: 'getProposal',
       args: [BigInt(proposalId)],
-    })
-    .catch((err) => {
-      // NOTE: this can throw for really old proposals
-      // not much to do honestly.
-      let url = '';
-      try {
-        const match = (err.shortMessage as string).match(
-          /Bytes value "([\d,]+)" is not a valid boolean./i,
-        );
-        url = Buffer.from(
-          match![1]
-            .split(',')
-            .map((x) => parseInt(x, 10).toString(16))
-            .join(''),
-          'hex',
-        ).toString();
-      } catch (e) {
-        // noop whatever
-      }
-
-      return ['0x0', 0n, 0n, 0n, url, 0n, false];
     });
+  } catch (err) {
+    // NOTE: this can throw for really old proposals
+    // not much to do honestly.
+    let url = '';
+    try {
+      const match = (err as ReadContractErrorType).shortMessage.match(
+        /Bytes value "([\d,]+)" is not a valid boolean./i,
+      );
+      const hexUrl = match
+        ?.at(1)
+        ?.split(',')
+        ?.map((x) => parseInt(x, 10).toString(16))
+        .join('');
+      url = hexUrl ? Buffer.from(hexUrl, 'hex').toString() : url;
+    } catch (e) {
+      // noop whatever
+    }
+
+    return ['0x0', 0n, 0n, 0n, url, 0n, false];
+  }
 }
 
 async function getProposalStage(
   client: PublicClient<Transport, Chain>,
   proposalId: number,
   eventName: string | undefined,
-  blockNumber: bigint,
 ): Promise<ProposalStage> {
   let stage: ProposalStage;
   switch (eventName) {
@@ -291,14 +289,13 @@ async function getProposalStage(
   // >>         or the tx reverts, so it can’t even be emitted
   if (stage !== ProposalStage.Executed) {
     const stageOnChain = await client.readContract({
-      blockNumber,
       abi: governanceABI,
       address: Addresses.Governance,
       functionName: 'getProposalStage',
       args: [BigInt(proposalId)],
     });
-    if (stageOnChain === ProposalStage.Expiration) {
-      stage = ProposalStage.Expiration;
+    if (stageOnChain > stage) {
+      stage = stageOnChain;
     }
   }
   return stage;
