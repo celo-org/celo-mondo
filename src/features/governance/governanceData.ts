@@ -24,7 +24,11 @@ export function findProposal(proposals: MergedProposalData[] | undefined, id: st
 export type MergedProposalData = { stage: ProposalStage; id?: number } & (
   | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
   | { proposal?: Proposal; metadata: ProposalMetadata; history?: undefined }
-  | { proposal: Proposal; metadata: ProposalMetadata; history?: number[] }
+  | {
+      proposal: Proposal;
+      metadata: ProposalMetadata;
+      history?: { id: number; stage: ProposalStage }[];
+    }
 );
 
 export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
