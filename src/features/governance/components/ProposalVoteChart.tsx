@@ -69,7 +69,7 @@ function ViewVotes({
   votes: VoteAmounts | undefined;
   title?: string;
   isLoading?: boolean;
-  stage: ProposalStage;
+  stage?: ProposalStage;
 }) {
   const voteBarChartData = useMemo(
     () =>
@@ -100,7 +100,7 @@ function ViewVotes({
     <div className="space-y-2">
       <div className="flex flex-row items-center gap-4">
         <h2 className="font-serif text-2xl">{title}</h2>
-        <StageBadge stage={stage} className="" />
+        {stage && <StageBadge stage={stage} />}
       </div>
       <div className="space-y-1.5">
         {Object.values(VoteTypes).map((v) => (
