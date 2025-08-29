@@ -131,7 +131,7 @@ async function fetchIndexOfTransactionForProposalInMultisig(
   publicClient: PublicClient,
   { proposalId, dequeueIndex, governanceApproverMultisigAddress }: ParamsFetchApproversInfo,
 ) {
-  // sadly the Multisig gives no other way to fetch a specfic transaction other than already
+  // sadly the Multisig gives no other way to fetch a specific transaction other than already
   // knowing the index or iterating through all transactions and matching the calldata
 
   const countOfMultisigTransactions = await publicClient.readContract({
