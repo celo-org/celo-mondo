@@ -305,6 +305,7 @@ __metadata:
     micromark-extension-gfm-table: "npm:^2.0.0"
     next: "npm:15.4.7"
     octokit: "npm:^5.0.3"
+    pinst: "npm:>=2"
     postcss: "npm:^8.5.1"
     postgres: "npm:^3.4.7"
     prettier: "npm:^3.3.3"
@@ -9890,6 +9891,15 @@ __metadata:
   bin:
     pino: bin.js
   checksum: 10/1c7b4b52fea76e0bc5d8b1190a0fee24279cb16d76fdb5833b32b64256fd8a94d641574b850faba5be72514f04045206b6d902a9a3f5ceae2a4296687088e073
+  languageName: node
+  linkType: hard
+
+"pinst@npm:>=2":
+  version: 3.0.0
+  resolution: "pinst@npm:3.0.0"
+  bin:
+    pinst: bin.js
+  checksum: 10/a75e4f7b5eeb9c76e7fd1b2d9854fcd38c304a3b1f9b563946a0f4357772c742222094e851f4c23d0bbdc4151af2d7875bb919c9ef8a9c4af77a02a73e8f72f0
   languageName: node
   linkType: hard
 
