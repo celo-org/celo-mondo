@@ -24,7 +24,12 @@ type MultibassEvent = {
       signature: string;
       inputs: { name: string; value: string; hashed: boolean; type: string }[];
       rawFields: string;
-      contract: { address: Address; addressLabel: string; name: string; label: string };
+      contract: {
+        address: Address;
+        addressLabel: string;
+        name: string;
+        label: string;
+      };
       indexInLog: number;
     };
   };
@@ -93,6 +98,8 @@ message: ${error.message}
 stack: ${error.stack}
 \`\`\`
     `);
+
+    return new Response(null, { status: 500 });
   }
 }
 
