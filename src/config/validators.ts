@@ -488,5 +488,11 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://www.celopg.eco/',
       twitter: 'https://x.com/CeloPublicGoods',
     },
+  '0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9': {
+    logo: '/logos/validators/celocolombia.png',
+    links: {
+      website: 'https://www.celocolombia.org',
+      twitter: 'https://x.com/celo_col',
+    },
   },
 };
