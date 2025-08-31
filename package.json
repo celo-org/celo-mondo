@@ -35,7 +35,7 @@
     "isomorphic-dompurify": "^2.22.0",
     "micromark": "^4.0.0",
     "micromark-extension-gfm-table": "^2.0.0",
-    "next": "15.4.2",
+    "next": "15.4.7",
     "octokit": "^5.0.3",
     "postgres": "^3.4.7",
     "react": "^19.0.0",
