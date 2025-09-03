@@ -8,6 +8,10 @@ export function findGroup(groups?: ValidatorGroup[], address?: Address) {
 }
 
 export function cleanGroupName(name: string) {
+  return trimToLength(name.replace(/group|Group/g, '').replace(/[-_]/g, ' '), 20);
+}
+
+export function cleanDelegateeName(name: string) {
   return trimToLength(toTitleCase(name.replace(/group|Group/g, '').replace(/[-_]/g, ' ')), 20);
 }
 
