@@ -20,7 +20,7 @@ import { LockedBalances } from 'src/features/locking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
-import { cleanGroupName } from 'src/features/validators/utils';
+import { cleanDelegateeName } from 'src/features/validators/utils';
 
 import { isValidAddress, shortenAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
@@ -192,7 +192,7 @@ function DelegateeField({
   }, [fieldName, defaultValue, setFieldValue]);
 
   const currentDelegatee = addressToDelegatee?.[values[fieldName]];
-  const delegateeName = cleanGroupName(currentDelegatee?.name || '');
+  const delegateeName = cleanDelegateeName(currentDelegatee?.name || '');
 
   return (
     <div className="relative flex flex-col space-y-1.5">
