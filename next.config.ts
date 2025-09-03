@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 
-const { version } = require('./package.json');
+import type { NextConfig } from 'next';
+import { readFileSync } from 'node:fs';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -18,19 +19,19 @@ const CONNECT_SRC_HOSTS = [
   'https://celo-mainnet.infura.io',
   'https://qstash.upstash.io',
   'https://app.safe.global',
-  'https://account.celopg.eco',
+  'https://pass.celopg.eco',
   'https://*.rainbow.me',
 ];
 const FRAME_SRC_HOSTS = [
   'https://*.walletconnect.com',
   'https://*.walletconnect.org',
   'https://app.safe.global',
-  'https://account.celopg.eco',
+  'https://pass.celopg.eco',
 ];
 const IMG_SRC_HOSTS = [
   'https://*.walletconnect.com',
   'https://app.safe.global',
-  'https://account.celopg.eco',
+  'https://pass.celopg.eco',
 ];
 const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
 
@@ -80,7 +81,7 @@ const securityHeaders = [
     : []),
 ];
 
-module.exports = {
+export default {
   webpack: (config, { isServer }) => {
     config.externals = [...config.externals, 'pino-pretty'];
     if (isServer && process.env.NODE_ENV === 'production') {
@@ -118,8 +119,11 @@ module.exports = {
   },
 
   env: {
-    NEXT_PUBLIC_VERSION: version,
+    NEXT_PUBLIC_VERSION: JSON.parse(readFileSync('./package.json').toString('utf-8')).version,
   },
   productionBrowserSourceMaps: true,
   reactStrictMode: true,
-};
+  experimental: {
+    // reactCompiler: true,
+  },
+} as NextConfig;

@@ -1,12 +1,11 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
+import { Event, fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
-import { TransactionLog } from 'src/features/explorers/types';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
-import { decodeEventLog, encodeEventTopics } from 'viem';
+import { decodeEventLog } from 'viem';
 
 // Returns the list of proposal IDs that were dequeued and therefore were ready to receive votes
 export function useDequeuedProposalIds() {
@@ -14,7 +13,7 @@ export function useDequeuedProposalIds() {
     queryKey: ['useApprovedProposalIds'],
     queryFn: () => {
       logger.debug(`Fetching approved proposal IDs`);
-      return fetchApprovedProposalIds();
+      return fetchDequeuedProposalIds();
     },
     gcTime: GCTime.Long,
     staleTime: StaleTime.Default,
@@ -29,13 +28,8 @@ export function useDequeuedProposalIds() {
   };
 }
 
-async function fetchApprovedProposalIds(): Promise<Array<number>> {
-  const topics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalDequeued',
-  });
-
-  const approvalLogs = await queryCeloscanLogs(Addresses.Governance, `topic0=${topics[0]}`);
+async function fetchDequeuedProposalIds(): Promise<Array<number>> {
+  const approvalLogs = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalDequeued');
 
   const proposalIds: Array<number> = [];
   for (const log of approvalLogs) {
@@ -47,7 +41,7 @@ async function fetchApprovedProposalIds(): Promise<Array<number>> {
   return proposalIds.sort((a, b) => a - b);
 }
 
-function decodeLog(log: TransactionLog) {
+function decodeLog(log: Event) {
   try {
     if (!log.topics || log.topics.length < 2) return null;
     const { eventName, args } = decodeEventLog({

@@ -55,7 +55,7 @@ describe('fetchThresholds', () => {
         0.6,
       ]
     `);
-    expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
+    await expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
     expect(spy.mock.calls.length).toBe(2);
   });
 
@@ -70,7 +70,7 @@ describe('fetchThresholds', () => {
     await expect(
       fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs),
     ).resolves.toMatchSnapshot();
-    expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
+    await expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
     expect(spy.mock.calls.length).toBe(2);
   });
 });

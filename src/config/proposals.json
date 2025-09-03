@@ -635,7 +635,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0043.md",
     "title": "Reserve freezing to get back to target allocation",
     "author": "@martinvol, @rcroessmann",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
     "timestamp": 1633996800000
   },
@@ -693,7 +693,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0047.md",
     "title": "Providing dust for people who bridging asset and provide liquidity",
     "author": "Alberto Martin",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/community-fund-proposal-airdrop-funding-for-optics-bridging-ethereum-celo/2382",
     "timestamp": 1636588800000
   },
@@ -719,7 +719,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0049.md",
     "title": "cREAL Liquidity Incentives",
     "author": "Mila Rioja @MilaRioja, Nikhil Raghuveera @nraghuveera",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/cgp-49-creal-liquidity-incentives/2935",
     "timestamp": 1644796800000
   },
@@ -889,7 +889,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0060.md",
     "title": "Introduce new StableCoin pegged to Colombian Peso - $cCOP",
     "author": "Juan (@juancamp1987#4903)",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/proposal-to-introduce-colombian-peso-ccop-stable-coin/3200/15",
     "timestamp": 1659398400000
   },
@@ -934,7 +934,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0064.md",
     "title": "Celo India DAO (Regional DAO)",
     "author": "[Chitty Babu](https://github.com/cryptochitty)(chittyb@gmail.com), [Shaun Joseph](https://github.com/shaunjoseph) (shaun0078@gmail.com), [Avina Ajit](https://www.linkedin.com/in/avina-ajit-a153b742/?originalSubdomain=in), [Elio Jordan Lopes](https://github.com/lopeselio) (lopeselio@gmail.com), [Nikki Ajit](https://www.linkedin.com/in/nikitaajit/)",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/celo-indiadao-regional-dao-proposal/4207",
     "timestamp": 1661126400000
   },
@@ -1060,7 +1060,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0073.md",
     "title": "Establish and Fund Bug Bounty Program on Immunefi",
     "author": "@vissequ, @keccakdog",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/proposal-establish-and-fund-a-bug-bounty-program-for-celo-on-immunefi/5060",
     "timestamp": 1677974400000
   },
@@ -1086,7 +1086,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0075.md",
     "title": "Celo to Join Chainlink SCALE Program To Accelerate Ecosystem Growth",
     "author": "tobiju",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/celo-to-join-chainlink-scale-program-to-accelerate-ecosystem-growth/5360",
     "timestamp": 1679616000000
   },
@@ -1096,10 +1096,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0076.md",
     "title": "LatAm-W3-DAO-Proposal",
     "author": "@juancamp1987 in behalf of DAO Members",
-    "stage": 1,
+    "stage": 6,
     "id": 95,
-    "url": "https://forum.celo.org/t/latam-w3-dao-proposal/4494",
-    "timestamp": 1679702400000
+    "url": "https://forum.celo.org/t/latam-w3-dao-proposal",
+    "timestamp": 1679702400000,
+    "timestampExecuted": 1681516800000
   },
   {
     "cgp": 77,
@@ -2377,15 +2378,10 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0156.md",
     "title": "Enabling MENTO Governance",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>",
-    "stage": 8,
-    "id": 206,
+    "stage": 1,
+    "id": 235,
     "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community/9526",
-    "timestamp": 1732492800000,
-    "votes": {
-      "yes": "2784824418573596865622453",
-      "no": "62369225413955859079054",
-      "abstain": "24840293686487090470784"
-    }
+    "timestamp": 1732492800000
   },
   {
     "cgp": 157,
@@ -2549,7 +2545,7 @@
     "stage": 6,
     "id": 214,
     "url": "https://forum.celo.org/t/contracts-release-12",
-    "timestamp": 1708128000000,
+    "timestamp": 1739750400000,
     "timestampExecuted": 1742256000000,
     "votes": {
       "yes": "24988224679516513377726807",
@@ -2563,10 +2559,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0167.md",
     "title": "Set Parameters for L2 transition",
     "author": "cLabs Primitives Team",
-    "stage": 1,
+    "stage": 6,
     "id": 216,
     "url": "https://forum.celo.org/t/set-parameters-for-l2-transition",
-    "timestamp": 1739577600000
+    "timestamp": 1739577600000,
+    "timestampExecuted": 1742515200000,
+    "votes": {
+      "yes": "37058817270974801437429047",
+      "no": "0",
+      "abstain": "54384120832857290644"
+    }
   },
   {
     "cgp": 168,
@@ -2591,9 +2593,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0169.md",
     "title": "Set The Great Celo Halvening Parameters",
     "author": "cLabs Team",
-    "stage": 0,
+    "stage": 6,
+    "id": 219,
     "url": "https://forum.celo.org/t/set-the-great-celo-halvening-parameters/10455",
-    "timestamp": 1708992000000
+    "timestamp": 1708992000000,
+    "timestampExecuted": 1743292800000,
+    "votes": {
+      "yes": "27639289849284758627715933",
+      "no": "4594033954353230102169",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 170,
@@ -2601,10 +2610,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0170.md",
     "title": "Authorize 2nd half of Minipay Strategic Grant",
     "author": "Opera MiniPay (@opera_minipay)",
-    "stage": 1,
+    "stage": 6,
     "id": 215,
     "url": "https://forum.celo.org/t/authorize-2nd-half-of-minipay-strategic-grant",
-    "timestamp": 1741305600000
+    "timestamp": 1741305600000,
+    "timestampExecuted": 1742515200000,
+    "votes": {
+      "yes": "31009973597124122019209739",
+      "no": "0",
+      "abstain": "155710461800186910510377"
+    }
   },
   {
     "cgp": 171,
@@ -2612,10 +2627,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0171.md",
     "title": "Celo L2’s Security Council",
     "author": "cLabs Team",
-    "stage": 1,
+    "stage": 6,
     "id": 218,
     "url": "https://forum.celo.org/t/proposing-celo-l2s-security-council",
-    "timestamp": 1742256000000
+    "timestamp": 1742256000000,
+    "timestampExecuted": 1742947200000,
+    "votes": {
+      "yes": "8192621480629271467302943",
+      "no": "0",
+      "abstain": "271192696524128862321587"
+    }
   },
   {
     "cgp": 172,
@@ -2624,7 +2645,7 @@
     "title": "Adding a CELO/ETH feed to support ETH as gas currency post L2 transition",
     "author": "@nvtaveras",
     "stage": 0,
-    "url": "https://forum.celo.org/t/returning-home-to-ethereum-the-launch-of-celo-l2-mainnet/10466",
+    "url": "https://forum.celo.org/t/returning-home-to-ethereum-the-launch-of-celo-l2-mainnet",
     "timestamp": 1741824000000
   },
   {
@@ -2633,10 +2654,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0173.md",
     "title": "Supply Liquidity to Aave via Mento Reserve",
     "author": "Mento Foundation",
-    "stage": 1,
+    "stage": 6,
     "id": 217,
-    "url": "https://forum.celo.org/t/supply-liquidity-to-aave-via-mento-reserve/10540",
-    "timestamp": 1741824000000
+    "url": "https://forum.celo.org/t/supply-liquidity-to-aave-via-mento-reserve",
+    "timestamp": 1741824000000,
+    "timestampExecuted": 1743033600000,
+    "votes": {
+      "yes": "25393588028292003724656837",
+      "no": "62546721847759838095564",
+      "abstain": "176039055852493572582287"
+    }
   },
   {
     "cgp": 174,
@@ -2644,8 +2671,241 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0174.md",
     "title": "cGHS Name Update",
     "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
+    "stage": 6,
+    "id": 220,
+    "url": "https://forum.celo.org/t/cghs-name-update",
+    "timestamp": 1742169600000,
+    "timestampExecuted": 1743552000000,
+    "votes": {
+      "yes": "8183339005430613676278544",
+      "no": "0",
+      "abstain": "38374313878427851804165"
+    }
+  },
+  {
+    "cgp": 175,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0175.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0175.md",
+    "title": "Introducing Celo Core Contracts Hotfix Security Council",
+    "author": "cLabs Primitives Team",
+    "stage": 6,
+    "id": 221,
+    "url": "https://forum.celo.org/t/proposing-celo-l2s-security-council",
+    "timestamp": 1741737600000,
+    "timestampExecuted": 1743811200000,
+    "votes": {
+      "yes": "25110270156743902986552682",
+      "no": "0",
+      "abstain": "2409717599631249949505"
+    }
+  },
+  {
+    "cgp": 176,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0176.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0176.md",
+    "title": "Celo Camp 2025 Season 0-1 Proposal",
+    "author": "Immanuel Segol (immanuel@upright.gg), Alon Shavit (alon@upright.gg)",
+    "stage": 6,
+    "id": 228,
+    "url": "https://forum.celo.org/t/celo-camp-2025-season-0-1-proposal",
+    "timestamp": 1742428800000,
+    "timestampExecuted": 1746835200000,
+    "votes": {
+      "yes": "25364653767865659909191990",
+      "no": "54653693266706147666002",
+      "abstain": "607169625615751637006415"
+    }
+  },
+  {
+    "cgp": 177,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0177.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0177.md",
+    "title": "Adding oracles to support GBP, AUD, CAD, CHF, ZAR stablecoins",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 6,
+    "id": 222,
+    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar",
+    "timestamp": 1743033600000,
+    "timestampExecuted": 1744156800000,
+    "votes": {
+      "yes": "25727289879437264893361064",
+      "no": "0",
+      "abstain": "5092623495626493002"
+    }
+  },
+  {
+    "cgp": 178,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0178.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0178.md",
+    "title": "Launch of the cGBP, cAUD, cZAR & cCAD Stablecoins",
+    "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
+    "stage": 6,
+    "id": 223,
+    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
+    "timestamp": 1743120000000,
+    "timestampExecuted": 1744502400000,
+    "votes": {
+      "yes": "43095325054132116952555064",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 179,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0179.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0179.md",
+    "title": "Restore Remaining CELO Spend Allowance to Stabila Multisig",
+    "author": "Michael Kwan (@MichaelKwan)",
+    "stage": 6,
+    "id": 226,
+    "url": "https://forum.celo.org/t/restore-remaining-celo-spend-allowance-to-stabila-multi-sig",
+    "timestamp": 1744675200000,
+    "timestampExecuted": 1746144000000,
+    "votes": {
+      "yes": "14627860781069317986490947",
+      "no": "726326963531511588346827",
+      "abstain": "1505150096104222952411"
+    }
+  },
+  {
+    "cgp": 180,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0180.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0180.md",
+    "title": "Adding oracles to support JPY and NGN stablecoins",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 6,
+    "id": 225,
+    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar",
+    "timestamp": 1744848000000,
+    "timestampExecuted": 1746057600000,
+    "votes": {
+      "yes": "21700928857884425186817432",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 181,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0181.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0181.md",
+    "title": "Extension of Score Management Committee and Additional Funding",
+    "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
+    "stage": 6,
+    "id": 229,
+    "url": "https://forum.celo.org/t/proposal-for-extension-of-score-management-committee-and-additional-funding",
+    "timestamp": 1744588800000,
+    "timestampExecuted": 1747353600000,
+    "votes": {
+      "yes": "7842342464576791214183104",
+      "no": "502408192077104079669945",
+      "abstain": "95612367767761776126021"
+    }
+  },
+  {
+    "cgp": 182,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0182.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0182.md",
+    "title": "Launch of the cCHF, cNGN & cJPY Stablecoins",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 1,
+    "id": 227,
+    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
+    "timestamp": 1745539200000
+  },
+  {
+    "cgp": 183,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0183.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0183.md",
+    "title": "Celo Kreiva DAO Season 0-1 2025 Proposal",
+    "author": "Hawwal @hawwal , COTMusic @COT , Oracle @iamoracle , Emiri @emiridbest",
+    "stage": 8,
+    "id": 233,
+    "url": "https://forum.celo.org/t/celo-kreiva-dao-season-0-1-2025-proposal",
+    "timestamp": 1744761600000,
+    "votes": {
+      "yes": "2150000000000000000000",
+      "no": "1801890135041264162896401",
+      "abstain": "6108409806095459400"
+    }
+  },
+  {
+    "cgp": 184,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0184.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0184.md",
+    "title": "Mento Oracles Migration pt. 1",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 6,
+    "id": 231,
+    "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
+    "timestamp": 1747094400000,
+    "timestampExecuted": 1748822400000,
+    "votes": {
+      "yes": "26714445152230204017189907",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 185,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0185.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0185.md",
+    "title": "CeLatam Venture Studio",
+    "author": "CeLatam team",
+    "stage": 8,
+    "id": 230,
+    "url": "https://forum.celo.org/t/celatam-venture-studio/11200",
+    "timestamp": 1747267200000,
+    "votes": {
+      "yes": "136476588213980291524624",
+      "no": "1941694076315750540766555",
+      "abstain": "38067692034912402402217"
+    }
+  },
+  {
+    "cgp": 186,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0186.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0186.md",
+    "title": "Mento Oracles Migration pt. 2",
+    "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
+    "stage": 6,
+    "id": 232,
+    "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
+    "timestamp": 1747872000000,
+    "timestampExecuted": 1748822400000,
+    "votes": {
+      "yes": "21093533543754249418217927",
+      "no": "0",
+      "abstain": "0"
+    }
+  },
+  {
+    "cgp": 187,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0187.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0187.md",
+    "title": "Streamlining Mento Reserve Pairs",
+    "author": "@mentoLabs",
     "stage": 0,
-    "url": "https://forum.celo.org/t/cghs-name-update/10572",
-    "timestamp": 1742169600000
+    "url": "https://forum.celo.org/t/streamlining-mento-reserve-pairs",
+    "timestamp": 1749340800000
+  },
+  {
+    "cgp": 188,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0188.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0188.md",
+    "title": "Contracts Release 13",
+    "author": "cLabs Primitives Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-core-contracts-release-13",
+    "timestamp": 1749772800000
+  },
+  {
+    "cgp": 189,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0189.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0189.md",
+    "title": "Ratify Season 1 Intent and Ecosystem Budget",
+    "author": "Celo Foundation",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-governance-season-1-intent",
+    "timestamp": 1751846400000
   }
 ]

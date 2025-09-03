@@ -7,6 +7,11 @@ import { pool, testClient } from './utils';
 import '@testing-library/jest-dom/vitest';
 import { logger } from 'src/utils/logger';
 
+// @ts-expect-error
+BigInt.toJSON = function () {
+  return this.toString();
+};
+
 beforeEach(async () => {
   testClient.reset({
     jsonRpcUrl: ANVIL_FORK_URL,

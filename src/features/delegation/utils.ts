@@ -7,12 +7,10 @@ import {
   metadataToJSONString,
 } from 'src/features/delegation/delegateeMetadata';
 import { DelegateeMetadata, RegisterDelegateRequest } from 'src/features/delegation/types';
-import { createCeloPublicClient } from 'src/utils/client';
+import { celoPublicClient } from 'src/utils/client';
 
 export async function isAddressAnAccount(address: HexString) {
-  const client = createCeloPublicClient();
-
-  return await client.readContract({
+  return await celoPublicClient.readContract({
     address: Addresses.Accounts,
     abi: accountsABI,
     functionName: 'isAccount',
@@ -28,14 +26,21 @@ const fetchFileShaIfExists = async (
   filePath: string,
 ): Promise<string | null> => {
   try {
-    const file = await octokit.rest.repos.getContent({
+    const { data } = await octokit.rest.repos.getContent({
       owner: repoOwner,
       repo: repoName,
       path: filePath,
       ref: branchRef,
     });
 
-    return file.data.sha;
+    // NOTE: typing changed and we need to assert this is indeed a file as
+    // octokit doesnt seem to export the OctokitResponse<{type: 'file'}>
+    if (!Array.isArray(data)) {
+      if (data.type === 'file') {
+        return data.sha;
+      }
+    }
+    throw new Error(`Don't know what to do with file/dir fetched at ${filePath}`);
   } catch (err) {
     const notFound = err instanceof Error && 'status' in err && err.status === 404;
 

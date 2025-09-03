@@ -1,13 +1,12 @@
 import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
+import { Event, fetchProposalEvents } from 'src/app/governance/events';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
-import { TransactionLog } from 'src/features/explorers/types';
 import { isValidAddress } from 'src/utils/addresses';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { objFilter } from 'src/utils/objects';
-import { decodeEventLog, encodeEventTopics } from 'viem';
+import { decodeEventLog } from 'viem';
 
 export function useProposalUpvoters(id?: number) {
   const { isLoading, isError, error, data, refetch } = useQuery({
@@ -30,16 +29,9 @@ export function useProposalUpvoters(id?: number) {
 }
 
 async function fetchProposalUpvoters(id: number): Promise<AddressTo<bigint>> {
-  // Get encoded topics
-  const upvoteTopics = encodeEventTopics({
-    abi: governanceABI,
-    eventName: 'ProposalUpvoted',
-    args: { proposalId: BigInt(id) },
+  const upvoteEvents = await fetchProposalEvents(celoPublicClient.chain.id, 'ProposalUpvoted', {
+    proposalId: BigInt(id),
   });
-
-  // Prep query URLs
-  const upvoteParams = `topic0=${upvoteTopics[0]}&topic1=${upvoteTopics[1]}&topic0_1_opr=and`;
-  const upvoteEvents = await queryCeloscanLogs(Addresses.Governance, upvoteParams);
 
   // Reduce logs to a map of voters to upvotes
   const voterToUpvotes: AddressTo<bigint> = {};
@@ -49,7 +41,7 @@ async function fetchProposalUpvoters(id: number): Promise<AddressTo<bigint>> {
   return objFilter(voterToUpvotes, (_, votes): votes is bigint => votes > 0n);
 }
 
-function reduceLogs(voterToUpvotes: AddressTo<bigint>, logs: TransactionLog[]) {
+function reduceLogs(voterToUpvotes: AddressTo<bigint>, logs: Event[]) {
   for (const log of logs) {
     try {
       if (!log.topics || log.topics.length < 3) continue;

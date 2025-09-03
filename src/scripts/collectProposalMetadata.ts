@@ -2,10 +2,10 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
-import { sleep } from 'src/utils/async';
+import { sumProposalVotes } from 'src/features/governance/utils/votes';
 import { logger } from 'src/utils/logger';
+import { fileURLToPath } from 'url';
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -18,6 +18,9 @@ if (typeof process.env.NEXT_PUBLIC_CELOSCAN_API_KEY === 'string') {
     'Celoscan api key not loaded. Votes will not be updated. You probably need a .env file (not local.env). To pull secrets see https://vercel.com/docs/cli/env',
   );
 }
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 const PROPOSALS_OUT_PATH = path.resolve(__dirname, '../config/proposals.json');
 const MIN_PROPOSAL_ID_VOTES_FETCH = 212;
@@ -47,9 +50,8 @@ async function main() {
 
     try {
       logger.info(`Fetching votes for proposal ${proposal.id}`);
-      const { totals } = await fetchProposalVoters(proposal.id);
+      const { totals } = await sumProposalVotes(proposal.id);
       logger.info(totals);
-      await sleep(300); // for rate limits
       proposal.votes = totals;
     } catch (error) {
       logger.error(`Error fetching votes for proposal ${proposal.id}`, error);
@@ -61,5 +63,11 @@ async function main() {
 }
 
 main()
-  .then(() => logger.info('Done fetching proposals'))
-  .catch((error) => logger.warn('Error fetching proposals', error));
+  .then(() => {
+    logger.info('Done fetching proposals');
+    process.exit(0);
+  })
+  .catch((error) => {
+    logger.warn('Error fetching proposals', error);
+    process.exit(1);
+  });

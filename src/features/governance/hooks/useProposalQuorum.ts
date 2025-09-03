@@ -31,11 +31,11 @@ export function useProposalQuorum(propData?: MergedProposalData): {
     return { isLoading: true };
   }
   try {
-    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1724-L1726
     const quorumPct = new BigNumber(participationParameters.baseline).times(
       participationParameters.baselineQuorumFactor,
     );
-    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Proposals.sol#L195-L211
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1734-L1746
     const quorumVotes = BigInt(
       quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
     );
@@ -149,10 +149,6 @@ export async function fetchThresholds(
     })),
   });
 
-  if (!results) {
-    return;
-  }
-
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
   const getConstitutionContract = {
@@ -160,6 +156,11 @@ export async function fetchThresholds(
     abi: governanceABI,
     functionName: 'getConstitution',
   } as const;
+
+  if (results.length === 0) {
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1730
+    results.push([0n, '0x0000000000000000000000000000000000000000', '0x00000000']);
+  }
 
   const thresholds = await publicClient?.multicall({
     ...getRuntimeBlock(),
@@ -173,11 +174,7 @@ export async function fetchThresholds(
     }),
   });
 
-  if (!thresholds) {
-    return;
-  }
-
-  // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1580-L1583
+  // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1738-L1741
   return thresholds.map(fromFixidity);
 }
 

@@ -33,7 +33,6 @@ export function Proposal({ id }: { id: string }) {
   const { proposals } = useGovernanceProposals();
 
   const propData = useMemo(() => findProposal(proposals, id), [proposals, id]);
-
   usePageInvariant(!proposals || propData, '/governance', 'Proposal not found');
 
   if (!propData) {
@@ -135,9 +134,9 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       {history && history.length > 0 && (
         <div className="space-y-4 border-taupe-300 p-3 lg:border">
           <h2 className="font-serif text-2xl">Past Onchain Results</h2>
-          {history.map((id) => (
+          {history.map(({ id, stage }) => (
             <ErrorBoundaryInline key={id}>
-              <PastProposalVoteChart title={`As #${id}`} id={id} />
+              <PastProposalVoteChart title={`As #${id}`} id={id} stage={stage} />
             </ErrorBoundaryInline>
           ))}
         </div>

@@ -18,26 +18,26 @@ export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowPr
   [TransactionFlowType.Lock]: {
     FormComponent: LockForm,
     header: 'Lock CELO',
-    requiresLockedFunds: false,
+    requiresLockedFundsOrVoteSigner: false,
   },
   [TransactionFlowType.Stake]: {
     FormComponent: StakeForm,
     header: 'Stake CELO',
-    requiresLockedFunds: true,
+    requiresLockedFundsOrVoteSigner: true,
   },
   [TransactionFlowType.Upvote]: {
     FormComponent: UpvoteForm,
     header: 'Upvote proposal',
-    requiresLockedFunds: true,
+    requiresLockedFundsOrVoteSigner: true,
   },
   [TransactionFlowType.Vote]: {
     FormComponent: VoteForm,
     header: 'Vote for proposal',
-    requiresLockedFunds: true,
+    requiresLockedFundsOrVoteSigner: true,
   },
   [TransactionFlowType.Delegate]: {
     FormComponent: DelegationForm,
     header: 'Delegate CELO',
-    requiresLockedFunds: true,
+    requiresLockedFundsOrVoteSigner: true,
   },
 };

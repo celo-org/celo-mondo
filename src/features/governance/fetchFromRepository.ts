@@ -4,6 +4,7 @@ import { gfmTable, gfmTableHtml } from 'micromark-extension-gfm-table';
 import {
   MetadataStatusToStage,
   ProposalMetadata,
+  ProposalStage,
   RawProposalMetadataSchema,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
@@ -57,13 +58,17 @@ export async function fetchProposalsFromRepo(
 
     // If it's in the cache, use it
     const cachedProposal = cache.find((p) => p.cgp === cgpNumber);
-    if (cachedProposal) {
+    if (cachedProposal && cachedProposal.stage >= ProposalStage.None) {
       validProposals.push(cachedProposal);
       continue;
     }
 
     // If it's not in the cache, fetch the file and parse it
-    const content = await fetchGithubFile(file.download_url);
+    const content = await fetchGithubFile(file.download_url, true)
+      // NOTE: try to fetch via our own proxy, which is slower, but will prevent
+      // CORS errors, especially useful on localhost
+      .catch(() => fetchFromProxy(cgpNumber))
+      .catch(() => null);
     if (!content) {
       errorUrls.push(file.download_url);
       continue;
@@ -94,10 +99,16 @@ export async function fetchProposalsFromRepo(
   return validProposals;
 }
 
-export async function fetchProposalContent(cgpNumber: number) {
+async function fetchFromProxy(cgpNumber: number) {
   const response = await fetch(`/governance/${cgpNumber}/markdown-api`);
   const { yaml } = await response.json();
+
   if (!yaml) throw new Error('Failed to fetch proposal content');
+  return yaml;
+}
+
+export async function fetchProposalContent(cgpNumber: number) {
+  const yaml = await fetchFromProxy(cgpNumber);
   const fileParts = separateYamlFrontMatter(yaml);
   if (!fileParts) throw new Error('Failed to parse proposal content');
   const markup = markdownToHtml(fileParts.body);
@@ -152,7 +163,7 @@ async function fetchGithubDirectory(
   }
 }
 
-async function fetchGithubFile(url: string): Promise<string | null> {
+async function fetchGithubFile(url: string, throwsOnHttpError = false): Promise<string | null> {
   try {
     const headers = new Headers();
     if (process.env.NEXT_PUBLIC_GITHUB_PAT) {
@@ -166,6 +177,9 @@ async function fetchGithubFile(url: string): Promise<string | null> {
     return await response.text();
   } catch (error) {
     logger.error('Error fetching github file', url, error);
+    if (throwsOnHttpError) {
+      throw error;
+    }
     return null;
   }
 }

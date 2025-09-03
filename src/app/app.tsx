@@ -10,8 +10,8 @@ import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
-import 'src/vendor/inpage-metamask';
-import 'src/vendor/polyfill';
+import 'src/vendor/inpage-metamask.js';
+import 'src/vendor/polyfill.js';
 
 export function App({ children }: PropsWithChildren<any>) {
   return (
