@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { Event } from 'src/app/governance/events';
 import database from 'src/config/database';
+import { sendAlertToSlack } from 'src/config/slackbot';
 import { votesTable } from 'src/db/schema';
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
@@ -23,7 +24,12 @@ type MultibassEvent = {
       signature: string;
       inputs: { name: string; value: string; hashed: boolean; type: string }[];
       rawFields: string;
-      contract: { address: Address; addressLabel: string; name: string; label: string };
+      contract: {
+        address: Address;
+        addressLabel: string;
+        name: string;
+        label: string;
+      };
       indexInLog: number;
     };
   };
@@ -40,41 +46,61 @@ export async function POST(request: NextRequest): Promise<Response> {
     return new Response(null, { status: 403 });
   }
 
-  const proposalIdsToUpdate: Set<bigint> = new Set();
-  for (const {
-    data: { event },
-  } of body) {
-    // NOTE: in theory we _could_ just insert the `event.rawFields` directly in the db...
-    await fetchHistoricalEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
+  try {
+    let proposalId: bigint | undefined | null;
+    const proposalIdsToUpdate: Set<bigint> = new Set();
+    for (const {
+      data: { event },
+    } of body) {
+      // NOTE: in theory we _could_ just insert the `event.rawFields` directly in the db...
+      await fetchHistoricalEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
 
-    const eventData: Event = JSON.parse(event.rawFields);
+      const eventData: Event = JSON.parse(event.rawFields);
 
-    // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
-    // since they just exit early when the event doesnt match
-    let proposalId = await decodeAndPrepareProposalEvent(event.name!, eventData);
-    if (proposalId) {
-      proposalIdsToUpdate.add(proposalId);
+      // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
+      // since they just exit early when the event doesnt match
+      proposalId = await decodeAndPrepareProposalEvent(event.name!, eventData);
+      if (proposalId) {
+        proposalIdsToUpdate.add(proposalId);
+        continue;
+      }
+
+      proposalId = await decodeAndPrepareVoteEvent(
+        event.name!,
+        eventData,
+        celoPublicClient.chain.id,
+      ).then(upsertVotes);
+
+      // NOTE: we're keeping track of the proposalId because voting for a
+      // proposal means the networkWeight will be changed and the proposal row
+      // needs to be updated
+      if (proposalId) {
+        proposalIdsToUpdate.add(proposalId);
+      }
     }
 
-    proposalId = await decodeAndPrepareVoteEvent(
-      event.name!,
-      eventData,
-      celoPublicClient.chain.id,
-    ).then(upsertVotes);
-
-    // NOTE: we're keeping track of the proposalId because voting for a
-    // proposal means the networkWeight will be changed and the proposal row
-    // needs to be updated
-    if (proposalId) {
-      proposalIdsToUpdate.add(proposalId);
+    if (proposalIdsToUpdate.size) {
+      await updateProposalsInDB(celoPublicClient, [...proposalIdsToUpdate], 'update');
     }
-  }
 
-  if (proposalIdsToUpdate.size) {
-    await updateProposalsInDB(celoPublicClient, [...proposalIdsToUpdate], 'update');
-  }
+    return new Response(null, { status: 200 });
+  } catch (err) {
+    const error = err as Error;
+    await sendAlertToSlack(`
+Failed to process celo-mondo webhook:
+\`\`\`json
+${JSON.stringify(body)}
+\`\`\`
 
-  return new Response(null, { status: 200 });
+\`\`\`
+name: ${error.name}
+message: ${error.message}
+stack: ${error.stack}
+\`\`\`
+    `);
+
+    return new Response(null, { status: 500 });
+  }
 }
 
 async function upsertVotes(rows: (typeof votesTable)['$inferInsert'][]) {
@@ -107,12 +133,6 @@ function assertSignature(
   const signature_ = hmac.digest().toString('hex');
 
   if (signature !== signature_) {
-    console.info({
-      payload,
-      json: payload,
-      signature,
-      signature_,
-    });
     return false;
   }
   return JSON.parse(payload);

@@ -2644,7 +2644,7 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0172.md",
     "title": "Adding a CELO/ETH feed to support ETH as gas currency post L2 transition",
     "author": "@nvtaveras",
-    "stage": 0,
+    "stage": 7,
     "url": "https://forum.celo.org/t/returning-home-to-ethereum-the-launch-of-celo-l2-mainnet",
     "timestamp": 1741824000000
   },
@@ -2807,10 +2807,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0182.md",
     "title": "Launch of the cCHF, cNGN & cJPY Stablecoins",
     "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
-    "stage": 1,
+    "stage": 6,
     "id": 227,
     "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
-    "timestamp": 1745539200000
+    "timestamp": 1745539200000,
+    "timestampExecuted": 1747008000000,
+    "votes": {
+      "yes": "20518971217633304948104246",
+      "no": "0",
+      "abstain": "1000000000000000000"
+    }
   },
   {
     "cgp": 183,
@@ -2884,9 +2890,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0187.md",
     "title": "Streamlining Mento Reserve Pairs",
     "author": "@mentoLabs",
-    "stage": 0,
+    "stage": 6,
+    "id": 234,
     "url": "https://forum.celo.org/t/streamlining-mento-reserve-pairs",
-    "timestamp": 1749340800000
+    "timestamp": 1749340800000,
+    "timestampExecuted": 1752192000000,
+    "votes": {
+      "yes": "26847669902525612813263398",
+      "no": "0",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 188,
@@ -2894,7 +2907,8 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0188.md",
     "title": "Contracts Release 13",
     "author": "cLabs Primitives Team",
-    "stage": 0,
+    "stage": 1,
+    "id": 247,
     "url": "https://forum.celo.org/t/celo-core-contracts-release-13",
     "timestamp": 1749772800000
   },
@@ -2904,8 +2918,193 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0189.md",
     "title": "Ratify Season 1 Intent and Ecosystem Budget",
     "author": "Celo Foundation",
-    "stage": 0,
+    "stage": 6,
+    "id": 236,
     "url": "https://forum.celo.org/t/celo-governance-season-1-intent",
-    "timestamp": 1751846400000
+    "timestamp": 1751846400000,
+    "timestampExecuted": 1753401600000,
+    "votes": {
+      "yes": "35200233716704826308499238",
+      "no": "0",
+      "abstain": "11053076958523535033435"
+    }
+  },
+  {
+    "cgp": 190,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0190.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0190.md",
+    "title": "Enable USDGLO as Gas Currency",
+    "author": "Garm Lucassen (@garm)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/add-glo-dollar-as-a-gas-token",
+    "timestamp": 1752105600000
+  },
+  {
+    "cgp": 191,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0191.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0191.md",
+    "title": "Community Fund Proxy Vote - MENTO Token Transferability",
+    "author": "@mentoLabs",
+    "stage": 6,
+    "id": 237,
+    "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote/11684/6",
+    "timestamp": 1752451200000,
+    "timestampExecuted": 1753488000000,
+    "votes": {
+      "yes": "25235149885595291178210225",
+      "no": "0",
+      "abstain": "25058578020186605113238"
+    }
+  },
+  {
+    "cgp": 192,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0192.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0192.md",
+    "title": "Celo SHIELD - Subsidized Help for Improving Ecosystem-Level Defense",
+    "author": "Benjamin Speckien (benjamin.speckien@clabs.co), Nikolaos Frestis (nikolaos.frestis@clabs.co), Stefan Ioja (stefan.ioja@clabs.co)",
+    "stage": 5,
+    "id": 238,
+    "url": "https://forum.celo.org/t/celo-ecosystem-security-services-program-enhancing-ecosystem-security-through-subsidized-services",
+    "timestamp": 1753142400000,
+    "votes": {
+      "yes": "1057137013936645015038407",
+      "no": "0",
+      "abstain": "25071324696177083403927"
+    }
+  },
+  {
+    "cgp": 193,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0193.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0193.md",
+    "title": "Stabila Season 1 Funding Request DeFi Flywheel Infrastructure and Incentives",
+    "author": "Celo User (@MichaelKwan)",
+    "stage": 6,
+    "id": 240,
+    "url": "https://forum.celo.org/t/stabila-season-1-funding-request-defi-flywheel-infrastructure-incentives/",
+    "timestamp": 1753401600000,
+    "timestampExecuted": 1754611200000,
+    "votes": {
+      "yes": "18576347712095169027200473",
+      "no": "842499871283766051455768",
+      "abstain": "148254212048998667827869"
+    }
+  },
+  {
+    "cgp": 194,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0194.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0194.md",
+    "title": "CeloPG Season 1",
+    "author": "LuukDAO <@LuukDAO>, Monty Merlin <@MontyMerlin>, Niko Da Costa <@NikoG>",
+    "stage": 6,
+    "id": 241,
+    "url": "https://forum.celo.org/t/celopg-season-1-funding-request",
+    "timestamp": 1753142400000,
+    "timestampExecuted": 1754611200000,
+    "votes": {
+      "yes": "24639434689842498152840252",
+      "no": "1014923756835672072254036",
+      "abstain": "104257283133712661408424"
+    }
+  },
+  {
+    "cgp": 195,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0195.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0195.md",
+    "title": "Celo Communities Guild Proposal | 2025 H2 Budget",
+    "author": "Goldo (@0xGoldo), 0xj4an-work (@0xj4an-work), Anthony (@0xKnight)",
+    "stage": 6,
+    "id": 243,
+    "url": "https://forum.celo.org/t/celo-communities-guild-season-1-funding-request",
+    "timestamp": 1753660800000,
+    "timestampExecuted": 1754870400000,
+    "votes": {
+      "yes": "36329528266792542101280543",
+      "no": "110705473199013571177229",
+      "abstain": "16291281818005073987494"
+    }
+  },
+  {
+    "cgp": 196,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0196.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0196.md",
+    "title": "Add USDC and USDT to the FeeHandler contract",
+    "author": "Martín Volpe (@martinvol)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/add-usdc-and-usdt-to-the-feehandler-contract/12048",
+    "timestamp": 1753833600000
+  },
+  {
+    "cgp": 197,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0197.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0197.md",
+    "title": "Prezenti Season 1 Funding Request: Direct Grants",
+    "author": "Wade @0xzoz , Maya @Maya-R-B , Aaron @aaronmboyd",
+    "stage": 1,
+    "id": 244,
+    "url": "https://forum.celo.org/t/prezenti-season-1-funding-request-direct-grants-revised",
+    "timestamp": 1753660800000
+  },
+  {
+    "cgp": 198,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0198.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0198.md",
+    "title": "Celo Regional Council Season 1 Funding Request",
+    "author": "Rica (@ricaax), Joan (@Joan_DeRB), Brisa (@Brisa), 0xj4an (@0xj4an-work)",
+    "stage": 8,
+    "id": 245,
+    "url": "https://forum.celo.org/t/celo-regional-council-season-1-funding-request",
+    "timestamp": 1754006400000,
+    "votes": {
+      "yes": "1553274474201380934792658",
+      "no": "1524488661252223542394026",
+      "abstain": "67865743864703796530988"
+    }
+  },
+  {
+    "cgp": 199,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0199.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0199.md",
+    "title": "Creating the Next FX Market A Strategy to Attract Liquidity to Celo",
+    "author": "Tomer Bariach (@Tomer-Ba), Credit Collective team",
+    "stage": 5,
+    "id": 246,
+    "url": "https://forum.celo.org/t/creating-the-next-fx-market-a-strategy-to-attract-liquidity-to-celo",
+    "timestamp": 1754352000000,
+    "votes": {
+      "yes": "19306883092954167389413439",
+      "no": "894509684360023769500479",
+      "abstain": "128168187940429507817090"
+    }
+  },
+  {
+    "cgp": 200,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0200.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0200.md",
+    "title": "Celo Foundation Season 1 Funding Proposal",
+    "author": "@rene_celo, CeloFoundation",
+    "stage": 1,
+    "id": 248,
+    "url": "https://forum.celo.org/t/celo-foundation-season-1-funding-proposal",
+    "timestamp": 1754265600000
+  },
+  {
+    "cgp": 201,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0201.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0201.md",
+    "title": "Funding Proposal Accelerating the Next Phase of Celo’s L2 Development",
+    "author": "cLabs Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/funding-proposal-accelerating-the-next-phase-of-celo-s-l2-development",
+    "timestamp": 1754006400000
+  },
+  {
+    "cgp": 202,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0202.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0202.md",
+    "title": "Celo Infrastructure for Chain Lifecycle Operational Support (CICLOPS 2) - Season 1",
+    "author": "Eric Nakagawa (@ericnakagawa), Martin Volpe (@martinvol), Silas Boyd-Wickizer (@silas), Anna Kryukova, Nauman Mustafa",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-season-1-ciclops-2/11925",
+    "timestamp": 1755216000000
   }
 ]
