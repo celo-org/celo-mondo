@@ -21,7 +21,7 @@ import {
   VoteTypes,
 } from 'src/features/governance/types';
 import { Color } from 'src/styles/Color';
-import { fromWei } from 'src/utils/amount';
+import { numberFromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { objKeys } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
@@ -77,7 +77,7 @@ function ViewVotes({
         (acc, v) => {
           acc[v] = {
             label: '',
-            value: fromWei(votes?.[v] || 0n),
+            value: numberFromWei(votes?.[v] || 0n), // Assuming StackedBarChart expects number
             percentage: percent(votes?.[v] || 0n, totalVotes || 1n),
             color: VoteToColor[v],
           };
@@ -131,7 +131,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
     () => [
       {
         label: 'Yes votes',
-        value: fromWei(quorumMeetingVotes),
+        value: numberFromWei(quorumMeetingVotes), // Assuming StackedBarChart expects number
         percentage: isLoading ? 0 : percent(quorumMeetingVotes, quorumRequired || 1n),
         color: isPassing.data ? Color.Mint : Color.Wood,
       },
