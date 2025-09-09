@@ -1,4 +1,5 @@
 public
 src/vendor
 src/config/proposals.json
+src/config/delegates.json
 src/config/delegatees/*.json
