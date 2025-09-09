@@ -185,8 +185,14 @@ describe('getProposals', () => {
           "deposit": null,
           "executedAt": null,
           "history": [
-            2,
-            1,
+            {
+              "id": 2,
+              "stage": 5,
+            },
+            {
+              "id": 1,
+              "stage": 5,
+            },
           ],
           "id": 3,
           "networkWeight": null,
@@ -212,7 +218,10 @@ describe('getProposals', () => {
           "deposit": null,
           "executedAt": null,
           "history": [
-            1,
+            {
+              "id": 1,
+              "stage": 5,
+            },
           ],
           "id": 2,
           "networkWeight": null,
@@ -309,8 +318,14 @@ describe('getProposals', () => {
           "deposit": null,
           "executedAt": null,
           "history": [
-            2,
-            1,
+            {
+              "id": 2,
+              "stage": 5,
+            },
+            {
+              "id": 1,
+              "stage": 5,
+            },
           ],
           "id": 3,
           "networkWeight": null,
@@ -336,7 +351,10 @@ describe('getProposals', () => {
           "deposit": null,
           "executedAt": null,
           "history": [
-            1,
+            {
+              "id": 1,
+              "stage": 5,
+            },
           ],
           "id": 2,
           "networkWeight": null,
@@ -362,9 +380,18 @@ describe('getProposals', () => {
           "deposit": null,
           "executedAt": null,
           "history": [
-            3,
-            2,
-            1,
+            {
+              "id": 3,
+              "stage": 3,
+            },
+            {
+              "id": 2,
+              "stage": 5,
+            },
+            {
+              "id": 1,
+              "stage": 5,
+            },
           ],
           "id": 1,
           "networkWeight": null,
@@ -415,7 +442,10 @@ describe('getProposals', () => {
           "deposit": null,
           "executedAt": null,
           "history": [
-            1,
+            {
+              "id": 1,
+              "stage": 5,
+            },
           ],
           "id": 1,
           "networkWeight": null,
