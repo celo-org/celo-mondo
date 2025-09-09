@@ -35,7 +35,8 @@ ALTER TABLE "votes" ADD CONSTRAINT "votes_proposalId_chainId_proposals_id_chainI
 CREATE INDEX IF NOT EXISTS "events_blockNumber_index" ON "events" USING btree ("blockNumber");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "events_chainId_index" ON "events" USING btree ("chainId");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "events_eventName_index" ON "events" USING btree ("eventName");--> statement-breakpoint
--- CREATE INDEX IF NOT EXISTS "events_topics_proposalId_index" ON "events" USING gin ("topics"[2]);--> statement-breakpoint
+-- DROP INDEX "events_topics_proposalId_index";--> statement-breakpoint
+-- CREATE INDEX "events_topics_proposalId_index" ON "events" USING gin ("topics"[2]);--> statement-breakpoint
 ALTER TABLE "blocksProcessed" DROP CONSTRAINT "blocksProcessed_eventName_chainId_pk";
 --> statement-breakpoint
 ALTER TABLE "blocksProcessed" ADD CONSTRAINT "blocksProcessed_eventName_chainId_pk" PRIMARY KEY("eventName","chainId");
