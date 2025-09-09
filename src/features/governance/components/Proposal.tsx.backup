@@ -27,7 +27,6 @@ import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
 import { getEndHumanEndTime } from 'src/utils/time';
-import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
 export function Proposal({ id }: { id: string }) {
@@ -42,7 +41,7 @@ export function Proposal({ id }: { id: string }) {
 
   return (
     <>
-      <ProposalContent propData={propData} id={id} />
+      <ProposalContent propData={propData} />
       {propData.stage !== ProposalStage.None && (
         <CollapsibleResponsiveMenu>
           <ProposalChainData propData={propData} />
@@ -52,7 +51,7 @@ export function Proposal({ id }: { id: string }) {
   );
 }
 
-function ProposalContent({ propData, id }: { propData: MergedProposalData; id: string }) {
+function ProposalContent({ propData }: { propData: MergedProposalData }) {
   const { proposal, metadata } = propData;
   const title = trimToLength(metadata?.title || `Proposal #${proposal?.id}`, 80);
   const { content, isLoading } = useProposalContent(metadata);
@@ -79,9 +78,6 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
           </p>
         </div>
       )}
-
-      {/* Add the transactions section */}
-      <ProposalTransactions proposalId={id} numTransactions={proposal?.numTransactions} />
       {content && (
         <div
           dangerouslySetInnerHTML={{ __html: content }}
@@ -93,7 +89,7 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id: proposalId, stage, proposal, metadata, history } = propData;
+  const { id, stage, proposal, metadata, history } = propData;
   const expiryTimestamp = proposal?.expiryTimestamp;
 
   if (stage === ProposalStage.None) return null;
@@ -101,8 +97,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
   return (
     <div className="space-y-4 lg:min-w-[20rem]">
       <div className="space-y-4 border-taupe-300 p-3 lg:border">
-        {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
-        {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
+        {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={id} />}
+        {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={id} />}
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
         {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
         {expiryTimestamp && expiryTimestamp > 0 && (
@@ -128,10 +124,10 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           </ErrorBoundaryInline>
         </div>
       )}
-      {(stage === ProposalStage.Referendum || stage === ProposalStage.Execution) && proposalId && (
+      {(stage === ProposalStage.Referendum || stage === ProposalStage.Execution) && id && (
         <div className="hidden border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
-            <ProposalApprovalsTable proposalId={proposalId} />
+            <ProposalApprovalsTable proposalId={id} />
           </ErrorBoundaryInline>
         </div>
       )}
