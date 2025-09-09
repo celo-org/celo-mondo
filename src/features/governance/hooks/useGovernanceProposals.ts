@@ -116,15 +116,11 @@ export function useGovernanceProposals() {
             proposer: proposal.proposer,
             upvotes,
             url: proposal.url,
-            expiryTimestamp: getExpiryTimestamp(
-              computedStage,
-              proposal.timestamp * 1000,
-            ),
+            expiryTimestamp: getExpiryTimestamp(computedStage, proposal.timestamp * 1000),
             timestamp: proposal.timestamp * 1000,
             // approve only if the proposal has progressed past referendum and not been rejected
             isApproved:
-              computedStage === ProposalStage.Execution ||
-              computedStage === ProposalStage.Executed,
+              computedStage === ProposalStage.Execution || computedStage === ProposalStage.Executed,
             votes: proposal.votes,
           },
         } as MergedProposalData;

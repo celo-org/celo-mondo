@@ -1,10 +1,6 @@
 import { afterEach, beforeEach } from 'node:test';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import {
-  ProposalStage,
-  VoteType,
-  VoteAmounts,
-} from 'src/features/governance/types';
+import { ProposalStage, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { publicClient } from 'src/test/anvil/utils';
 import { describe, expect, it, vi } from 'vitest';
 import { useGovernanceProposal } from './useGovernanceProposals';
@@ -19,13 +15,10 @@ beforeEach(() => {
     usePublicClient: () => publicClient,
   }));
 
-  vi.mock(
-    'src/components/notifications/useToastError',
-    async (importActual) => ({
-      ...(await importActual()),
-      useToastError: () => {},
-    }),
-  );
+  vi.mock('src/components/notifications/useToastError', async (importActual) => ({
+    ...(await importActual()),
+    useToastError: () => {},
+  }));
 });
 
 afterEach(() => {
@@ -105,10 +98,7 @@ describe('Governance proposal stage logic', () => {
   });
 
   it('sets isApproved true only for Execution and Executed stages', () => {
-    const approvedStages = [
-      ProposalStage.Execution,
-      ProposalStage.Executed,
-    ];
+    const approvedStages = [ProposalStage.Execution, ProposalStage.Executed];
     const nonApprovedStages = [
       ProposalStage.None,
       ProposalStage.Queued,
@@ -119,15 +109,11 @@ describe('Governance proposal stage logic', () => {
       ProposalStage.Withdrawn,
     ];
     approvedStages.forEach((stage) => {
-      const isApproved =
-        stage === ProposalStage.Execution ||
-        stage === ProposalStage.Executed;
+      const isApproved = stage === ProposalStage.Execution || stage === ProposalStage.Executed;
       expect(isApproved).toBe(true);
     });
     nonApprovedStages.forEach((stage) => {
-      const isApproved =
-        stage === ProposalStage.Execution ||
-        stage === ProposalStage.Executed;
+      const isApproved = stage === ProposalStage.Execution || stage === ProposalStage.Executed;
       expect(isApproved).toBe(false);
     });
   });
