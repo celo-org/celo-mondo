@@ -69,10 +69,10 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     },
   },
   '0x21FB4411FA5828344c2788aB07D4cc12a12571b9': {
-    logo: '/logos/validators/impact-market.jpg',
+    logo: '/logos/validators/vibestudio-ventures.jpg',
     links: {
-      website: 'https://www.impactmarket.com',
-      twitter: 'https://twitter.com/impactmarket',
+      website: 'https://vibestudio.ventures',
+      twitter: 'https://twitter.com/vibestudio_',
     },
   },
   '0x7194DFE766a92308880A943fD70F31c8E7c50e66': {

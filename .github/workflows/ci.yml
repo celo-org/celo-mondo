@@ -47,7 +47,11 @@ jobs:
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: build
-        run: yarn run build:ci
+        run: |
+          # this is unecessary on CI honestly
+          # yarn build:proposals
+          yarn build:delegatees-json
+          yarn build:app
         env:
           NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
 
