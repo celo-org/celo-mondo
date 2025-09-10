@@ -9,6 +9,7 @@ import { H1 } from 'src/components/text/headers';
 import { config } from 'src/config/config';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
+import USDT0Logo from 'src/images/logos/usdt0.webp';
 
 interface Bridge {
   name: string;
@@ -40,6 +41,13 @@ const BRIDGES: Bridge[] = [
     href: 'https://portalbridge.com',
     logo: PortalLogo,
     description: 'Wormhole based bridge. Good for wormhole assets on Celo.',
+  },
+  {
+    name: 'USDT0',
+    operator: 'USDT0',
+    href: 'https://usdt0.to/transfer',
+    logo: USDT0Logo,
+    description: '1:1 transfers of native USDT powered by the Layer Zero OFT. Best for moving USDT',
   },
 ];
 
