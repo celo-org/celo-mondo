@@ -5,8 +5,13 @@ import { toast } from 'react-toastify';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { TextField } from 'src/components/input/TextField';
+import {
+  DelegateSafeWalletModal,
+  useIsSAFEWallet,
+  useSAFEModal,
+} from 'src/features/delegation/DelegateSafeWalletModal';
 import { useDelegatedPercent } from 'src/features/delegation/hooks/useDelegatedPercent';
-import { useSignedData } from 'src/features/delegation/hooks/useSIgnedData';
+import { useSignedData } from 'src/features/delegation/hooks/useSignedData';
 import {
   RegisterDelegateFormValues,
   RegisterDelegateResponse,
@@ -37,6 +42,8 @@ export function DelegateRegistrationForm({
   const [isSigning, setIsSigning] = useState(false);
   const [pullRequestUrl, setPullRequestUrl] = useState<string | null>(null);
   const signForm = useSignedData();
+  const isSAFE = useIsSAFEWallet();
+  const { isModalOpen, openModal, closeModal, values: formDataValues } = useSAFEModal();
   const { delegatedPercent } = useDelegatedPercent(address);
 
   const validate = async (values: RegisterDelegateFormValues, image: File | null) => {
@@ -78,210 +85,228 @@ export function DelegateRegistrationForm({
   }
 
   return (
-    <Formik<RegisterDelegateFormValues>
-      initialValues={{
-        ...defaultFormValues,
-        ...initialValues,
-      }}
-      onSubmit={async (values) => {
-        let signature: HexString;
+    <>
+      <Formik<RegisterDelegateFormValues>
+        initialValues={{
+          ...defaultFormValues,
+          ...initialValues,
+        }}
+        onSubmit={async (values) => {
+          let signature: HexString;
 
-        setIsSubmitting(true);
-        setIsSigning(true);
+          setIsSubmitting(true);
+          setIsSigning(true);
 
-        try {
-          signature = await signForm({
+          const registrationValues = {
             ...values,
             address: address!,
             image: imageFile,
-          });
-        } catch (err) {
-          setIsSubmitting(false);
+          };
 
-          toast.error('Error while signing message');
-          logger.error(err);
-
-          return;
-        }
-
-        setIsSigning(false);
-
-        const request = new FormData();
-
-        request.append('image', imageFile as Blob);
-        request.append('name', values.name);
-        request.append('interests', values.interests);
-        request.append('description', values.description);
-        request.append('signature', signature);
-
-        if (values.twitterUrl) {
-          request.append('twitterUrl', values.twitterUrl);
-        }
-
-        if (values.websiteUrl) {
-          request.append('websiteUrl', values.websiteUrl);
-        }
-
-        request.append('verificationUrl', values.verificationUrl);
-        request.append('address', address!);
-
-        try {
-          const httpResponse = await fetch('/delegate/api/register', {
-            method: 'POST',
-            body: request,
-          });
-
-          if (httpResponse.ok) {
-            const response = (await httpResponse.json()) as RegisterDelegateResponse;
-
-            if (response.status === RegisterDelegateResponseStatus.Success) {
-              setPullRequestUrl(response.pullRequestUrl);
-            } else {
-              toast.error(response.message);
-            }
-          } else {
-            toast.error('Error while registering delegatee');
+          if (isSAFE) {
+            openModal(registrationValues);
+            setIsSigning(false);
+            setIsSubmitting(false);
+            return;
           }
-        } catch (err) {
-          toast.error(`Error while registering delegatee: ${(err as Error).message}`);
-        }
 
-        setIsSubmitting(false);
-      }}
-      validate={(values) => validate(values, imageFile)}
-      validateOnChange={false}
-      validateOnBlur={false}
-    >
-      {({ errors }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between lg:max-w-2xl">
-          <div className={'space-y-3'}>
-            {delegatedPercent > 0 && (
-              <p className={'text-red-600'}>
-                You are currently delegating{' '}
-                <span className={'font-bold'}>{delegatedPercent}%</span> of your locked CELO. You
-                can still register as a delegatee, but consider undelegating. You can delegate only
-                CELO that you locked, not CELO that is delegated to you.
-              </p>
-            )}
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'address'} className="text-xs font-semibold">
-                Address
-              </label>
-              <p className={'font-bold'}>{defaultFormValues?.address}</p>
-              <p className={'text-xs'}>
-                Your connected wallet address is provided automatically and cannot be changed. If
-                you want to use different address, open a pull request manually on{' '}
-                <Link href="https://github.com/celo-org/celo-mondo">Github</Link>.
-              </p>
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'address'} className="text-xs font-semibold">
-                Name
-              </label>
-              <TextField
-                name="name"
-                placeholder="Your name"
-                defaultValue={defaultFormValues?.name}
-              />
-              {errors.name && <p className={'text-xs text-red-500'}>{errors.name}</p>}
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'interests'} className="text-xs font-semibold">
-                Interests
-              </label>
-              <TextField
-                name="interests"
-                placeholder="Blockchain, NFTs"
-                defaultValue={defaultFormValues?.interests}
-              />
-              {errors.interests && <p className={'text-xs text-red-500'}>{errors.interests}</p>}
-              <p className={'text-xs'}>
-                Provide a comma separated list of your interests, at least one is required.
-              </p>
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'description'} className="text-xs font-semibold">
-                Description
-              </label>
-              <TextField
-                name="description"
-                placeholder="Your description"
-                defaultValue={defaultFormValues?.description}
-              />
-              {errors.description && <p className={'text-xs text-red-500'}>{errors.description}</p>}
-              <p className={'text-xs'}>Provide a short description of yourself.</p>
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'twitterUrl'} className="text-xs font-semibold">
-                Twitter
-              </label>
-              <TextField
-                name="twitterUrl"
-                placeholder="https://x.com/celo"
-                defaultValue={defaultFormValues?.twitterUrl}
-              />
-              {errors.twitterUrl && <p className={'text-xs text-red-500'}>{errors.twitterUrl}</p>}
-              <p className={'text-xs'}>Provide a link to your X (formerly Twitter) profile.</p>
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'websiteUrl'} className="text-xs font-semibold">
-                Website
-              </label>
-              <TextField
-                name="websiteUrl"
-                placeholder="https://celo.org/"
-                defaultValue={defaultFormValues?.websiteUrl}
-              />
-              {errors.websiteUrl && <p className={'text-xs text-red-500'}>{errors.websiteUrl}</p>}
-              <p className={'text-xs'}>Provide a link to your website.</p>
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'verificationUrl'} className="text-xs font-semibold">
-                Verification Link
-              </label>
-              <TextField
-                name="verificationUrl"
-                placeholder="https://celo.org/"
-                defaultValue={defaultFormValues?.verificationUrl}
-              />
-              {errors.verificationUrl && (
-                <p className={'text-xs text-red-500'}>{errors.verificationUrl}</p>
+          try {
+            signature = await signForm(registrationValues);
+          } catch (err) {
+            setIsSubmitting(false);
+
+            toast.error('Error while signing message');
+            logger.error(err);
+
+            return;
+          }
+
+          setIsSigning(false);
+
+          const request = new FormData();
+
+          request.append('image', imageFile as Blob);
+          request.append('name', values.name);
+          request.append('interests', values.interests);
+          request.append('description', values.description);
+          request.append('signature', signature);
+
+          if (values.twitterUrl) {
+            request.append('twitterUrl', values.twitterUrl);
+          }
+
+          if (values.websiteUrl) {
+            request.append('websiteUrl', values.websiteUrl);
+          }
+
+          request.append('verificationUrl', values.verificationUrl);
+          request.append('address', address!);
+
+          try {
+            const httpResponse = await fetch('/delegate/api/register', {
+              method: 'POST',
+              body: request,
+            });
+
+            if (httpResponse.ok) {
+              const response = (await httpResponse.json()) as RegisterDelegateResponse;
+
+              if (response.status === RegisterDelegateResponseStatus.Success) {
+                setPullRequestUrl(response.pullRequestUrl);
+              } else {
+                toast.error(response.message);
+              }
+            } else {
+              toast.error('Error while registering delegatee');
+            }
+          } catch (err) {
+            toast.error(`Error while registering delegatee: ${(err as Error).message}`);
+          }
+
+          setIsSubmitting(false);
+        }}
+        validate={(values) => validate(values, imageFile)}
+        validateOnChange={false}
+        validateOnBlur={false}
+      >
+        {({ errors }) => (
+          <Form className="mt-4 flex flex-1 flex-col justify-between lg:max-w-2xl">
+            <div className={'space-y-3'}>
+              {delegatedPercent > 0 && (
+                <p className={'text-red-600'}>
+                  You are currently delegating{' '}
+                  <span className={'font-bold'}>{delegatedPercent}%</span> of your locked CELO. You
+                  can still register as a delegatee, but consider undelegating. You can delegate
+                  only CELO that you locked, not CELO that is delegated to you.
+                </p>
               )}
-              <p className={'text-xs'}>
-                Provide a URL to proof authenticity of your delegatee registration, it can be a link
-                to a tweet, a forum post etc.
-              </p>
-            </div>
-            <div className={'flex flex-col space-y-0.5'}>
-              <label htmlFor={'websiteUrl'} className="text-xs font-semibold">
-                Image
-              </label>
-              <div className={'flex items-center'}>
-                {imageUrl && (
-                  <div className="mr-5">
-                    <ImageOrIdenticon imgSrc={imageUrl} address={address!} size={90} />
-                  </div>
-                )}
-                <input type="file" name="image" onChange={handleFileChange} />
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'address'} className="text-xs font-semibold">
+                  Address
+                </label>
+                <p className={'font-bold'}>{defaultFormValues?.address}</p>
+                <p className={'text-xs'}>
+                  Your connected wallet address is provided automatically and cannot be changed. If
+                  you want to use different address, open a pull request manually on{' '}
+                  <Link href="https://github.com/celo-org/celo-mondo">Github</Link>.
+                </p>
               </div>
-              {errors.image! && <p className={'text-xs text-red-500'}>{errors.image!}</p>}
-              <p className={'text-xs'}>Provide an image to use as your delegate logo.</p>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'address'} className="text-xs font-semibold">
+                  Name
+                </label>
+                <TextField
+                  name="name"
+                  placeholder="Your name"
+                  defaultValue={defaultFormValues?.name}
+                />
+                {errors.name && <p className={'text-xs text-red-500'}>{errors.name}</p>}
+              </div>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'interests'} className="text-xs font-semibold">
+                  Interests
+                </label>
+                <TextField
+                  name="interests"
+                  placeholder="Blockchain, NFTs"
+                  defaultValue={defaultFormValues?.interests}
+                />
+                {errors.interests && <p className={'text-xs text-red-500'}>{errors.interests}</p>}
+                <p className={'text-xs'}>
+                  Provide a comma separated list of your interests, at least one is required.
+                </p>
+              </div>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'description'} className="text-xs font-semibold">
+                  Description
+                </label>
+                <TextField
+                  name="description"
+                  placeholder="Your description"
+                  defaultValue={defaultFormValues?.description}
+                />
+                {errors.description && (
+                  <p className={'text-xs text-red-500'}>{errors.description}</p>
+                )}
+                <p className={'text-xs'}>Provide a short description of yourself.</p>
+              </div>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'twitterUrl'} className="text-xs font-semibold">
+                  Twitter
+                </label>
+                <TextField
+                  name="twitterUrl"
+                  placeholder="https://x.com/celo"
+                  defaultValue={defaultFormValues?.twitterUrl}
+                />
+                {errors.twitterUrl && <p className={'text-xs text-red-500'}>{errors.twitterUrl}</p>}
+                <p className={'text-xs'}>Provide a link to your X (formerly Twitter) profile.</p>
+              </div>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'websiteUrl'} className="text-xs font-semibold">
+                  Website
+                </label>
+                <TextField
+                  name="websiteUrl"
+                  placeholder="https://celo.org/"
+                  defaultValue={defaultFormValues?.websiteUrl}
+                />
+                {errors.websiteUrl && <p className={'text-xs text-red-500'}>{errors.websiteUrl}</p>}
+                <p className={'text-xs'}>Provide a link to your website.</p>
+              </div>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'verificationUrl'} className="text-xs font-semibold">
+                  Verification Link
+                </label>
+                <TextField
+                  name="verificationUrl"
+                  placeholder="https://celo.org/"
+                  defaultValue={defaultFormValues?.verificationUrl}
+                />
+                {errors.verificationUrl && (
+                  <p className={'text-xs text-red-500'}>{errors.verificationUrl}</p>
+                )}
+                <p className={'text-xs'}>
+                  Provide a URL to proof authenticity of your delegatee registration, it can be a
+                  link to a tweet, a forum post etc.
+                </p>
+              </div>
+              <div className={'flex flex-col space-y-0.5'}>
+                <label htmlFor={'websiteUrl'} className="text-xs font-semibold">
+                  Image
+                </label>
+                <div className={'flex items-center'}>
+                  {imageUrl && (
+                    <div className="mr-5">
+                      <ImageOrIdenticon imgSrc={imageUrl} address={address!} size={90} />
+                    </div>
+                  )}
+                  <input type="file" name="image" onChange={handleFileChange} />
+                </div>
+                {errors.image! && <p className={'text-xs text-red-500'}>{errors.image!}</p>}
+                <p className={'text-xs'}>Provide an image to use as your delegate logo.</p>
+              </div>
+              <div className="space-y-2">
+                <SolidButtonWithSpinner
+                  type="submit"
+                  isLoading={isSubmitting}
+                  loadingText={isSigning ? 'Signing' : 'Submitting'}
+                >
+                  Sign and submit
+                </SolidButtonWithSpinner>
+                <p className={'text-xs'}>
+                  Upon submission, you will be first asked to sign a message with your wallet.
+                </p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <SolidButtonWithSpinner
-                type="submit"
-                isLoading={isSubmitting}
-                loadingText={isSigning ? 'Signing' : 'Submitting'}
-              >
-                Sign and submit
-              </SolidButtonWithSpinner>
-              <p className={'text-xs'}>
-                Upon submission, you will be first asked to sign a message with your wallet.
-              </p>
-            </div>
-          </div>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+      <DelegateSafeWalletModal
+        isModalOpen={isModalOpen}
+        close={closeModal}
+        values={formDataValues}
+      />
+    </>
   );
 }

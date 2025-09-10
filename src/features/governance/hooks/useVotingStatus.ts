@@ -1,8 +1,9 @@
 import { governanceABI, lockedGoldABI } from '@celo/abis';
 import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { useVoteSignerToAccount } from 'src/features/account/hooks';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { isNullish } from 'src/utils/typeof';
@@ -16,7 +17,7 @@ export function useIsGovernanceVoting(address?: Address) {
     args: [address || ZERO_ADDRESS],
     query: {
       enabled: !!address,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 
@@ -37,7 +38,7 @@ export function useIsGovernanceUpVoting(address?: Address) {
     args: [address || ZERO_ADDRESS],
     query: {
       enabled: !!address,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   });
 
@@ -64,6 +65,7 @@ export function useIsGovernanceUpVoting(address?: Address) {
 
 export function useGovernanceVoteRecord(address?: Address, proposalId?: number) {
   const { dequeue } = useProposalDequeue();
+  const account = useVoteSignerToAccount(address);
 
   const proposalIndex = proposalId ? dequeue?.indexOf(proposalId) : undefined;
 
@@ -74,10 +76,10 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
     address: Addresses.Governance,
     abi: governanceABI,
     functionName: 'getVoteRecord',
-    args: [address || ZERO_ADDRESS, BigInt(proposalIndex || 0)],
+    args: [account.signingFor || address || ZERO_ADDRESS, BigInt(proposalIndex || 0)],
     query: {
       enabled: address && !isNullish(proposalIndex) && proposalIndex >= 0,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      staleTime: StaleTime.Short,
     },
   } as const);
 
@@ -101,14 +103,15 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
 }
 
 export function useGovernanceVotingPower(address?: Address) {
+  const { signingFor, isFetched } = useVoteSignerToAccount(address);
   const { data, isError, isLoading, error } = useReadContract({
     address: Addresses.LockedGold,
     abi: lockedGoldABI,
     functionName: 'getAccountTotalGovernanceVotingPower',
-    args: [address || ZERO_ADDRESS],
+    args: [signingFor ?? address ?? ZERO_ADDRESS],
     query: {
-      enabled: !!address,
-      staleTime: 1 * 60 * 1000, // 1 minute
+      enabled: isFetched,
+      staleTime: StaleTime.Short,
     },
   } as const);
 

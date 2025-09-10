@@ -15,7 +15,7 @@ export function StageBadge({
   return (
     <div
       style={{ backgroundColor: color }}
-      className={clsx('rounded-full px-2 py-0.5 text-sm font-light', className)}
+      className={clsx('whitespace-nowrap rounded-full px-2 py-0.5 text-sm font-light', className)}
     >
       {label}
     </div>

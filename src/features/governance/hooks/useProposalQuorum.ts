@@ -3,12 +3,14 @@ import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { Proposal } from 'src/features/governance/types';
+import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
-import { fromHex, PublicClient, toHex } from 'viem';
+import { PublicClient, fromHex, toHex } from 'viem';
 import { usePublicClient, useReadContract } from 'wagmi';
 
 interface ParticipationParameters {
@@ -29,11 +31,11 @@ export function useProposalQuorum(propData?: MergedProposalData): {
     return { isLoading: true };
   }
   try {
-    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1567
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1724-L1726
     const quorumPct = new BigNumber(participationParameters.baseline).times(
       participationParameters.baselineQuorumFactor,
     );
-    // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Proposals.sol#L195-L211
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1734-L1746
     const quorumVotes = BigInt(
       quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
     );
@@ -43,7 +45,7 @@ export function useProposalQuorum(propData?: MergedProposalData): {
       isLoading: false,
     };
   } catch (error) {
-    console.warn(
+    logger.warn(
       'Error calculating proposal quorum',
       'thresholds',
       thresholds,
@@ -67,8 +69,8 @@ export function useIsProposalPassing(id: number | undefined) {
     scopeKey: `useIsProposalPassing-${id}`,
     query: {
       enabled: Boolean(id),
-      gcTime: 60 * 1000, // 1 minute
-      staleTime: 5 * 1000, /// 5 seconds
+      gcTime: GCTime.Shortest,
+      staleTime: StaleTime.Shortest,
     },
   });
 }
@@ -84,8 +86,8 @@ export function useParticipationParameters(): {
     abi: governanceABI,
     functionName: 'getParticipationParameters',
     query: {
-      gcTime: Infinity,
-      staleTime: 60 * 60 * 1000, // 1 hour
+      gcTime: GCTime.Long,
+      staleTime: StaleTime.Default,
     },
   });
 
@@ -147,10 +149,6 @@ export async function fetchThresholds(
     })),
   });
 
-  if (!results) {
-    return;
-  }
-
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
   const getConstitutionContract = {
@@ -158,6 +156,11 @@ export async function fetchThresholds(
     abi: governanceABI,
     functionName: 'getConstitution',
   } as const;
+
+  if (results.length === 0) {
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1730
+    results.push([0n, '0x0000000000000000000000000000000000000000', '0x00000000']);
+  }
 
   const thresholds = await publicClient?.multicall({
     ...getRuntimeBlock(),
@@ -171,11 +174,7 @@ export async function fetchThresholds(
     }),
   });
 
-  if (!thresholds) {
-    return;
-  }
-
-  // https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/governance/Governance.sol#L1580-L1583
+  // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1738-L1741
   return thresholds.map(fromFixidity);
 }
 

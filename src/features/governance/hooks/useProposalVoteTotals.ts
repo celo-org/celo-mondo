@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { fetchProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage } from 'src/features/governance/types';
+import { sumProposalVotes } from 'src/features/governance/utils/votes';
 import { logger } from 'src/utils/logger';
 
 export function useHistoricalProposalVoteTotals(id: number) {
@@ -12,10 +13,10 @@ export function useHistoricalProposalVoteTotals(id: number) {
       if (!id) return null;
 
       logger.debug(`Fetching historical proposals votes for ${id}`);
-      return fetchProposalVoters(id);
+      return sumProposalVotes(id);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000 * 4, // 4 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Long,
   });
 
   useToastError(error, 'Error fetching historical proposals vote totals');
@@ -48,13 +49,13 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
       if (metadata?.votes) return metadata.votes;
 
       // Otherwise we must query for all the vote events
-      // The fetchProposalVoters method does this same query so it's used here
+      // The sumProposalVotes method does this same query so it's used here
       logger.debug(`Fetching proposals votes for ${id}`);
-      const { totals } = await fetchProposalVoters(id);
+      const { totals } = await sumProposalVotes(id);
       return totals;
     },
-    gcTime: Infinity,
-    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: GCTime.Short,
+    staleTime: GCTime.Short,
   });
 
   useToastError(error, 'Error fetching proposals vote totals');

@@ -1,11 +1,12 @@
 import { electionABI } from '@celo/abis';
+import { DAY } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import {
   StakeActivationRequest,
   StakeActivationRequestSchema,
 } from 'src/features/staking/autoActivation';
 import { eqAddress } from 'src/utils/addresses';
-import { createCeloPublicClient, createCeloWalletClient } from 'src/utils/client';
+import { celoPublicClient, createCeloWalletClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { errorToString } from 'src/utils/strings';
 import { privateKeyToAccount } from 'viem/accounts';
@@ -48,21 +49,19 @@ async function activateStake(request: StakeActivationRequest) {
   const group = request.group as HexString;
   const transactionHash = request.transactionHash as HexString;
 
-  const client = createCeloPublicClient();
-
-  const transaction = await client.getTransaction({ hash: transactionHash });
+  const transaction = await celoPublicClient.getTransaction({ hash: transactionHash });
   if (!eqAddress(transaction.from, address))
     throw new Error('Tx sender and request address do not match');
   if (!transaction.to || !eqAddress(transaction.to, Addresses.Election))
     throw new Error('Tx not to election contract');
 
-  const latestBlock = await client.getBlockNumber();
-  const block = await client.getBlock({ blockNumber: transaction.blockNumber });
+  const latestBlock = await celoPublicClient.getBlockNumber();
+  const block = await celoPublicClient.getBlock({ blockNumber: transaction.blockNumber });
   const confirmations = latestBlock - transaction.blockNumber;
   // Ensure at least 1/3 of validators have confirmed the tx to prevent rogue validator spoofing
   if (confirmations < 33n) throw new Error('Transaction lacks sufficient confirmations');
   const timePassed = Date.now() - Number(block.timestamp) * 1000;
-  if (timePassed > 3 * 24 * 60 * 60 * 1000) throw new Error('Transaction is too old');
+  if (timePassed > 3 * DAY) throw new Error('Transaction is too old');
 
   // Used to validate tx logs but that's not strictly needed
   // and fetching them for old txs was causing problems
@@ -77,7 +76,7 @@ async function activateStake(request: StakeActivationRequest) {
   // if (!eqAddress(args.account, address))
   //   throw new Error('Transaction staker does not match request');
 
-  const hasActivatable = await client.readContract({
+  const hasActivatable = await celoPublicClient.readContract({
     address: Addresses.Election,
     abi: electionABI,
     functionName: 'hasActivatablePendingVotes',

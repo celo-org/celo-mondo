@@ -15,15 +15,16 @@ export const size = {
 
 export const contentType = 'image/png';
 
+// NOTE: using readFile here fails because somehow webpack _realllly_
+// wants to bundle this file and `path`/`fs` both aren't importable
+const alpina = fetch(
+  new URL(
+    'https://github.com/celo-org/celo-mondo/raw/8db2b2c80bf3f4f6e26b2f060ec2846d40ea5e5f/public/fonts/alpina-standard-regular.ttf',
+  ).toString(),
+).then((res) => res.arrayBuffer());
+
 // Image generation
 export async function OpenGraphImage({ children }: React.PropsWithChildren<{}>) {
-  // Font loading like this seems required to be absolute URL
-  const alpina = fetch(
-    new URL(
-      'https://github.com/celo-org/celo-mondo/raw/8db2b2c80bf3f4f6e26b2f060ec2846d40ea5e5f/public/fonts/alpina-standard-regular.ttf',
-    ).toString(),
-  ).then((res) => res.arrayBuffer());
-
   return new ImageResponse(
     <div style={{ display: 'flex', height: '100%', width: '100%' }}>{children}</div>,
     // ImageResponse options

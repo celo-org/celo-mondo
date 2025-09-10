@@ -1,0 +1,26 @@
+name: Automatic deployments
+
+on:
+  schedule:
+    - cron: '0 11 * * 1-5' # Runs at 11 am UTC, Monday to Friday
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ['self-hosted', 'org']
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - name: Akeyless Get Secrets
+      id: get_auth_token
+      uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
+      with:
+        api-url: https://api.gateway.akeyless.celo-networks-dev.org
+        access-id: p-kf9vjzruht6l
+        static-secrets: '{"/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook":"TOKEN_VAR"}'
+    - name: Trigger Deployment
+      env:
+        DEPLOYMENT_WEBHOOK_URL: ${{ env.TOKEN_VAR }}
+      run: |
+        curl -s -o /dev/null -X GET "$DEPLOYMENT_WEBHOOK_URL"

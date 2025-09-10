@@ -28,11 +28,12 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 
 const NUM_COLLAPSED_GROUPS = 9;
-const DESKTOP_ONLY_COLUMNS = ['votes', 'avgScore', 'numElected', 'cta'];
+const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
 enum Filter {
-  All = 'All',
+  All = 'All Eligible',
   Elected = 'Elected',
   Unelected = 'Unelected',
+  Ineligible = 'Ineligible',
 }
 
 export function ValidatorGroupTable({
@@ -75,9 +76,10 @@ export function ValidatorGroupTable({
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
     return {
-      [Filter.All]: groups.length,
+      [Filter.All]: groups.filter((g) => g.eligible).length,
       [Filter.Elected]: groups.filter((g) => isElected(g)).length,
       [Filter.Unelected]: groups.filter((g) => !isElected(g)).length,
+      [Filter.Ineligible]: groups.filter((g) => !g.eligible).length,
     };
   }, [groups]);
 
@@ -90,6 +92,10 @@ export function ValidatorGroupTable({
       DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
     }
   }, [isMobile, table]);
+
+  useEffect(() => {
+    setIsTopGroupsExpanded(false);
+  }, [filter]);
 
   return (
     <div>
@@ -134,7 +140,10 @@ export function ValidatorGroupTable({
             expand={() => setIsTopGroupsExpanded(true)}
           />
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className={clsx(classNames.tr, row.original.isHidden && 'hidden')}>
+            <tr
+              key={row.original.address}
+              className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
+            >
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={classNames.td}>
                   <Link href={`/staking/${row.original.address}`} className="flex px-4 py-4">
@@ -168,7 +177,7 @@ function TopGroupsRow({
       .slice(0, NUM_COLLAPSED_GROUPS);
     const topGroupStats = topGroups.map((g) => getGroupStats(g));
     const staked = bigIntSum(topGroups.map((g) => g.votes));
-    const score = mean(topGroupStats.map((g) => g.avgScore));
+    const score = mean(topGroupStats.map((g) => g.score));
     const numElected = sum(topGroupStats.map((g) => g.numElected));
     const numValidators = sum(topGroupStats.map((g) => g.numMembers));
     const elected = `${numElected} / ${numValidators}`;
@@ -209,7 +218,7 @@ function TopGroupsRow({
           />
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
-          {(score?.toFixed(0) || 0) + '%'}
+          {(score * 100)?.toFixed(0) + '%'}
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
@@ -276,6 +285,7 @@ function useTableColumns(totalVotes: bigint) {
       }),
       columnHelper.accessor('votes', {
         header: 'Staked',
+        enableSorting: true,
         cell: (props) => (
           <Amount
             valueWei={props.getValue()}
@@ -296,9 +306,9 @@ function useTableColumns(totalVotes: bigint) {
           />
         ),
       }),
-      columnHelper.accessor('avgScore', {
+      columnHelper.accessor('score', {
         header: 'Score',
-        cell: (props) => <div>{`${props.getValue()}%`}</div>,
+        cell: (props) => <div>{`${(props.getValue() * 100).toFixed()}%`}</div>,
       }),
       columnHelper.accessor('numElected', {
         header: 'Elected',
@@ -340,7 +350,8 @@ function useTableRows({
       .filter((g) => {
         if (filter === Filter.Elected) return isElected(g);
         else if (filter === Filter.Unelected) return !isElected(g);
-        else return true;
+        else if (filter === Filter.Ineligible) return !g.eligible;
+        else return g.eligible;
       })
       .filter(
         (g) =>
@@ -372,6 +383,9 @@ function computeCumulativeShare(
   if (!groups?.length || !address || !totalVotes) return 0;
   const index = groups.findIndex((g) => g.address === address);
   const sum = groups.slice(0, index + 1).reduce((acc, group) => acc + group.votes, 0n);
+
+  // NOTE: could remove BigNumber here
+  // Number(sum * 100_000n) / totalVotes)) / 1000
   return BigNumber(sum.toString())
     .dividedBy(totalVotes.toString())
     .times(100)

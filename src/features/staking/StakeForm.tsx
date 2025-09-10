@@ -12,6 +12,7 @@ import {
   MIN_GROUP_SCORE_FOR_RANDOM,
   ZERO_ADDRESS,
 } from 'src/config/consts';
+import { useVoteSignerToAccount } from 'src/features/account/hooks';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
@@ -58,9 +59,10 @@ export function StakeForm({
 }) {
   const { address } = useAccount();
   const { groups, addressToGroup } = useValidatorGroups();
-  const { lockedBalances } = useLockedStatus(address);
-  const { stakeBalances, groupToStake, refetch } = useStakingBalances(address);
-  const { delegations } = useDelegationBalances(address);
+  const { signingFor } = useVoteSignerToAccount(address);
+  const { lockedBalances } = useLockedStatus(signingFor);
+  const { stakeBalances, groupToStake, refetch } = useStakingBalances(signingFor);
+  const { delegations } = useDelegationBalances(address, signingFor);
 
   const onPlanSuccess = (v: StakeFormValues, r: TransactionReceipt) => {
     if (v.action === StakeActionType.Stake) {
@@ -114,7 +116,7 @@ export function StakeForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between">
+        <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="stake-form">
           {/* Reserve space for group menu */}
           <div className="min-h-[21.5rem] space-y-4">
             <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
@@ -229,7 +231,7 @@ function GroupField({
     return Object.values(addressToGroup)
       .map((g) => ({
         ...g,
-        score: getGroupStats(g).avgScore,
+        score: getGroupStats(g).score,
       }))
       .sort((a, b) => b.score - a.score);
   }, [addressToGroup]);
@@ -283,7 +285,7 @@ function GroupField({
                 <ValidatorGroupLogo address={g.address} size={20} />
                 <span>{cleanGroupName(g.name)}</span>
               </div>
-              <span>{`${g.score}%`}</span>
+              <span>{`${(g.score * 100).toFixed(2)}%`}</span>
             </button>
           );
         })}

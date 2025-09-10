@@ -1,6 +1,7 @@
 import { electionABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
 import { TransactionLog } from 'src/features/explorers/types';
@@ -20,8 +21,8 @@ export function useValidatorStakers(group?: Address) {
       logger.debug(`Fetching stakers for group ${group}`);
       return fetchValidatorGroupStakers(group);
     },
-    gcTime: 2 * 60 * 60 * 1000,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Default,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching group stakers');
@@ -33,8 +34,8 @@ export function useValidatorStakers(group?: Address) {
   const accurateStakes = useReadContracts({
     query: {
       enabled: !isLoading && !!data && !!group,
-      gcTime: 2 * 60 * 60 * 1000,
-      staleTime: 60 * 60 * 1000, // 1 hour
+      gcTime: GCTime.Default,
+      staleTime: StaleTime.Default,
     },
     contracts: accounts.map(
       (account) =>

@@ -1,12 +1,14 @@
+import { Geo, geolocation } from '@vercel/functions';
 import { headers } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
 import { logger } from 'src/utils/logger';
 
-export function GET(request: NextRequest) {
-  const headerList = headers();
+export async function GET(request: NextRequest) {
+  const headerList = await headers();
 
-  const country = request.geo?.country || (headerList.get('x-vercel-ip-country') as string);
-  const region = request.geo?.region || (headerList.get('x-vercel-ip-country-region') as string);
+  const geo = geolocation(request) as Geo;
+  const country = geo.country || (headerList.get('x-vercel-ip-country') as string);
+  const region = geo.region || (headerList.get('x-vercel-ip-country-region') as string);
 
   logger.info('country', country, region);
 
@@ -18,7 +20,7 @@ export function GET(request: NextRequest) {
 }
 const RESTRICTED_COUNTRIES = new Set(['KP', 'IR', 'CU', 'SY']);
 
-// https://www.iso.org/obp/ui/#iso:code:3166:UA although listed with UA prefix. the header/api recieved that and just used the number
+// https://www.iso.org/obp/ui/#iso:code:3166:UA although listed with UA prefix. the header/api received that and just used the number
 const crimea = '43';
 const luhansk = '09';
 const donetska = '14';

@@ -69,10 +69,10 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     },
   },
   '0x21FB4411FA5828344c2788aB07D4cc12a12571b9': {
-    logo: '/logos/validators/impact-market.jpg',
+    logo: '/logos/validators/vibestudio-ventures.jpg',
     links: {
-      website: 'https://www.impactmarket.com',
-      twitter: 'https://twitter.com/impactmarket',
+      website: 'https://vibestudio.ventures',
+      twitter: 'https://twitter.com/vibestudio_',
     },
   },
   '0x7194DFE766a92308880A943fD70F31c8E7c50e66': {
@@ -178,9 +178,9 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     },
   },
   '0xD72Ed2e3db984bAC3bB351FE652200dE527eFfcf': {
-    logo: '/logos/validators/chain-vibes.jpg',
+    logo: '/logos/validators/chain-vibes.png',
     links: {
-      website: 'https://chainvibes.com/decloud.html',
+      website: 'https://chainvibes.com',
       twitter: 'https://twitter.com/chain_vibes',
     },
   },
@@ -281,9 +281,9 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     },
   },
   '0x70FC0b021dFdBb9A106D1Ed8F35f59D3f23eCb7B': {
-    logo: '/logos/validators/vladiator-labs.jpg',
+    logo: '/logos/validators/atalma-io.jpg',
     links: {
-      twitter: 'https://twitter.com/vladiatorlabs',
+      twitter: 'https://twitter.com/atalma_io',
     },
   },
   '0xc24baeac0Fd189637112B7e33d22FfF2730aF993': {
@@ -346,7 +346,8 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
   '0xb434FeB47D6154B4B4058DF5C9fCeD123dB9aBF6': {
     logo: '/logos/validators/atweb3.jpg',
     links: {
-      website: 'https://www.atweb3.io',
+      website: 'https://atweb3.co',
+      twitter: 'https://x.com/atweb3_gmbh',
     },
   },
   '0xD19FB36B7F433fe13820767ef6d0E26FDbaB68CC': {
@@ -472,6 +473,20 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
     links: {
       website: 'https://www.telefonica.com',
       twitter: 'https://twitter.com/Telefonica',
+    },
+  },
+  '0xC80AF7298642bE7eb156F51311D3C4A314688909': {
+    logo: '/logos/validators/ethichub.png',
+    links: {
+      website: 'https://ethichub.com',
+      twitter: 'https://x.com/ethichub',
+    },
+  },
+  '0x6F769BcC21A867b839b6cA59dDe6c6C90c1DF18D': {
+    logo: '/logos/validators/celo-pg.png',
+    links: {
+      website: 'https://www.celopg.eco/',
+      twitter: 'https://x.com/CeloPublicGoods',
     },
   },
 };

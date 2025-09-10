@@ -5,7 +5,7 @@ import { RadioField } from 'src/components/input/RadioField';
 import { RangeField } from 'src/components/input/RangeField';
 import { TextField } from 'src/components/input/TextField';
 import { MAX_NUM_DELEGATEES, ZERO_ADDRESS } from 'src/config/consts';
-import { useAccountDetails, useVoteSigner } from 'src/features/account/hooks';
+import { useAccountDetails, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -20,7 +20,7 @@ import { LockedBalances } from 'src/features/locking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
-import { cleanGroupName } from 'src/features/validators/utils';
+import { cleanDelegateeName } from 'src/features/validators/utils';
 
 import { isValidAddress, shortenAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
@@ -43,11 +43,11 @@ export function DelegationForm({
 }) {
   const { address } = useAccount();
   const { addressToDelegatee } = useDelegatees();
-  const { isValidator, isValidatorGroup, isRegistered } = useAccountDetails(address);
-  const { voteSigner } = useVoteSigner(address, isRegistered);
-  const { delegations, refetch } = useDelegationBalances(address, voteSigner);
+  const { isValidator, isValidatorGroup } = useAccountDetails(address);
+  const { signingFor } = useVoteSignerToAccount(address);
+  const { delegations, refetch } = useDelegationBalances(address, signingFor);
   const { isValidator: isVoteSignerForValidator, isValidatorGroup: isVoteSignerForValidatorGroup } =
-    useAccountDetails(voteSigner);
+    useAccountDetails(signingFor);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<DelegateFormValues>({
@@ -192,7 +192,7 @@ function DelegateeField({
   }, [fieldName, defaultValue, setFieldValue]);
 
   const currentDelegatee = addressToDelegatee?.[values[fieldName]];
-  const delegateeName = cleanGroupName(currentDelegatee?.name || '');
+  const delegateeName = cleanDelegateeName(currentDelegatee?.name || '');
 
   return (
     <div className="relative flex flex-col space-y-1.5">
@@ -236,7 +236,7 @@ function PercentField({
     <RangeField
       name="percent"
       label={`${values.percent}% voting power`}
-      maxValue={`${maxPercent}%`}
+      maxValue={maxPercent}
       maxDescription="Available:"
       disabled={disabled}
     />

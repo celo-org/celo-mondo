@@ -1,2 +1,1 @@
-yarn lint-staged --quiet
-yarn prettier
+yarn lint-staged

@@ -17,4 +17,4 @@ export const links = {
     : 'https://api.celoscan.io',
   // Auto-activation
   upstash: 'https://qstash.upstash.io/v2/publish',
-};
+} as const;

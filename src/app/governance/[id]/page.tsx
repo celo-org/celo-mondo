@@ -1,28 +1,43 @@
+'use server';
+
 // DO NOT USE "use client" here as it breaks metadata
+import { Metadata } from 'next';
 import { Section } from 'src/components/layout/Section';
 import { Proposal } from 'src/features/governance/components/Proposal';
-import { collectProposals, findProposal } from 'src/features/governance/governanceData';
-import { createCeloPublicClient } from 'src/utils/client';
-
-export const dynamicParams = true;
+import { getProposals } from 'src/features/governance/getProposals';
+import { celoPublicClient } from 'src/utils/client';
 
 // id might be just a number as a string or can be cgp-N
-type Params = { params: { id: string } };
+type Params = Promise<{ id: string }>;
 
-export async function generateMetadata({ params }: Params) {
-  const publicClient = createCeloPublicClient();
-  const proposals = await collectProposals(publicClient);
-  const proposal = findProposal(proposals, params.id);
-
-  const title = `${params.id}: ${proposal?.metadata?.title}`;
-  const description = `View and Vote on Celo Governance Proposal ${proposal?.metadata?.cgp} - #${proposal?.id} on Celo Mondo`;
+// TODO: DEDUP
+function findProposal(proposals: Awaited<ReturnType<typeof getProposals>> | undefined, id: string) {
+  if (!proposals || !id) return undefined;
+  const matches = new RegExp(/^(cgp-)?(\d+)$/).exec(id);
+  if (matches?.[1] === 'cgp-') {
+    const cgpId = parseInt(matches[2]);
+    return proposals.find((p) => p.cgp === cgpId);
+  } else if (matches?.[2]) {
+    const propId = parseInt(matches[2]);
+    return proposals.find((p) => p.id === propId);
+  } else {
+    return undefined;
+  }
+}
+export async function generateMetadata(props: { params: Params }): Promise<Metadata> {
+  const { id } = await props.params;
+  const proposals = await getProposals(celoPublicClient.chain.id);
+  const proposal = findProposal(proposals, id);
+  const title = `${id}: ${proposal?.title}`;
+  const description = `View and Vote on Celo Governance Proposal ${proposal?.cgp} - #${proposal?.id} on Celo Mondo`;
   return {
     title,
     description,
   };
 }
 
-export default function Page({ params: { id } }: Params) {
+export default async function Page(props: { params: Params }) {
+  const { id } = await props.params;
   return (
     <Section containerClassName="mt-4 lg:flex lg:flex-row lg:gap-6">
       <Proposal id={id} />

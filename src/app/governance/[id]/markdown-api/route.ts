@@ -1,4 +1,6 @@
-export const revalidate = 60 * 3;
+import { logger } from 'src/utils/logger';
+
+export const revalidate = 180;
 
 const URL_BASE = 'https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-';
 
@@ -6,7 +8,7 @@ const URL_BASE = 'https://raw.githubusercontent.com/celo-org/governance/main/CGP
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const url = URL_BASE + zeroPad(id) + '.md';
-  console.info('Fetching markdown for proposal', url);
+  logger.info('Fetching markdown for proposal', url);
   const data = await fetch(url);
   const yaml = await data.text();
   return Response.json({ yaml });

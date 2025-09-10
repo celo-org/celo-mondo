@@ -2,8 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import * as utils from 'src/features/delegation/utils';
 import { getValidRequest } from 'src/test/delegatee-registration-utils';
+import { fileURLToPath } from 'url';
 import { expect, it, vi } from 'vitest';
 import { POST } from './route';
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
 
 const getRequest = (formData: FormData): Request => {
   return {
@@ -31,7 +35,7 @@ const getValidFormData = async () => {
   return data;
 };
 
-it('successfuly calls PR creation', async () => {
+it('successfully calls PR creation', async () => {
   const createDelegationPRMock = vi.spyOn(utils, 'createDelegationPR');
   const isAddressAnAccountMock = vi.spyOn(utils, 'isAddressAnAccount');
 

@@ -7,7 +7,6 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { config } from 'src/config/config';
-import { useIsCel2 } from 'src/features/account/hooks';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
 
@@ -16,7 +15,7 @@ interface Bridge {
   operator: string;
   href: string;
   logo: any;
-  cel2Only?: boolean;
+  description: string;
 }
 
 const BRIDGES: Bridge[] = [
@@ -25,28 +24,30 @@ const BRIDGES: Bridge[] = [
     operator: 'Superbridge',
     href: `https://superbridge.app/celo${config.chain.testnet ? '-testnet' : ''}`,
     logo: '/logos/superbridge.jpg',
-    cel2Only: true,
+    description: 'Native Celo L2 bridge. Good for moving CELO and ETH between Ethereum and Celo.',
   },
   {
     name: 'Squid Router',
     operator: 'Squid',
     href: 'https://v2.app.squidrouter.com',
     logo: SquidLogo,
+    description:
+      'Axelar based cross chain DEX. Good for moving stablecoins between chains, or swapping directly between assets.',
   },
   {
     name: 'Portal Bridge',
     operator: 'Wormhole',
     href: 'https://portalbridge.com',
     logo: PortalLogo,
+    description: 'Wormhole based bridge. Good for wormhole assets on Celo.',
   },
 ];
 
 export default function Page() {
-  const isCel2 = useIsCel2();
   return (
     <Section className="mt-6" containerClassName="space-y-6">
       <H1>Bridge to Celo</H1>
-      {BRIDGES.filter((x) => (x.cel2Only ? isCel2 : true)).map((bridge) => (
+      {BRIDGES.map((bridge) => (
         <BridgeLink key={bridge.name} {...bridge} />
       ))}
       <p className="text-center text-sm text-taupe-600">
@@ -58,14 +59,15 @@ export default function Page() {
   );
 }
 
-function BridgeLink({ name, operator, href, logo }: Bridge) {
+function BridgeLink({ name, operator, href, logo, description }: Bridge) {
   return (
-    <div className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:gap-32 sm:p-5">
+    <div className="mx-auto flex max-w-xl items-center justify-between border border-taupe-300 bg-white p-4 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
-        <div className="flex flex-col">
+        <div className="flex flex-col gap-1">
           <h2 className="font-serif text-xl">{name}</h2>
           <h3 className="text-sm">{`By ${operator}`}</h3>
+          <p className="text-sm">{description}</p>
         </div>
       </div>
       <SolidButton className="all:p-0">

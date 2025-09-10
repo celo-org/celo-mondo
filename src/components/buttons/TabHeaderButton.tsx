@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { PropsWithChildren, useState } from 'react';
 import { objKeys } from 'src/utils/objects';
 import { isNullish } from 'src/utils/typeof';
+import useTabs from 'src/utils/useTabs';
 
 export function TabHeaderButton({
   isActive,
@@ -48,14 +49,18 @@ export function TabHeaderFilters<Filter extends string>({
   showCount?: boolean;
   className?: string;
 }) {
+  const { tab, onTabChange } = useTabs<Filter>(activeFilter);
   return (
     <div className={`flex justify-between space-x-7 ${className}`}>
       {objKeys<Filter>(counts).map((f) => (
         <TabHeaderButton
           key={f}
-          isActive={activeFilter === f}
+          isActive={tab === f}
           count={showCount ? counts[f] : undefined}
-          onClick={() => setFilter(f)}
+          onClick={() => {
+            onTabChange(f);
+            setFilter(f);
+          }}
         >
           {f}
         </TabHeaderButton>

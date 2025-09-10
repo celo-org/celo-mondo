@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
+import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import {
   useIsProposalPassing,
@@ -13,6 +14,7 @@ import {
 } from 'src/features/governance/hooks/useProposalVoteTotals';
 import {
   EmptyVoteAmounts,
+  ProposalStage,
   VoteAmounts,
   VoteToColor,
   VoteType,
@@ -24,12 +26,28 @@ import { bigIntSum, percent } from 'src/utils/math';
 import { objKeys } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 
-export function PastProposalVoteChart({ id, title = 'Result' }: { id: number; title?: string }) {
+export function PastProposalVoteChart({
+  id,
+  title = 'Result',
+  stage,
+}: {
+  id: number;
+  title?: string;
+  stage: ProposalStage;
+}) {
   const { isLoading, votes } = useHistoricalProposalVoteTotals(id);
 
   const totalVotes = bigIntSum(Object.values(votes || {}));
 
-  return <ViewVotes votes={votes} totalVotes={totalVotes} title={title} isLoading={isLoading} />;
+  return (
+    <ViewVotes
+      votes={votes}
+      totalVotes={totalVotes}
+      title={title}
+      isLoading={isLoading}
+      stage={stage}
+    />
+  );
 }
 
 export function ProposalVoteChart({ propData }: { propData: MergedProposalData }) {
@@ -45,11 +63,13 @@ function ViewVotes({
   title = 'Result',
   totalVotes,
   isLoading,
+  stage,
 }: {
   totalVotes: bigint;
   votes: VoteAmounts | undefined;
   title?: string;
   isLoading?: boolean;
+  stage?: ProposalStage;
 }) {
   const voteBarChartData = useMemo(
     () =>
@@ -78,7 +98,10 @@ function ViewVotes({
 
   return (
     <div className="space-y-2">
-      <h2 className="font-serif text-2xl">{title}</h2>
+      <div className="flex flex-row items-center gap-4">
+        <h2 className="font-serif text-2xl">{title}</h2>
+        {stage && <StageBadge stage={stage} />}
+      </div>
       <div className="space-y-1.5">
         {Object.values(VoteTypes).map((v) => (
           <div key={v} className="relative text-xs">

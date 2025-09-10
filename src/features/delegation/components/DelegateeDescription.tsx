@@ -13,7 +13,7 @@ import { Delegatee } from 'src/features/delegation/types';
 import { ProposalCard } from 'src/features/governance/components/ProposalCard';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { VoteTypeToIcon } from 'src/features/governance/types';
-import { getLargestVoteType } from 'src/features/governance/utils';
+import { getLargestVoteType } from 'src/features/governance/utils/votes';
 
 export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
   const dateString = new Date(delegatee.date).toLocaleDateString();

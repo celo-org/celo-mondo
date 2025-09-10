@@ -152,10 +152,12 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
   );
 }
 
-function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
+export function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
   if (!cgp && !id) return null;
   const idValue = cgp ? `CGP ${cgp}` : `# ${id}`;
   return (
-    <div className="rounded-full border border-taupe-300 px-2 text-sm font-light">{idValue}</div>
+    <div className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-sm font-light">
+      {idValue}
+    </div>
   );
 }

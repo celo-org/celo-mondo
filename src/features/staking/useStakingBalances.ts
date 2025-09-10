@@ -1,6 +1,7 @@
 import { electionABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { GroupToStake } from 'src/features/staking/types';
 import { logger } from 'src/utils/logger';
@@ -30,8 +31,8 @@ export function useStakingBalances(address?: Address) {
       const stakeBalances = { active, pending, total };
       return { groupToStake, stakeBalances };
     },
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    staleTime: 1 * 60 * 1000, // 1 minute
+    gcTime: GCTime.Short,
+    staleTime: StaleTime.Short,
   });
 
   useToastError(error, 'Error fetching staking balances');

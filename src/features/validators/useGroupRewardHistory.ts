@@ -2,7 +2,7 @@ import { electionABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { config, infuraRpcUrl } from 'src/config/config';
-import { AVG_BLOCK_TIMES_MS, EPOCH_DURATION_MS } from 'src/config/consts';
+import { AVG_BLOCK_TIMES_MS, EPOCH_DURATION_MS, GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { queryCeloscanPath } from 'src/features/explorers/celoscan';
 import { logger } from 'src/utils/logger';
@@ -19,8 +19,8 @@ export function useGroupRewardHistory(group?: Address, epochs?: number) {
       logger.debug(`Fetching reward history for group ${group}`);
       return fetchValidatorGroupRewardHistory(group, epochs);
     },
-    gcTime: Infinity,
-    staleTime: 60 * 60 * 1000, // 1 hour
+    gcTime: GCTime.Long,
+    staleTime: StaleTime.Default,
     retry: false,
   });
 
@@ -68,6 +68,9 @@ async function fetchValidatorGroupRewardHistory(
   });
   const infuraBatchClient = createPublicClient({
     chain: config.chain,
+    batch: {
+      multicall: true,
+    },
     transport: config.chain.testnet ? http() : infuraTransport,
   });
 

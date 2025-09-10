@@ -2,16 +2,16 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import { useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { useBalance } from 'src/features/account/hooks';
+import { useBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { DelegationsTable } from 'src/features/delegation/components/DelegationsTable';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { Delegatee, DelegationAmount } from 'src/features/delegation/types';
+import { ProposalVotesHistoryTable } from 'src/features/governance/components/ProposalVotesHistoryTable';
 import { LockActionType, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { getTotalLockedCelo, getTotalUnlockedCelo } from 'src/features/locking/utils';
@@ -31,7 +31,9 @@ import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import LockIcon from 'src/images/icons/lock.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
+import { shortenAddress } from 'src/utils/addresses';
 import { usePageInvariant } from 'src/utils/navigation';
+import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
 export default function Page() {
@@ -39,14 +41,15 @@ export default function Page() {
   const address = account?.address;
   usePageInvariant(!!address, '/');
 
-  const { balance: walletBalance } = useBalance(address);
-  const { lockedBalances } = useLockedStatus(address);
-  const { delegations } = useDelegationBalances(address);
+  const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
+  const { balance: walletBalance } = useBalance(signingFor);
+  const { lockedBalances } = useLockedStatus(signingFor);
+  const { delegations } = useDelegationBalances(signingFor);
   const { addressToDelegatee } = useDelegatees();
-  const { stakeBalances, groupToStake, refetch: refetchStakes } = useStakingBalances(address);
-  const { totalRewardsWei, groupToReward } = useStakingRewards(address, groupToStake);
+  const { stakeBalances, groupToStake, refetch: refetchStakes } = useStakingBalances(signingFor);
+  const { totalRewardsWei, groupToReward } = useStakingRewards(signingFor, groupToStake);
   const { groupToIsActivatable, refetch: refetchActivations } = usePendingStakingActivations(
-    address,
+    signingFor,
     groupToStake,
   );
   const { addressToGroup } = useValidatorGroups();
@@ -58,17 +61,25 @@ export default function Page() {
 
   const totalLocked = getTotalLockedCelo(lockedBalances);
   const totalBalance = (walletBalance || 0n) + totalLocked;
-  const totalDelegated = (BigInt(delegations?.totalPercent || 0) * totalLocked) / 100n;
+  const totalDelegated = (BigInt(Math.floor(delegations?.totalPercent || 0)) * totalLocked) / 100n;
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4">
       <h1 className="hidden font-serif text-3xl sm:block">Dashboard</h1>
-      <div className="flex items-center justify-between md:gap-x-40">
+      <div className="items-top flex justify-between md:gap-x-40">
         <div>
           <h2>Total Balance</h2>
           <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
-        <LockButtons className="hidden md:flex" />
+        {isVoteSigner ? (
+          <div className="align-right flex flex-col items-end">
+            <h2 className="font-medium">Vote Signer For</h2>
+            <span className="hidden font-mono text-sm md:flex">{signingFor}</span>
+            <span className="font-mono text-sm md:hidden">{shortenAddress(signingFor!)}</span>
+          </div>
+        ) : (
+          <LockButtons className="hidden md:flex" />
+        )}
       </div>
       <AccountStats
         walletBalance={walletBalance}
@@ -77,7 +88,7 @@ export default function Page() {
         totalRewards={totalRewardsWei}
         totalDelegated={totalDelegated}
       />
-      <LockButtons className="flex justify-between md:hidden" />
+      {isVoteSigner || <LockButtons className="flex justify-between md:hidden" />}
       <TableTabs
         groupToStake={groupToStake}
         addressToGroup={addressToGroup}
@@ -203,20 +214,21 @@ function TableTabs({
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
 }) {
-  const [tab, setTab] = useState<'stakes' | 'rewards' | 'delegations'>('stakes');
+  const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
+  const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
     <div className="pt-2">
       <div className="flex space-x-10 border-b border-taupe-300 pb-2">
-        <TabHeaderButton isActive={tab === 'stakes'} onClick={() => setTab('stakes')}>
-          <span className="text-sm">Stakes</span>
-        </TabHeaderButton>
-        <TabHeaderButton isActive={tab === 'rewards'} onClick={() => setTab('rewards')}>
-          <span className="text-sm">Rewards</span>
-        </TabHeaderButton>
-        <TabHeaderButton isActive={tab === 'delegations'} onClick={() => setTab('delegations')}>
-          <span className="text-sm">Delegations</span>
-        </TabHeaderButton>
+        {tabs.map((tabName) => (
+          <TabHeaderButton
+            key={tabName}
+            isActive={tab === tabName}
+            onClick={() => onTabChange(tabName)}
+          >
+            <span className="text-sm capitalize">{tabName}</span>
+          </TabHeaderButton>
+        ))}
       </div>
       {tab === 'stakes' && (
         <ActiveStakesTable
@@ -235,6 +247,7 @@ function TableTabs({
           addressToDelegatee={addressToDelegatee}
         />
       )}
+      {tab === 'history' && <ProposalVotesHistoryTable />}
     </div>
   );
 }

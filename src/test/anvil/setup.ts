@@ -5,6 +5,12 @@ import { ANVIL_BASE_HOST, ANVIL_FORK_URL, FORK_BLOCK_NUMBER } from './constants'
 import { pool, testClient } from './utils';
 
 import '@testing-library/jest-dom/vitest';
+import { logger } from 'src/utils/logger';
+
+// @ts-expect-error
+BigInt.toJSON = function () {
+  return this.toString();
+};
 
 beforeEach(async () => {
   testClient.reset({
@@ -19,10 +25,10 @@ afterEach(async (context) => {
     await fetchLogs(`http://${ANVIL_BASE_HOST}`, pool)
       .then((logs) => {
         // Only print the 20 most recent log messages.
-        console.log(...logs.slice(-20));
+        logger.debug(...logs.slice(-20));
       })
       .catch((err) => {
-        console.error(err);
+        logger.error(err);
       });
   });
 });

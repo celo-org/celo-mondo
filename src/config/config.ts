@@ -1,3 +1,4 @@
+import { assert } from 'src/utils/validation';
 import { celo, celoAlfajores, Chain } from 'viem/chains';
 
 interface Config {
@@ -62,3 +63,17 @@ export const config: Config = Object.freeze({
   upstashKey,
   watchBlockNumber: false,
 });
+
+// https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_ENV
+if (['production', 'preview'].includes(process.env.VERCEL_ENV!)) {
+  const mandatoryConfig = [
+    'celoscanApiKey',
+    'walletConnectProjectId',
+    'fornoApiKey',
+    'infuraApiKey',
+  ] as (keyof typeof config)[];
+
+  for (const key of mandatoryConfig) {
+    assert(config[key], `${key} must be set in production environments.`);
+  }
+}
