@@ -1204,7 +1204,7 @@
       "Community",
       "Treasury Management"
     ],
-    "description": "​The Blockchain at Emory is a student-led interest group dedicated to exploring everything related to blockchain technology. Our mission is to bridge the gap between the complex fintech industry and our members by fostering a deeper understanding of blockchain. Through engaging lesson plans, talks with industry experts, and networking events, we equip our members with the knowledge and skills necessary to navigate the ever-evolving landscape of the blockchain industry. The interest group is a dynamic platform for students passionate about blockchain, providing valuable insights and preparing them for future opportunities in this transformative space."
+    "description": "The Blockchain at Emory is a student-led interest group dedicated to exploring everything related to blockchain technology. Our mission is to bridge the gap between the complex fintech industry and our members by fostering a deeper understanding of blockchain. Through engaging lesson plans, talks with industry experts, and networking events, we equip our members with the knowledge and skills necessary to navigate the ever-evolving landscape of the blockchain industry. The interest group is a dynamic platform for students passionate about blockchain, providing valuable insights and preparing them for future opportunities in this transformative space."
   },
   "0x0E6336309a4E32059aA82d10E4B44B4965dAC3e5": {
     "name": "KRYPTOSPHERE® DeVinci",
@@ -1255,34 +1255,80 @@
     "description": "EthicHub is revolutionizing the way agriculture is financed in emerging economies by integrating productive lending, blended finance and market access. Its innovative model connects complementary economic regions, enabling global investors to achieve profitability while generating positive social and environmental impact. By supporting the productive activities of small agricultural communities typically excluded from the traditional financial system (designed for large-scale operations and inaccessible to more than a billion producers), EthicHub is filling a crucial gap. Since 2018, leveraging cutting-edge technology to reduce middlemen and operational costs, its crowdlending platform has facilitated more than $5 million to more than 10,000 farmers in six countries. Its pioneering crowd collateral system protects these loans, creating an alternative risk mitigation approach that fosters a trustworthy environment for impact investing: Regenerative Finance."
   },
   "0xADD2F9A2c8B74cFB1B8e8fd563531A46B86A8995": {
-    "name": "Fillzer",
+    "name": "fillzer",
     "address": "0xADD2F9A2c8B74cFB1B8e8fd563531A46B86A8995",
     "logoUri": "/logos/delegatees/0xADD2F9A2c8B74cFB1B8e8fd563531A46B86A8995.jpg",
-    "date": "2025-07-28",
+    "date": "2025-08-27",
     "links": {
       "twitter": "https://x.com/fillzer96"
     },
     "interests": [
-      "BLOCKCHAIN"
+      "Blockchain",
+      "DEFI",
+      "NFT",
+      "Lending"
     ],
-    "description": "Try the best with i can do"
+    "description": "I want to be one of Delegatee"
   },
   "0xcE209502C6661b496c740Ce44927BF3D12D9fA0F": {
     "name": "Modular Crypto",
     "address": "0xcE209502C6661b496c740Ce44927BF3D12D9fA0F",
     "logoUri": "/logos/delegatees/0xcE209502C6661b496c740Ce44927BF3D12D9fA0F.jpg",
-    "date": "2025-07-23",
+    "date": "2025-08-28",
     "links": {
       "website": "https://www.modularcrypto.xyz/",
       "twitter": "https://x.com/ModularCrypto"
     },
     "interests": [
-      "Growth",
       "Governance",
-      "Education",
+      "Stablecoins",
       "Community",
       "Latam"
     ],
-    "description": "Modular Crypto is a Web3 media and education hub dedicated to strengthening the crypto ecosystem in Brazil. We connect global protocols to local communities through educational content, in-person events, and governance initiatives. Our mission is to make Web3 more accessible, inclusive, and representative for Portuguese-speaking communities."
+    "description": "Modular Crypto is a Web3 media, education, and governance hub in Latin America. We connect communities in Brazil to global protocols and act as a professional delegate in DAOs, amplifying voices."
+  },
+  "0x059122dACf464467A08cbF089bFB03e7E8037128": {
+    "name": "stmorgan.eth",
+    "address": "0x059122dACf464467A08cbF089bFB03e7E8037128",
+    "logoUri": "/logos/delegatees/0x059122dACf464467A08cbF089bFB03e7E8037128.png",
+    "date": "2025-08-22",
+    "links": {
+      "twitter": "https://x.com/StMorgan88"
+    },
+    "interests": [
+      "Blockchain development",
+      "Software engineering"
+    ],
+    "description": "I am an active Celo delegator committed to supporting reliable validators, promoting decentralization, and contributing to the long-term growth of the ecosystem."
+  },
+  "0xAAEEc96533ca7536b1166f550445cd892D9A7D90": {
+    "name": "Tottogamboa ",
+    "address": "0xAAEEc96533ca7536b1166f550445cd892D9A7D90",
+    "logoUri": "/logos/delegatees/0xAAEEc96533ca7536b1166f550445cd892D9A7D90.jpg",
+    "date": "2025-08-29",
+    "links": {
+      "twitter": "https://x.com/tottogamboa93"
+    },
+    "interests": [
+      "blockchain airdrops"
+    ],
+    "description": "💠 Apasionado por la tecnología blockchain 🚀 Cazador de airdrops y oportunidades cripto 🔎 Explorando proyectos, testnets y tokenomics 🤝 Compartiendo información y aprendizajes en la web3"
+  },
+  "0xF4793e6ed8bc85A5FE354a54233f5ca86E7A2532": {
+    "name": "Parabuilders",
+    "address": "0xF4793e6ed8bc85A5FE354a54233f5ca86E7A2532",
+    "logoUri": "/logos/delegatees/0xF4793e6ed8bc85A5FE354a54233f5ca86E7A2532.jpg",
+    "date": "2025-08-20",
+    "links": {
+      "website": "https://www.parabuilders.io/",
+      "twitter": "https://x.com/ParaBuilders"
+    },
+    "interests": [
+      "SocialFI",
+      "Blockchains",
+      "Dapps",
+      "IA"
+    ],
+    "description": "We are a hub for real growth strategies for companies within the web3 ecosystem.  We create real and efficient products to empower companies through accurate user data, automatically trained and qualified to deliver real numbers to your companies in a 100% efficient manner. No bots, just people.  Empowering businesses and people to perform well within the web3 ecosystem."
   }
 }
