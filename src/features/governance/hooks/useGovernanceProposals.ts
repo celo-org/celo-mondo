@@ -7,7 +7,12 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { getProposals } from 'src/features/governance/getProposals';
 import { getExpiryTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
-import { ProposalMetadata, ProposalStage, VoteAmounts } from 'src/features/governance/types';
+import {
+  ProposalMetadata,
+  ProposalStage,
+  VoteAmounts,
+  VoteType, // <-- added import
+} from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { usePublicClient } from 'wagmi';
 
@@ -68,23 +73,33 @@ export function useGovernanceProposals() {
           upvotes = upvotesArr.at(queuedId)!;
         }
 
-        // NOTE: for some reason nested bigint are deserialized?
+        // normalise bigint vote totals
         Object.keys(proposal.votes).forEach((voteType) => {
           proposal.votes[voteType as keyof VoteAmounts] = BigInt(
             proposal.votes[voteType as keyof VoteAmounts],
           );
         });
 
+        // compute rejected stage if expired and majority of votes are "No"
+        let computedStage = proposal.stage;
+        if (proposal.stage === ProposalStage.Expiration) {
+          const yesVotes = proposal.votes[VoteType.Yes];
+          const noVotes = proposal.votes[VoteType.No];
+          if (noVotes >= yesVotes) {
+            computedStage = ProposalStage.Rejected;
+          }
+        }
+
         return {
           id: proposal.id,
-          stage: proposal.stage,
+          stage: computedStage,
           history: proposal.history,
           metadata: {
             author: proposal.author,
             cgp: proposal.cgp,
             cgpUrl: proposal.cgpUrl,
             cgpUrlRaw: proposal.cgpUrlRaw,
-            stage: proposal.stage,
+            stage: computedStage,
             title: proposal.title,
             timestamp: proposal.timestamp * 1000,
             timestampExecuted: proposal.executedAt ? proposal.executedAt * 1000 : null,
@@ -97,13 +112,15 @@ export function useGovernanceProposals() {
             id: proposal.id,
             networkWeight: proposal.networkWeight,
             numTransactions: BigInt(proposal.transactionCount || 0),
-            stage: proposal.stage,
+            stage: computedStage,
             proposer: proposal.proposer,
             upvotes,
             url: proposal.url,
-            expiryTimestamp: getExpiryTimestamp(proposal.stage, proposal.timestamp * 1000),
+            expiryTimestamp: getExpiryTimestamp(computedStage, proposal.timestamp * 1000),
             timestamp: proposal.timestamp * 1000,
-            isApproved: proposal.stage > ProposalStage.Approval,
+            // approve only if the proposal has progressed past referendum and not been rejected
+            isApproved:
+              computedStage === ProposalStage.Execution || computedStage === ProposalStage.Executed,
             votes: proposal.votes,
           },
         } as MergedProposalData;
