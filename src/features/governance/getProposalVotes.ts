@@ -25,6 +25,6 @@ export async function getProposalVotes(chainId: number): Promise<Record<number, 
 }
 
 export const getCachedVotes = unstable_cache(getProposalVotes, undefined, {
-  revalidate: StaleTime.Default / 1000,
+  revalidate: process.env.NODE_ENV === 'production' ? StaleTime.Default / 1000 : 1,
   tags: [CacheKeys.AllVotes],
 });

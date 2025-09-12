@@ -1,6 +1,7 @@
 import { StaleTime } from 'src/config/consts';
 import { getCachedProposals } from 'src/features/governance/getProposals';
 import { celoPublicClient } from 'src/utils/client';
+import 'src/vendor/polyfill';
 
 export async function GET(): Promise<Response> {
   const headers = new Headers();

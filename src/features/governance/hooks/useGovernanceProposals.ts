@@ -119,9 +119,9 @@ export function useGovernanceProposals() {
             url: proposal.url,
           },
           proposal: {
-            deposit: proposal.deposit,
+            deposit: BigInt(proposal.deposit || 0),
             id: proposal.id,
-            networkWeight: proposal.networkWeight,
+            networkWeight: BigInt(proposal.networkWeight || 0),
             numTransactions: BigInt(proposal.transactionCount || 0),
             stage: proposal.stage,
             proposer: proposal.proposer,
