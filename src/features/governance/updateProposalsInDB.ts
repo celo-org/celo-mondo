@@ -2,6 +2,7 @@
 
 import { governanceABI } from '@celo/abis';
 import { and, eq, inArray, sql } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from 'viem';
@@ -10,6 +11,7 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
+import { CacheKeys } from 'src/config/consts';
 import '../../vendor/polyfill.js';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
@@ -98,6 +100,9 @@ export default async function updateProposalsInDB(
   console.info(`Upserted ${count} proposals`);
 
   await relinkProposals();
+  if (intent === 'replay') {
+    revalidateTag(CacheKeys.AllProposals);
+  }
 }
 
 async function mergeProposalDataIntoPGRow({
