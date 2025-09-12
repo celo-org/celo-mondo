@@ -4,14 +4,16 @@
 import { Metadata } from 'next';
 import { Section } from 'src/components/layout/Section';
 import { Proposal } from 'src/features/governance/components/Proposal';
-import { getProposals } from 'src/features/governance/getProposals';
+import { getCachedProposals } from 'src/features/governance/getProposals';
 import { celoPublicClient } from 'src/utils/client';
 
 // id might be just a number as a string or can be cgp-N
 type Params = Promise<{ id: string }>;
 
-// TODO: DEDUP
-function findProposal(proposals: Awaited<ReturnType<typeof getProposals>> | undefined, id: string) {
+function findProposal(
+  proposals: Awaited<ReturnType<typeof getCachedProposals>> | undefined,
+  id: string,
+) {
   if (!proposals || !id) return undefined;
   const matches = new RegExp(/^(cgp-)?(\d+)$/).exec(id);
   if (matches?.[1] === 'cgp-') {
@@ -26,7 +28,8 @@ function findProposal(proposals: Awaited<ReturnType<typeof getProposals>> | unde
 }
 export async function generateMetadata(props: { params: Params }): Promise<Metadata> {
   const { id } = await props.params;
-  const proposals = await getProposals(celoPublicClient.chain.id);
+
+  const proposals = await getCachedProposals(celoPublicClient.chain.id);
   const proposal = findProposal(proposals, id);
   const title = `${id}: ${proposal?.title}`;
   const description = `View and Vote on Celo Governance Proposal ${proposal?.cgp} - #${proposal?.id} on Celo Mondo`;

@@ -16,6 +16,10 @@ export enum GCTime {
   Default = 20 * MINUTE,
   Long = 2 * HOUR,
 }
+export enum CacheKeys {
+  AllProposals = 'AllProposals',
+  AllVotes = 'AllVotes',
+}
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const DEFAULT_DISPLAY_DECIMALS = 2;
