@@ -1,5 +1,3 @@
-import 'server-only';
-
 import { sql } from 'drizzle-orm';
 import { unstable_cache } from 'next/cache';
 import { CacheKeys, StaleTime } from 'src/config/consts';
