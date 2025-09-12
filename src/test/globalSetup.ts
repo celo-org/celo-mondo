@@ -1,6 +1,7 @@
 import { startProxy } from '@viem/anvil';
 import { formatEther } from 'viem';
 import { celo } from 'viem/chains';
+import { vi } from 'vitest';
 import {
   ANVIL_FORK_URL,
   FORK_BLOCK_NUMBER,
@@ -27,3 +28,9 @@ export default async function setup() {
     },
   });
 }
+
+vi.mock('server-only', () => {
+  return {
+    // mock server-only module
+  };
+});
