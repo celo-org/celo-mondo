@@ -157,8 +157,12 @@ export function useGovernanceProposals() {
       const votes = votesResults.votes?.[proposal.id!];
       computeStageAndVotes(proposal, votes);
     });
-
-    return proposals_?.sort((a, b) => b.metadata!.cgp - a.metadata!.cgp);
+    return proposals_?.sort((a, b) => {
+      if (!a.id && !b.id) {
+        return b.metadata!.cgp - a.metadata!.cgp;
+      }
+      return (b.id || 0) - (a.id || 0);
+    });
   }, [draftsResults.drafts, data, votesResults.votes]);
 
   return {

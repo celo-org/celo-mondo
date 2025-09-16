@@ -24,12 +24,13 @@ import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
 enum Filter {
-  All = 'All',
-  Upvoting = 'Upvoting',
+  Recent = 'Recent',
   Voting = 'Voting',
-  Drafts = 'Drafts',
+  Upcoming = 'Upcoming',
   History = 'History',
 }
+
+const RECENT_TIME_DIFF_MS = 1000 * 60 * 60 * 24 * 30;
 
 export default function Page() {
   return (
@@ -51,18 +52,22 @@ function ProposalList() {
   const { address } = useAccount();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filter, setFilter] = useState<Filter>(Filter.All);
+  const [filter, setFilter] = useState<Filter>(Filter.Recent);
 
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
     const _proposals = proposals || [];
     return {
-      [Filter.All]: _proposals?.length || 0,
-      [Filter.Upvoting]: _proposals.filter((p) => p.stage === ProposalStage.Queued).length,
+      [Filter.Recent]: _proposals.filter(
+        (p) =>
+          p.stage > ProposalStage.None &&
+          p.proposal &&
+          p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
+      ).length,
       [Filter.Voting]: _proposals.filter((p) => p.stage === ProposalStage.Referendum).length,
-      [Filter.Drafts]: _proposals.filter((p) => p.stage === ProposalStage.None).length,
-      [Filter.History]: _proposals.filter((p) => p.stage > 4).length,
+      [Filter.Upcoming]: _proposals.filter((p) => p.stage < ProposalStage.Referendum).length,
+      [Filter.History]: _proposals.filter((p) => p.stage > ProposalStage.Execution).length,
     };
   }, [proposals]);
 
@@ -126,27 +131,38 @@ function useFilteredProposals({
   filter: Filter;
   searchQuery: string;
 }) {
-  return useMemo<MergedProposalData[] | undefined>(() => {
+  const tabFiltered = useMemo<MergedProposalData[] | undefined>(() => {
     if (!proposals) return undefined;
+
+    return proposals.filter((p) => {
+      if (filter === Filter.Recent)
+        return (
+          p.stage > ProposalStage.None &&
+          p.proposal &&
+          p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS
+        );
+      if (filter === Filter.Voting) return p.stage === ProposalStage.Referendum;
+      if (filter === Filter.Upcoming) return p.stage < ProposalStage.Referendum;
+      if (filter === Filter.History) return p.stage > ProposalStage.Execution;
+      return true;
+    });
+  }, [proposals, filter]);
+
+  const queryFiltered = useMemo<MergedProposalData[] | undefined>(() => {
+    if (!tabFiltered) return undefined;
     const query = searchQuery.trim().toLowerCase();
-    return proposals
-      .filter((p) => {
-        if (filter === Filter.Upvoting) return p.stage === ProposalStage.Queued;
-        if (filter === Filter.Voting) return p.stage === ProposalStage.Referendum;
-        if (filter === Filter.Drafts) return p.stage === ProposalStage.None;
-        if (filter === Filter.History) return p.stage > 4;
-        return true;
-      })
-      .filter(
-        (p) =>
-          !query ||
-          p.proposal?.proposer?.toLowerCase().includes(query) ||
-          p.proposal?.url?.toLowerCase().includes(query) ||
-          p.metadata?.title?.toLowerCase().includes(query) ||
-          p.metadata?.author?.toLowerCase().includes(query) ||
-          String(p.metadata?.cgp).toLowerCase().includes(query) ||
-          String(p.id).toLowerCase().includes(query) ||
-          p.metadata?.url?.toLowerCase().includes(query),
-      );
-  }, [proposals, filter, searchQuery]);
+    return tabFiltered.filter(
+      (p) =>
+        !query ||
+        p.proposal?.proposer?.toLowerCase().includes(query) ||
+        p.proposal?.url?.toLowerCase().includes(query) ||
+        p.metadata?.title?.toLowerCase().includes(query) ||
+        p.metadata?.author?.toLowerCase().includes(query) ||
+        String(p.metadata?.cgp).toLowerCase().includes(query) ||
+        String(p.id).toLowerCase().includes(query) ||
+        p.metadata?.url?.toLowerCase().includes(query),
+    );
+  }, [tabFiltered, searchQuery]);
+
+  return queryFiltered;
 }
