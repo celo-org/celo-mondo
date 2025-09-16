@@ -32,6 +32,16 @@ enum Filter {
 
 const RECENT_TIME_DIFF_MS = 1000 * 60 * 60 * 24 * 30;
 
+const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
+  [Filter.Recent]: (p) =>
+    p.stage > ProposalStage.None &&
+    Boolean(p.proposal) &&
+    p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
+  [Filter.Voting]: (p) => p.stage === ProposalStage.Referendum,
+  [Filter.Upcoming]: (p) => p.stage < ProposalStage.Referendum,
+  [Filter.History]: (p) => p.stage > ProposalStage.Execution,
+};
+
 export default function Page() {
   return (
     <>
@@ -57,18 +67,13 @@ function ProposalList() {
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
-    const _proposals = proposals || [];
-    return {
-      [Filter.Recent]: _proposals.filter(
-        (p) =>
-          p.stage > ProposalStage.None &&
-          p.proposal &&
-          p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
-      ).length,
-      [Filter.Voting]: _proposals.filter((p) => p.stage === ProposalStage.Referendum).length,
-      [Filter.Upcoming]: _proposals.filter((p) => p.stage < ProposalStage.Referendum).length,
-      [Filter.History]: _proposals.filter((p) => p.stage > ProposalStage.Execution).length,
-    };
+    return Object.entries(FILTERS).reduce(
+      (acc, [key, fn]) => ({
+        ...acc,
+        [key]: proposals ? proposals.filter(fn).length : 0,
+      }),
+      {} as Record<Filter, number>,
+    );
   }, [proposals]);
 
   const { votingPower } = useGovernanceVotingPower(address);
@@ -133,19 +138,7 @@ function useFilteredProposals({
 }) {
   const tabFiltered = useMemo<MergedProposalData[] | undefined>(() => {
     if (!proposals) return undefined;
-
-    return proposals.filter((p) => {
-      if (filter === Filter.Recent)
-        return (
-          p.stage > ProposalStage.None &&
-          p.proposal &&
-          p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS
-        );
-      if (filter === Filter.Voting) return p.stage === ProposalStage.Referendum;
-      if (filter === Filter.Upcoming) return p.stage < ProposalStage.Referendum;
-      if (filter === Filter.History) return p.stage > ProposalStage.Execution;
-      return true;
-    });
+    return filter ? proposals.filter(FILTERS[filter]) : proposals;
   }, [proposals, filter]);
 
   const queryFiltered = useMemo<MergedProposalData[] | undefined>(() => {
