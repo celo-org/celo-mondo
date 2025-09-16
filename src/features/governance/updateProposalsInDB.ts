@@ -131,16 +131,20 @@ async function mergeProposalDataIntoPGRow({
     proposalId,
     BigInt(proposalQueuedEvent.blockNumber),
   );
-  const proposalOnChainAtEvent = await getProposalOnChain(
+  const mostRecentProposalState = await getProposalOnChain(
     client,
     proposalId,
-    BigInt(lastProposalEvent.blockNumber),
+    lastProposalEvent.eventName === 'ProposalExecuted'
+      ? // proposal is deleted from chain when executed
+        BigInt(lastProposalEvent.blockNumber) - 1n
+      : // latest block as the proposal is still on chain
+        undefined,
   );
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
 
   const urlIndex = 4;
-  let url = proposalOnChainAtEvent[urlIndex];
+  let url = mostRecentProposalState[urlIndex];
   let cgpMatch = url.match(/cgp-(\d+)\.md/i);
   let metadata = proposalsMetadata.find(
     ({ id, cgp }) => (id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
@@ -171,7 +175,7 @@ async function mergeProposalDataIntoPGRow({
   // NOTE: use last block where the proposal was still on chain to know about network weight
   const networkWeightIndex = 5;
   const networkWeight =
-    proposalOnChainAtEvent[networkWeightIndex] ||
+    mostRecentProposalState[networkWeightIndex] ||
     (await client
       .readContract({
         blockNumber: BigInt(lastProposalEvent.blockNumber!) - 1n,
@@ -214,7 +218,7 @@ async function mergeProposalDataIntoPGRow({
 async function getProposalOnChain(
   client: PublicClient<Transport, Chain>,
   proposalId: number,
-  blockNumber: bigint,
+  blockNumber?: bigint,
 ): Promise<
   readonly [
     proposer: `0x${string}`,
