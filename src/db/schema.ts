@@ -89,6 +89,7 @@ export const proposalsTable = pgTable(
     primaryKey({ columns: [table.id, table.chainId] }),
   ],
 );
+export type Proposal = typeof proposalsTable.$inferSelect;
 
 export const VoteTypeEnum = pgEnum('voteType', [
   VoteType.Abstain,

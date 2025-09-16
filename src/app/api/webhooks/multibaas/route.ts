@@ -1,8 +1,10 @@
 import { governanceABI } from '@celo/abis';
 import { sql } from 'drizzle-orm';
+import { revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { Event } from 'src/app/governance/events';
+import { CacheKeys } from 'src/config/consts';
 import database from 'src/config/database';
 import { sendAlertToSlack } from 'src/config/slackbot';
 import { votesTable } from 'src/db/schema';
@@ -76,6 +78,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       // needs to be updated
       if (proposalId) {
         proposalIdsToUpdate.add(proposalId);
+        revalidateTag(CacheKeys.AllVotes);
       }
     }
 
