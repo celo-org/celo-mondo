@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
@@ -30,6 +30,7 @@ enum Filter {
   History = 'History',
 }
 
+// NOTE: 30 days in ms
 const RECENT_TIME_DIFF_MS = 1000 * 60 * 60 * 24 * 30;
 
 const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
@@ -115,7 +116,9 @@ function ProposalList() {
               ))
             ) : (
               <div className="flex justify-center py-10">
-                <p className="text-center text-taupe-600">No proposals found</p>
+                <p className="text-center text-taupe-600">
+                  No proposals found{searchQuery ? ` with query "${searchQuery}"` : ''}…
+                </p>
               </div>
             )}
           </div>
@@ -141,21 +144,24 @@ function useFilteredProposals({
     return filter ? proposals.filter(FILTERS[filter]) : proposals;
   }, [proposals, filter]);
 
+  const query = searchQuery.trim().toLowerCase();
+  const queryFilter = useCallback(
+    (p: MergedProposalData) =>
+      !query ||
+      p.proposal?.proposer?.toLowerCase().includes(query) ||
+      p.proposal?.url?.toLowerCase().includes(query) ||
+      p.metadata?.title?.toLowerCase().includes(query) ||
+      p.metadata?.author?.toLowerCase().includes(query) ||
+      String(p.metadata?.cgp).toLowerCase().includes(query) ||
+      String(p.id).toLowerCase().includes(query) ||
+      p.metadata?.url?.toLowerCase().includes(query),
+    [query],
+  );
+
   const queryFiltered = useMemo<MergedProposalData[] | undefined>(() => {
     if (!tabFiltered) return undefined;
-    const query = searchQuery.trim().toLowerCase();
-    return tabFiltered.filter(
-      (p) =>
-        !query ||
-        p.proposal?.proposer?.toLowerCase().includes(query) ||
-        p.proposal?.url?.toLowerCase().includes(query) ||
-        p.metadata?.title?.toLowerCase().includes(query) ||
-        p.metadata?.author?.toLowerCase().includes(query) ||
-        String(p.metadata?.cgp).toLowerCase().includes(query) ||
-        String(p.id).toLowerCase().includes(query) ||
-        p.metadata?.url?.toLowerCase().includes(query),
-    );
-  }, [tabFiltered, searchQuery]);
+    return tabFiltered.filter(queryFilter);
+  }, [tabFiltered, queryFilter]);
 
   return queryFiltered;
 }
