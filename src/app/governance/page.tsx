@@ -68,13 +68,18 @@ function ProposalList() {
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
-    return Object.entries(FILTERS).reduce(
+    const lens = Object.entries(FILTERS).reduce(
       (acc, [key, fn]) => ({
         ...acc,
         [key]: proposals ? proposals.filter(fn).length : 0,
       }),
       {} as Record<Filter, number>,
     );
+    if (lens.Recent < 5) {
+      lens.Recent = 5;
+    }
+
+    return lens;
   }, [proposals]);
 
   const { votingPower } = useGovernanceVotingPower(address);
@@ -141,7 +146,23 @@ function useFilteredProposals({
 }) {
   const tabFiltered = useMemo<MergedProposalData[] | undefined>(() => {
     if (!proposals) return undefined;
-    return filter ? proposals.filter(FILTERS[filter]) : proposals;
+    const filtered = filter ? proposals.filter(FILTERS[filter]) : proposals;
+
+    // NOTE: make sure there's always at least 5 recent proposals
+    if (filter === Filter.Recent && filtered.length < 5) {
+      for (const proposal of proposals) {
+        if (filtered.length === 5) {
+          break;
+        }
+        if (filtered.includes(proposal)) {
+          continue;
+        }
+        if (proposal.stage > ProposalStage.None) {
+          filtered.push(proposal);
+        }
+      }
+    }
+    return filtered;
   }, [proposals, filter]);
 
   const query = searchQuery.trim().toLowerCase();
