@@ -10,6 +10,7 @@ import { celo } from 'viem/chains';
 
 async function main() {
   const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
+  const proposalIds = process.argv[2] ? process.argv[2].split(',').map(BigInt) : undefined;
 
   const client = createPublicClient({
     chain: celo,
@@ -19,7 +20,17 @@ async function main() {
     }),
   }) as PublicClient<Transport, Chain>;
 
-  const proposals = await database.select().from(proposalsTable);
+  const proposals = await database
+    .select()
+    .from(proposalsTable)
+    .where(proposalIds ? sql`${proposalsTable.id} in ${proposalIds}` : undefined);
+
+  if (!proposals.length) {
+    console.info(
+      `No proposals found with ids [${proposalIds?.join(',')}], did you mistype a proposal id?`,
+    );
+    process.exit(1);
+  }
 
   const rowsToInsert = [] as (typeof votesTable.$inferInsert)[];
   for (const proposal of proposals) {

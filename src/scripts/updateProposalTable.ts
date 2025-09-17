@@ -6,6 +6,7 @@ import { celo } from 'viem/chains';
 
 async function main() {
   const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
+  const proposalIds = process.argv[2] ? process.argv[2].split(',').map(BigInt) : undefined;
 
   const client = createPublicClient({
     chain: celo,
@@ -15,7 +16,7 @@ async function main() {
     }),
   }) as PublicClient<Transport, Chain>;
 
-  await updateProposalsInDB(client, undefined, 'replay');
+  await updateProposalsInDB(client, proposalIds, 'replay');
   process.exit(0);
 }
 
