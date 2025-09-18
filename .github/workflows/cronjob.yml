@@ -2,7 +2,7 @@ name: Check for events
 
 on:
   schedule:
-    - cron: '*/10 * * * *' # Runs every 10 minutes
+    - cron: '0 * * * *' # Runs every 10 minutes
 
 jobs:
   install:
@@ -45,3 +45,9 @@ jobs:
         env:
           PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+
+      - name: backfill-db-staging
+        run: yarn backfill-db
+        env:
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
