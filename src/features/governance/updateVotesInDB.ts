@@ -7,8 +7,8 @@ import { votesTable } from 'src/db/schema';
 import { VoteType } from 'src/features/governance/types';
 
 import { revalidateTag } from 'next/cache';
-import { CacheKeys } from 'src/config/consts.js';
-import { sumProposalVotes } from 'src/features/governance/utils/votes.js';
+import { CacheKeys } from 'src/config/consts';
+import { sumProposalVotes } from 'src/features/governance/utils/votes';
 import '../../vendor/polyfill.js';
 
 export default async function updateVotesInDB(

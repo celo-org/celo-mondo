@@ -11,7 +11,7 @@ import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromReposit
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 import { revalidateTag } from 'next/cache';
-import { CacheKeys } from 'src/config/consts.js';
+import { CacheKeys } from 'src/config/consts';
 import '../../vendor/polyfill.js';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
