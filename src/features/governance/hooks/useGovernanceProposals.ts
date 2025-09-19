@@ -38,8 +38,8 @@ function useGovernanceDrafts() {
         metadata: draft,
       })) as MergedProposalData[];
     },
-    gcTime: GCTime.Long,
-    staleTime: StaleTime.Long,
+    gcTime: GCTime.Default,
+    staleTime: StaleTime.Default,
   });
   useToastError(error, 'Error fetching governance drafts');
 
@@ -138,7 +138,7 @@ export function useGovernanceProposals() {
         } as MergedProposalData;
       });
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

@@ -17,7 +17,7 @@ export function useDelegateeHistory(address?: Address) {
       logger.debug(`Fetching delegatee history for ${address}`);
       return fetchDelegateeHistory(address);
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

@@ -2,7 +2,6 @@
 
 import { governanceABI } from '@celo/abis';
 import { and, eq, inArray, sql } from 'drizzle-orm';
-import { revalidateTag } from 'next/cache';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from 'viem';
@@ -11,7 +10,8 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
-import { CacheKeys } from 'src/config/consts';
+import { revalidateTag } from 'next/cache';
+import { CacheKeys } from 'src/config/consts.js';
 import '../../vendor/polyfill.js';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
@@ -100,7 +100,13 @@ export default async function updateProposalsInDB(
   console.info(`Upserted ${count} proposals`);
 
   await relinkProposals();
-  if (intent === 'replay') {
+
+  if (process.env.CI === 'true') {
+    const BASE_URL = process.env.IS_PRODUCTION_DATABASE
+      ? 'https://mondo.celo.org'
+      : 'https://preview-celo-mondo.vercel.app';
+    await fetch(`${BASE_URL}/api/governance/proposals`, { method: 'DELETE' });
+  } else {
     revalidateTag(CacheKeys.AllProposals);
   }
 }

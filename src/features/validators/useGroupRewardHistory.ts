@@ -19,7 +19,7 @@ export function useGroupRewardHistory(group?: Address, epochs?: number) {
       logger.debug(`Fetching reward history for group ${group}`);
       return fetchValidatorGroupRewardHistory(group, epochs);
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
     retry: false,
   });

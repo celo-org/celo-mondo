@@ -15,8 +15,8 @@ export function useHistoricalProposalVoteTotals(id: number) {
       logger.debug(`Fetching historical proposals votes for ${id}`);
       return sumProposalVotes(id);
     },
-    gcTime: GCTime.Long,
-    staleTime: StaleTime.Long,
+    gcTime: GCTime.Default,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching historical proposals vote totals');

@@ -26,7 +26,7 @@ export function useDelegators(delegateAddress?: Address) {
 
       return fetchDelegators(client, delegateAddress);
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

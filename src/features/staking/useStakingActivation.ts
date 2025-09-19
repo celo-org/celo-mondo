@@ -30,7 +30,7 @@ export function usePendingStakingActivations(address?: Address, groupToStake: Gr
     allowFailure: true,
     query: {
       enabled: !!address && pendingGroups.length > 0,
-      gcTime: GCTime.Long,
+      gcTime: GCTime.Default,
       staleTime: StaleTime.Default,
     },
   });

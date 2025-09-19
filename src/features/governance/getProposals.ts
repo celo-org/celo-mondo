@@ -48,6 +48,6 @@ export async function getProposals(chainId: number): Promise<ProposalWithHistory
 }
 
 export const getCachedProposals = unstable_cache(getProposals, undefined, {
-  revalidate: process.env.NODE_ENV === 'production' ? StaleTime.Long / 1000 : 1,
+  revalidate: process.env.NODE_ENV === 'production' ? StaleTime.Default / 1000 : 1,
   tags: [CacheKeys.AllProposals],
 });
