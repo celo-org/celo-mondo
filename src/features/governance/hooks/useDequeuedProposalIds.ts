@@ -15,7 +15,7 @@ export function useDequeuedProposalIds() {
       logger.debug(`Fetching approved proposal IDs`);
       return fetchDequeuedProposalIds();
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

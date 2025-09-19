@@ -29,7 +29,7 @@ export function useValidatorGroups() {
       logger.debug('Fetching validator groups');
       return fetchValidatorGroupInfo(publicClient);
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

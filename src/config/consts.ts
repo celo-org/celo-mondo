@@ -8,13 +8,11 @@ export enum StaleTime {
   Shortest = SECOND,
   Short = MINUTE,
   Default = 10 * MINUTE,
-  Long = HOUR,
 }
 export enum GCTime {
-  Shortest = 30 * SECOND,
-  Short = 2 * MINUTE,
-  Default = 20 * MINUTE,
-  Long = 2 * HOUR,
+  Shortest = 2 * StaleTime.Shortest,
+  Short = 2 * StaleTime.Short,
+  Default = 2 * StaleTime.Default,
 }
 export enum CacheKeys {
   AllProposals = 'AllProposals',

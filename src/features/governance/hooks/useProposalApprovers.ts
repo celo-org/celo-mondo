@@ -74,7 +74,7 @@ function useGovernanceApproverMultiSigAddress() {
     queryKey: ['GovernanceApproverMultiSigAddress', publicClient],
     queryFn: () => fetchApproverMultiSigAddress(publicClient!),
     enabled: !!publicClient,
-    staleTime: StaleTime.Long,
+    staleTime: StaleTime.Default,
   });
 }
 
@@ -84,7 +84,7 @@ function useRequiredApproversCount(approversMultisigAddress: Address | undefined
     queryKey: ['GovernanceRequiredConfirmationsCount', publicClient, approversMultisigAddress],
     queryFn: () => fetchRequiredConfirmationsCount(publicClient!, approversMultisigAddress!),
     enabled: !!publicClient && !!approversMultisigAddress,
-    staleTime: StaleTime.Long,
+    staleTime: StaleTime.Default,
   });
 }
 
