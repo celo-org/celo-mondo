@@ -2,7 +2,7 @@ name: Check for events
 
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every 10 minutes
+    - cron: '0 * * * *' # Runs every hour
 
 jobs:
   install:
