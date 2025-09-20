@@ -7,7 +7,7 @@ import { ShortAddress } from 'src/components/text/ShortAddress';
 import { useDelegators } from 'src/features/delegation/hooks/useDelegators';
 import { Delegatee } from 'src/features/delegation/types';
 import { normalizeAddress } from 'src/utils/addresses';
-import { fromWei } from 'src/utils/amount';
+import { numberFromWei } from 'src/utils/amount'; // Correct import
 import { objKeys } from 'src/utils/objects';
 
 const NUM_TO_SHOW = 20;
@@ -30,7 +30,8 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
     if (!delegatorToAmount) return [];
     const data = objKeys(delegatorToAmount).map((address) => ({
       label: address,
-      value: fromWei(delegatorToAmount[address]),
+      // Assuming sortAndCombineChartData and subsequent chart expect number
+      value: numberFromWei(delegatorToAmount[address]),
       address: normalizeAddress(address),
     }));
     return sortAndCombineChartData(data, NUM_TO_SHOW);
