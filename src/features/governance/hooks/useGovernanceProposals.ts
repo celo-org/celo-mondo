@@ -15,6 +15,7 @@ import {
   VoteType,
 } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
+import { sortByIdThenCGP } from 'src/utils/proposals';
 import { usePublicClient } from 'wagmi';
 
 export function useGovernanceProposal(id?: number) {
@@ -157,12 +158,7 @@ export function useGovernanceProposals() {
       const votes = votesResults.votes?.[proposal.id!];
       computeStageAndVotes(proposal, votes);
     });
-    return proposals_?.sort((a, b) => {
-      if (!a.id && !b.id) {
-        return b.metadata!.cgp - a.metadata!.cgp;
-      }
-      return (b.id || 0) - (a.id || 0);
-    });
+    return sortByIdThenCGP(proposals_);
   }, [draftsResults.drafts, data, votesResults.votes]);
 
   return {

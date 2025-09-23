@@ -20,6 +20,7 @@ import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotin
 import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { sortByIdThenCGP } from 'src/utils/proposals';
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
@@ -162,7 +163,7 @@ function useFilteredProposals({
         }
       }
     }
-    return filtered;
+    return sortByIdThenCGP(filtered);
   }, [proposals, filter]);
 
   const query = searchQuery.trim().toLowerCase();
