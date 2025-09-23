@@ -30,18 +30,20 @@ describe('getExpiryTimestamp', () => {
   test('Referendum', () => {
     expect(getExpiryTimestamp(ProposalStage.Referendum, 1000)).toMatchInlineSnapshot(`604801000`);
   });
-  test('Execution', () => {
-    expect(getExpiryTimestamp(ProposalStage.Execution, 1000)).toMatchInlineSnapshot(`864001000`);
+  test('Expiration', () => {
+    expect(getExpiryTimestamp(ProposalStage.Expiration, 1000)).toMatchInlineSnapshot(`604801000`);
   });
-  test('Others', () => {
+  describe('Others', () => {
     [
       ProposalStage.None,
-      ProposalStage.Expiration,
       ProposalStage.Rejected,
       ProposalStage.Withdrawn,
+      ProposalStage.Execution,
       ProposalStage.Executed,
     ].forEach((stage) => {
-      expect(getExpiryTimestamp(stage, 1000)).toBeUndefined();
+      test(ProposalStage[stage], () => {
+        expect(getExpiryTimestamp(stage, 1000)).toBeUndefined();
+      });
     });
   });
 });
