@@ -39,12 +39,15 @@ export function ProposalCard({
   const endTimeValue = getEndHumanEndTime({ timestampExecuted, expiryTimestamp });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
-  const barChartData = Object.entries(votes || {}).map(([vote, amount]) => ({
-    label: toTitleCase(vote),
-    value: fromWei(amount),
-    percentage: percent(amount, sum),
-    color: VoteToColor[vote as VoteType],
-  }));
+  const barChartData = Object.entries(votes || {})
+    // NOTE: Yes->No->Abstain
+    .sort(([voteTypeA], [voteTypeB]) => (voteTypeA > voteTypeB ? -1 : 1))
+    .map(([vote, amount]) => ({
+      label: toTitleCase(vote),
+      value: fromWei(amount),
+      percentage: percent(amount, sum),
+      color: VoteToColor[vote as VoteType],
+    }));
 
   return (
     <Link href={link} className={clsx('space-y-2.5', className)}>

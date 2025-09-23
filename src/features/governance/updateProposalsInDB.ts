@@ -20,6 +20,10 @@ interface JsonAggEvent extends Omit<Event, 'blockNumber'> {
   blockNumber: number;
 }
 
+const TIMESTAMP_INDEX = 2;
+const NUM_TRANSACTION_INDEX = 3;
+const URL_INDEX = 4;
+
 export default async function updateProposalsInDB(
   client: PublicClient<Transport, Chain>,
   proposalIds?: bigint[],
@@ -89,10 +93,12 @@ export default async function updateProposalsInDB(
               networkWeight: sql`excluded."networkWeight"`,
               executedAt: sql`excluded."executedAt"`,
               transactionCount: sql`excluded."transactionCount"`,
+              timestamp: sql`excluded."timestamp"`,
             }
           : {
               stage: sql`excluded."stage"`,
               networkWeight: sql`excluded."networkWeight"`,
+              timestamp: sql`excluded."timestamp"`,
             },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
@@ -149,8 +155,7 @@ async function mergeProposalDataIntoPGRow({
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
 
-  const urlIndex = 4;
-  let url = mostRecentProposalState[urlIndex];
+  let url = mostRecentProposalState[URL_INDEX];
   let cgpMatch = url.match(/cgp-(\d+)\.md/i);
   let metadata = proposalsMetadata.find(
     ({ id, cgp }) => (id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
@@ -164,7 +169,7 @@ async function mergeProposalDataIntoPGRow({
     // NOTE: if `url` is empty, it means it's not available on the blockchain
     // anymore, so we query it at a block when it was still there
     if (!url) {
-      url = proposalOnChainAtCreation[urlIndex];
+      url = proposalOnChainAtCreation[URL_INDEX];
       cgpMatch = url.match(/cgp-(\d+)\.md/i);
       metadata = proposalsMetadata.find(({ cgp }) => cgp === parseInt(cgpMatch?.[1] || '0', 10));
       if (metadata) {
@@ -196,16 +201,15 @@ async function mergeProposalDataIntoPGRow({
   // NOTE: use earliest possible block where the proposal was on chain to know about numTransactions
   // however they can be not present for really old blocks so infer from the event which can also be
   // missing them
-  const numTransactionsIndex = 3;
   const numTransactions =
-    proposalOnChainAtCreation[numTransactionsIndex] ||
+    proposalOnChainAtCreation[NUM_TRANSACTION_INDEX] ||
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
   return {
     id: proposalId,
     chainId: client.chain.id,
-    timestamp: parseInt(proposalQueuedEvent.args.timestamp, 10),
+    timestamp: parseInt(mostRecentProposalState[TIMESTAMP_INDEX].toString(), 10),
     cgp: metadata!.cgp,
     author: metadata!.author,
     url: metadata!.url,
