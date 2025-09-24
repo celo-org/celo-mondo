@@ -44,9 +44,7 @@ export const wagmiConfig = createConfig({
   connectors,
   syncConnectedChain: false, // only have 1 chain per deployment
   transports: {
-    [celo.id]: fallback([http(config.chain.rpcUrls.default.http[0]), http(infuraRpcUrl)], {
-      rank: true,
-    }),
+    [celo.id]: fallback([http(config.chain.rpcUrls.default.http[0]), http(infuraRpcUrl)]),
     [celoAlfajores.id]: http(config.chain.rpcUrls.default.http[0]),
   },
 });
