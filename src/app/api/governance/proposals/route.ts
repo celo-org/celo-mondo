@@ -1,6 +1,6 @@
 import { revalidateTag } from 'next/cache';
 import { CacheKeys, GCTime, StaleTime } from 'src/config/consts';
-import { getCachedProposals } from 'src/features/governance/getProposals';
+import { getProposals } from 'src/features/governance/getProposals';
 import { celoPublicClient } from 'src/utils/client';
 import 'src/vendor/polyfill';
 
@@ -11,7 +11,7 @@ export async function GET(): Promise<Response> {
     `public,max-age=${GCTime.Default / 1000}, stale-while-revalidate=${StaleTime.Default / 1000}`,
   );
 
-  return Response.json(await getCachedProposals(celoPublicClient.chain.id), {
+  return Response.json(await getProposals(celoPublicClient.chain.id), {
     headers,
   });
 }
