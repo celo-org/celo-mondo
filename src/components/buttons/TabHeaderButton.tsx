@@ -31,7 +31,7 @@ export function TabHeaderButton({
       )}
       <span
         className={clsx(
-          'absolute -bottom-[0.6rem] left-0 right-0 z-10 h-[2px] bg-purple-500 transition-all',
+          'absolute -bottom-[0.6rem] left-0 right-0 h-[2px] bg-purple-500 transition-all',
           isActive ? 'w-full' : 'w-0',
         )}
       />
