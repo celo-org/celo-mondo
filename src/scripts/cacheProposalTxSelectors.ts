@@ -8,7 +8,7 @@ import { eventsTable } from 'src/db/schema';
 import { getProposalTransactions } from 'src/features/governance/utils/transactionDecoder';
 import { logger } from 'src/utils/logger';
 import { fileURLToPath } from 'url';
-import { keccak256, toHex } from 'viem';
+import { Abi, keccak256, toHex } from 'viem';
 // @ts-ignore
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -34,9 +34,8 @@ async function main() {
     cachedSelectors = JSON.parse(fs.readFileSync(SELECTORS_OUT_PATH, 'utf8'));
   }
 
-  const values = Object.values(CoreContractAbis);
-  // @ts-expect-error
-  values.push(
+  const values = Object.values(CoreContractAbis) as Abi[];
+  values.push([
     {
       inputs: [{ internalType: 'bool', name: 'test', type: 'bool' }],
       payable: false,
@@ -495,8 +494,9 @@ async function main() {
       stateMutability: 'nonpayable',
       type: 'function',
     },
-  );
-  for (const abi of Object.values(CoreContractAbis)) {
+  ] as const);
+
+  for (const abi of values) {
     const functions = abi.filter((x) => x.type === 'function');
     const names = functions.map(
       (x) => `${x.name}(${x.inputs.map((input) => input.type).join(',')})`,

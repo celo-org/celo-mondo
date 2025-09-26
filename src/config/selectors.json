@@ -775,5 +775,12 @@
   "0x2c3bb44a": "initializeV2(address,address,address)",
   "0x9cecc80a": "setReserve(address)",
   "0x67b1f5df": "setExchange(address)",
-  "0x042b7a54": "transferCollateralAsset(address,address,uint256)"
+  "0x042b7a54": "transferCollateralAsset(address,address,uint256)",
+  "0xf414c5e4": "breakerBox()",
+  "0x1cbe9970": "deleteEquivalentToken(address)",
+  "0x749aa17e": "equivalentTokens(address)",
+  "0x85897512": "getEquivalentToken(address)",
+  "0x63d9a656": "medianRateWithoutEquivalentMapping(address)",
+  "0x040bbd35": "setBreakerBox(address)",
+  "0x145d8d18": "setEquivalentToken(address,address)"
 }
