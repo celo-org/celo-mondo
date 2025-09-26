@@ -1,17 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import {
-  decodeTransaction,
-  formatTransactionArgs,
-  getContractName,
-  ProposalTransaction,
-} from './transactionDecoder';
+import { decodeTransaction, getContractName, ProposalTransaction } from './transactionDecoder';
 
 describe('transactionDecoder', () => {
   describe('getContractName', () => {
     it('should return correct contract name for known addresses', () => {
       expect(getContractName('0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972')).toBe('Governance');
       expect(getContractName('0x471ece3750da237f93b8e339c536989b8978a438')).toBe('CELO');
-      expect(getContractName('0x765de816845861e75a25fca122bb6898b8b1282a')).toBe('cUSD');
+      expect(getContractName('0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e')).toBe('Tether USD');
     });
 
     it('should return Unknown Contract for unknown addresses', () => {
@@ -20,24 +15,8 @@ describe('transactionDecoder', () => {
       );
     });
   });
-
-  describe('formatTransactionArgs', () => {
-    it('should format transaction arguments correctly', () => {
-      const args = {
-        amount: 1000n,
-        to: '0x1234567890123456789012345678901234567890',
-        value: 'test',
-      };
-
-      const result = formatTransactionArgs(args);
-      expect(result).toContain('amount: 1000');
-      expect(result).toContain('to: 0x1234567890123456789012345678901234567890');
-      expect(result).toContain('value: test');
-    });
-  });
-
   describe('decodeTransaction', () => {
-    it('should handle empty transaction data', () => {
+    it('should handle empty transaction data', async () => {
       const transaction: ProposalTransaction = {
         index: 0,
         to: '0x1234567890123456789012345678901234567890',
@@ -45,11 +24,12 @@ describe('transactionDecoder', () => {
         data: '0x',
       };
 
-      const result = decodeTransaction(transaction);
-      expect(result).toBeNull();
+      const result = await decodeTransaction(transaction);
+      expect(result).not.toBeNull();
+      expect(result.functionName).toBe('native transfer');
     });
 
-    it('should decode common function selectors', () => {
+    it('should decode common function selectors', async () => {
       const transaction: ProposalTransaction = {
         index: 0,
         to: '0x1234567890123456789012345678901234567890',
@@ -57,10 +37,10 @@ describe('transactionDecoder', () => {
         data: '0xa9059cbb0000000000000000000000001234567890123456789012345678901234567890000000000000000000000000000000000000000000000000000000000000000a',
       };
 
-      const result = decodeTransaction(transaction);
+      const result = await decodeTransaction(transaction);
       expect(result).not.toBeNull();
-      expect(result?.functionName).toBe('transfer');
-      expect(result?.description).toBe('Transfer tokens');
+      expect(result.functionName).toBe('transfer');
+      expect(result.description).toMatch(/Transfer tokens/);
     });
   });
 });

@@ -69,38 +69,32 @@ export async function getProposalTransactions(
  */
 export async function decodeTransaction(
   transaction: ProposalTransaction,
-): Promise<DecodedTransaction | null> {
+): Promise<DecodedTransaction> {
   if (!transaction.data || transaction.data === '0x') {
-    return null;
+    return {
+      to: transaction.to,
+      value: formatUnits(transaction.value, 18),
+      data: '0x',
+      functionName: 'native transfer',
+      args: {},
+      description: undefined,
+      contractName: 'no contract interaction',
+    };
   }
 
   try {
-    // Try to decode with governance ABI first
-    try {
-      const decoded = decodeFunctionData({
-        abi: governanceABI,
-        data: transaction.data,
-      });
-
-      return {
-        to: transaction.to,
-        value: formatUnits(transaction.value, 18),
-        data: transaction.data,
-        functionName: decoded.functionName,
-        args: decoded.args as Record<string, any>,
-        description: getTransactionDescription(
-          decoded.functionName,
-          decoded.args as unknown as any[],
-        ),
-        contractName: 'Governance',
-      };
-    } catch {
-      // If governance ABI fails, try with common function selectors
-      return await decodeWithCommonSelectors(transaction);
-    }
+    return await decodeWithCommonSelectors(transaction);
   } catch (error) {
     console.error('Error decoding transaction:', error);
-    return null;
+    return {
+      to: transaction.to,
+      value: formatUnits(transaction.value, 18),
+      data: transaction.data,
+      functionName: 'unknown',
+      args: {},
+      description: undefined,
+      contractName: getContractName(transaction.to),
+    };
   }
 }
 
@@ -114,7 +108,7 @@ const BASE_URL_4BYTE = `https://www.4byte.directory/api/v1/signatures`;
 
 async function decodeWithCommonSelectors(
   transaction: ProposalTransaction,
-): Promise<DecodedTransaction | null> {
+): Promise<DecodedTransaction> {
   const selector = transaction.data.slice(0, 10);
 
   const selectors = (await commonSelectors).default;
@@ -144,8 +138,8 @@ async function decodeWithCommonSelectors(
   }
 
   if (selectorInfo) {
-    const functionName = selectorInfo.split('(')[0];
-    const inputTypes = (selectorInfo as string).match(/\((.+)\)/)![1].split(',');
+    const [, functionName, inputTypesStr] = (selectorInfo as string).match(/^(.+)\((.+)\)$/)!;
+    const inputTypes = inputTypesStr.split(',');
     const decoded = decodeFunctionData({
       abi: [
         {
@@ -163,29 +157,16 @@ async function decodeWithCommonSelectors(
       data: transaction.data,
       functionName,
       args: decoded.args!.map((input, index) => `(${inputTypes[index]}) ${input}`),
-      description: getTransactionDescription(
-        decoded.functionName,
-        decoded.args as unknown as any[],
-      ),
+      description: getTransactionDescription(decoded.functionName, decoded.args as any[]),
       contractName: getContractName(transaction.to),
     };
   }
 
-  // push to commonSelectors
-
-  return {
-    to: transaction.to,
-    value: formatUnits(transaction.value, 18),
-    data: transaction.data,
-    functionName: 'unknown',
-    args: {},
-    description: undefined,
-    contractName: getContractName(transaction.to),
-  };
+  throw new Error('Couldnt decode transaction');
 }
 
 function getTransactionDescription(functionName: string, args: any[]) {
-  switch (functionName.slice(0, functionName.indexOf('('))) {
+  switch (functionName) {
     case 'setRegistry':
       return `Set registry to ${args[0]}`;
     case 'setApprover':
@@ -212,6 +193,8 @@ function getTransactionDescription(functionName: string, args: any[]) {
       return `Set baseline update factor to ${formatUnits(args[0], 18)}`;
     case 'setBaselineQuorumFactor':
       return `Set baseline quorum factor to ${formatUnits(args[0], 18)}`;
+    case 'transfer':
+      return `Transfer tokens to ${args[0]}`;
     default:
       return undefined;
   }
@@ -240,7 +223,7 @@ const CONTRACTS: Record<string, string> = {
   '0x47a472f45057a9d79d62c6427367016409f4ff5a': 'Freezer',
   '0xcd437749e43a154c07f3553504c68fbfd56b8778': 'FeeHandler',
   '0xdfca3a8d7699d8bafe656823ad60c17cb8270ecc': 'GasPriceMinimum',
-  '0x471ece3750da237f93b8e339c536989b8978a438': 'GoldToken (Celo Token)',
+  '0x471ece3750da237f93b8e339c536989b8978a438': 'CELO',
   '0xd533ca259b330c7a88f74e000a3faea2d63b7972': 'Governance',
   '0x03f6842b82dd2c9276931a17dd23d73c16454a49': 'GrandaMento',
   '0x6cc083aed9e3ebe302a6336dbc7c921c9f03349e': 'LockedGold (LockedCelo)',

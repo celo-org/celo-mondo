@@ -14,7 +14,7 @@ interface ProposalTransactionsProps {
   numTransactions: bigint | undefined;
 }
 
-type TransactionResponse = (ProposalTransaction & { decoded?: DecodedTransaction })[];
+type TransactionResponse = (ProposalTransaction & { decoded: DecodedTransaction })[];
 
 export function ProposalTransactions({ proposalId, numTransactions }: ProposalTransactionsProps) {
   const [transactions, setTransactions] = useState<TransactionResponse>([]);
@@ -66,13 +66,14 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
 }
 
 interface TransactionCardProps {
-  transaction: ProposalTransaction & { decoded?: DecodedTransaction };
+  transaction: ProposalTransaction & { decoded: DecodedTransaction };
   index: number;
 }
 
 function TransactionCard({ transaction, index }: TransactionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const { decoded, error, to, value, data } = transaction;
   if (transaction.error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4">
@@ -80,13 +81,13 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
           <h4 className="font-medium text-red-800">Transaction {index + 1}</h4>
           <span className="text-sm text-red-600">Error</span>
         </div>
-        <p className="mt-2 text-sm text-red-700">{transaction.error}</p>
+        <p className="mt-2 text-sm text-red-700">{error}</p>
       </div>
     );
   }
 
-  const contractName = getContractName(transaction.to);
-  const hasValue = transaction.value > 0n;
+  const contractName = getContractName(to);
+  const hasValue = value > 0n;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
@@ -97,7 +98,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
           </div>
           <div>
             <h4 className="font-medium text-gray-900">
-              {transaction.decoded?.functionName || 'Unknown Function'}
+              {decoded.functionName || 'Unknown Function'}
             </h4>
           </div>
         </div>
@@ -109,13 +110,11 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
         </button>
       </div>
 
-      {transaction.decoded?.description && (
-        <p className="mt-2 text-sm text-gray-700">{transaction.decoded.description}</p>
-      )}
+      {decoded.description && <p className="mt-2 text-sm text-gray-700">{decoded.description}</p>}
 
       {hasValue && (
         <div className="mt-2 text-sm text-gray-600">
-          <span className="font-medium">Value:</span> {transaction.decoded?.value || '0'} CELO
+          <span className="font-medium">Value:</span> {decoded.value || '0'} CELO
         </div>
       )}
 
@@ -125,7 +124,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             <h5 className="text-sm font-medium text-gray-900">Contract Details</h5>
             <div className="mt-1 text-sm text-gray-600">
               <p>
-                <span className="font-medium">Address:</span> {transaction.to}
+                <span className="font-medium">Address:</span> {to}
               </p>
               <p>
                 <span className="font-medium">Name:</span> {contractName}
@@ -133,11 +132,11 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             </div>
           </div>
 
-          {transaction.decoded?.args && Object.keys(transaction.decoded.args).length > 0 && (
+          {decoded.args && Object.keys(decoded.args).length > 0 && (
             <div>
               <h5 className="text-sm font-medium text-gray-900">Function Arguments</h5>
               <div className="mt-1 font-mono text-sm text-gray-600">
-                {Object.entries(transaction.decoded.args).map(([key, value]) => (
+                {Object.entries(decoded.args).map(([key, value]) => (
                   <p key={key}>
                     {key}: {value}
                   </p>
@@ -150,7 +149,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             <h5 className="text-sm font-medium text-gray-900">Raw Data</h5>
             <div className="mt-1">
               <code className="block break-all rounded bg-gray-100 p-2 text-xs text-gray-800">
-                {transaction.data}
+                {data}
               </code>
             </div>
           </div>
@@ -159,7 +158,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             <div>
               <h5 className="text-sm font-medium text-gray-900">Value</h5>
               <div className="mt-1 text-sm text-gray-600">
-                <p>{transaction.decoded?.value || '0'} CELO</p>
+                <p>{decoded.value || '0'} CELO</p>
               </div>
             </div>
           )}
