@@ -80,8 +80,9 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
         </div>
       )}
 
-      {/* Add the transactions section */}
-      <ProposalTransactions proposalId={id} numTransactions={proposal?.numTransactions} />
+      <ErrorBoundaryInline>
+        <ProposalTransactions proposalId={id} numTransactions={proposal?.numTransactions} />
+      </ErrorBoundaryInline>
       {content && (
         <div
           dangerouslySetInnerHTML={{ __html: content }}
