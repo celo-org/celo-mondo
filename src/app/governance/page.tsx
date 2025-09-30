@@ -60,7 +60,7 @@ export default function Page() {
 function ProposalList() {
   const isMobile = useIsMobile();
 
-  const { proposals } = useGovernanceProposals();
+  const { proposals, isLoading } = useGovernanceProposals();
   const { address } = useAccount();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -104,7 +104,7 @@ function ProposalList() {
         />
       </div>
       {address && !isNullish(votingPower) && votingPower <= 0n && <NoFundsLockedCtaCard />}
-      {filteredProposals ? (
+      {!isLoading ? (
         <Fade show>
           <TabHeaderFilters
             activeFilter={filter}
@@ -114,7 +114,7 @@ function ProposalList() {
             className="border-b border-taupe-300 pb-2 pt-1 all:space-x-4 md:space-x-6"
           />
           <div className="mt-5 divide-y divide-taupe-300">
-            {filteredProposals.length ? (
+            {filteredProposals.length > 0 ? (
               filteredProposals.map((data, i) => (
                 <div key={i} className="py-5 first:pt-0">
                   <ProposalCard propData={data} />
@@ -130,7 +130,7 @@ function ProposalList() {
           </div>
         </Fade>
       ) : (
-        <FullWidthSpinner>Loading governance data</FullWidthSpinner>
+        <FullWidthSpinner className="text-taupe-600">Loading governance data</FullWidthSpinner>
       )}
     </div>
   );
@@ -141,12 +141,11 @@ function useFilteredProposals({
   filter,
   searchQuery,
 }: {
-  proposals?: MergedProposalData[];
+  proposals: MergedProposalData[];
   filter: Filter;
   searchQuery: string;
 }) {
-  const tabFiltered = useMemo<MergedProposalData[] | undefined>(() => {
-    if (!proposals) return undefined;
+  const tabFiltered = useMemo<MergedProposalData[]>(() => {
     const filtered = filter ? proposals.filter(FILTERS[filter]) : proposals;
 
     // NOTE: make sure there's always at least 5 recent proposals
@@ -180,10 +179,10 @@ function useFilteredProposals({
     [query],
   );
 
-  const queryFiltered = useMemo<MergedProposalData[] | undefined>(() => {
-    if (!tabFiltered) return undefined;
-    return tabFiltered.filter(queryFilter);
-  }, [tabFiltered, queryFilter]);
+  const queryFiltered = useMemo<MergedProposalData[]>(
+    () => tabFiltered.filter(queryFilter),
+    [tabFiltered, queryFilter],
+  );
 
   return queryFiltered;
 }
