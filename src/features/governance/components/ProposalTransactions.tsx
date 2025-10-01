@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { CollapsibleSection } from 'src/components/layout/CollapsibleSection';
 import {
@@ -17,45 +18,37 @@ interface ProposalTransactionsProps {
 type TransactionResponse = (ProposalTransaction & { decoded: DecodedTransaction })[];
 
 export function ProposalTransactions({ proposalId, numTransactions }: ProposalTransactionsProps) {
-  const [transactions, setTransactions] = useState<TransactionResponse>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchTransactions() {
-      try {
-        setLoading(true);
-        const response = await fetch(`/governance/${proposalId}/api/transactions`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch transactions: ${response.statusText}`);
-        }
-        setTransactions(await response.json());
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch transactions');
-      } finally {
-        setLoading(false);
+  const {
+    data: transactions,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [numTransactions, proposalId],
+    queryFn: async () => {
+      if (!numTransactions) {
+        return [];
       }
-    }
 
-    if (numTransactions && numTransactions > 0) {
-      fetchTransactions();
-    } else {
-      setLoading(false);
-    }
-  }, [numTransactions, proposalId]);
+      const response = await fetch(`/governance/${proposalId}/api/transactions`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+      }
+      return (await response.json()) as TransactionResponse;
+    },
+  });
 
   return (
-    <CollapsibleSection title={`Transactions (${numTransactions})`}>
+    <CollapsibleSection title={`Onchain Transactions (${numTransactions})`}>
       {numTransactions === 0n ? null : (
         <div className="space-y-4">
-          {loading ? (
-            <FullWidthSpinner>Loading proposal transactions</FullWidthSpinner>
+          {isLoading ? (
+            <FullWidthSpinner>Loading proposal onchain transactions</FullWidthSpinner>
           ) : error ? (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-red-800">Error loading transactions: {error}</p>
+              <p className="text-red-800">Error loading transactions: {error.message}</p>
             </div>
           ) : (
-            transactions.map((transaction, index) => (
+            transactions?.map((transaction, index) => (
               <TransactionCard key={index} transaction={transaction} index={index} />
             ))
           )}
