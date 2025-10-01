@@ -10,6 +10,8 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
+import { revalidateTag } from 'next/cache';
+import { CacheKeys } from 'src/config/consts';
 import '../../vendor/polyfill.js';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
@@ -17,6 +19,10 @@ type Event = typeof eventsTable.$inferSelect;
 interface JsonAggEvent extends Omit<Event, 'blockNumber'> {
   blockNumber: number;
 }
+
+const TIMESTAMP_INDEX = 2;
+const NUM_TRANSACTION_INDEX = 3;
+const URL_INDEX = 4;
 
 export default async function updateProposalsInDB(
   client: PublicClient<Transport, Chain>,
@@ -87,10 +93,12 @@ export default async function updateProposalsInDB(
               networkWeight: sql`excluded."networkWeight"`,
               executedAt: sql`excluded."executedAt"`,
               transactionCount: sql`excluded."transactionCount"`,
+              timestamp: sql`excluded."timestamp"`,
             }
           : {
               stage: sql`excluded."stage"`,
               networkWeight: sql`excluded."networkWeight"`,
+              timestamp: sql`excluded."timestamp"`,
             },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
@@ -98,6 +106,15 @@ export default async function updateProposalsInDB(
   console.info(`Upserted ${count} proposals`);
 
   await relinkProposals();
+
+  if (process.env.CI === 'true') {
+    const BASE_URL = process.env.IS_PRODUCTION_DATABASE
+      ? 'https://mondo.celo.org'
+      : 'https://preview-celo-mondo.vercel.app';
+    await fetch(`${BASE_URL}/api/governance/proposals`, { method: 'DELETE' });
+  } else {
+    revalidateTag(CacheKeys.AllProposals);
+  }
 }
 
 async function mergeProposalDataIntoPGRow({
@@ -126,16 +143,19 @@ async function mergeProposalDataIntoPGRow({
     proposalId,
     BigInt(proposalQueuedEvent.blockNumber),
   );
-  const proposalOnChainAtEvent = await getProposalOnChain(
+  const mostRecentProposalState = await getProposalOnChain(
     client,
     proposalId,
-    BigInt(lastProposalEvent.blockNumber),
+    lastProposalEvent.eventName === 'ProposalExecuted'
+      ? // proposal is deleted from chain when executed
+        BigInt(lastProposalEvent.blockNumber) - 1n
+      : // latest block as the proposal is still on chain
+        undefined,
   );
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
 
-  const urlIndex = 4;
-  let url = proposalOnChainAtEvent[urlIndex];
+  let url = mostRecentProposalState[URL_INDEX];
   let cgpMatch = url.match(/cgp-(\d+)\.md/i);
   let metadata = proposalsMetadata.find(
     ({ id, cgp }) => (id || -1) === proposalId || cgp === parseInt(cgpMatch?.[1] || '0', 10),
@@ -149,7 +169,7 @@ async function mergeProposalDataIntoPGRow({
     // NOTE: if `url` is empty, it means it's not available on the blockchain
     // anymore, so we query it at a block when it was still there
     if (!url) {
-      url = proposalOnChainAtCreation[urlIndex];
+      url = proposalOnChainAtCreation[URL_INDEX];
       cgpMatch = url.match(/cgp-(\d+)\.md/i);
       metadata = proposalsMetadata.find(({ cgp }) => cgp === parseInt(cgpMatch?.[1] || '0', 10));
       if (metadata) {
@@ -166,7 +186,7 @@ async function mergeProposalDataIntoPGRow({
   // NOTE: use last block where the proposal was still on chain to know about network weight
   const networkWeightIndex = 5;
   const networkWeight =
-    proposalOnChainAtEvent[networkWeightIndex] ||
+    mostRecentProposalState[networkWeightIndex] ||
     (await client
       .readContract({
         blockNumber: BigInt(lastProposalEvent.blockNumber!) - 1n,
@@ -181,16 +201,15 @@ async function mergeProposalDataIntoPGRow({
   // NOTE: use earliest possible block where the proposal was on chain to know about numTransactions
   // however they can be not present for really old blocks so infer from the event which can also be
   // missing them
-  const numTransactionsIndex = 3;
   const numTransactions =
-    proposalOnChainAtCreation[numTransactionsIndex] ||
+    proposalOnChainAtCreation[NUM_TRANSACTION_INDEX] ||
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
   return {
     id: proposalId,
     chainId: client.chain.id,
-    timestamp: parseInt(proposalQueuedEvent.args.timestamp, 10),
+    timestamp: parseInt(mostRecentProposalState[TIMESTAMP_INDEX].toString(), 10),
     cgp: metadata!.cgp,
     author: metadata!.author,
     url: metadata!.url,
@@ -209,7 +228,7 @@ async function mergeProposalDataIntoPGRow({
 async function getProposalOnChain(
   client: PublicClient<Transport, Chain>,
   proposalId: number,
-  blockNumber: bigint,
+  blockNumber?: bigint,
 ): Promise<
   readonly [
     proposer: `0x${string}`,

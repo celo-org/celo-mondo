@@ -1,6 +1,5 @@
 import {
   APPROVAL_STAGE_EXPIRY_TIME,
-  EXECUTION_STAGE_EXPIRY_TIME,
   QUEUED_STAGE_EXPIRY_TIME,
   REFERENDUM_STAGE_EXPIRY_TIME,
 } from 'src/config/consts';
@@ -36,10 +35,12 @@ export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
     return timestamp + QUEUED_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Approval) {
     return timestamp + APPROVAL_STAGE_EXPIRY_TIME;
-  } else if (stage === ProposalStage.Referendum) {
+  } else if (stage === ProposalStage.Referendum || stage === ProposalStage.Expiration) {
     return timestamp + REFERENDUM_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Execution) {
-    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
+    // NOTE: it seems once approved and passing (thus in Execution stage)
+    // they can't quite expire?
+    return undefined;
   } else {
     return undefined;
   }

@@ -1,11 +1,15 @@
-import { Form, Formik, FormikErrors, useFormikContext } from 'formik';
-import { useEffect } from 'react';
+import { Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
+import { SyntheticEvent, useCallback, useEffect, useMemo } from 'react';
+import { IconButton } from 'src/components/buttons/IconButton';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
+import { ChevronIcon } from 'src/components/icons/Chevron';
 import { RadioField } from 'src/components/input/RadioField';
 import { RangeField } from 'src/components/input/RangeField';
-import { TextField } from 'src/components/input/TextField';
+import { DropdownMenu } from 'src/components/menus/Dropdown';
+import { formatNumberString } from 'src/components/numbers/Amount';
 import { MAX_NUM_DELEGATEES, ZERO_ADDRESS } from 'src/config/consts';
 import { useAccountDetails, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { DelegateeLogo } from 'src/features/delegation/components/DelegateeLogo';
 import { getDelegateTxPlan } from 'src/features/delegation/delegatePlan';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -20,8 +24,9 @@ import { LockedBalances } from 'src/features/locking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
-import { cleanGroupName } from 'src/features/validators/utils';
+import { cleanDelegateeName } from 'src/features/validators/utils';
 
+import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { isValidAddress, shortenAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
@@ -186,23 +191,94 @@ function DelegateeField({
   defaultValue?: Address;
   disabled?: boolean;
 }) {
-  const { values, setFieldValue } = useFormikContext<DelegateFormValues>();
+  const [field, , helpers] = useField<Address>(fieldName);
+
+  useEffect(() => {
+    helpers.setValue(defaultValue || ZERO_ADDRESS);
+  }, [defaultValue, helpers]);
+
+  const { setFieldValue } = useFormikContext<DelegateFormValues>();
   useEffect(() => {
     setFieldValue(fieldName, defaultValue || '');
   }, [fieldName, defaultValue, setFieldValue]);
 
-  const currentDelegatee = addressToDelegatee?.[values[fieldName]];
-  const delegateeName = cleanGroupName(currentDelegatee?.name || '');
+  const currentDelegatee = addressToDelegatee?.[field.value];
+  const delegateeName = currentDelegatee?.name
+    ? cleanDelegateeName(currentDelegatee.name)
+    : field.value && field.value !== ZERO_ADDRESS
+      ? shortenAddress(field.value)
+      : 'Select delegatee';
+
+  const sortedDelegatees = useMemo(() => {
+    if (!addressToDelegatee) return [];
+    return Object.values(addressToDelegatee).sort((a, b) => Number(b.votingPower - a.votingPower));
+  }, [addressToDelegatee]);
+
+  const onClickRandom = useCallback(
+    (event: SyntheticEvent) => {
+      event.preventDefault();
+      if (!sortedDelegatees?.length) return;
+      const goodGroups = sortedDelegatees.filter((g) => g.votingPower > 0);
+      const randomGroup = goodGroups[Math.floor(Math.random() * goodGroups.length)];
+      helpers.setValue(randomGroup.address);
+    },
+    [sortedDelegatees, helpers],
+  );
+
+  const onClickDelegatee = (address: Address) => helpers.setValue(address);
 
   return (
-    <div className="relative flex flex-col space-y-1.5">
-      <div className="flex justify-between">
-        <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
-          {label}
-        </label>
-        {delegateeName && <div className="text-xs font-medium">{delegateeName}</div>}
+    <div className="relative space-y-1">
+      <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
+        {label}
+      </label>
+      <DropdownMenu
+        disabled={disabled}
+        buttonClasses="w-full btn btn-outline border-taupe-300 px-3 hover:border-taupe-300 hover:bg-taupe-300/50 disabled:input-disabled"
+        button={
+          <div className="flex w-full items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <DelegateeLogo address={field.value} size={28} />
+              <span className="text-black">{delegateeName}</span>
+            </div>
+            <ChevronIcon direction="s" width={14} height={14} />
+          </div>
+        }
+        menuClasses="py-2 left-0 right-0 -top-[5.5rem] overflow-y-auto max-h-[24.75rem] all:w-auto divide-y divide-gray-200"
+        menuHeader={
+          <div className="flex items-center justify-between px-4 pb-2 text-sm">
+            <span>Group</span>
+            <span>Delegated</span>
+          </div>
+        }
+        menuItems={sortedDelegatees.map((d) => {
+          return (
+            <button
+              type="button"
+              className="flex w-full cursor-pointer items-center justify-between px-4 py-2 hover:bg-taupe-300/50"
+              key={d.address}
+              onClick={() => onClickDelegatee(d.address)}
+            >
+              <div className="flex items-center space-x-2">
+                <DelegateeLogo address={d.address} size={20} />
+                <span>{cleanDelegateeName(d.name)}</span>
+              </div>
+              <span>{`${formatNumberString(d.votingPower, 0, true)} CELO`}</span>
+            </button>
+          );
+        })}
+      />
+      <div className="absolute right-10 top-9 flex items-center space-x-4">
+        <IconButton
+          imgSrc={ShuffleIcon}
+          width={14}
+          height={10}
+          title="Random"
+          onClick={onClickRandom}
+          className="px-1 py-1"
+          disabled={disabled}
+        />
       </div>
-      <TextField name={fieldName} disabled={disabled} className="px-2 text-xs" />
     </div>
   );
 }

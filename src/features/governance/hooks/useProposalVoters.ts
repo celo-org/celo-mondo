@@ -12,7 +12,7 @@ export function useProposalVoters(id?: number) {
       logger.debug(`Fetching proposals voters for ${id}`);
       return sumProposalVotes(id);
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

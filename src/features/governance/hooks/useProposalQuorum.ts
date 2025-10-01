@@ -86,7 +86,7 @@ export function useParticipationParameters(): {
     abi: governanceABI,
     functionName: 'getParticipationParameters',
     query: {
-      gcTime: GCTime.Long,
+      gcTime: GCTime.Default,
       staleTime: StaleTime.Default,
     },
   });

@@ -74,7 +74,7 @@ function useGovernanceApproverMultiSigAddress() {
     queryKey: ['GovernanceApproverMultiSigAddress', publicClient],
     queryFn: () => fetchApproverMultiSigAddress(publicClient!),
     enabled: !!publicClient,
-    staleTime: StaleTime.Long,
+    staleTime: StaleTime.Default,
   });
 }
 
@@ -84,7 +84,7 @@ function useRequiredApproversCount(approversMultisigAddress: Address | undefined
     queryKey: ['GovernanceRequiredConfirmationsCount', publicClient, approversMultisigAddress],
     queryFn: () => fetchRequiredConfirmationsCount(publicClient!, approversMultisigAddress!),
     enabled: !!publicClient && !!approversMultisigAddress,
-    staleTime: StaleTime.Long,
+    staleTime: StaleTime.Default,
   });
 }
 
@@ -131,7 +131,7 @@ async function fetchIndexOfTransactionForProposalInMultisig(
   publicClient: PublicClient,
   { proposalId, dequeueIndex, governanceApproverMultisigAddress }: ParamsFetchApproversInfo,
 ) {
-  // sadly the Multisig gives no other way to fetch a specfic transaction other than already
+  // sadly the Multisig gives no other way to fetch a specific transaction other than already
   // knowing the index or iterating through all transactions and matching the calldata
 
   const countOfMultisigTransactions = await publicClient.readContract({

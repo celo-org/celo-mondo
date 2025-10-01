@@ -23,7 +23,7 @@ export function useDelegatees() {
       const delegatees = Object.values(addressToDelegatee);
       return { addressToDelegatee, delegatees };
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
   });
 

@@ -1,5 +1,6 @@
 import {
   delegateeRegistrationRequestToMetadata,
+  getDelegateeMetadata,
   metadataToJSONString,
 } from 'src/features/delegation/delegateeMetadata';
 import { getValidRequest } from 'src/test/delegatee-registration-utils';
@@ -78,5 +79,11 @@ describe('metadataToJSONString()', () => {
       }
       "
     `);
+  });
+});
+
+describe('e2e', () => {
+  it('doesnt crash', async () => {
+    expect(() => getDelegateeMetadata()).not.toThrow();
   });
 });

@@ -14,7 +14,7 @@ export function useProposalContent(metadata?: ProposalMetadata) {
       logger.debug('Fetching proposal content', cgpNumber);
       return fetchProposalContent(cgpNumber);
     },
-    gcTime: GCTime.Long,
+    gcTime: GCTime.Default,
     staleTime: StaleTime.Short,
   });
 

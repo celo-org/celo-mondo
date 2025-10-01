@@ -73,7 +73,7 @@ export function useVoteSignerToAccount(address: Address | undefined) {
     args: [address || ZERO_ADDRESS],
     scopeKey: `voteSignerToAccount-${address}`,
     query: {
-      staleTime: StaleTime.Long,
+      staleTime: StaleTime.Default,
       enabled: isRegistered.isFetched,
       // The contract will revert if given address is neither
       // - authorized to vote for any accounts (but is authorized for some other role)

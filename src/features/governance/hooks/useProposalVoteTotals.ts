@@ -15,8 +15,8 @@ export function useHistoricalProposalVoteTotals(id: number) {
       logger.debug(`Fetching historical proposals votes for ${id}`);
       return sumProposalVotes(id);
     },
-    gcTime: GCTime.Long,
-    staleTime: StaleTime.Long,
+    gcTime: GCTime.Default,
+    staleTime: StaleTime.Default,
   });
 
   useToastError(error, 'Error fetching historical proposals vote totals');
@@ -37,16 +37,12 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
   } = useQuery({
     queryKey: ['useProposalVoteTotals', propData],
     queryFn: async () => {
-      const { id, stage, proposal, metadata } = propData || {};
+      const { id, stage, proposal } = propData || {};
       if (!id || !stage || stage < ProposalStage.Referendum) return null;
 
       // First check if proposal data already includes total
       // This will be the case for active proposals or failed ones
       if (proposal?.votes) return proposal.votes;
-
-      // Next check if proposal metadata has it
-      // This will be the case for old proposals queried at build time
-      if (metadata?.votes) return metadata.votes;
 
       // Otherwise we must query for all the vote events
       // The sumProposalVotes method does this same query so it's used here

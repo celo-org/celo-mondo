@@ -1,13 +1,16 @@
 {
-  "name": "Fillzer",
+  "name": "fillzer",
   "address": "0xADD2F9A2c8B74cFB1B8e8fd563531A46B86A8995",
   "logoUri": "/logos/delegatees/0xADD2F9A2c8B74cFB1B8e8fd563531A46B86A8995.jpg",
-  "date": "2025-07-28",
+  "date": "2025-08-27",
   "links": {
     "twitter": "https://x.com/fillzer96"
   },
   "interests": [
-    "BLOCKCHAIN"
+    "Blockchain",
+    "DEFI",
+    "NFT",
+    "Lending"
   ],
-  "description": "Try the best with i can do"
+  "description": "I want to be one of Delegatee"
 }

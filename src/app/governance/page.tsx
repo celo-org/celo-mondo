@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
@@ -20,16 +20,29 @@ import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotin
 import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { sortByIdThenCGP } from 'src/utils/proposals';
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
 enum Filter {
-  All = 'All',
-  Upvoting = 'Upvoting',
+  Recent = 'Recent',
   Voting = 'Voting',
-  Drafts = 'Drafts',
+  Upcoming = 'Upcoming',
   History = 'History',
 }
+
+// NOTE: 30 days in ms
+const RECENT_TIME_DIFF_MS = 1000 * 60 * 60 * 24 * 30;
+
+const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
+  [Filter.Recent]: (p) =>
+    p.stage > ProposalStage.None &&
+    Boolean(p.proposal) &&
+    p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
+  [Filter.Voting]: (p) => p.stage === ProposalStage.Referendum,
+  [Filter.Upcoming]: (p) => p.stage < ProposalStage.Referendum,
+  [Filter.History]: (p) => p.stage > ProposalStage.Execution,
+};
 
 export default function Page() {
   return (
@@ -47,23 +60,27 @@ export default function Page() {
 function ProposalList() {
   const isMobile = useIsMobile();
 
-  const { proposals } = useGovernanceProposals();
+  const { proposals, isLoading } = useGovernanceProposals();
   const { address } = useAccount();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filter, setFilter] = useState<Filter>(Filter.All);
+  const [filter, setFilter] = useState<Filter>(Filter.Recent);
 
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
-    const _proposals = proposals || [];
-    return {
-      [Filter.All]: _proposals?.length || 0,
-      [Filter.Upvoting]: _proposals.filter((p) => p.stage === ProposalStage.Queued).length,
-      [Filter.Voting]: _proposals.filter((p) => p.stage === ProposalStage.Referendum).length,
-      [Filter.Drafts]: _proposals.filter((p) => p.stage === ProposalStage.None).length,
-      [Filter.History]: _proposals.filter((p) => p.stage > 4).length,
-    };
+    const lens = Object.entries(FILTERS).reduce(
+      (acc, [key, fn]) => ({
+        ...acc,
+        [key]: proposals ? proposals.filter(fn).length : 0,
+      }),
+      {} as Record<Filter, number>,
+    );
+    if (lens.Recent < 5) {
+      lens.Recent = 5;
+    }
+
+    return lens;
   }, [proposals]);
 
   const { votingPower } = useGovernanceVotingPower(address);
@@ -87,7 +104,7 @@ function ProposalList() {
         />
       </div>
       {address && !isNullish(votingPower) && votingPower <= 0n && <NoFundsLockedCtaCard />}
-      {filteredProposals ? (
+      {!isLoading ? (
         <Fade show>
           <TabHeaderFilters
             activeFilter={filter}
@@ -97,7 +114,7 @@ function ProposalList() {
             className="border-b border-taupe-300 pb-2 pt-1 all:space-x-4 md:space-x-6"
           />
           <div className="mt-5 divide-y divide-taupe-300">
-            {filteredProposals.length ? (
+            {filteredProposals.length > 0 ? (
               filteredProposals.map((data, i) => (
                 <div key={i} className="py-5 first:pt-0">
                   <ProposalCard propData={data} />
@@ -105,13 +122,15 @@ function ProposalList() {
               ))
             ) : (
               <div className="flex justify-center py-10">
-                <p className="text-center text-taupe-600">No proposals found</p>
+                <p className="text-center text-taupe-600">
+                  No proposals found{searchQuery ? ` with query "${searchQuery}"` : ''}…
+                </p>
               </div>
             )}
           </div>
         </Fade>
       ) : (
-        <FullWidthSpinner>Loading governance data</FullWidthSpinner>
+        <FullWidthSpinner className="text-taupe-600">Loading governance data</FullWidthSpinner>
       )}
     </div>
   );
@@ -122,31 +141,48 @@ function useFilteredProposals({
   filter,
   searchQuery,
 }: {
-  proposals?: MergedProposalData[];
+  proposals: MergedProposalData[];
   filter: Filter;
   searchQuery: string;
 }) {
-  return useMemo<MergedProposalData[] | undefined>(() => {
-    if (!proposals) return undefined;
-    const query = searchQuery.trim().toLowerCase();
-    return proposals
-      .filter((p) => {
-        if (filter === Filter.Upvoting) return p.stage === ProposalStage.Queued;
-        if (filter === Filter.Voting) return p.stage === ProposalStage.Referendum;
-        if (filter === Filter.Drafts) return p.stage === ProposalStage.None;
-        if (filter === Filter.History) return p.stage > 4;
-        return true;
-      })
-      .filter(
-        (p) =>
-          !query ||
-          p.proposal?.proposer?.toLowerCase().includes(query) ||
-          p.proposal?.url?.toLowerCase().includes(query) ||
-          p.metadata?.title?.toLowerCase().includes(query) ||
-          p.metadata?.author?.toLowerCase().includes(query) ||
-          String(p.metadata?.cgp).toLowerCase().includes(query) ||
-          String(p.id).toLowerCase().includes(query) ||
-          p.metadata?.url?.toLowerCase().includes(query),
-      );
-  }, [proposals, filter, searchQuery]);
+  const tabFiltered = useMemo<MergedProposalData[]>(() => {
+    const filtered = filter ? proposals.filter(FILTERS[filter]) : proposals;
+
+    // NOTE: make sure there's always at least 5 recent proposals
+    if (filter === Filter.Recent && filtered.length < 5) {
+      for (const proposal of proposals) {
+        if (filtered.length === 5) {
+          break;
+        }
+        if (filtered.includes(proposal)) {
+          continue;
+        }
+        if (proposal.stage > ProposalStage.None) {
+          filtered.push(proposal);
+        }
+      }
+    }
+    return sortByIdThenCGP(filtered);
+  }, [proposals, filter]);
+
+  const query = searchQuery.trim().toLowerCase();
+  const queryFilter = useCallback(
+    (p: MergedProposalData) =>
+      !query ||
+      p.proposal?.proposer?.toLowerCase().includes(query) ||
+      p.proposal?.url?.toLowerCase().includes(query) ||
+      p.metadata?.title?.toLowerCase().includes(query) ||
+      p.metadata?.author?.toLowerCase().includes(query) ||
+      String(p.metadata?.cgp).toLowerCase().includes(query) ||
+      String(p.id).toLowerCase().includes(query) ||
+      p.metadata?.url?.toLowerCase().includes(query),
+    [query],
+  );
+
+  const queryFiltered = useMemo<MergedProposalData[]>(
+    () => tabFiltered.filter(queryFilter),
+    [tabFiltered, queryFilter],
+  );
+
+  return queryFiltered;
 }
