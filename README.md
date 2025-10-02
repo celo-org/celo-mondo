@@ -36,3 +36,24 @@ Now, since the introduction of the backend we set-up a flow to make the front-en
 Events are indexed in the `events` table (for redundancy, data is fetched from both [webhooks](https://t3bb35o5zzb6zpgwizsfvu6r2a.multibaas.com/webhooks/2) and a [github action cronjob](./.github/workflows/cronjob.yml) just in case).
 When a new events is received, we can decode it and update the `proposals` table according the event to have an always up to date table that the each front-end client can fetch without further data manipulation. See `src/app/api/webhooks/multibaas/route.ts` to see the webhook and the function calls.
 There's a small schema explaining each table in more details here: [<img src="./readme-schema.svg" alt="celo-mondo excalidraw">](https://excalidraw.com/#json=cKbblqlCm0IvTZaW1u232,ZQcreoxqt3tt1jShIbwgIw)
+
+### Helper scripts
+
+Scripts are located in the `src/scripts` folder and can be ran through `tsx` or via the package.json's scripts.
+
+#### `cacheProposalTxSelectors.ts`
+
+This script reads the `@celo/abis` and other hand-added known celo abis (eg: some mento stuff), and generates the function 4-byte hash and saves it in `src/app/config/selectors.json`
+
+#### `fetchHistoricalGovernanceEvents.ts`
+
+This script goes through ALL blocks (starting from last saved block in the DB, or 0 if filling a new DB) and gathers all governance-related events to the DB as well as compute proposal and vote states at the end
+
+#### `updateProposalTable.ts`
+
+This script computes proposal state from the store events. It will **OVERWRITE** proposals' table data from the events.
+It can take an optional argument proposalIds eg: `123,457,789`. To replay events from only the given specific proposals.
+
+#### `updateVotesTable.ts`
+
+This script computes all proposals votes from the store events. It will **OVERWRITE** votes' table data from the events. It can take an optional argument proposalIds eg: `123,457,789`. To replay events from only the given specific proposals.

@@ -100,6 +100,7 @@
     "dev": "yarn migrate && next dev",
     "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
+    "update-known-tx-selectors": "tsx ./src/scripts/cacheProposalSelectors.ts",
     "build:ci": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
     "build:delegatees-json": "tsx ./src/scripts/combineDelegateesMetadata.ts",
     "build:proposals": "tsx ./src/scripts/collectProposalMetadata.ts",
