@@ -31,10 +31,10 @@ import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
 export function Proposal({ id }: { id: string }) {
-  const { proposals } = useGovernanceProposals();
+  const { proposals, isLoading } = useGovernanceProposals();
 
   const propData = useMemo(() => findProposal(proposals, id), [proposals, id]);
-  usePageInvariant(!proposals || propData, '/governance', 'Proposal not found');
+  usePageInvariant(isLoading || propData, '/governance', 'Proposal not found');
 
   if (!propData) {
     return <FullWidthSpinner>Loading proposals</FullWidthSpinner>;
