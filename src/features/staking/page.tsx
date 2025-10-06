@@ -337,8 +337,6 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
     return sortAndCombineChartData(rawData);
   }, [stakers, isLoading]);
 
-  console.log({ stakers, isLoading, chartData });
-
   if (isLoading || !chartData) {
     return (
       <div className="flex items-center justify-center p-20">
