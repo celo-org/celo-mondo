@@ -22,7 +22,7 @@ export async function sumProposalVotes(id: number): Promise<{
   // Skipping revoke vote events for now for performance since they are almost never used
   // Much more common is for a voter to re-vote, replacing the old vote
   // const revokeVoteParams = `topic0=${revokeVoteTopics[0]}&topic1=${revokeVoteTopics[1]}&topic0_1_opr=and`;
-  // const revokeVoteEvents = await queryCeloscanLogs(Addresses.Governance, revokeVoteParams);
+  // const revokeVoteEvents = await queryCeloBlockscoutLogs(Addresses.Governance, revokeVoteParams);
   // reduceLogs(voterToVotes, revokeVoteEvents, false);
 
   // Filter out voters with no current votes

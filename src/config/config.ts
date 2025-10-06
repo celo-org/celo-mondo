@@ -7,7 +7,7 @@ interface Config {
   appName: string;
   walletConnectProjectId: string;
   fornoApiKey: string;
-  celoscanApiKey: string;
+  celoBlockscoutApiKey: string;
   infuraApiKey: string;
   upstashKey: string;
   watchBlockNumber: boolean;
@@ -18,7 +18,7 @@ const isDevMode = process?.env?.NODE_ENV === 'development';
 const version = process?.env?.NEXT_PUBLIC_VERSION ?? null;
 const walletConnectProjectId = process?.env?.NEXT_PUBLIC_WALLET_CONNECT_ID || '';
 const fornoApiKey = process?.env?.NEXT_PUBLIC_FORNO_API_KEY || '';
-const celoscanApiKey = process?.env?.NEXT_PUBLIC_CELOSCAN_API_KEY || '';
+const celoBlockscoutApiKey = process?.env?.NEXT_PUBLIC_CELOBLOCKSCOUT_API_KEY || '';
 const infuraApiKey = process?.env?.NEXT_PUBLIC_INFURA_API_KEY || '';
 const upstashKey = process?.env?.UPSTASH_KEY || '';
 
@@ -58,7 +58,7 @@ export const config: Config = Object.freeze({
   chain,
   walletConnectProjectId,
   fornoApiKey,
-  celoscanApiKey,
+  celoBlockscoutApiKey,
   infuraApiKey,
   upstashKey,
   watchBlockNumber: false,
@@ -67,7 +67,7 @@ export const config: Config = Object.freeze({
 // https://vercel.com/docs/environment-variables/system-environment-variables#VERCEL_ENV
 if (['production', 'preview'].includes(process.env.VERCEL_ENV!)) {
   const mandatoryConfig = [
-    'celoscanApiKey',
+    'celoBlockscoutApiKey',
     'walletConnectProjectId',
     'fornoApiKey',
     'infuraApiKey',

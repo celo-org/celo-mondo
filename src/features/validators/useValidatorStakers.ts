@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
+import { queryCeloBlockscoutLogs } from 'src/features/explorers/blockscout';
 import { TransactionLog } from 'src/features/explorers/types';
 import { isValidAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
@@ -91,11 +91,14 @@ async function fetchValidatorGroupStakers(group: Address): Promise<AddressTo<num
   const revokePendingParams = `topic0=${revokePendingTopics[0]}&topic2=${revokePendingTopics[2]}&topic0_2_opr=and`;
 
   // Avoid rate limit by querying in a staggered manner
-  const castVoteEvents = await queryCeloscanLogs(Addresses.Election, castVoteParams);
+  const castVoteEvents = await queryCeloBlockscoutLogs(Addresses.Election, castVoteParams);
   await sleep(250);
-  const revokeActiveEvents = await queryCeloscanLogs(Addresses.Election, revokeActiveParams);
+  const revokeActiveEvents = await queryCeloBlockscoutLogs(Addresses.Election, revokeActiveParams);
   await sleep(250);
-  const revokePendingEvents = await queryCeloscanLogs(Addresses.Election, revokePendingParams);
+  const revokePendingEvents = await queryCeloBlockscoutLogs(
+    Addresses.Election,
+    revokePendingParams,
+  );
 
   const stakerToVotes: AddressTo<number> = {};
   reduceLogs(stakerToVotes, castVoteEvents, true);

@@ -11,14 +11,6 @@ BigInt.prototype.toJSON = function () {
   return this.toString();
 };
 
-if (typeof process.env.NEXT_PUBLIC_CELOSCAN_API_KEY === 'string') {
-  logger.info('Using celoscan with API key');
-} else {
-  logger.warn(
-    'Celoscan api key not loaded. Votes will not be updated. You probably need a .env file (not local.env). To pull secrets see https://vercel.com/docs/cli/env',
-  );
-}
-
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 

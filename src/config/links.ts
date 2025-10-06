@@ -1,5 +1,3 @@
-import { config } from 'src/config/config';
-
 const github = 'https://github.com/celo-org/celo-mondo';
 export const links = {
   home: 'https://mondo.celo.org',
@@ -11,10 +9,8 @@ export const links = {
   forum: 'https://forum.celo.org',
   governance: 'https://github.com/celo-org/governance',
   // Explorers
-  celoscan: config.chain.testnet ? 'https://alfajores.celoscan.io/' : 'https://celoscan.io',
-  celoscanApi: config.chain.testnet
-    ? 'https://api-alfajores.celoscan.io/api'
-    : 'https://api.celoscan.io',
+  blockscout: 'https://celo.blockscout.com',
+  blockscoutApi: 'https://celo.blockscout.com/api',
   // Auto-activation
   upstash: 'https://qstash.upstash.io/v2/publish',
 } as const;

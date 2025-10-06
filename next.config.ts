@@ -10,7 +10,7 @@ const ENABLE_CSP_HEADER = true;
 const CONNECT_SRC_HOSTS = [
   'https://*.celo.org',
   'https://*.celo-testnet.org',
-  'https://*.celoscan.io',
+  'https://celo.blockscout.com',
   'https://*.walletconnect.com',
   'wss://*.walletconnect.com',
   'wss://*.walletconnect.org',
