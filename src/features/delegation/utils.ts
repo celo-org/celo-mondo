@@ -2,6 +2,7 @@ import { accountsABI } from '@celo/abis';
 import { App, Octokit } from 'octokit';
 import path from 'path';
 import { Addresses } from 'src/config/contracts';
+import { links } from 'src/config/links';
 import {
   delegateeRegistrationRequestToMetadata,
   metadataToJSONString,
@@ -128,7 +129,7 @@ export async function createDelegationPR(request: RegisterDelegateRequest) {
     head: branchName,
     base: 'main',
     title: `Adding delegate ${request.name}`,
-    body: `Adding delegate \`${request.name}\` with address [${request.address}](https://celoscan.io/address/${request.address}).
+    body: `Adding delegate \`${request.name}\` with address [${request.address}](${links.blockscout}/address/${request.address}).
       
 [Verification](${request.verificationUrl}) (\`${request.verificationUrl}\`)`,
   });

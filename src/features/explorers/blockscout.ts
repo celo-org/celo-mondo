@@ -2,55 +2,65 @@ import { config } from 'src/config/config';
 import { links } from 'src/config/links';
 import { fetchWithTimeout, retryAsync, sleep } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
+import { celo } from 'viem/chains';
 import { ExplorerResponse, TransactionLog } from './types';
 
-// celoscan has a limit of 1000 results per query https://docs.celoscan.io/api-endpoints/logs
-const CELO_SCAN_MAX_RESULTS = 1000;
+// Blockscout has a limit of 1000 results per query https://docs.blockscout.com/devs/apis/rpc/logs
+const BLOCKSCOUT_MAX_RESULTS = 1000;
 
 /**
  * @param address the contract address to query logs on,
  * @param topicParams the encoded topic params for the events
  *
  */
-export async function queryCeloscanLogs(address: Address, topicParams: string) {
+export async function queryCeloBlockscoutLogs(address: Address, topicParams: string) {
   // Not using from block 0 here because of some explorers have issues with incorrect txs in low blocks
   // (some queries ie votes for proposals could probably be switched to an even higher starting block)
   const fromBlock = '100';
+
   const url = `/api?${topicParams}&`;
-  const baseParams = new URLSearchParams({
+  const params = new URLSearchParams({
+    topicParams,
+    chainid: celo.id.toString(),
     module: 'logs',
     action: 'getLogs',
     fromBlock,
     toBlock: 'latest',
     address: address,
-    offset: CELO_SCAN_MAX_RESULTS.toString(), // refers to how many entries per page to return
-    page: '1',
   });
-  let result = await queryCeloscanPath<TransactionLog[]>(`${url}${baseParams.toString()}`);
+
+  let result = await queryCeloBlockscoutPath<TransactionLog[]>(`${url}${params.toString()}`);
 
   let latestQueryLength = result.length;
-  let page = 1;
-  while (latestQueryLength === CELO_SCAN_MAX_RESULTS) {
-    page++;
-    baseParams.set('page', page.toString());
+  while (latestQueryLength > 0 && latestQueryLength === BLOCKSCOUT_MAX_RESULTS) {
+    const lastBlockTS = parseInt(result.at(-1)!.timeStamp, 16) * 1000;
+    if (lastBlockTS + 5_000 > Date.now()) {
+      break;
+    }
+    const nextBlock = BigInt(result.at(-1)!.blockNumber!) + BigInt(1);
+    params.set('fromBlock', nextBlock.toString());
     // sleep to avoid rate limiting
     await sleep(200);
-    const nextResults = await queryCeloscanPath<TransactionLog[]>(`${url}${baseParams.toString()}`);
+    const nextResults = await queryCeloBlockscoutPath<TransactionLog[]>(
+      `${url}${params.toString()}`,
+    );
     result = [...result, ...nextResults];
     latestQueryLength = nextResults.length;
   }
-  return result as TransactionLog[];
+
+  return result;
 }
 
 /**
  * @param path the path including query params but excluding API key
  */
-export async function queryCeloscanPath<R>(path: string) {
-  const url = new URL(path, links.celoscanApi);
-  logger.debug(`Querying celoscan: ${url.toString()}`);
-  if (config.celoscanApiKey) url.searchParams.set('apikey', config.celoscanApiKey);
-  const result = await retryAsync(() => executeQuery<R>(url.toString()));
-  return result;
+export async function queryCeloBlockscoutPath<R>(path: string) {
+  const url = new URL(path, links.blockscoutApi);
+  logger.debug(`Querying blockscout: ${url.toString()}`);
+  if (config.celoBlockscoutApiKey) {
+    url.searchParams.set('apikey', config.celoBlockscoutApiKey);
+  }
+  return await retryAsync(() => executeQuery<R>(url.toString()));
 }
 
 async function executeQuery<R>(url: string) {

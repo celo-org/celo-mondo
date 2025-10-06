@@ -1,7 +1,7 @@
 import { electionABI } from '@celo/abis';
 import BigNumber from 'bignumber.js';
 import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
+import { queryCeloBlockscoutLogs } from 'src/features/explorers/blockscout';
 import { TransactionLog } from 'src/features/explorers/types';
 import { StakeEvent, StakeEventType } from 'src/features/staking/types';
 import { ensure0x, eqAddress, isValidAddress } from 'src/utils/addresses';
@@ -17,11 +17,11 @@ const VOTE_REVOKED_TOPIC_0 = '0xae7458f8697a680da6be36406ea0b8f40164915ac9cc40c0
 export async function fetchStakeEvents(accountAddress: Address) {
   const topic1 = pad(accountAddress).toLowerCase();
   const activateLogsParams = `topic0=${VOTE_ACTIVATED_TOPIC_0}&topic1=${topic1}&topic0_1_opr=and`;
-  const activeTxLogs = await queryCeloscanLogs(Addresses.Election, activateLogsParams);
+  const activeTxLogs = await queryCeloBlockscoutLogs(Addresses.Election, activateLogsParams);
   const activateEvents = parseStakeLogs(activeTxLogs, accountAddress, StakeEventType.Activate);
 
   const revokeLogsParams = `topic0=${VOTE_REVOKED_TOPIC_0}&topic1=${topic1}&topic0_1_opr=and`;
-  const revokeTxLogs = await queryCeloscanLogs(Addresses.Election, revokeLogsParams);
+  const revokeTxLogs = await queryCeloBlockscoutLogs(Addresses.Election, revokeLogsParams);
   const revokeEvents = parseStakeLogs(revokeTxLogs, accountAddress, StakeEventType.Revoke);
   return activateEvents.concat(revokeEvents).sort((a, b) => a.timestamp - b.timestamp);
 }

@@ -30,7 +30,7 @@ For more information about the architecture and internals of this app, see [DEVE
 
 ### Governance Architecture
 
-This section is a short explanation for the governance fetching and displaying. For some context, celo-mondo didn't have a backend part for a long time and fully relied on three data sources: celo blockchain, celoscan events API, and the github repository celo-org/governance. This meant that all merging and data fetching had to happen at runtime in the front-end, per client.
+This section is a short explanation for the governance fetching and displaying. For some context, celo-mondo didn't have a backend part for a long time and fully relied on three data sources: celo blockchain, blockscout events API, and the github repository celo-org/governance. This meant that all merging and data fetching had to happen at runtime in the front-end, per client.
 Now, since the introduction of the backend we set-up a flow to make the front-end a bit simpler.
 
 Events are indexed in the `events` table (for redundancy, data is fetched from both [webhooks](https://t3bb35o5zzb6zpgwizsfvu6r2a.multibaas.com/webhooks/2) and a [github action cronjob](./.github/workflows/cronjob.yml) just in case).

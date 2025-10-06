@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { queryCeloscanLogs } from 'src/features/explorers/celoscan';
+import { queryCeloBlockscoutLogs } from 'src/features/explorers/blockscout';
 import { TransactionLog } from 'src/features/explorers/types';
 import { logger } from 'src/utils/logger';
 import { Address, PublicClient, decodeEventLog, encodeEventTopics } from 'viem';
@@ -55,7 +55,7 @@ async function fetchDelegators(
   });
 
   const delegateParams = `topic0=${delegateTopics[0]}&topic2=${delegateTopics[2]}&topic0_2_opr=and`;
-  const delegateEvents = await queryCeloscanLogs(Addresses.LockedGold, delegateParams);
+  const delegateEvents = await queryCeloBlockscoutLogs(Addresses.LockedGold, delegateParams);
 
   const allDelegators: Address[] = [];
   reduceLogs(allDelegators, delegateEvents);

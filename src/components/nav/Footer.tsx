@@ -16,7 +16,7 @@ export function Footer() {
       </div>
       <div className="flex items-center space-x-1">
         <div className="text-xs text-taupe-400">
-          Powered by <A_Blank href={links.celoscan}>CeloScan</A_Blank> and{' '}
+          Powered by <A_Blank href={links.celoBlockscout}>CeloBlockscout</A_Blank> and{' '}
           <A_Blank href="https://docs.celo.org/network/node/forno">Forno</A_Blank>
         </div>
         {config.watchBlockNumber && <BlockNumber />}

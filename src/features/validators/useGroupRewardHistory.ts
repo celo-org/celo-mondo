@@ -4,7 +4,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { config, infuraRpcUrl } from 'src/config/config';
 import { AVG_BLOCK_TIMES_MS, EPOCH_DURATION_MS, GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { queryCeloscanPath } from 'src/features/explorers/celoscan';
+import { queryCeloBlockscoutPath } from 'src/features/explorers/blockscout';
 import { logger } from 'src/utils/logger';
 import { Block, createPublicClient, decodeEventLog, http, parseAbiItem } from 'viem';
 
@@ -40,10 +40,10 @@ async function fetchValidatorGroupRewardHistory(
   // Get block number of epoch to start from
   const startTimestamp = Math.floor((Date.now() - (epochs + 1) * EPOCH_DURATION_MS) / 1000);
   const blockQueryPath = `/api?module=block&action=getblocknobytime&timestamp=${startTimestamp}&closest=before`;
-  const blockNumberStr = await queryCeloscanPath<string>(blockQueryPath);
+  const blockNumberStr = await queryCeloBlockscoutPath<string>(blockQueryPath);
   const startingBlockNumber = parseInt(blockNumberStr);
 
-  // NOTE(Rossy): I initially tried using celoscan and blockscout to fetch the reward
+  // NOTE(Rossy): I initially tried using etherscan and blockscout to fetch the reward
   // logs but neither supplied them. It must be a bug related to something special about
   // rewards on Celo. Forno can't provide logs for such a large window so instead I
   // hack together a batch-enabled infra provider for this query.
@@ -58,8 +58,8 @@ async function fetchValidatorGroupRewardHistory(
   //   eventName: 'ValidatorEpochPaymentDistributed',
   //   args: { group },
   // });
-  // const rewardLogsUrl = `${links.celoscanApi}/api?module=logs&action=getLogs&fromBlock=${startingBlockNumber}&toBlock=latest&address=${Addresses.Election}&topic0=${topics[0]}&topic1=${topics[1]}&topic0_1_opr=and`;
-  // const rewardLogs = await queryCeloscan<TransactionLog[]>(rewardLogsUrl);
+  // const rewardLogsUrl = `${links.celoBlockscout}/api?module=logs&action=getLogs&fromBlock=${startingBlockNumber}&toBlock=latest&address=${Addresses.Election}&topic0=${topics[0]}&topic1=${topics[1]}&topic0_1_opr=and`;
+  // const rewardLogs = await queryCeloBlockscoutPath<TransactionLog[]>(rewardLogsUrl);
 
   const infuraTransport = http(infuraRpcUrl, {
     retryCount: 3,
