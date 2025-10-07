@@ -63,6 +63,7 @@ export default function Page({ address }: { address: Address }) {
 
 function HeaderSection({ group }: { group?: ValidatorGroup }) {
   const address = group?.address || ZERO_ADDRESS;
+  const isMobile = useIsMobile();
   const links = Object.entries(VALIDATOR_GROUPS[address]?.links || {}) as Array<
     [SocialLinkType, string]
   >;
@@ -86,9 +87,9 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
       <BackLink href="/">Browse validators</BackLink>
       <div className="mt-6 flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-40">
         <div className="flex items-center space-x-3 sm:space-x-6">
-          <ValidatorGroupLogo address={address} size={90} />
+          <ValidatorGroupLogo address={address} size={isMobile ? 45 : 90} />
           <div>
-            <h1 className="overflow-hidden text-ellipsis font-serif text-4xl">
+            <h1 className="overflow-hidden text-ellipsis font-serif text-xl md:text-4xl">
               {group?.name || '...'}
             </h1>
             <div className="mt-2 flex items-center space-x-1.5 sm:space-x-3">

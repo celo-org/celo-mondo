@@ -187,7 +187,7 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-[8rem]',
+  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-[8rem] xs:max-w-[4rem]',
   td: 'relative border-y border-taupe-300 text-nowrap',
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',

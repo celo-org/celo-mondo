@@ -13,7 +13,7 @@ export function TabHeaderButton({
   const [hover, setHover] = useState(false);
   return (
     <button
-      className="relative flex items-center"
+      className="relative flex items-center justify-center md:justify-start"
       onClick={onClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -54,7 +54,7 @@ export function TabHeaderFilters<Filter extends string>({
 }) {
   const { tab, onTabChange } = useTabs<Filter>(activeFilter);
   return (
-    <div className={`flex justify-between space-x-7 ${className}`}>
+    <div className={`grid grid-flow-row grid-cols-2 gap-x-7 gap-y-6 lg:grid-cols-4 ${className}`}>
       {objKeys<Filter>(counts).map((f) => (
         <TabHeaderButton
           key={f}

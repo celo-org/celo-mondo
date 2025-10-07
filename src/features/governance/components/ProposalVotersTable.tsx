@@ -9,6 +9,7 @@ import { useProposalVoters } from 'src/features/governance/hooks/useProposalVote
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName } from 'src/features/validators/utils';
+import { useIsMobile } from 'src/styles/mediaQueries';
 import { normalizeAddress, shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
@@ -18,6 +19,7 @@ import { toTitleCase } from 'src/utils/strings';
 const NUM_TO_SHOW = 20;
 
 export function ProposalVotersTable({ propData }: { propData: MergedProposalData }) {
+  const isMobile = useIsMobile();
   const votersData = useProposalVoters(propData.id);
   return (
     <Collapse
@@ -27,7 +29,7 @@ export function ProposalVotersTable({ propData }: { propData: MergedProposalData
         </h2>
       }
       buttonClasses="w-full"
-      defaultOpen={propData.stage >= ProposalStage.Execution}
+      defaultOpen={isMobile ? false : propData.stage >= ProposalStage.Execution}
     >
       <VoterTableContent propData={{ ...propData, votersData }} />
     </Collapse>

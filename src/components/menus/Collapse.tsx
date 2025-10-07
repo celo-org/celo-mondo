@@ -36,7 +36,9 @@ export function Collapse({
             leaveFrom="transform scale-100 opacity-100"
             leaveTo="transform scale-95 opacity-0"
           >
-            <Disclosure.Panel>{children}</Disclosure.Panel>
+            <Disclosure.Panel className="max-h-[400px] overflow-y-auto lg:max-h-max">
+              {children}
+            </Disclosure.Panel>
           </Transition>
         </>
       )}

@@ -115,19 +115,19 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         )}
       </div>
       {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
-        <div className="hidden border-taupe-300 p-3 lg:block lg:border">
+        <div className="border-taupe-300 p-3 lg:block lg:border">
           <ProposalUpvotersTable propData={propData} />
         </div>
       )}
       {stage >= ProposalStage.Referendum && (
-        <div className="hidden overflow-auto border-taupe-300 p-3 lg:block lg:border">
+        <div className="overflow-auto border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalVotersTable propData={propData} />
           </ErrorBoundaryInline>
         </div>
       )}
       {(stage === ProposalStage.Referendum || stage === ProposalStage.Execution) && proposalId && (
-        <div className="hidden border-taupe-300 p-3 lg:block lg:border">
+        <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalApprovalsTable proposalId={proposalId} />
           </ErrorBoundaryInline>
