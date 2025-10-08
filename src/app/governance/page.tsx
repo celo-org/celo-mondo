@@ -86,7 +86,7 @@ function ProposalList() {
   const { votingPower } = useGovernanceVotingPower(address);
 
   return (
-    <div className="space-y-5 md:min-w-[38rem]">
+    <div className="w-full space-y-5 md:min-w-[38rem]">
       <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between gap-12">
           <H1>Proposals</H1>
@@ -111,7 +111,7 @@ function ProposalList() {
             setFilter={setFilter}
             counts={headerCounts}
             showCount={!isMobile}
-            className="border-b border-taupe-300 pb-2 pt-1 all:space-x-4 md:space-x-6"
+            className="border-b border-taupe-300 pb-2 pt-1"
           />
           <div className="mt-5 divide-y divide-taupe-300">
             {filteredProposals.length > 0 ? (

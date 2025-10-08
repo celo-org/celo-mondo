@@ -35,19 +35,21 @@ export default function Page() {
 function RegisterCtaCard() {
   return (
     <CtaCard>
-      <div className="space-y-2">
-        <h3 className="font-serif text-xl sm:text-2xl">Passionate about Celo governance?</h3>
-        <p className="text-sm sm:text-base">
-          If you would like to be included in this list, fill out{' '}
-          <Link href="/delegate/register" className={'text-blue-500 hover:underline'}>
-            the registration form
-          </Link>
-          .
-        </p>
+      <h3 className="col-[1/3] row-[1/2] font-serif text-xl sm:text-2xl md:col-[1/2] md:row-[1/2]">
+        Passionate about Celo governance?
+      </h3>
+      <p className="col-[1/2] row-[2/3] text-sm sm:text-base md:col-[1/2] md:row-[2/3]">
+        If you would like to be included in this list, fill out{' '}
+        <Link href="/delegate/register" className={'text-blue-500 hover:underline'}>
+          the registration form
+        </Link>
+        .
+      </p>
+      <div className="col-[2/3] row-[2/3] flex self-center justify-self-center md:col-[2/3] md:row-[1/3]">
+        <Link href="/delegate/register" className="btn btn-primary rounded-full border-taupe-300">
+          Register as a delegatee
+        </Link>
       </div>
-      <Link href="/delegate/register" className="btn btn-primary rounded-full border-taupe-300">
-        Register as a delegatee
-      </Link>
     </CtaCard>
   );
 }
