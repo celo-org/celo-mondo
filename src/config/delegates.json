@@ -180,23 +180,24 @@
     "description": "Hey, I am a member of the Celo Guardians (formerly known as 'CGP Editors'). I help maintain the history of governance proposals and am an active contributor to the Celo community."
   },
   "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9": {
-    "name": "ReFiCol4🌎",
+    "name": "Celo Colombia 🇨🇴",
     "address": "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9",
-    "logoUri": "/logos/validators/refi-col.jpg",
+    "logoUri": "/logos/validators/celo-colombia.png",
     "date": "2024-05-01",
     "links": {
-      "website": "https://linktr.ee/reficolombia",
-      "twitter": "https://twitter.com/reficolombia"
+      "website": "https://linktr.ee/celocolombia",
+      "twitter": "https://twitter.com/celo_col"
     },
     "interests": [
-      "ReFi",
+      "Regional HUBs",
       "Community",
       "Transparency",
       "Accountability",
-      "Good Vibes"
+      "Good Vibes",
+      "ReFi"
     ],
-    "description": "Our mission is clear, we commit to allocating all of our validator gains towards empowering the ReFi movement in Colombia and supporting individuals in need. Our dedication goes beyond securing the network; we are determined to leverage all of our gains to support the ReFi movement in Colombia.🇨🇴"
-  },
+   "description": "Fostering a Thriving Celo Community in Colombia 🇨🇴 Powered by cCOP, we commit to allocating all of our validator gains towards empowering the Celo Colombia community and 20% of this directly to ReFi Colombia"    
+    },
   "0xFaa0b40645Ee5E8D9AE38393e8cDF8e5baA71d13": {
     "name": "Staking Fund",
     "address": "0xFaa0b40645Ee5E8D9AE38393e8cDF8e5baA71d13",
