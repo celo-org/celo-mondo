@@ -496,4 +496,11 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       twitter: 'https://x.com/celo_col',
     },
   },
+   '0xEff3222c0c540618D5f10a98A40571db5f6397aa': {
+    logo: '/logos/validators/regenerative.png',
+    links: {
+      website: 'https://www.regenerative.fi/',
+      twitter: 'https://x.com/RegenerativeFi',
+    },
+  },
 };
