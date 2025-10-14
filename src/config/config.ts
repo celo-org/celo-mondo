@@ -1,3 +1,4 @@
+import { version } from 'src/../package.json';
 import { assert } from 'src/utils/validation';
 import { celo, celoAlfajores, Chain } from 'viem/chains';
 
@@ -14,20 +15,19 @@ interface Config {
   chain: Chain;
 }
 
-const isDevMode = process?.env?.NODE_ENV === 'development';
-const version = process?.env?.NEXT_PUBLIC_VERSION ?? null;
-const walletConnectProjectId = process?.env?.NEXT_PUBLIC_WALLET_CONNECT_ID || '';
-const fornoApiKey = process?.env?.NEXT_PUBLIC_FORNO_API_KEY || '';
-const celoBlockscoutApiKey = process?.env?.NEXT_PUBLIC_CELOBLOCKSCOUT_API_KEY || '';
-const infuraApiKey = process?.env?.NEXT_PUBLIC_INFURA_API_KEY || '';
-const upstashKey = process?.env?.UPSTASH_KEY || '';
+const isDevMode = process.env.NODE_ENV === 'development';
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_ID || '';
+const fornoApiKey = process.env.NEXT_PUBLIC_FORNO_API_KEY || '';
+const celoBlockscoutApiKey = process.env.NEXT_PUBLIC_CELOBLOCKSCOUT_API_KEY || '';
+const infuraApiKey = process.env.NEXT_PUBLIC_INFURA_API_KEY || '';
+const upstashKey = process.env.UPSTASH_KEY || '';
 
 export const fornoRpcUrl = `https://forno.celo.org?apikey=${fornoApiKey}`;
 export const infuraRpcUrl = `https://celo-mainnet.infura.io/v3/${infuraApiKey}`;
 
 const mainnetUrl = celo.rpcUrls.default.http[0];
 const alfajoresUrl = celoAlfajores.rpcUrls.default.http[0];
-const rpcUrl = process?.env?.NEXT_PUBLIC_RPC_URL || mainnetUrl;
+const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || mainnetUrl;
 
 // We assume using a custom RPC url will be mainnet (archive node, local node, ...)
 const isMainnet = ['mainnet', mainnetUrl, process.env.NEXT_PUBLIC_RPC_URL].includes(rpcUrl);

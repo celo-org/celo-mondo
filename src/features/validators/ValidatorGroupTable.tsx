@@ -19,9 +19,11 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
+import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
+import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
 import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -144,10 +146,20 @@ export function ValidatorGroupTable({
               key={row.original.address}
               className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
             >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className={classNames.td}>
-                  <Link href={`/staking/${row.original.address}`} className="flex px-4 py-4">
+              {row.getVisibleCells().map((cell, i) => (
+                <td key={cell.id} className={clsx(classNames.td, '')}>
+                  <Link
+                    href={`/staking/${row.original.address}`}
+                    className="flex items-center gap-4 px-4 py-4"
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {i === 1 && row.original.isContributor ? (
+                      <ContributionBadge
+                        address={row.original.address}
+                        className="text-black"
+                        title="CELO Community contributor"
+                      />
+                    ) : null}
                   </Link>
                 </td>
               ))}
@@ -369,6 +381,7 @@ function useTableRows({
         ...g,
         ...getGroupStats(g),
         isHidden: collapseTopGroups && i < NUM_COLLAPSED_GROUPS,
+        isContributor: Boolean(VALIDATOR_GROUPS[g.address]?.communityContributor),
       }),
     );
     return groupRows;
