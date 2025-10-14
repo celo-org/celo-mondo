@@ -9,7 +9,7 @@ import { VoteType } from 'src/features/governance/types';
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';
 import { sumProposalVotes } from 'src/features/governance/utils/votes';
-import '../../vendor/polyfill.js';
+import '../../vendor/polyfill';
 
 export default async function updateVotesInDB(
   chainId: number,

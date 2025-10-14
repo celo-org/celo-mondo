@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 
 import type { NextConfig } from 'next';
-import { readFileSync } from 'node:fs';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -82,13 +81,13 @@ const securityHeaders = [
 ];
 
 export default {
-  webpack: (config, { isServer }) => {
-    config.externals = [...config.externals, 'pino-pretty'];
-    if (isServer && process.env.NODE_ENV === 'production') {
-      config.devtool = 'source-map';
-    }
-    return config;
-  },
+  // webpack: (config, { isServer }) => {
+  //   config.externals = [...config.externals, 'pino-pretty'];
+  //   if (isServer && process.env.NODE_ENV === 'production') {
+  //     config.devtool = 'source-map';
+  //   }
+  //   return config;
+  // },
 
   async headers() {
     return [
@@ -116,10 +115,6 @@ export default {
       protocol: 'https',
       hostname: h,
     })),
-  },
-
-  env: {
-    NEXT_PUBLIC_VERSION: JSON.parse(readFileSync('./package.json').toString('utf-8')).version,
   },
   productionBrowserSourceMaps: true,
   reactStrictMode: true,

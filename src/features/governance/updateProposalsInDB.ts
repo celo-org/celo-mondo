@@ -12,7 +12,7 @@ import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';
-import '../../vendor/polyfill.js';
+import '../../vendor/polyfill';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
 type Event = typeof eventsTable.$inferSelect;
