@@ -4,14 +4,13 @@ import { useState } from 'react';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
-import { useIsAccount } from 'src/features/account/hooks';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import CeloCube from 'src/images/logos/celo-cube.webp';
 
 export function AccountRegisterForm({
   refetchAccountDetails,
 }: {
-  refetchAccountDetails: ReturnType<typeof useIsAccount>['refetch'];
+  refetchAccountDetails: () => Promise<unknown>;
 }) {
   const [isRefetching, setIsRefetching] = useState(false);
   const { writeContract, isLoading } = useWriteContractWithReceipt(
