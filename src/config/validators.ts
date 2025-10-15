@@ -3,11 +3,7 @@ import { SocialLinks } from 'src/config/types';
 type ValidatorInfo = {
   logo: string;
   links: SocialLinks;
-  communityContributor?:
-    | boolean
-    | {
-        description: string;
-      };
+  communityContributor?: boolean;
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {

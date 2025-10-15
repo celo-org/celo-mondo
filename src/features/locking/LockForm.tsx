@@ -26,7 +26,7 @@ import { emptyStakeBalances, useStakingBalances } from 'src/features/staking/use
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
-import { fromWeiRounded, toWei } from 'src/utils/amount';
+import { fromWei, fromWeiRounded, toWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
@@ -173,7 +173,7 @@ function LockAmountField({
   disabled?: boolean;
 }) {
   const maxAmountWei = useMemo(
-    () => getMaxAmount(action, lockedBalances, walletBalance),
+    () => getMaxAmount(action, lockedBalances, walletBalance) - MIN_REMAINING_BALANCE,
     [action, lockedBalances, walletBalance],
   );
 
@@ -182,7 +182,7 @@ function LockAmountField({
   const { setFieldValue } = useFormikContext<LockFormValues>();
   useEffect(() => {
     if (!isWithdraw) return;
-    setFieldValue('amount', fromWeiRounded(maxAmountWei));
+    setFieldValue('amount', Math.max(0, fromWei(maxAmountWei - MIN_REMAINING_BALANCE)));
   }, [maxAmountWei, isWithdraw, setFieldValue]);
 
   return (
