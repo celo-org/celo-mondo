@@ -462,7 +462,6 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://twitter.com/grassEcon',
       twitter: 'https://twitter.com/grassrootsnetwork',
     },
-    communityContributor: true,
   },
   '0x4D5A51039ea45063D4b665B21755db20A738DaDc': {
     logo: '/logos/validators/stakefish.jpg',
@@ -491,7 +490,6 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://www.celopg.eco/',
       twitter: 'https://x.com/CeloPublicGoods',
     },
-    communityContributor: true,
   },
   '0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9': {
     logo: '/logos/validators/celo-colombia.png',
