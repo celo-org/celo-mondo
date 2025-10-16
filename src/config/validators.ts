@@ -462,6 +462,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://twitter.com/grassEcon',
       twitter: 'https://twitter.com/grassrootsnetwork',
     },
+    communityContributor: true,
   },
   '0x4D5A51039ea45063D4b665B21755db20A738DaDc': {
     logo: '/logos/validators/stakefish.jpg',

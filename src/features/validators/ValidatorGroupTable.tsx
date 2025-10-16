@@ -146,20 +146,13 @@ export function ValidatorGroupTable({
               key={row.original.address}
               className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
             >
-              {row.getVisibleCells().map((cell, i) => (
+              {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={clsx(classNames.td, '')}>
                   <Link
                     href={`/staking/${row.original.address}`}
                     className="flex items-center gap-4 px-4 py-4"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    {i === 1 && row.original.isContributor ? (
-                      <ContributionBadge
-                        address={row.original.address}
-                        className="text-black"
-                        title="CELO Community contributor"
-                      />
-                    ) : null}
                   </Link>
                 </td>
               ))}
@@ -289,9 +282,16 @@ function useTableColumns(totalVotes: bigint) {
       columnHelper.accessor('name', {
         header: 'Group name',
         cell: (props) => (
-          <div className="flex items-center space-x-2">
-            <ValidatorGroupLogo address={props.row.original.address} size={30} />
-            <span>{cleanGroupName(props.getValue())}</span>
+          <div className="flex items-center gap-4 overflow-hidden">
+            <div className="flex flex-shrink-0 items-center space-x-2">
+              <ValidatorGroupLogo address={props.row.original.address} size={30} />
+              <span>{cleanGroupName(props.getValue())}</span>
+            </div>
+            <div className="flex-shrink-1 flex items-center">
+              {props.row.original.isContributor ? (
+                <ContributionBadge className="text-black" title="Community contributor" />
+              ) : null}
+            </div>
           </div>
         ),
       }),

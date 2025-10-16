@@ -4,13 +4,14 @@ import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { Community } from 'src/components/icons/Community';
+import './ContributionBadge.css';
 
 interface Props {
-  address: `0x${string}`;
   className?: string;
   title?: string;
+  asButton?: true;
 }
-export default function ContributionBadge({ className, title = '', address }: Props) {
+export default function ContributionBadge({ className, title = '', asButton }: Props) {
   const onClick = useCallback(() => {
     toast.info(
       <>
@@ -20,7 +21,7 @@ export default function ContributionBadge({ className, title = '', address }: Pr
         </p>
         <p className="underline">
           <Link
-            href={`https://github.com/celo-org/celo-mondo/issues/new?title=New+community+contributor+application+${address}`}
+            href={`https://github.com/celo-org/celo-mondo/issues/new?title=New+community+contributor+application+[HERE_YOUR_VALIDATOR_GROUP_ADDRESS]`}
             target="_blank"
           >
             Are you worthy of the Community badge? Apply here
@@ -31,18 +32,28 @@ export default function ContributionBadge({ className, title = '', address }: Pr
         autoClose: false,
       },
     );
-  }, [address]);
+  }, []);
+
+  if (asButton) {
+    return (
+      <OutlineButton
+        className={clsx('all:py-1 all:font-normal', className)}
+        title={title}
+        onClick={onClick}
+      >
+        <div className="flex items-center space-x-1.5 transition-all">
+          <Community height="1rem" /> {/* .85rem is text-sm */}
+          <span>{title}</span>
+        </div>
+      </OutlineButton>
+    );
+  }
 
   return (
-    <OutlineButton
-      className={clsx('all:py-1 all:font-normal', className)}
-      title="CELO Community contributor"
-      onClick={onClick}
-    >
-      <div className="flex items-center space-x-1.5 transition-all">
-        <Community height="1rem" />
-        <span>{title}</span>
-      </div>
-    </OutlineButton>
+    <div className="highlighted group flex items-center space-x-1.5 transition-all">
+      <span className="inset-ring inset-ring-gray-400/20 inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400">
+        {title}
+      </span>
+    </div>
   );
 }

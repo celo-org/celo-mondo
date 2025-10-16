@@ -108,20 +108,22 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
                 <div className="flex items-center space-x-1.5">
                   <SlashIcon width={14} height={14} />
                   <span>
-                    {group?.lastSlashed ? getHumanReadableTimeString(group.lastSlashed) : 'Never'}
+                    {group?.lastSlashed
+                      ? getHumanReadableTimeString(group.lastSlashed)
+                      : 'Never slashed'}
                   </span>
                 </div>
               </OutlineButton>
-              {links.map(([type, href], i) => (
-                <SocialLogoLink key={i} type={type} href={href} />
-              ))}
               {metadata?.communityContributor ? (
                 <ContributionBadge
-                  address={address}
+                  asButton
                   className="text-black"
                   title="CELO Community contributor"
                 />
               ) : null}
+              {links.map(([type, href], i) => (
+                <SocialLogoLink key={i} type={type} href={href} />
+              ))}
             </div>
           </div>
         </div>
