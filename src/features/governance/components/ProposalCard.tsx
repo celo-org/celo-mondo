@@ -52,7 +52,7 @@ export function ProposalCard({
     <Link href={link} className={clsx('space-y-2.5', className)}>
       <ProposalBadgeRow propData={propData} />
       {title && (
-        <h2 className={clsx('max-w-[90%] truncate font-medium', !isCompact && 'text-lg')}>
+        <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
           {title}
         </h2>
       )}
