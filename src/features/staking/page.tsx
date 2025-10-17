@@ -20,7 +20,7 @@ import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
 import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { ShortAddress } from 'src/components/text/ShortAddress';
+import { CopyInline } from 'src/components/text/CopyInline';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinkType } from 'src/config/types';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
@@ -30,6 +30,7 @@ import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeue
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
+import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
@@ -43,8 +44,8 @@ import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
+import useAddressToLabel from 'src/utils/useAddressToLabel';
 import useTabs from 'src/utils/useTabs';
-import { isAddress } from 'viem';
 
 export default function Page({ address }: { address: Address }) {
   const { addressToGroup } = useValidatorGroups();
@@ -64,9 +65,8 @@ export default function Page({ address }: { address: Address }) {
 function HeaderSection({ group }: { group?: ValidatorGroup }) {
   const address = group?.address || ZERO_ADDRESS;
   const isMobile = useIsMobile();
-  const links = Object.entries(VALIDATOR_GROUPS[address]?.links || {}) as Array<
-    [SocialLinkType, string]
-  >;
+  const metadata = VALIDATOR_GROUPS[address];
+  const links = Object.entries(metadata?.links || {}) as Array<[SocialLinkType, string]>;
 
   const onClickAddress = useCopyHandler(group?.address);
   const onClickSlash = () => {
@@ -108,10 +108,19 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
                 <div className="flex items-center space-x-1.5">
                   <SlashIcon width={14} height={14} />
                   <span>
-                    {group?.lastSlashed ? getHumanReadableTimeString(group.lastSlashed) : 'Never'}
+                    {group?.lastSlashed
+                      ? getHumanReadableTimeString(group.lastSlashed)
+                      : 'Never slashed'}
                   </span>
                 </div>
               </OutlineButton>
+              {metadata?.communityContributor ? (
+                <ContributionBadge
+                  asButton
+                  className="text-black"
+                  title="CELO Community contributor"
+                />
+              ) : null}
               {links.map(([type, href], i) => (
                 <SocialLogoLink key={i} type={type} href={href} />
               ))}
@@ -267,6 +276,7 @@ function Members({ group }: { group?: ValidatorGroup }) {
   const groupStats = getGroupStats(group);
 
   const { lockedBalance } = useLockedBalance(group?.address);
+  const addressToLabel = useAddressToLabel(isMobile ? shortenAddress : (x) => x);
 
   return (
     <>
@@ -298,9 +308,7 @@ function Members({ group }: { group?: ValidatorGroup }) {
               <td className={tableClasses.td}>
                 <div className="flex items-center">
                   <Identicon address={member.address} size={24} />
-                  <span className="ml-2">
-                    {isMobile ? shortenAddress(member.address) : member.address}
-                  </span>
+                  <span className="ml-2">{addressToLabel(member.address)}</span>
                 </div>
               </td>
               <td className={tableClasses.td}>{`${(member.score * 100).toFixed(2)}%`}</td>
@@ -327,16 +335,17 @@ function Members({ group }: { group?: ValidatorGroup }) {
 
 function Stakers({ group }: { group?: ValidatorGroup }) {
   const { stakers, isLoading } = useValidatorStakers(group?.address);
+  const addressToLabel = useAddressToLabel();
 
   const chartData = useMemo(() => {
     if (isLoading) return null;
     if (!stakers.length) return [{ label: 'No Stakers', value: 1, color: Color.Grey }];
     const rawData = stakers.map(([address, amount]) => ({
-      label: address,
+      label: addressToLabel(address),
       value: amount,
     }));
     return sortAndCombineChartData(rawData);
-  }, [stakers, isLoading]);
+  }, [stakers, isLoading, addressToLabel]);
 
   if (isLoading || !chartData) {
     return (
@@ -362,11 +371,10 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
                 <td className={tableClasses.td}>
                   <div className="flex items-center space-x-2">
                     <Circle fill={data.color} size={10} />
-                    {isAddress(data.label) ? (
-                      <ShortAddress address={data.label} />
-                    ) : (
-                      <span>{data.label === 'Others' ? 'Other stakers' : data.label}</span>
-                    )}
+                    <CopyInline
+                      text={data.label === 'Others' ? 'Other stakers' : data.label}
+                      textToCopy={data.address}
+                    />
                   </div>
                 </td>
                 <td className={tableClasses.td}>

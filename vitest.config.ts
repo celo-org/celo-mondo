@@ -15,7 +15,7 @@ export default defineConfig({
       './src/test/globalMocks.ts',
       './src/test/setup-db.ts',
       './src/test/anvil/setup.ts',
-      './src/vendor/polyfill.js',
+      './src/vendor/polyfill.ts',
     ],
     environment: 'happy-dom',
     alias: {

@@ -1330,5 +1330,50 @@
       "IA"
     ],
     "description": "We are a hub for real growth strategies for companies within the web3 ecosystem.  We create real and efficient products to empower companies through accurate user data, automatically trained and qualified to deliver real numbers to your companies in a 100% efficient manner. No bots, just people.  Empowering businesses and people to perform well within the web3 ecosystem."
+  },
+  "0x477e89659cd4433DCb9Cb8a9C607B73413a3238B": {
+    "name": "Riduwan Hosen",
+    "address": "0x477e89659cd4433DCb9Cb8a9C607B73413a3238B",
+    "logoUri": "/logos/delegatees/0x477e89659cd4433DCb9Cb8a9C607B73413a3238B.jpg",
+    "date": "2025-09-28",
+    "links": {
+      "twitter": "https://x.com/riduwan525"
+    },
+    "interests": [
+      "Blockchain"
+    ],
+    "description": "Web3"
+  },
+  "0x4979a92123f06853395f25d2412FF91941F85f1e": {
+    "name": "Golden bitcoin",
+    "address": "0x4979a92123f06853395f25d2412FF91941F85f1e",
+    "logoUri": "/logos/delegatees/0x4979a92123f06853395f25d2412FF91941F85f1e.png",
+    "date": "2025-10-01",
+    "links": {
+      "website": "https://pass.celopg.eco/home?safe=0x8cde51111d1F830F691c37203F6996A8D4c8947D",
+      "twitter": "https://x.com/rocksofg"
+    },
+    "interests": [
+      "Nft"
+    ],
+    "description": "Pas"
+  },
+  "0xA97CA732232Cd2ACaB9038a1943fe2A79FA1cCc8": {
+    "name": "we create project",
+    "address": "0xA97CA732232Cd2ACaB9038a1943fe2A79FA1cCc8",
+    "logoUri": "/logos/delegatees/0xA97CA732232Cd2ACaB9038a1943fe2A79FA1cCc8.png",
+    "date": "2025-09-30",
+    "links": {
+      "website": "https://wecreateproject.com",
+      "twitter": "https://x.com/wecreateproject"
+    },
+    "interests": [
+      "Blockchain",
+      "Creativity",
+      "Building",
+      "Marketing",
+      "DAO"
+    ],
+    "description": "Building the decentralized future and creative open network for everyone."
   }
 }

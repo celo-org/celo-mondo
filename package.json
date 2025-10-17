@@ -97,7 +97,7 @@
     "prepare": "husky",
     "clean": "rm -rf dist cache .next",
     "migrate": "tsx ./src/scripts/migrate.ts",
-    "dev": "yarn migrate && next dev",
+    "dev": "yarn migrate && next dev --turbopack",
     "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
     "update-known-tx-selectors": "tsx ./src/scripts/cacheProposalSelectors.ts",

@@ -3,6 +3,7 @@ import { SocialLinks } from 'src/config/types';
 type ValidatorInfo = {
   logo: string;
   links: SocialLinks;
+  communityContributor?: boolean;
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
@@ -40,6 +41,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://clabs.co',
       twitter: 'https://twitter.com/clabs',
     },
+    communityContributor: true,
   },
   '0xbf55dF76204f00AcF296F76cF4Aaf86A866a5eb0': {
     logo: '/logos/validators/manta.jpg',
@@ -460,6 +462,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://twitter.com/grassEcon',
       twitter: 'https://twitter.com/grassrootsnetwork',
     },
+    communityContributor: true,
   },
   '0x4D5A51039ea45063D4b665B21755db20A738DaDc': {
     logo: '/logos/validators/stakefish.jpg',

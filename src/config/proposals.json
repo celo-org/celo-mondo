@@ -3152,9 +3152,16 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0203.md",
     "title": "Adding WETH as gas currency",
     "author": "Martín Volpe (@cLabs)",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/adding-weth-as-gas-currency/12047",
-    "timestamp": 1753747200000
+    "stage": 6,
+    "id": 256,
+    "url": "https://forum.celo.org/t/adding-weth-as-gas-currency",
+    "timestamp": 1753747200000,
+    "timestampExecuted": 1759622400000,
+    "votes": {
+      "yes": "16972883363240619737707450",
+      "no": "101160000000000000000",
+      "abstain": "0"
+    }
   },
   {
     "cgp": 204,
@@ -3195,8 +3202,15 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0206.md",
     "title": "Proxy Vote for MGP-10 - Restructuring the Mento Reserve Yield on Mento Reserve & Mento Funding",
     "author": "@mentoLabs",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/mgp-10-restructuring-the-mento-reserve-yield-on-mento-reserve-mento-funding-community-fund-proxy-vote/12324",
-    "timestamp": 1757635200000
+    "stage": 6,
+    "id": 255,
+    "url": "https://forum.celo.org/t/mgp-10-restructuring-the-mento-reserve-yield-on-mento-reserve-mento-funding-community-fund-proxy-vote",
+    "timestamp": 1757635200000,
+    "timestampExecuted": 1758672000000,
+    "votes": {
+      "yes": "12615260229013342430133058",
+      "no": "4694041753637975878879",
+      "abstain": "500891799610424104206"
+    }
   }
 ]

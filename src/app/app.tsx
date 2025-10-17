@@ -11,7 +11,7 @@ import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
 import 'src/vendor/inpage-metamask.js';
-import 'src/vendor/polyfill.js';
+import 'src/vendor/polyfill';
 
 export function App({ children }: PropsWithChildren<any>) {
   return (

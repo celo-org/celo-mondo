@@ -30,6 +30,7 @@ import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { isValidAddress, shortenAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
+import useAddressToLabel from 'src/utils/useAddressToLabel';
 import { useAccount } from 'wagmi';
 
 const initialValues: DelegateFormValues = {
@@ -48,6 +49,7 @@ export function DelegationForm({
 }) {
   const { address } = useAccount();
   const { addressToDelegatee } = useDelegatees();
+  const addressToLabel = useAddressToLabel();
   const { isValidator, isValidatorGroup } = useAccountDetails(address);
   const { signingFor } = useVoteSignerToAccount(address);
   const { delegations, refetch } = useDelegationBalances(address, signingFor);
@@ -66,7 +68,7 @@ export function DelegationForm({
             { label: 'Action', value: toTitleCase(v.action) },
             {
               label: 'Delegatee',
-              value: addressToDelegatee?.[v.delegatee]?.name || shortenAddress(v.delegatee),
+              value: addressToLabel(v.delegatee),
             },
             { label: 'Percent', value: `${v.percent} %` },
           ],

@@ -19,9 +19,11 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
+import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
+import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
 import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -145,8 +147,11 @@ export function ValidatorGroupTable({
               className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
             >
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className={classNames.td}>
-                  <Link href={`/staking/${row.original.address}`} className="flex px-4 py-4">
+                <td key={cell.id} className={clsx(classNames.td, '')}>
+                  <Link
+                    href={`/staking/${row.original.address}`}
+                    className="flex items-center gap-4 px-4 py-4"
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
                 </td>
@@ -277,9 +282,16 @@ function useTableColumns(totalVotes: bigint) {
       columnHelper.accessor('name', {
         header: 'Group name',
         cell: (props) => (
-          <div className="flex items-center space-x-2">
-            <ValidatorGroupLogo address={props.row.original.address} size={30} />
-            <span>{cleanGroupName(props.getValue())}</span>
+          <div className="flex items-center gap-4 overflow-hidden">
+            <div className="flex flex-shrink-0 items-center space-x-2">
+              <ValidatorGroupLogo address={props.row.original.address} size={30} />
+              <span>{cleanGroupName(props.getValue())}</span>
+            </div>
+            <div className="flex-shrink-1 flex items-center">
+              {props.row.original.isContributor ? (
+                <ContributionBadge className="text-black" title="Community contributor" />
+              ) : null}
+            </div>
           </div>
         ),
       }),
@@ -369,6 +381,7 @@ function useTableRows({
         ...g,
         ...getGroupStats(g),
         isHidden: collapseTopGroups && i < NUM_COLLAPSED_GROUPS,
+        isContributor: Boolean(VALIDATOR_GROUPS[g.address]?.communityContributor),
       }),
     );
     return groupRows;
