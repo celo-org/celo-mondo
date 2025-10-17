@@ -13,7 +13,7 @@ import { VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
-import { toTitleCase, trimToLength } from 'src/utils/strings';
+import { toTitleCase } from 'src/utils/strings';
 import { getEndHumanEndTime } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
@@ -35,7 +35,6 @@ export function ProposalCard({
   const { votes } = useProposalVoteTotals(propData);
 
   const link = cgp ? `/governance/cgp-${cgp}` : `/governance/${id}`;
-  const titleValue = title ? trimToLength(title, 50) : undefined;
   const endTimeValue = getEndHumanEndTime({ timestampExecuted, expiryTimestamp });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
@@ -52,7 +51,11 @@ export function ProposalCard({
   return (
     <Link href={link} className={clsx('space-y-2.5', className)}>
       <ProposalBadgeRow propData={propData} />
-      {titleValue && <h2 className={clsx('font-medium', !isCompact && 'text-lg')}>{titleValue}</h2>}
+      {title && (
+        <h2 className={clsx('max-w-[90%] truncate font-medium', !isCompact && 'text-lg')}>
+          {title}
+        </h2>
+      )}
       {!isCompact && votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
         <div className="space-y-2.5">
           <StackedBarChart data={barChartData} showBorder={false} height="h-1" />
