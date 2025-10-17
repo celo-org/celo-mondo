@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { PropsWithChildren } from 'react';
 
 export function Section({
@@ -6,9 +7,12 @@ export function Section({
   children,
 }: PropsWithChildren<{ className?: string; containerClassName?: string }>) {
   return (
-    <section className={`flex w-full grow flex-col items-stretch justify-start ${className}`}>
+    <section className={clsx('flex w-full grow flex-col items-stretch justify-start', className)}>
       <div
-        className={`flex w-full max-w-screen-md flex-col self-center px-2 sm:px-4 ${containerClassName}`}
+        className={clsx(
+          'flex w-full flex-col justify-center self-center px-2 sm:px-4',
+          containerClassName,
+        )}
       >
         {children}
       </div>

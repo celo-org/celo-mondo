@@ -54,7 +54,7 @@ export default function Page({ address }: { address: Address }) {
   usePageInvariant(!addressToGroup || group, '/', 'Validator group not found');
 
   return (
-    <Section containerClassName="space-y-8 mt-4">
+    <Section containerClassName="space-y-8 mt-4 lg:max-w-screen-md">
       <HeaderSection group={group} />
       <StatSection group={group} />
       <DetailsSection group={group} />

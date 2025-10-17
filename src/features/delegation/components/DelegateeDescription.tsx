@@ -19,7 +19,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
   const dateString = new Date(delegatee.date).toLocaleDateString();
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-full space-y-4 ">
       <BackLink href="/delegate">Browse delegates</BackLink>
       <div className="flex items-center gap-1">
         <DelegateeLogo address={delegatee.address} size={90} />
@@ -33,7 +33,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
             <span className="text-sm text-taupe-600">•</span>
             <span className="text-sm text-taupe-600">{`Since ${dateString}`}</span>
           </div>
-          <div className="mt-1.5 flex items-center space-x-3">
+          <div className="mt-1.5 flex flex-wrap items-center space-x-3">
             {Object.entries(delegatee.links).map(([type, href], i) => (
               <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
@@ -71,7 +71,7 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
   const hasVotes = proposalToVotes && sortedIds.length > 0;
 
   return (
-    <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1">
+    <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1 ">
       <h2 className="font-serif text-xl">Governance Participation</h2>
       {isLoading ? (
         <SpinnerWithLabel className="py-10">Loading governance history</SpinnerWithLabel>

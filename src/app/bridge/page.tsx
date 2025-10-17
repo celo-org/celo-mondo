@@ -53,7 +53,7 @@ const BRIDGES: Bridge[] = [
 
 export default function Page() {
   return (
-    <Section className="mt-6" containerClassName="space-y-6">
+    <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
       <H1>Bridge to Celo</H1>
       {BRIDGES.map((bridge) => (
         <BridgeLink key={bridge.name} {...bridge} />
@@ -69,7 +69,7 @@ export default function Page() {
 
 function BridgeLink({ name, operator, href, logo, description }: Bridge) {
   return (
-    <div className="mx-auto flex max-w-xl items-center justify-between border border-taupe-300 bg-white p-4 sm:p-5">
+    <div className="flex max-w-xl items-center justify-between self-center border border-taupe-300 bg-white p-4 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
         <div className="flex flex-col gap-1">

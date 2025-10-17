@@ -47,7 +47,7 @@ const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
 export default function Page() {
   return (
     <>
-      <Section className="mt-4">
+      <Section className="mt-4" containerClassName="lg:max-w-screen-md">
         <ProposalList />
       </Section>
       <div className="fixed bottom-10 right-5 hidden md:block">
