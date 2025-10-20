@@ -1,18 +1,16 @@
 import { revalidateTag } from 'next/cache';
-import { CacheKeys, GCTime, StaleTime } from 'src/config/consts';
+import { CacheKeys, GCTime } from 'src/config/consts';
 import { getProposals } from 'src/features/governance/getProposals';
 import { celoPublicClient } from 'src/utils/client';
 import 'src/vendor/polyfill';
 
 export async function GET(): Promise<Response> {
-  const headers = new Headers();
-  headers.append(
-    'Cache-Control',
-    `public,max-age=${GCTime.Default / 1000}, stale-while-revalidate=${StaleTime.Default / 1000}`,
-  );
-
   return Response.json(await getProposals(celoPublicClient.chain.id), {
-    headers,
+    headers: {
+      // https://vercel.com/docs/headers/cache-control-headers#using-private
+      // No vercel CDN caching but allow browser(client) caching
+      'Cache-Control': `private, max-age=${GCTime.Default / 1000}, must-revalidate`,
+    },
   });
 }
 
