@@ -13,7 +13,7 @@ export function FormSubmitButton({ children, ...props }: Props) {
   const firstError = `${Object.values(errors)[0]}` || 'Unknown error';
 
   const className = hasError
-    ? 'all:bg-red-500 all:hover:bg-red-500 all:hover:opacity-100'
+    ? 'all:bg-error all:hover:bg-error all:hover:opacity-100'
     : undefined;
   const content = hasError ? firstError : children;
 

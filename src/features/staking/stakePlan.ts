@@ -11,6 +11,7 @@ import { eqAddress } from 'src/utils/addresses';
 import { toWeiSafe } from 'src/utils/amount';
 import { logger } from 'src/utils/logger';
 import { bigIntMin } from 'src/utils/math';
+import { SimulateContractParameters } from 'viem';
 
 export function getStakeTxPlan(
   values: StakeFormValues,
@@ -49,14 +50,18 @@ export function getStakeTxPlan(
 
 function getStakeActionPlan(amountWei: bigint, group: Address, groups: ValidatorGroup[]): TxPlan {
   const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, amountWei);
+  const call = {
+    address: Addresses.Election,
+    abi: electionABI,
+    functionName: 'vote',
+    args: [group, amountWei, lesser, greater],
+  } as SimulateContractParameters<typeof electionABI, 'vote'>;
+
   return [
     {
       action: StakeActionType.Stake,
       chainId: config.chain.id,
-      address: Addresses.Election,
-      abi: electionABI,
-      functionName: 'vote',
-      args: [group, amountWei, lesser, greater],
+      ...call,
     },
   ];
 }
@@ -77,13 +82,17 @@ function getUnstakeActionPlan(
   const pendingToRevoke = bigIntMin(amountPending, amountRemaining);
   if (pendingToRevoke > 0n) {
     const { lesser, greater } = findLesserAndGreaterAfterVote(groups, group, pendingToRevoke * -1n);
-    txs.push({
-      action: StakeActionType.Unstake,
-      chainId: config.chain.id,
+    const call = {
       address: Addresses.Election,
       abi: electionABI,
       functionName: 'revokePending',
       args: [group, pendingToRevoke, lesser, greater, groupIndex],
+    } as SimulateContractParameters<typeof electionABI, 'revokePending'>;
+
+    txs.push({
+      action: StakeActionType.Unstake,
+      chainId: config.chain.id,
+      ...call,
     });
     amountRemaining -= pendingToRevoke;
   }

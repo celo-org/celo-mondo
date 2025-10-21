@@ -49,7 +49,7 @@ export function TransactionModal() {
 
   return (
     <Modal isOpen={isModalOpen} close={closeModal}>
-      <div className="flex min-h-[24rem] min-w-[18rem] max-w-sm flex-col border border-taupe-300 p-2.5">
+      <div className="flex min-h-96 min-w-[18rem] max-w-sm flex-col border border-taupe-300 p-2.5">
         <Component {...flowProps} defaultFormValues={defaultFormValues} closeModal={closeModal} />
       </div>
     </Modal>

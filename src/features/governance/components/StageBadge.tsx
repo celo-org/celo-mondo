@@ -22,7 +22,7 @@ export function StageBadge({
   );
 }
 
-const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string }> = {
+const ProposalStageToBgClass: Record<ProposalStage, { color: string; label: string }> = {
   [ProposalStage.None]: { color: Color.Sky, label: 'Draft' },
   [ProposalStage.Queued]: { color: Color.Lavender, label: 'Upvoting' },
   [ProposalStage.Approval]: { color: Color.Lavender, label: 'Approval' },
@@ -35,7 +35,7 @@ const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string
 };
 
 function getProposalStageStyle(stage: ProposalStage, isApproved?: boolean) {
-  const result = ProposalStageToStyle[stage];
+  const result = ProposalStageToBgClass[stage];
   if (stage === ProposalStage.Execution && !isApproved) {
     return { ...result, label: 'Approval Pending' };
   } else {

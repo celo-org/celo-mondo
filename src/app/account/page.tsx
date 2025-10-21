@@ -2,11 +2,13 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
+import { useMemo } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
-import { Amount, formatNumberString } from 'src/components/numbers/Amount';
-import { useBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { Amount } from 'src/components/numbers/Amount';
+import { TokenId } from 'src/config/tokens';
+import { useBalance, useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { DelegationsTable } from 'src/features/delegation/components/DelegationsTable';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -29,10 +31,12 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import LockIcon from 'src/images/icons/lock.svg';
+import StakingIcon from 'src/images/icons/staking.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { usePageInvariant } from 'src/utils/navigation';
+import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
@@ -43,6 +47,7 @@ export default function Page() {
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
+  const { stCeloBalance } = useStCeloBalance(signingFor);
   const { lockedBalances } = useLockedStatus(signingFor);
   const { delegations } = useDelegationBalances(signingFor);
   const { addressToDelegatee } = useDelegatees();
@@ -84,6 +89,7 @@ export default function Page() {
       <AccountStats
         walletBalance={walletBalance}
         lockedBalances={lockedBalances}
+        stCeloBalance={stCeloBalance}
         stakeBalances={stakeBalances}
         totalRewards={totalRewardsWei}
         totalDelegated={totalDelegated}
@@ -104,6 +110,63 @@ export default function Page() {
 
 function LockButtons({ className }: { className?: string }) {
   const showTxModal = useTransactionModal();
+  const { mode } = useStakingMode();
+
+  return useMemo(() => {
+    if (mode === 'CELO') {
+      return (
+        <div className={`space-x-2 ${className}`}>
+          <SolidButton
+            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
+          >
+            <div className="flex items-center space-x-1.5">
+              <Image src={LockIcon} width={12} height={12} alt="" />
+              <span>Lock</span>
+            </div>
+          </SolidButton>
+          <SolidButton
+            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
+          >
+            <div className="flex items-center space-x-1.5">
+              <Image src={UnlockIcon} width={12} height={12} alt="" />
+              <span>Unlock</span>
+            </div>
+          </SolidButton>
+          <SolidButton
+            onClick={() =>
+              showTxModal(TransactionFlowType.Lock, { action: LockActionType.Withdraw })
+            }
+          >
+            <div className="flex items-center space-x-1.5">
+              <Image src={WithdrawIcon} width={12} height={12} alt="" />
+              <span>Withdraw</span>
+            </div>
+          </SolidButton>
+        </div>
+      );
+    } else {
+      return (
+        <div className={`space-x-2 ${className}`}>
+          <SolidButton
+            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
+          >
+            <div className="flex items-center space-x-1.5">
+              <Image src={StakingIcon} width={12} height={12} alt="" />
+              <span>Stake</span>
+            </div>
+          </SolidButton>
+          <SolidButton
+            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
+          >
+            <div className="flex items-center space-x-1.5">
+              <Image src={WithdrawIcon} width={12} height={12} alt="" />
+              <span>Unstake</span>
+            </div>
+          </SolidButton>
+        </div>
+      );
+    }
+  }, [mode]);
 
   return (
     <div className={`space-x-2 ${className}`}>
@@ -137,19 +200,26 @@ function LockButtons({ className }: { className?: string }) {
 
 function AccountStats({
   walletBalance,
+  stCeloBalance,
   lockedBalances,
   stakeBalances,
   totalRewards,
   totalDelegated,
 }: {
   walletBalance?: bigint;
+  stCeloBalance?: bigint;
+  stCeloBalanceAwaitingWithdrawal?: bigint;
   lockedBalances?: LockedBalances;
   stakeBalances?: StakingBalances;
   totalRewards?: bigint;
   totalDelegated?: bigint;
 }) {
+  const { mode } = useStakingMode();
   return (
     <div className="flex items-center justify-between">
+      {mode === 'stCELO' && (
+        <AccountStat title="Total stCELO" valueWei={stCeloBalance} tokenId={TokenId.stCELO} />
+      )}
       <AccountStat
         title="Total locked"
         valueWei={lockedBalances?.locked}
@@ -179,20 +249,26 @@ function AccountStat({
   subtitle,
   subValueWei,
   subValueClassName,
+  tokenId,
 }: {
   title: string;
   valueWei?: bigint;
-  subtitle: string;
+  subtitle?: string;
   subValueWei?: bigint;
   subValueClassName?: string;
+  tokenId?: TokenId;
 }) {
   return (
     <div className="">
       <h3 className="text-sm">{title}</h3>
-      <Amount valueWei={valueWei} className="-my-0.5 text-2xl md:text-3xl" />
-      <div className={`flex items-center text-sm text-taupe-600 ${subValueClassName}`}>
-        <span>{`${subtitle}: ${formatNumberString(subValueWei, 2, true)}`}</span>
-      </div>
+      <Amount valueWei={valueWei} className="-my-0.5 text-2xl md:text-3xl" tokenId={tokenId} />
+      {subtitle ? (
+        <div
+          className={`flex flex-row items-center text-sm text-taupe-600 ${subValueClassName} gap-1`}
+        >
+          <span>{subtitle}:</span> <Amount valueWei={subValueWei} decimals={2} tokenId={tokenId} />
+        </div>
+      ) : null}
     </div>
   );
 }

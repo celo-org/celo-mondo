@@ -10,8 +10,10 @@ import { TransactionFlowType } from 'src/features/transactions/TransactionFlowTy
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { bigIntMax } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
+import { useStakingMode } from 'src/utils/useStakingMode';
 
 export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
+  const { mode, ui } = useStakingMode();
   const { proposalToVotes } = useDelegateeHistory(delegatee.address);
   const showTxModal = useTransactionModal(TransactionFlowType.Delegate, {
     delegatee: delegatee.address,
@@ -26,8 +28,11 @@ export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
       <div>
         <SolidButton
           className="btn-neutral w-full"
+          disabled={mode !== 'CELO'}
           onClick={() => showTxModal()}
-        >{`️🗳️ Delegate voting power`}</SolidButton>
+        >
+          {mode === 'CELO' ? `️🗳️ Delegate voting power` : `Can't delegate while ${ui.participle}`}
+        </SolidButton>
         {delegatee.delegatedByPercent > 0 && (
           <p className={'text-md pt-1 text-red-600'}>
             Delegatee is currently delegating{' '}

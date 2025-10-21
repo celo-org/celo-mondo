@@ -6,7 +6,7 @@ export type TxPlan<A extends string = string, F extends string = string> = Array
   address: Address;
   abi: any;
   functionName: F;
-  args?: Array<bigint | number | string | Address>;
+  args?: ReadonlyArray<bigint | number | string | Address>;
   value?: bigint;
 }>;
 

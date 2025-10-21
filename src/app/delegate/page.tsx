@@ -46,7 +46,7 @@ function RegisterCtaCard() {
         .
       </p>
       <div className="col-[2/3] row-[2/3] flex self-center justify-self-center md:col-[2/3] md:row-[1/3]">
-        <Link href="/delegate/register" className="btn btn-primary rounded-full border-taupe-300">
+        <Link href="/delegate/register" className="btn btn-primary border-taupe-300 rounded-full">
           Register as a delegatee
         </Link>
       </div>

@@ -14,6 +14,7 @@ export interface TransactionFlowProps<FormDefaults extends {} = {}> {
   header: string;
   FormComponent: FunctionComponent<{ onConfirmed: OnConfirmedFn; defaultFormValues: FormDefaults }>;
   requiresLockedFundsOrVoteSigner?: boolean;
+  requiresStCelo?: boolean;
   defaultFormValues?: FormDefaults;
 }
 
@@ -23,6 +24,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   header,
   FormComponent,
   requiresLockedFundsOrVoteSigner = true,
+  requiresStCelo = false,
   defaultFormValues = {} as FormDefaults,
   closeModal,
 }: TransactionFlowProps<FormDefaults> & { closeModal: () => void }) {
