@@ -143,15 +143,15 @@ async function mergeProposalDataIntoPGRow({
     proposalId,
     BigInt(proposalQueuedEvent.blockNumber),
   );
-  const mostRecentProposalState = await getProposalOnChain(
-    client,
-    proposalId,
-    lastProposalEvent.eventName === 'ProposalExecuted'
-      ? // proposal is deleted from chain when executed
-        BigInt(lastProposalEvent.blockNumber) - 1n
-      : // latest block as the proposal is still on chain
-        undefined,
-  );
+  let mostRecentProposalState = await getProposalOnChain(client, proposalId);
+  if (BigInt(mostRecentProposalState[0]) === 0n) {
+    // we can't rely on events as they don't all contain timestamps
+    mostRecentProposalState = await getProposalOnChain(
+      client,
+      proposalId,
+      BigInt(lastProposalEvent.blockNumber) - 1n,
+    );
+  }
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
 
