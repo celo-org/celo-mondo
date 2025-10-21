@@ -1,7 +1,12 @@
 import { FunctionComponent, ReactNode, useCallback, useState } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
-import { useIsAccount, useLockedBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import {
+  useIsAccount,
+  useLockedBalance,
+  useStCeloBalance,
+  useVoteSignerToAccount,
+} from 'src/features/account/hooks';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
@@ -33,6 +38,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   const { signingFor: signingForAccount, isLoading: isAccountLoading } =
     useVoteSignerToAccount(address);
   const { lockedBalance } = useLockedBalance(address);
+  const { stCeloBalance } = useStCeloBalance(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
   const isVoteSigner = Boolean(signingForAccount && signingForAccount !== address);
 
@@ -62,6 +68,11 @@ export function TransactionFlow<FormDefaults extends {}>({
     !willVoteAndHasVotingPower
   ) {
     Component = <LockForm showTip={true} />;
+  } else if (requiresStCelo && stCeloBalance <= 0n) {
+    // Will be caught by error boundary
+    // but we should never be here because no stCELO component should ever be
+    // shown without a stCeloBalance being positive in the first place
+    throw new Error('TODO: should never end up here');
   } else if (!confirmationDetails) {
     Component = <FormComponent defaultFormValues={defaultFormValues} onConfirmed={onConfirmed} />;
   } else {

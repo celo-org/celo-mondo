@@ -5,8 +5,8 @@ import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmi
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { MIN_GROUP_SCORE_FOR_RANDOM, ZERO_ADDRESS } from 'src/config/consts';
-import { useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { MIN_GROUP_SCORE_FOR_RANDOM, MIN_REMAINING_BALANCE, ZERO_ADDRESS } from 'src/config/consts';
+import { useBalance, useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { getLiquidStakeTxPlan } from 'src/features/staking/liquidStakePlan';
 import { useStrategy } from 'src/features/staking/stCelo/useStrategy';
 import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/staking/types';
@@ -20,7 +20,6 @@ import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { shortenAddress } from 'src/utils/addresses';
-import { fromWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
 import { useAccount } from 'wagmi';
@@ -40,17 +39,22 @@ export function LiquidStakeForm({
   onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
+  const { balance } = useBalance(address);
   const { addressToGroup } = useValidatorGroups();
   const { signingFor } = useVoteSignerToAccount(address);
   const { stCeloBalance, refetch } = useStCeloBalance(signingFor);
   const { group } = useStrategy(signingFor);
 
-  const humanReadableStCelo = formatNumberString(fromWei(stCeloBalance), 2);
+  console.log(defaultFormValues);
+
+  const humanReadableStCelo = formatNumberString(stCeloBalance, 2, true);
 
   const onPlanSuccess = (v: LiquidStakeFormValues, r: TransactionReceipt) => {
     onConfirmed({
       message: `${v.action} successful`,
-      amount: stCeloBalance,
+      // NOTE: This works but doesnt look good
+      // amount: fromWei(stCeloBalance),
+      // tokenId: TokenId.stCELO,
       receipt: r,
       properties: [
         { label: 'Action', value: toTitleCase(v.action) },
@@ -80,11 +84,12 @@ export function LiquidStakeForm({
     if (!stCeloBalance || !addressToGroup) {
       return { amount: 'Form data not ready' };
     }
+    if (balance - MIN_REMAINING_BALANCE <= 0) {
+      return { amount: 'Not enough CELO to cover gas fees' };
+    }
     if (txPlanIndex > 0) return {};
     return validateForm(values, stCeloBalance, addressToGroup);
   };
-
-  console.log({ group });
 
   return (
     <Formik<LiquidStakeFormValues>
@@ -99,23 +104,33 @@ export function LiquidStakeForm({
     >
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="stake-form">
-          {/* Reserve space for group menu */}
           <div className="min-h-86 space-y-4">
             <GroupField
               fieldName="group"
               label="From group"
               addressToGroup={addressToGroup}
-              defaultGroup={group || defaultFormValues?.group}
+              defaultGroup={group}
               disabled={true}
             />
             <GroupField
               fieldName="transferGroup"
               label="To group"
               addressToGroup={addressToGroup}
+              defaultGroup={defaultFormValues?.group}
               disabled={isInputDisabled}
             />
-            <div className="px-1">
-              <span className="mono">TODO: {humanReadableStCelo} stCELO</span>
+            <div className="flex flex-col gap-2 px-1">
+              <div className="flex items-center justify-between">
+                <label htmlFor="amount" className="pl-0.5 text-xs font-medium">
+                  Amount
+                </label>
+                <span className="text-xs">
+                  {balance - MIN_REMAINING_BALANCE <= 0
+                    ? 'Not enough CELO to cover gas fees'
+                    : `${humanReadableStCelo} stCELO`}
+                </span>
+              </div>
+              <p className="">You will delegate all your voting power to the chosen group.</p>
             </div>
           </div>
           <MultiTxFormSubmitButton
@@ -250,10 +265,10 @@ function validateForm(
     return { transferGroup: 'Groups must be different' };
   }
   const groupDetails = addressToGroup[transferGroup];
-  if (!groupDetails) {
+  if (transferGroup !== ZERO_ADDRESS && !groupDetails) {
     return { group: 'Transfer group not found' };
   }
-  if (groupDetails.votes >= groupDetails.capacity) {
+  if (groupDetails && groupDetails.votes >= groupDetails.capacity) {
     return { group: 'Transfer group has max votes' };
   }
 

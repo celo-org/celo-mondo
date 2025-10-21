@@ -1,4 +1,5 @@
 import { ComponentType, useCallback, useEffect } from 'react';
+import { ErrorBoundaryInline } from 'src/components/errors/ErrorBoundaryInline';
 import { Modal, useModal } from 'src/components/menus/Modal';
 import { AccountConnectForm } from 'src/features/account/AccountConnectForm';
 import { useStore } from 'src/features/store';
@@ -50,7 +51,9 @@ export function TransactionModal() {
   return (
     <Modal isOpen={isModalOpen} close={closeModal}>
       <div className="flex min-h-96 min-w-[18rem] max-w-sm flex-col border border-taupe-300 p-2.5">
-        <Component {...flowProps} defaultFormValues={defaultFormValues} closeModal={closeModal} />
+        <ErrorBoundaryInline>
+          <Component {...flowProps} defaultFormValues={defaultFormValues} closeModal={closeModal} />
+        </ErrorBoundaryInline>
       </div>
     </Modal>
   );
