@@ -89,12 +89,13 @@ export function getEndHumanEndTime({
   expiryTimestamp: number | undefined;
 }): string | undefined {
   const now = Date.now();
+  console.info('expiryTimestamp', expiryTimestamp, now);
   if (timestampExecuted) {
     return `Executed ${getHumanReadableTimeString(timestampExecuted)}`;
   } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp > now) {
     return `Expires in ${getHumanReadableDuration(expiryTimestamp - now)} on ${getFullDateHumanDateString(expiryTimestamp)}`;
   } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp) {
-    return `Expired ${getHumanReadableTimeString(expiryTimestamp)}`;
+    return `Expired ${getHumanReadableTimeString(expiryTimestamp * 1000)}`;
   } else {
     return undefined;
   }
