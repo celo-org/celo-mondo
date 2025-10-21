@@ -93,8 +93,8 @@ export function getEndHumanEndTime({
     return `Executed ${getHumanReadableTimeString(timestampExecuted)}`;
   } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp > now) {
     return `Expires in ${getHumanReadableDuration(expiryTimestamp - now)} on ${getFullDateHumanDateString(expiryTimestamp)}`;
-  } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp) {
-    return `Expired ${getHumanReadableTimeString(Math.abs(expiryTimestamp - now))}`;
+  } else if (expiryTimestamp && expiryTimestamp > 0) {
+    return `Expired ${getHumanReadableTimeString(expiryTimestamp)}`;
   } else {
     return undefined;
   }

@@ -1,5 +1,5 @@
 import { revalidateTag } from 'next/cache';
-import { CacheKeys, GCTime } from 'src/config/consts';
+import { CacheKeys } from 'src/config/consts';
 import { getProposals } from 'src/features/governance/getProposals';
 import { celoPublicClient } from 'src/utils/client';
 import 'src/vendor/polyfill';
@@ -9,7 +9,7 @@ export async function GET(): Promise<Response> {
     headers: {
       // https://vercel.com/docs/headers/cache-control-headers#using-private
       // No vercel CDN caching but allow browser(client) caching
-      'Cache-Control': `private, max-age=${GCTime.Default / 1000}, must-revalidate`,
+      'Cache-Control': `private, max-age=${0}, must-revalidate`,
     },
   });
 }

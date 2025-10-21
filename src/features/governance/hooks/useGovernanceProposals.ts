@@ -87,7 +87,7 @@ export function useGovernanceProposals() {
       logger.debug('Fetching governance proposals');
       // Fetch on-chain data
       const proposals: Awaited<ReturnType<typeof getProposals>> = await fetch(
-        `/api/governance/proposals?chainId=${publicClient.chain!.id}`,
+        `/api/governance/proposals?chainId=${publicClient.chain!.id}&version=2`,
       ).then((x) => x.json());
 
       const [ids, upvotesArr] = await publicClient.readContract({
