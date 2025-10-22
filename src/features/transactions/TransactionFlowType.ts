@@ -2,6 +2,7 @@ import { DelegationForm } from 'src/features/delegation/DelegationForm';
 import { UpvoteForm } from 'src/features/governance/UpvoteForm';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
+import { LiquidStakeForm } from 'src/features/staking/LiquidStakeForm';
 import { StakeForm } from 'src/features/staking/StakeForm';
 import { TransactionFlowProps } from 'src/features/transactions/TransactionFlow';
 
@@ -9,6 +10,7 @@ import { TransactionFlowProps } from 'src/features/transactions/TransactionFlow'
 export enum TransactionFlowType {
   Lock = 'lock',
   Stake = 'stake',
+  LiquidStake = 'liquid stake',
   Upvote = 'upvote',
   Vote = 'vote',
   Delegate = 'delegate',
@@ -24,6 +26,12 @@ export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowPr
     FormComponent: StakeForm,
     header: 'Stake CELO',
     requiresLockedFundsOrVoteSigner: true,
+  },
+  [TransactionFlowType.LiquidStake]: {
+    FormComponent: LiquidStakeForm,
+    header: 'Change voting strategy',
+    requiresStCelo: true,
+    requiresLockedFundsOrVoteSigner: false,
   },
   [TransactionFlowType.Upvote]: {
     FormComponent: UpvoteForm,

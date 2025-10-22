@@ -20,7 +20,7 @@ export default function Page({ address }: { address: Address }) {
   }
 
   return (
-    <Section containerClassName="mt-4 lg:flex lg:flex-row lg:gap-6 lg:items-start lg:max-w-screen-md">
+    <Section containerClassName="mt-4 lg:flex lg:flex-row lg:gap-6 lg:items-start lg:max-w-(--breakpoint-lg)">
       <DelegateeDescription delegatee={delegatee} />
       <CollapsibleResponsiveMenu>
         <DelegateeDetails delegatee={delegatee} />

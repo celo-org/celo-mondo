@@ -72,7 +72,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
           className="w-full text-sm md:w-64"
         />
       </div>
-      <table className="mt-2 w-full lg:min-w-[62rem] xl:min-w-[75rem]">
+      <table className="mt-2 w-full lg:min-w-248 xl:min-w-300">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -187,7 +187,7 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-[8rem] xs:max-w-[4rem]',
+  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-32 xs:max-w-16',
   td: 'relative border-y border-taupe-300 text-nowrap',
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',

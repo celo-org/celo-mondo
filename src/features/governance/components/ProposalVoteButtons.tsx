@@ -52,17 +52,17 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
       </div>
       <div className="flex items-center justify-between gap-2 md:flex-col md:items-stretch">
         <SolidButton
-          className={clsx('btn-neutral grow', isVoting(VoteType.Yes) && 'bg-purple-500 text-white')}
+          className={clsx('btn-neutral grow', isVoting(VoteType.Yes) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.Yes)}
         >{`👍 Yes`}</SolidButton>
         <SolidButton
-          className={clsx('btn-neutral grow', isVoting(VoteType.No) && 'bg-purple-500 text-white')}
+          className={clsx('btn-neutral grow', isVoting(VoteType.No) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.No)}
         >{`👎 No`}</SolidButton>
         <SolidButton
           className={clsx(
             'btn-neutral grow',
-            isVoting(VoteType.Abstain) && 'bg-purple-500 text-white',
+            isVoting(VoteType.Abstain) && 'bg-accent text-white',
           )}
           onClick={() => onClick(VoteType.Abstain)}
         >{`⚪ Abstain`}</SolidButton>

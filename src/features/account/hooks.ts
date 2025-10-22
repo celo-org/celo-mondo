@@ -2,8 +2,8 @@ import { accountsABI, lockedGoldABI, validatorsABI } from '@celo/abis';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { BALANCE_REFRESH_INTERVAL, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import StakedCeloABI from 'src/config/stcelo/StakedCeloABI';
 import { eqAddress } from 'src/utils/addresses';
-import { isNullish } from 'src/utils/typeof';
 import { ReadContractErrorType } from 'viem';
 import { useBalance as _useBalance, useReadContract } from 'wagmi';
 
@@ -14,14 +14,14 @@ export function useBalance(address?: Address) {
       enabled: !!address,
       refetchInterval: BALANCE_REFRESH_INTERVAL,
       staleTime: BALANCE_REFRESH_INTERVAL,
+      select: ({ value }) => value,
     },
   });
 
   useToastError(error, 'Error fetching account balance');
 
-  return { balance: data?.value, isError, isLoading, refetch };
+  return { balance: data ?? 0n, isError, isLoading, refetch };
 }
-
 export function useLockedBalance(address?: Address) {
   const { data, isError, isLoading, error, refetch } = useReadContract({
     address: Addresses.LockedGold,
@@ -38,7 +38,30 @@ export function useLockedBalance(address?: Address) {
   useToastError(error, 'Error fetching locked balance');
 
   return {
-    lockedBalance: !isNullish(data) ? BigInt(data) : undefined,
+    lockedBalance: data ?? 0n,
+    isError,
+    isLoading,
+    refetch,
+  };
+}
+
+export function useStCeloBalance(address?: Address) {
+  const { data, isError, isLoading, error, refetch } = useReadContract({
+    address: StakedCeloABI.address,
+    abi: StakedCeloABI.abi,
+    functionName: 'balanceOf',
+    args: [address || ZERO_ADDRESS],
+    query: {
+      enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
+    },
+  });
+
+  useToastError(error, 'Error fetching stCelo balance');
+
+  return {
+    stCeloBalance: data ?? 0n,
     isError,
     isLoading,
     refetch,

@@ -1,3 +1,4 @@
+import { TokenId } from 'src/config/tokens';
 import type { TransactionReceipt } from 'viem';
 
 export type TxPlan<A extends string = string, F extends string = string> = Array<{
@@ -6,13 +7,14 @@ export type TxPlan<A extends string = string, F extends string = string> = Array
   address: Address;
   abi: any;
   functionName: F;
-  args?: Array<bigint | number | string | Address>;
+  args?: ReadonlyArray<bigint | number | string | Address>;
   value?: bigint;
 }>;
 
 export interface ConfirmationDetails {
   message: string;
   amount?: bigint | number;
+  tokenId?: TokenId;
   receipt: TransactionReceipt;
   properties: Array<{ label: string; value: string }>;
 }

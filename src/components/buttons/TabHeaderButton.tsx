@@ -22,8 +22,8 @@ export function TabHeaderButton({
       {!isNullish(count) && (
         <div
           className={clsx(
-            'ml-2 min-w-[2rem] rounded-full border border-purple-500 text-xs font-light transition-colors',
-            (hover || isActive) && 'bg-purple-500 text-white',
+            'ml-2 min-w-8 rounded-full border border-accent text-xs font-light transition-colors',
+            (hover || isActive) && 'bg-accent text-white',
           )}
         >
           {count}
@@ -31,7 +31,7 @@ export function TabHeaderButton({
       )}
       <span
         className={clsx(
-          'absolute -bottom-[0.6rem] left-0 right-0 h-[2px] bg-purple-500 transition-all',
+          'absolute -bottom-[0.6rem] left-0 right-0 h-[2px] bg-accent transition-all',
           isActive ? 'w-full' : 'w-0',
         )}
       />
