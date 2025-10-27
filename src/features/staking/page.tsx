@@ -27,7 +27,7 @@ import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeuedProposalIds';
-import { useStrategy } from 'src/features/staking/stCelo/useStrategy';
+import { useStrategy } from 'src/features/staking/stCELO/useStCELO';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
@@ -69,7 +69,7 @@ export default function Page({ address }: { address: Address }) {
 function HeaderSection({ group }: { group?: ValidatorGroup }) {
   const account = useAccount();
   const { ui, mode } = useStakingMode();
-  const { group: stCeloStakingGroup } = useStrategy(account.address);
+  const { group: stCELOStakingGroup } = useStrategy(account.address);
   const address = group?.address || ZERO_ADDRESS;
   const isMobile = useIsMobile();
   const metadata = VALIDATOR_GROUPS[address];
@@ -86,11 +86,11 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 
   const showTxModal = useTransactionModal();
   const onClickStake = () => {
-    showTxModal(mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.LiquidStake, {
+    showTxModal(mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy, {
       group: address,
     });
   };
-  const isActiveStrategy = stCeloStakingGroup && isAddressEqual(stCeloStakingGroup, address);
+  const isActiveStrategy = stCELOStakingGroup && isAddressEqual(stCELOStakingGroup, address);
 
   return (
     <div>
@@ -358,7 +358,8 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
       label: addressToLabel(address),
       value: amount,
     }));
-    return sortAndCombineChartData(rawData);
+
+    return sortAndCombineChartData(rawData, 100);
   }, [stakers, isLoading, addressToLabel]);
 
   if (isLoading || !chartData) {

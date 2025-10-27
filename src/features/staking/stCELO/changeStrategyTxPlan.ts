@@ -1,12 +1,10 @@
 import { config } from 'src/config/config';
 import ManagerABI from 'src/config/stcelo/ManagerABI';
-import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/staking/types';
+import { StCeloActionType } from 'src/features/staking/types';
 import { TxPlan } from 'src/features/transactions/types';
-import { SimulateContractParameters } from 'viem';
+import { Address, SimulateContractParameters } from 'viem';
 
-export function getLiquidStakeTxPlan(values: LiquidStakeFormValues): TxPlan {
-  const { transferGroup } = values;
-
+export function changeStrategyTxPlan({ transferGroup }: { transferGroup: Address }): TxPlan {
   const call = {
     address: ManagerABI.address,
     abi: ManagerABI.abi,
@@ -17,7 +15,7 @@ export function getLiquidStakeTxPlan(values: LiquidStakeFormValues): TxPlan {
   return [
     {
       chainId: config.chain.id,
-      action: LiquidStakeActionType.ChangeStrategy,
+      action: StCeloActionType.ChangeStrategy,
       ...call,
     },
   ];

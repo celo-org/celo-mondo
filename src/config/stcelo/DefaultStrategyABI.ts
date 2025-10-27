@@ -955,7 +955,7 @@ export default {
           type: 'address',
         },
       ],
-      name: 'stCeloInGroup',
+      name: 'stCELOInGroup',
       outputs: [
         {
           internalType: 'uint256',

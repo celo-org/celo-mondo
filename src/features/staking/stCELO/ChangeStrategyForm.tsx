@@ -5,56 +5,52 @@ import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmi
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { MIN_GROUP_SCORE_FOR_RANDOM, MIN_REMAINING_BALANCE, ZERO_ADDRESS } from 'src/config/consts';
-import { useBalance, useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
-import { getLiquidStakeTxPlan } from 'src/features/staking/liquidStakePlan';
-import { useStrategy } from 'src/features/staking/stCelo/useStrategy';
-import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/staking/types';
+import { MIN_GROUP_SCORE_FOR_RANDOM, ZERO_ADDRESS } from 'src/config/consts';
+import { useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { changeStrategyTxPlan } from 'src/features/staking/stCELO/changeStrategyTxPlan';
+import { useStrategy } from 'src/features/staking/stCELO/useStCELO';
+import { ChangeStrategyFormValues, StCeloActionType } from 'src/features/staking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
-import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
+import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { shortenAddress } from 'src/utils/addresses';
+import { fromWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
 import { useAccount } from 'wagmi';
 
-const initialValues: LiquidStakeFormValues = {
-  action: LiquidStakeActionType.ChangeStrategy,
+const initialValues: ChangeStrategyFormValues = {
+  action: StCeloActionType.ChangeStrategy,
   amount: 0n,
   group: ZERO_ADDRESS,
   transferGroup: ZERO_ADDRESS,
 };
 
-export function LiquidStakeForm({
+export function ChangeStrategyForm({
   defaultFormValues,
   onConfirmed,
 }: {
-  defaultFormValues?: Partial<LiquidStakeFormValues>;
+  defaultFormValues?: Partial<ChangeStrategyFormValues>;
   onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
-  const { balance } = useBalance(address);
   const { addressToGroup } = useValidatorGroups();
   const { signingFor } = useVoteSignerToAccount(address);
-  const { stCeloBalance, refetch } = useStCeloBalance(signingFor);
-  const { group } = useStrategy(signingFor);
+  const { stCELOBalance } = useStCeloBalance(signingFor);
+  const { group, refetch: refetchStrategy } = useStrategy(signingFor);
 
-  console.log(defaultFormValues);
+  const humanReadableStCelo = formatNumberString(fromWei(stCELOBalance), 2);
 
-  const humanReadableStCelo = formatNumberString(stCeloBalance, 2, true);
-
-  const onPlanSuccess = (v: LiquidStakeFormValues, r: TransactionReceipt) => {
+  const onPlanSuccess = (v: ChangeStrategyFormValues, r: TransactionReceipt) => {
     onConfirmed({
       message: `${v.action} successful`,
-      // NOTE: This works but doesnt look good
-      // amount: fromWei(stCeloBalance),
-      // tokenId: TokenId.stCELO,
+      amount: stCELOBalance,
       receipt: r,
       properties: [
         { label: 'Action', value: toTitleCase(v.action) },
@@ -65,34 +61,27 @@ export function LiquidStakeForm({
   };
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
-    useTransactionPlan<LiquidStakeFormValues>({
-      createTxPlan: (v) =>
-        getLiquidStakeTxPlan({
-          ...v,
-          amount: stCeloBalance,
-        }),
-      onStepSuccess: () => refetch(),
+    useTransactionPlan<ChangeStrategyFormValues>({
+      createTxPlan: (v) => changeStrategyTxPlan(v),
+      onStepSuccess: () => refetchStrategy(),
       onPlanSuccess,
     });
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('liquid staking', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
 
-  const onSubmit = (values: LiquidStakeFormValues) => writeContract(getNextTx(values));
+  const onSubmit = (values: ChangeStrategyFormValues) => writeContract(getNextTx(values));
 
-  const validate = (values: LiquidStakeFormValues) => {
-    if (!stCeloBalance || !addressToGroup) {
+  const validate = (values: ChangeStrategyFormValues) => {
+    if (!stCELOBalance || !addressToGroup) {
       return { amount: 'Form data not ready' };
     }
-    if (balance - MIN_REMAINING_BALANCE <= 0) {
-      return { amount: 'Not enough CELO to cover gas fees' };
-    }
     if (txPlanIndex > 0) return {};
-    return validateForm(values, stCeloBalance, addressToGroup);
+    return validateForm(values, stCELOBalance, addressToGroup);
   };
 
   return (
-    <Formik<LiquidStakeFormValues>
+    <Formik<ChangeStrategyFormValues>
       initialValues={{
         ...initialValues,
         ...defaultFormValues,
@@ -104,33 +93,23 @@ export function LiquidStakeForm({
     >
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="stake-form">
+          {/* Reserve space for group menu */}
           <div className="min-h-86 space-y-4">
             <GroupField
               fieldName="group"
               label="From group"
               addressToGroup={addressToGroup}
-              defaultGroup={group}
+              defaultGroup={group || defaultFormValues?.group}
               disabled={true}
             />
             <GroupField
               fieldName="transferGroup"
               label="To group"
               addressToGroup={addressToGroup}
-              defaultGroup={defaultFormValues?.group}
               disabled={isInputDisabled}
             />
-            <div className="flex flex-col gap-2 px-1">
-              <div className="flex items-center justify-between">
-                <label htmlFor="amount" className="pl-0.5 text-xs font-medium">
-                  Amount
-                </label>
-                <span className="text-xs">
-                  {balance - MIN_REMAINING_BALANCE <= 0
-                    ? 'Not enough CELO to cover gas fees'
-                    : `${humanReadableStCelo} stCELO`}
-                </span>
-              </div>
-              <p className="">You will delegate all your voting power to the chosen group.</p>
+            <div className="px-1">
+              <span className="mono">TODO: {humanReadableStCelo} stCELO</span>
             </div>
           </div>
           <MultiTxFormSubmitButton
@@ -140,7 +119,7 @@ export function LiquidStakeForm({
             loadingText={ActionToVerb[values.action]}
             tipText={ActionToTipText[values.action]}
           >
-            {`${toTitleCase(LiquidStakeActionType.ChangeStrategy)}`}
+            {`${toTitleCase(StCeloActionType.ChangeStrategy)}`}
           </MultiTxFormSubmitButton>
         </Form>
       )}
@@ -225,7 +204,7 @@ function GroupField({
           return (
             <button
               type="button"
-              className="hover:bg-taupe-300/50 flex w-full cursor-pointer items-center justify-between px-4 py-2"
+              className="flex w-full cursor-pointer items-center justify-between px-4 py-2 hover:bg-taupe-300/50"
               key={g.address}
               onClick={() => onClickGroup(g.address)}
             >
@@ -255,34 +234,34 @@ function GroupField({
 }
 
 function validateForm(
-  values: LiquidStakeFormValues,
-  stCeloBalance: bigint,
+  values: ChangeStrategyFormValues,
+  stCELOBalance: bigint,
   addressToGroup: AddressTo<ValidatorGroup>,
-): FormikErrors<LiquidStakeFormValues> {
+): FormikErrors<ChangeStrategyFormValues> {
   const { group, transferGroup } = values;
 
   if (transferGroup === group) {
     return { transferGroup: 'Groups must be different' };
   }
   const groupDetails = addressToGroup[transferGroup];
-  if (transferGroup !== ZERO_ADDRESS && !groupDetails) {
+  if (!groupDetails) {
     return { group: 'Transfer group not found' };
   }
-  if (groupDetails && groupDetails.votes >= groupDetails.capacity) {
+  if (groupDetails.votes >= groupDetails.capacity) {
     return { group: 'Transfer group has max votes' };
   }
 
-  if (!stCeloBalance || stCeloBalance <= 0n) {
+  if (!stCELOBalance || stCELOBalance <= 0n) {
     return { amount: 'Invalid amount' };
   }
 
   return {};
 }
 
-const ActionToVerb: Partial<Record<LiquidStakeActionType, string>> = {
-  [LiquidStakeActionType.ChangeStrategy]: 'Changing strategy',
+const ActionToVerb: Partial<Record<StCeloActionType, string>> = {
+  [StCeloActionType.ChangeStrategy]: 'Changing strategy',
 };
 
-const ActionToTipText: Partial<Record<LiquidStakeActionType, string>> = {
-  [LiquidStakeActionType.ChangeStrategy]: 'TODO: blah blah.',
+const ActionToTipText: Partial<Record<StCeloActionType, string>> = {
+  [StCeloActionType.ChangeStrategy]: 'TODO: blah blah.',
 };

@@ -336,7 +336,7 @@ function useTableColumns(totalVotes: bigint) {
             onClick={(e) => {
               e.preventDefault();
               showTxModal(
-                mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.LiquidStake,
+                mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
                 { group: props.row.original.address },
               );
             }}

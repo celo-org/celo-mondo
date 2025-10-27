@@ -4,11 +4,11 @@ import { createContext, PropsWithChildren, useCallback, useContext, useEffect } 
 import { useLockedBalance, useStCeloBalance } from 'src/features/account/hooks';
 import { useLocalStorage } from 'src/utils/useLocalStorage';
 
-type Mode = 'CELO' | 'stCELO';
+export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
-  const { stCeloBalance, isLoading: stCeloLoading } = useStCeloBalance();
+  const { stCELOBalance, isLoading: stCELOLoading } = useStCeloBalance();
   const { lockedBalance, isLoading: lockedLoading } = useLockedBalance();
-  const [mode, setMode] = useLocalStorage<Mode>('mode', stCeloBalance ? 'stCELO' : 'CELO');
+  const [mode, setMode] = useLocalStorage<StakingMode>('mode', stCELOBalance ? 'stCELO' : 'CELO');
 
   const toggleMode = useCallback(
     () => setMode((mode) => (mode === 'CELO' ? 'stCELO' : 'CELO')),
@@ -27,7 +27,7 @@ function useStakingModeInternal() {
     toggleMode,
     shouldRender:
       true ||
-      (!stCeloLoading && !lockedLoading && (stCeloBalance || 0) > 0 && (lockedBalance || 0) > 0),
+      (!stCELOLoading && !lockedLoading && (stCELOBalance || 0) > 0 && (lockedBalance || 0) > 0),
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',

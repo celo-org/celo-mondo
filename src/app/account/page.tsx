@@ -20,6 +20,8 @@ import { getTotalLockedCelo, getTotalUnlockedCelo } from 'src/features/locking/u
 import { ActiveStakesTable } from 'src/features/staking/ActiveStakesTable';
 import { RewardsTable } from 'src/features/staking/rewards/RewardsTable';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
+import { ActiveStrategyTable } from 'src/features/staking/stCELO/ActiveStrategyTable';
+import { useChangeStrategy, useStrategy } from 'src/features/staking/stCELO/useStCELO';
 import { GroupToStake, StakingBalances } from 'src/features/staking/types';
 import {
   useActivateStake,
@@ -36,7 +38,7 @@ import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { usePageInvariant } from 'src/utils/navigation';
-import { useStakingMode } from 'src/utils/useStakingMode';
+import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
@@ -47,7 +49,7 @@ export default function Page() {
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
-  const { stCeloBalance } = useStCeloBalance(signingFor);
+  const { stCELOBalance } = useStCeloBalance(signingFor);
   const { lockedBalances } = useLockedStatus(signingFor);
   const { delegations } = useDelegationBalances(signingFor);
   const { addressToDelegatee } = useDelegatees();
@@ -58,10 +60,15 @@ export default function Page() {
     groupToStake,
   );
   const { addressToGroup } = useValidatorGroups();
+  const { mode } = useStakingMode();
+  const { group: strategy, refetch: refetchStrategy } = useStrategy(account.address);
 
   const { activateStake } = useActivateStake(() => {
     refetchStakes();
     refetchActivations();
+  });
+  const { changeStrategy } = useChangeStrategy(() => {
+    refetchStrategy();
   });
 
   const totalLocked = getTotalLockedCelo(lockedBalances);
@@ -83,18 +90,19 @@ export default function Page() {
             <span className="font-mono text-sm md:hidden">{shortenAddress(signingFor!)}</span>
           </div>
         ) : (
-          <LockButtons className="hidden md:flex" />
+          <LockButtons className="hidden md:flex" mode={mode} />
         )}
       </div>
       <AccountStats
         walletBalance={walletBalance}
         lockedBalances={lockedBalances}
-        stCeloBalance={stCeloBalance}
+        stCELOBalance={stCELOBalance}
         stakeBalances={stakeBalances}
         totalRewards={totalRewardsWei}
         totalDelegated={totalDelegated}
+        mode={mode}
       />
-      {isVoteSigner || <LockButtons className="flex justify-between md:hidden" />}
+      {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
       <TableTabs
         groupToStake={groupToStake}
         addressToGroup={addressToGroup}
@@ -103,14 +111,16 @@ export default function Page() {
         delegateeToAmount={delegations?.delegateeToAmount}
         addressToDelegatee={addressToDelegatee}
         activateStake={activateStake}
+        strategy={strategy}
+        changeStrategy={changeStrategy}
+        mode={mode}
       />
     </Section>
   );
 }
 
-function LockButtons({ className }: { className?: string }) {
+function LockButtons({ className, mode }: { className?: string; mode: StakingMode }) {
   const showTxModal = useTransactionModal();
-  const { mode } = useStakingMode();
 
   return useMemo(() => {
     if (mode === 'CELO') {
@@ -148,7 +158,9 @@ function LockButtons({ className }: { className?: string }) {
       return (
         <div className={`space-x-2 ${className}`}>
           <SolidButton
-            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
+            onClick={() =>
+              showTxModal(TransactionFlowType.StakeStCELO, { action: LockActionType.Lock })
+            }
           >
             <div className="flex items-center space-x-1.5">
               <Image src={StakingIcon} width={12} height={12} alt="" />
@@ -156,69 +168,53 @@ function LockButtons({ className }: { className?: string }) {
             </div>
           </SolidButton>
           <SolidButton
-            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
+            onClick={() =>
+              showTxModal(TransactionFlowType.StakeStCELO, { action: LockActionType.Unlock })
+            }
           >
             <div className="flex items-center space-x-1.5">
               <Image src={WithdrawIcon} width={12} height={12} alt="" />
               <span>Unstake</span>
             </div>
           </SolidButton>
+          <SolidButton
+            onClick={() =>
+              showTxModal(TransactionFlowType.StakeStCELO, { action: LockActionType.Withdraw })
+            }
+          >
+            <div className="flex items-center space-x-1.5">
+              <Image src={WithdrawIcon} width={12} height={12} alt="" />
+              <span>Withdraw</span>
+            </div>
+          </SolidButton>
         </div>
       );
     }
-  }, [mode]);
-
-  return (
-    <div className={`space-x-2 ${className}`}>
-      <SolidButton
-        onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
-      >
-        <div className="flex items-center space-x-1.5">
-          <Image src={LockIcon} width={12} height={12} alt="" />
-          <span>Lock</span>
-        </div>
-      </SolidButton>
-      <SolidButton
-        onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
-      >
-        <div className="flex items-center space-x-1.5">
-          <Image src={UnlockIcon} width={12} height={12} alt="" />
-          <span>Unlock</span>
-        </div>
-      </SolidButton>
-      <SolidButton
-        onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Withdraw })}
-      >
-        <div className="flex items-center space-x-1.5">
-          <Image src={WithdrawIcon} width={12} height={12} alt="" />
-          <span>Withdraw</span>
-        </div>
-      </SolidButton>
-    </div>
-  );
+  }, [className, mode, showTxModal]);
 }
 
 function AccountStats({
   walletBalance,
-  stCeloBalance,
+  stCELOBalance,
   lockedBalances,
   stakeBalances,
   totalRewards,
   totalDelegated,
+  mode,
 }: {
   walletBalance?: bigint;
-  stCeloBalance?: bigint;
-  stCeloBalanceAwaitingWithdrawal?: bigint;
+  stCELOBalance?: bigint;
+  stCELOBalanceAwaitingWithdrawal?: bigint;
   lockedBalances?: LockedBalances;
   stakeBalances?: StakingBalances;
   totalRewards?: bigint;
   totalDelegated?: bigint;
+  mode: StakingMode;
 }) {
-  const { mode } = useStakingMode();
   return (
     <div className="flex items-center justify-between">
       {mode === 'stCELO' && (
-        <AccountStat title="Total stCELO" valueWei={stCeloBalance} tokenId={TokenId.stCELO} />
+        <AccountStat title="Total stCELO" valueWei={stCELOBalance} tokenId={TokenId.stCELO} />
       )}
       <AccountStat
         title="Total locked"
@@ -275,20 +271,26 @@ function AccountStat({
 
 function TableTabs({
   groupToStake,
+  strategy,
   addressToGroup,
   groupToReward,
   groupToIsActivatable,
   delegateeToAmount,
   addressToDelegatee,
   activateStake,
+  changeStrategy,
+  mode,
 }: {
   groupToStake?: GroupToStake;
+  strategy?: Address;
   addressToGroup?: AddressTo<ValidatorGroup>;
   groupToReward?: AddressTo<number>;
   groupToIsActivatable?: AddressTo<boolean>;
   delegateeToAmount?: AddressTo<DelegationAmount>;
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
+  changeStrategy: (g: Address) => void;
+  mode: StakingMode;
 }) {
   const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
   const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
@@ -302,18 +304,23 @@ function TableTabs({
             isActive={tab === tabName}
             onClick={() => onTabChange(tabName)}
           >
-            <span className="text-sm capitalize">{tabName}</span>
+            <span className="text-sm capitalize">
+              {tabName === 'stakes' && mode !== 'CELO' ? 'Strategy' : tabName}
+            </span>
           </TabHeaderButton>
         ))}
       </div>
-      {tab === 'stakes' && (
-        <ActiveStakesTable
-          groupToStake={groupToStake}
-          addressToGroup={addressToGroup}
-          groupToIsActivatable={groupToIsActivatable}
-          activateStake={activateStake}
-        />
-      )}
+      {tab === 'stakes' &&
+        (mode === 'CELO' ? (
+          <ActiveStakesTable
+            groupToStake={groupToStake}
+            addressToGroup={addressToGroup}
+            groupToIsActivatable={groupToIsActivatable}
+            activateStake={activateStake}
+          />
+        ) : (
+          <ActiveStrategyTable addressToGroup={addressToGroup} />
+        ))}
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
       )}

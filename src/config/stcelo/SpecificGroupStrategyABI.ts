@@ -340,7 +340,7 @@ export default {
         },
         {
           internalType: 'uint256',
-          name: 'stCeloAmount',
+          name: 'stCELOAmount',
           type: 'uint256',
         },
       ],
@@ -374,7 +374,7 @@ export default {
         },
         {
           internalType: 'uint256',
-          name: 'stCeloWithdrawalAmount',
+          name: 'stCELOWithdrawalAmount',
           type: 'uint256',
         },
         {
@@ -732,7 +732,7 @@ export default {
           type: 'address',
         },
       ],
-      name: 'stCeloInGroup',
+      name: 'stCELOInGroup',
       outputs: [
         {
           internalType: 'uint256',

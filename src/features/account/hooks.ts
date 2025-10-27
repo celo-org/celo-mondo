@@ -58,10 +58,10 @@ export function useStCeloBalance(address?: Address) {
     },
   });
 
-  useToastError(error, 'Error fetching stCelo balance');
+  useToastError(error, 'Error fetching stCELO balance');
 
   return {
-    stCeloBalance: data ?? 0n,
+    stCELOBalance: data ?? 0n,
     isError,
     isLoading,
     refetch,

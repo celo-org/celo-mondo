@@ -642,7 +642,7 @@ export default {
       inputs: [
         {
           internalType: 'uint256',
-          name: 'stCeloAmount',
+          name: 'stCELOAmount',
           type: 'uint256',
         },
       ],

@@ -49,7 +49,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
 
   const { mode, ui } = useStakingMode();
   const showStakeModal = useTransactionModal(
-    mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.LiquidStake,
+    mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
   );
 
   return (

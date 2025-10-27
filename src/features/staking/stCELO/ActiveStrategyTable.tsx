@@ -2,13 +2,15 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
-import { SolidButton } from 'src/components/buttons/SolidButton';
+import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { PLACEHOLDER_BAR_CHART_ITEM, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { GroupToStake, StakeActionType } from 'src/features/staking/types';
+import { useStCeloBalance } from 'src/features/account/hooks';
+import { useStrategy } from 'src/features/staking/stCELO/useStCELO';
+import { StCeloActionType } from 'src/features/staking/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
@@ -16,43 +18,33 @@ import { ValidatorGroup } from 'src/features/validators/types';
 import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
-import { percent } from 'src/utils/math';
-import { objKeys, objLength } from 'src/utils/objects';
+import { useAccount } from 'wagmi';
 
-export function ActiveStakesTable({
-  groupToStake,
+export function ActiveStrategyTable({
   addressToGroup,
   groupToIsActivatable,
-  activateStake,
 }: {
-  groupToStake?: GroupToStake;
   addressToGroup?: AddressTo<ValidatorGroup>;
   groupToIsActivatable?: AddressTo<boolean>;
-  activateStake: (g: Address) => void;
 }) {
-  const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const account = useAccount();
+  const { stCELOBalance } = useStCeloBalance();
+  const { group, isLoading } = useStrategy(account.address);
+  const showModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
 
   const { chartData, tableData } = useMemo(() => {
-    if (!groupToStake || !addressToGroup || !objLength(groupToStake)) {
+    if (!group || !addressToGroup) {
       return { tableData: [], chartData: [PLACEHOLDER_BAR_CHART_ITEM] };
     }
 
-    const total = fromWei(
-      Object.values(groupToStake).reduce(
-        (total, { pending, active }) => total + active + pending,
-        0n,
-      ),
-    );
-
-    const tableData = objKeys(groupToStake)
-      .map((address) => {
-        const stake = fromWei(groupToStake[address].active + groupToStake[address].pending);
-        const percentage = percent(stake, total);
-        const name = addressToGroup?.[address]?.name;
-        return { address, name, stake, percentage };
-      })
-      .sort((a, b) => b.stake - a.stake)
-      .filter((d) => d.stake >= 0.01);
+    const tableData = [
+      {
+        stake: fromWei(stCELOBalance),
+        percentage: 100,
+        name: addressToGroup?.[group]?.name,
+        address: group,
+      },
+    ];
 
     const chartData = sortAndCombineChartData(
       tableData.map(({ address, stake, percentage }) => ({
@@ -62,20 +54,20 @@ export function ActiveStakesTable({
       })),
     );
     return { chartData, tableData };
-  }, [groupToStake, addressToGroup]);
+  }, [group, addressToGroup, stCELOBalance]);
 
-  if (!groupToStake || !addressToGroup || !groupToIsActivatable) {
+  if (isLoading || !addressToGroup) {
     return <FullWidthSpinner>Loading staking data</FullWidthSpinner>;
   }
 
   if (!tableData.length) {
     return (
       <HeaderAndSubheader
-        header="No active stakes"
-        subHeader={`You don’t currently have any funds staked. Stake with validators to start earning rewards.`}
+        header=""
+        subHeader={`Using default strategy. You don't currently have any specific validator selected.`}
         className="my-10"
       >
-        <SolidButton onClick={() => showStakeModal()}>Stake CELO</SolidButton>
+        <OutlineButton onClick={() => showModal()}>Change strategy</OutlineButton>
       </HeaderAndSubheader>
     );
   }
@@ -111,7 +103,7 @@ export function ActiveStakesTable({
                 <OptionsDropdown
                   group={address}
                   isActivatable={groupToIsActivatable?.[address]}
-                  activateStake={activateStake}
+                  changeStrategy={showModal}
                 />
               </td>
             </tr>
@@ -124,16 +116,14 @@ export function ActiveStakesTable({
 
 function OptionsDropdown({
   group,
-  isActivatable,
-  activateStake,
 }: {
   group: Address;
   isActivatable?: boolean;
-  activateStake: (g: Address) => void;
+  changeStrategy: () => void;
 }) {
   const showTxModal = useTransactionModal();
-  const onClickItem = (action: StakeActionType) => {
-    showTxModal(TransactionFlowType.Stake, { group, action });
+  const onClickItem = (action: StCeloActionType) => {
+    showTxModal(TransactionFlowType.ChangeStrategy, { group, action });
   };
 
   return (
@@ -142,37 +132,12 @@ function OptionsDropdown({
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[
-        ...(isActivatable
-          ? [
-              <button
-                className="underline-offset-2 hover:underline"
-                key={0}
-                onClick={() => activateStake(group)}
-              >
-                Activate
-              </button>,
-            ]
-          : []),
         <button
           className="underline-offset-2 hover:underline"
           key={1}
-          onClick={() => onClickItem(StakeActionType.Stake)}
+          onClick={() => onClickItem(StCeloActionType.ChangeStrategy)}
         >
-          Stake more
-        </button>,
-        <button
-          className="underline-offset-2 hover:underline"
-          key={2}
-          onClick={() => onClickItem(StakeActionType.Unstake)}
-        >
-          Unstake
-        </button>,
-        <button
-          className="underline-offset-2 hover:underline"
-          key={3}
-          onClick={() => onClickItem(StakeActionType.Transfer)}
-        >
-          Transfer
+          Change strategy
         </button>,
       ]}
     />

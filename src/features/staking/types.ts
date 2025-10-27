@@ -14,8 +14,11 @@ export enum StakeActionType {
   Unstake = 'unstake',
   Transfer = 'transfer',
 }
-export enum LiquidStakeActionType {
+export enum StCeloActionType {
   ChangeStrategy = 'change Strategy',
+  Stake = 'stake',
+  Unstake = 'unstake',
+  Whithdraw = 'withdraw',
 }
 
 export const StakeActionValues = Object.values(StakeActionType);
@@ -44,8 +47,8 @@ export interface StakeFormValues {
   delegate: boolean;
 }
 
-export interface LiquidStakeFormValues {
-  action: LiquidStakeActionType.ChangeStrategy;
+export interface ChangeStrategyFormValues {
+  action: StCeloActionType.ChangeStrategy;
   amount: bigint;
   group: Address;
   transferGroup: Address;
