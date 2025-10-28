@@ -39,7 +39,7 @@ export const VoteToColor: Record<VoteType, string> = {
   [VoteType.None]: Color.Grey,
   [VoteType.Abstain]: Color.Sand,
   [VoteType.No]: Color.Red,
-  [VoteType.Yes]: Color.Mint,
+  [VoteType.Yes]: Color.Lilac,
 };
 
 // Using ints to align with solidity enum

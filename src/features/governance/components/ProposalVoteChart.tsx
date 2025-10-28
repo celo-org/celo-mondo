@@ -127,16 +127,18 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
 
+  const quorumMetByVoteCount = quorumRequired ? quorumMeetingVotes > quorumRequired : false;
+
   const quorumBarChartData = useMemo(
     () => [
       {
-        label: 'Yes votes',
+        label: 'Quorum',
         value: fromWei(quorumMeetingVotes),
         percentage: isLoading ? 0 : percent(quorumMeetingVotes, quorumRequired || 1n),
-        color: isPassing.data ? Color.Mint : Color.Wood,
+        color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Wood,
       },
     ],
-    [quorumMeetingVotes, quorumRequired, isLoading, isPassing.data],
+    [quorumMetByVoteCount, quorumMeetingVotes, quorumRequired, isLoading, isPassing.data],
   );
 
   return (
@@ -145,7 +147,15 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
       <StackedBarChart data={quorumBarChartData} showBorder={false} className="bg-taupe-300" />
       <div className="flex items-center text-sm text-taupe-600">
         {`Quorum required: ${formatNumberString(quorumRequired, 0, true)} CELO`}{' '}
-        {isPassing.isSuccess ? (isPassing.data ? '(Passing)' : '(Failing)') : ''}
+        {propData.stage > ProposalStage.Referendum
+          ? quorumMetByVoteCount
+            ? '(Passed)'
+            : '(Failed)'
+          : isPassing.isSuccess
+            ? isPassing.data
+              ? '(Passing)'
+              : '(Failing)'
+            : ''}
       </div>
     </div>
   );

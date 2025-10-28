@@ -102,7 +102,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
-        {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
+        {stage >= ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
         {expiryTimestamp && expiryTimestamp > 0 && (
           <>
             <div className="text-sm text-taupe-600">
