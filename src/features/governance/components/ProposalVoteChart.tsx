@@ -128,23 +128,33 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
   const quorumMeetingVotes = yesVotes + abstainVotes;
 
   const quorumMetByVoteCount = quorumRequired ? quorumMeetingVotes > quorumRequired : false;
-
   const quorumBarChartData = useMemo(
     () => [
       {
-        label: 'Quorum',
-        value: fromWei(quorumMeetingVotes),
-        percentage: isLoading ? 0 : percent(quorumMeetingVotes, quorumRequired || 1n),
-        color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Wood,
+        label: 'Yes Votes',
+        value: fromWei(yesVotes),
+        percentage: isLoading ? 0 : percent(yesVotes, quorumRequired || 0n),
+        color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Lilac,
+      },
+      {
+        label: 'Abstain Votes',
+        value: fromWei(abstainVotes),
+        percentage: isLoading ? 0 : percent(abstainVotes, quorumRequired || 1n),
+        color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Sand,
       },
     ],
-    [quorumMetByVoteCount, quorumMeetingVotes, quorumRequired, isLoading, isPassing.data],
+    [quorumMetByVoteCount, yesVotes, quorumMeetingVotes, quorumRequired, isLoading, isPassing.data],
   );
 
   return (
     <div className="space-y-2 border-t border-taupe-300 pt-2">
       <Amount valueWei={quorumMeetingVotes} className="text-2xl" decimals={0} />
-      <StackedBarChart data={quorumBarChartData} showBorder={false} className="bg-taupe-300" />
+      <StackedBarChart
+        data={quorumBarChartData}
+        showBorder={true}
+        height="h-6"
+        className="bg-white"
+      />
       <div className="flex items-center text-sm text-taupe-600">
         {`Quorum required: ${formatNumberString(quorumRequired, 0, true)} CELO`}{' '}
         {propData.stage > ProposalStage.Referendum

@@ -128,7 +128,7 @@ export function useThresholds(proposal?: Proposal): {
 
 export async function fetchThresholds(publicClient: PublicClient, proposalId: number) {
   const response = await fetch(`/governance/${proposalId}/api/transactions`);
-  const results2 = (await response.json()) as ProposalTransaction[];
+  const results = (await response.json()) as ProposalTransaction[];
 
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
@@ -138,9 +138,9 @@ export async function fetchThresholds(publicClient: PublicClient, proposalId: nu
     functionName: 'getConstitution',
   } as const;
 
-  if (results2.length === 0) {
+  if (results.length === 0) {
     // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1730
-    results2.push({
+    results.push({
       to: '0x0000000000000000000000000000000000000000',
       data: '0x00000000',
       value: 0n,
@@ -149,9 +149,9 @@ export async function fetchThresholds(publicClient: PublicClient, proposalId: nu
   }
 
   const thresholds = await publicClient?.multicall({
-    ...getRuntimeBlock(), // todo run again block from when it was in voting.
+    ...getRuntimeBlock(), // This is probably fine most of the time but in case thresholds change better to run against block from when proposal was in referendum.
     allowFailure: false,
-    contracts: results2.map(({ data, to: destination }) => {
+    contracts: results.map(({ data, to: destination }) => {
       const functionId = extractFunctionSignature(data);
       return {
         ...getConstitutionContract,
@@ -159,7 +159,6 @@ export async function fetchThresholds(publicClient: PublicClient, proposalId: nu
       };
     }),
   });
-  console.info('thresholds', thresholds);
 
   // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1738-L1741
   return thresholds.map(fromFixidity);
