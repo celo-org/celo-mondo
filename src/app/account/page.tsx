@@ -7,6 +7,7 @@ import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
 import { useBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import Settings from 'src/features/account/Settings';
 import { DelegationsTable } from 'src/features/delegation/components/DelegationsTable';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -214,7 +215,7 @@ function TableTabs({
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
 }) {
-  const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
+  const tabs = ['stakes', 'rewards', 'delegations', 'history', 'settings'] as const;
   const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
@@ -248,6 +249,7 @@ function TableTabs({
         />
       )}
       {tab === 'history' && <ProposalVotesHistoryTable />}
+      {tab === 'settings' && <Settings />}
     </div>
   );
 }
