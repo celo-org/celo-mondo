@@ -1,4 +1,6 @@
 import { accountsABI, lockedGoldABI, validatorsABI } from '@celo/abis';
+import { RefetchOptions } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { BALANCE_REFRESH_INTERVAL, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
@@ -45,10 +47,9 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-export function useStCeloBalance(address?: Address) {
-  const { data, isError, isLoading, error, refetch } = useReadContract({
-    address: StakedCeloABI.address,
-    abi: StakedCeloABI.abi,
+export function useStCELOBalance(address?: Address) {
+  const stCELOResult = useReadContract({
+    ...StakedCeloABI,
     functionName: 'balanceOf',
     args: [address || ZERO_ADDRESS],
     query: {
@@ -58,16 +59,38 @@ export function useStCeloBalance(address?: Address) {
     },
   });
 
-  useToastError(error, 'Error fetching stCELO balance');
+  const stCELOLockedVoteResult = useReadContract({
+    ...StakedCeloABI,
+    functionName: 'lockedVoteBalanceOf',
+    args: [address as Address],
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  useToastError(
+    stCELOResult.error || stCELOLockedVoteResult.error,
+    'Error fetching stCELO balance',
+  );
+
+  const refetchStCELO = stCELOResult.refetch;
+  const refetchStCELOLockedVote = stCELOLockedVoteResult.refetch;
+
+  const refetch = useCallback(
+    async (options?: RefetchOptions) => {
+      await Promise.all([refetchStCELO(options), refetchStCELOLockedVote(options)]);
+    },
+    [refetchStCELO, refetchStCELOLockedVote],
+  );
 
   return {
-    stCELOBalance: data ?? 0n,
-    isError,
-    isLoading,
+    stCELOBalance: stCELOResult.data ?? 0n,
+    stCELOLockedVoteBalance: stCELOLockedVoteResult.data ?? 0n,
+    isError: stCELOResult.isError || stCELOLockedVoteResult.isError,
+    isLoading: stCELOResult.isLoading || stCELOLockedVoteResult.isLoading,
     refetch,
   };
 }
-
 export function useGetVoteSignerFor(address?: Address) {
   return useReadContract({
     address: Addresses.Accounts,

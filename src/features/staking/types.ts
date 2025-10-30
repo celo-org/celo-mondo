@@ -16,9 +16,6 @@ export enum StakeActionType {
 }
 export enum StCeloActionType {
   ChangeStrategy = 'change Strategy',
-  Stake = 'stake',
-  Unstake = 'unstake',
-  Whithdraw = 'withdraw',
 }
 
 export const StakeActionValues = Object.values(StakeActionType);

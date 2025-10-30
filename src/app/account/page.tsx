@@ -8,7 +8,7 @@ import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
 import { Amount } from 'src/components/numbers/Amount';
 import { TokenId } from 'src/config/tokens';
-import { useBalance, useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { useBalance, useStCELOBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { DelegationsTable } from 'src/features/delegation/components/DelegationsTable';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -21,8 +21,8 @@ import { ActiveStakesTable } from 'src/features/staking/ActiveStakesTable';
 import { RewardsTable } from 'src/features/staking/rewards/RewardsTable';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { ActiveStrategyTable } from 'src/features/staking/stCELO/ActiveStrategyTable';
-import { useChangeStrategy, useStrategy } from 'src/features/staking/stCELO/useStCELO';
-import { GroupToStake, StakingBalances } from 'src/features/staking/types';
+import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
+import { GroupToStake, StakeActionType, StakingBalances } from 'src/features/staking/types';
 import {
   useActivateStake,
   usePendingStakingActivations,
@@ -49,7 +49,7 @@ export default function Page() {
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
-  const { stCELOBalance } = useStCeloBalance(signingFor);
+  const { stCELOBalance, stCELOLockedVoteBalance } = useStCELOBalance(signingFor);
   const { lockedBalances } = useLockedStatus(signingFor);
   const { delegations } = useDelegationBalances(signingFor);
   const { addressToDelegatee } = useDelegatees();
@@ -61,16 +61,11 @@ export default function Page() {
   );
   const { addressToGroup } = useValidatorGroups();
   const { mode } = useStakingMode();
-  const { group: strategy, refetch: refetchStrategy } = useStrategy(account.address);
 
   const { activateStake } = useActivateStake(() => {
     refetchStakes();
     refetchActivations();
   });
-  const { changeStrategy } = useChangeStrategy(() => {
-    refetchStrategy();
-  });
-
   const totalLocked = getTotalLockedCelo(lockedBalances);
   const totalBalance = (walletBalance || 0n) + totalLocked;
   const totalDelegated = (BigInt(Math.floor(delegations?.totalPercent || 0)) * totalLocked) / 100n;
@@ -93,15 +88,20 @@ export default function Page() {
           <LockButtons className="hidden md:flex" mode={mode} />
         )}
       </div>
-      <AccountStats
-        walletBalance={walletBalance}
-        lockedBalances={lockedBalances}
-        stCELOBalance={stCELOBalance}
-        stakeBalances={stakeBalances}
-        totalRewards={totalRewardsWei}
-        totalDelegated={totalDelegated}
-        mode={mode}
-      />
+      {mode === 'CELO' ? (
+        <AccountStats
+          walletBalance={walletBalance}
+          lockedBalances={lockedBalances}
+          stakeBalances={stakeBalances}
+          totalRewards={totalRewardsWei}
+          totalDelegated={totalDelegated}
+        />
+      ) : (
+        <StCELOAccountStats
+          stCELOBalance={stCELOBalance}
+          stCELOLockedVoteBalance={stCELOLockedVoteBalance}
+        />
+      )}
       {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
       <TableTabs
         groupToStake={groupToStake}
@@ -111,8 +111,6 @@ export default function Page() {
         delegateeToAmount={delegations?.delegateeToAmount}
         addressToDelegatee={addressToDelegatee}
         activateStake={activateStake}
-        strategy={strategy}
-        changeStrategy={changeStrategy}
         mode={mode}
       />
     </Section>
@@ -159,7 +157,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
         <div className={`space-x-2 ${className}`}>
           <SolidButton
             onClick={() =>
-              showTxModal(TransactionFlowType.StakeStCELO, { action: LockActionType.Lock })
+              showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Stake })
             }
           >
             <div className="flex items-center space-x-1.5">
@@ -169,22 +167,12 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
           </SolidButton>
           <SolidButton
             onClick={() =>
-              showTxModal(TransactionFlowType.StakeStCELO, { action: LockActionType.Unlock })
+              showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Unstake })
             }
           >
             <div className="flex items-center space-x-1.5">
               <Image src={WithdrawIcon} width={12} height={12} alt="" />
               <span>Unstake</span>
-            </div>
-          </SolidButton>
-          <SolidButton
-            onClick={() =>
-              showTxModal(TransactionFlowType.StakeStCELO, { action: LockActionType.Withdraw })
-            }
-          >
-            <div className="flex items-center space-x-1.5">
-              <Image src={WithdrawIcon} width={12} height={12} alt="" />
-              <span>Withdraw</span>
             </div>
           </SolidButton>
         </div>
@@ -195,27 +183,19 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
 
 function AccountStats({
   walletBalance,
-  stCELOBalance,
   lockedBalances,
   stakeBalances,
   totalRewards,
   totalDelegated,
-  mode,
 }: {
   walletBalance?: bigint;
-  stCELOBalance?: bigint;
-  stCELOBalanceAwaitingWithdrawal?: bigint;
   lockedBalances?: LockedBalances;
   stakeBalances?: StakingBalances;
   totalRewards?: bigint;
   totalDelegated?: bigint;
-  mode: StakingMode;
 }) {
   return (
     <div className="flex items-center justify-between">
-      {mode === 'stCELO' && (
-        <AccountStat title="Total stCELO" valueWei={stCELOBalance} tokenId={TokenId.stCELO} />
-      )}
       <AccountStat
         title="Total locked"
         valueWei={lockedBalances?.locked}
@@ -235,6 +215,35 @@ function AccountStats({
         subValueWei={totalRewards}
         subValueClassName={clsx(!!totalRewards && totalRewards > 0n && 'all:text-green-600')}
       />
+    </div>
+  );
+}
+
+function StCELOAccountStats({
+  stCELOBalance,
+  stCELOLockedVoteBalance,
+}: {
+  stCELOBalance: bigint;
+  stCELOLockedVoteBalance: bigint;
+  totalRewards?: bigint;
+}) {
+  const { annualProjectedRate } = useAnnualProjectedRate();
+  return (
+    <div className="flex items-center justify-between">
+      <AccountStat
+        title="Total stCELO"
+        valueWei={stCELOBalance}
+        tokenId={TokenId.stCELO}
+        subtitle="Usable"
+        subValueWei={stCELOBalance - stCELOLockedVoteBalance}
+      />
+      <AccountStat title="Total used in governance" valueWei={stCELOLockedVoteBalance} />
+      <div>
+        <h3 className="text-sm">{'Annual projected rate'}</h3>
+        <span className="-my-0.5 flex items-baseline space-x-1 font-serif text-2xl text-green-600 md:text-3xl">
+          {annualProjectedRate ? `${annualProjectedRate.toFixed(2)}%` : ''}
+        </span>
+      </div>
     </div>
   );
 }
@@ -271,25 +280,21 @@ function AccountStat({
 
 function TableTabs({
   groupToStake,
-  strategy,
   addressToGroup,
   groupToReward,
   groupToIsActivatable,
   delegateeToAmount,
   addressToDelegatee,
   activateStake,
-  changeStrategy,
   mode,
 }: {
   groupToStake?: GroupToStake;
-  strategy?: Address;
   addressToGroup?: AddressTo<ValidatorGroup>;
   groupToReward?: AddressTo<number>;
   groupToIsActivatable?: AddressTo<boolean>;
   delegateeToAmount?: AddressTo<DelegationAmount>;
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
-  changeStrategy: (g: Address) => void;
   mode: StakingMode;
 }) {
   const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;

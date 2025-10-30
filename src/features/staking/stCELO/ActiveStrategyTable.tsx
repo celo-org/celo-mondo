@@ -8,8 +8,8 @@ import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { useStCeloBalance } from 'src/features/account/hooks';
-import { useStrategy } from 'src/features/staking/stCELO/useStCELO';
+import { useStCELOBalance } from 'src/features/account/hooks';
+import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { StCeloActionType } from 'src/features/staking/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
@@ -28,7 +28,7 @@ export function ActiveStrategyTable({
   groupToIsActivatable?: AddressTo<boolean>;
 }) {
   const account = useAccount();
-  const { stCELOBalance } = useStCeloBalance();
+  const { stCELOBalance } = useStCELOBalance(account.address);
   const { group, isLoading } = useStrategy(account.address);
   const showModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
 

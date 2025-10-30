@@ -6,8 +6,7 @@ import { Address, SimulateContractParameters } from 'viem';
 
 export function changeStrategyTxPlan({ transferGroup }: { transferGroup: Address }): TxPlan {
   const call = {
-    address: ManagerABI.address,
-    abi: ManagerABI.abi,
+    ...ManagerABI,
     functionName: 'changeStrategy',
     args: [transferGroup],
   } as SimulateContractParameters<typeof ManagerABI.abi, 'changeStrategy'>;

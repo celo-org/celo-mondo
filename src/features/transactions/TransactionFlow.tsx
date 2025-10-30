@@ -4,7 +4,7 @@ import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
 import {
   useIsAccount,
   useLockedBalance,
-  useStCeloBalance,
+  useStCELOBalance,
   useVoteSignerToAccount,
 } from 'src/features/account/hooks';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
@@ -38,7 +38,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   const { signingFor: signingForAccount, isLoading: isAccountLoading } =
     useVoteSignerToAccount(address);
   const { lockedBalance } = useLockedBalance(address);
-  const { stCELOBalance } = useStCeloBalance(address);
+  const { stCELOBalance } = useStCELOBalance(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
   const isVoteSigner = Boolean(signingForAccount && signingForAccount !== address);
 

@@ -8,8 +8,7 @@ import { useReadContract } from 'wagmi';
 export function useStrategy(address?: Address) {
   const { mode } = useStakingMode();
   const { isLoading, isError, error, data, refetch } = useReadContract({
-    address: ManagerABI.address,
-    abi: ManagerABI.abi,
+    ...ManagerABI,
     functionName: 'getAddressStrategy',
     args: [address!],
     query: {
@@ -32,8 +31,7 @@ export function useChangeStrategy(callback: (receipt: TransactionReceipt) => any
 
   const changeStrategy = (group: Address) => {
     writeContract({
-      address: ManagerABI.address,
-      abi: ManagerABI.abi,
+      ...ManagerABI,
       functionName: 'changeStrategy',
       args: [group],
     });

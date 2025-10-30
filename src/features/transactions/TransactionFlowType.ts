@@ -4,6 +4,7 @@ import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
 import { StakeForm } from 'src/features/staking/StakeForm';
 import { ChangeStrategyForm } from 'src/features/staking/stCELO/ChangeStrategyForm';
+import { StakeStCeloForm } from 'src/features/staking/stCELO/StakeForm';
 import { TransactionFlowProps } from 'src/features/transactions/TransactionFlow';
 
 // The set of unique tx flows in the app
@@ -30,12 +31,12 @@ export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowPr
     requiresLockedFundsOrVoteSigner: true,
   },
   [TransactionFlowType.StakeStCELO]: {
-    FormComponent: LockForm,
+    FormComponent: StakeStCeloForm,
     header: 'Stake stCELO',
     requiresLockedFundsOrVoteSigner: false,
   },
   [TransactionFlowType.UnstakeStCELO]: {
-    FormComponent: StakeForm,
+    FormComponent: StakeStCeloForm,
     header: 'Unstake stCELO',
     requiresStCelo: true,
     requiresLockedFundsOrVoteSigner: false,

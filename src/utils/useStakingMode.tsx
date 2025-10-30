@@ -1,13 +1,15 @@
 'use client';
 
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
-import { useLockedBalance, useStCeloBalance } from 'src/features/account/hooks';
+import { useLockedBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { useLocalStorage } from 'src/utils/useLocalStorage';
+import { useAccount } from 'wagmi';
 
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
-  const { stCELOBalance, isLoading: stCELOLoading } = useStCeloBalance();
-  const { lockedBalance, isLoading: lockedLoading } = useLockedBalance();
+  const { address } = useAccount();
+  const { stCELOBalance, isLoading: stCELOLoading } = useStCELOBalance(address);
+  const { lockedBalance, isLoading: lockedLoading } = useLockedBalance(address);
   const [mode, setMode] = useLocalStorage<StakingMode>('mode', stCELOBalance ? 'stCELO' : 'CELO');
 
   const toggleMode = useCallback(

@@ -6,9 +6,9 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { MIN_GROUP_SCORE_FOR_RANDOM, ZERO_ADDRESS } from 'src/config/consts';
-import { useStCeloBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { useStCELOBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
 import { changeStrategyTxPlan } from 'src/features/staking/stCELO/changeStrategyTxPlan';
-import { useStrategy } from 'src/features/staking/stCELO/useStCELO';
+import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { ChangeStrategyFormValues, StCeloActionType } from 'src/features/staking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
@@ -42,7 +42,7 @@ export function ChangeStrategyForm({
   const { address } = useAccount();
   const { addressToGroup } = useValidatorGroups();
   const { signingFor } = useVoteSignerToAccount(address);
-  const { stCELOBalance } = useStCeloBalance(signingFor);
+  const { stCELOBalance } = useStCELOBalance(signingFor);
   const { group, refetch: refetchStrategy } = useStrategy(signingFor);
 
   const humanReadableStCelo = formatNumberString(fromWei(stCELOBalance), 2);

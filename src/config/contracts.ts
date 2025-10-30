@@ -1,4 +1,5 @@
 import { registryABI } from '@celo/abis';
+import { useQuery } from '@tanstack/react-query';
 import { config } from 'src/config/config';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { celoPublicClient } from 'src/utils/client';
@@ -9,6 +10,7 @@ const UNKNOWN_TESTNET_ADDRESSES = {
   Accounts: ZERO_ADDRESS,
   Election: ZERO_ADDRESS,
   EpochManager: ZERO_ADDRESS,
+  EpochRewards: ZERO_ADDRESS,
   Governance: ZERO_ADDRESS,
   LockedGold: ZERO_ADDRESS,
   Validators: ZERO_ADDRESS,
@@ -17,6 +19,7 @@ const MAINNET_ADDRESSES = {
   Accounts: '0x7d21685C17607338b313a7174bAb6620baD0aaB7',
   Election: '0x8D6677192144292870907E3Fa8A5527fE55A7ff6',
   EpochManager: '0xF424B5e85B290b66aC20f8A9EAB75E25a526725E',
+  EpochRewards: '0x07F007d389883622Ef8D4d347b3f78007f28d8b7',
   Governance: '0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972',
   LockedGold: '0x6cC083Aed9e3ebe302A6336dBC7c921C9f03349E',
   Validators: '0xaEb865bCa93DdC8F47b8e29F40C5399cE34d0C58',
@@ -42,4 +45,13 @@ export const resolveAddress = async (name: keyof typeof Addresses) => {
   }
 
   return Addresses[name];
+};
+
+export const useContractAddress = (name: keyof typeof Addresses) => {
+  const { data: address } = useQuery({
+    queryKey: [name],
+    queryFn: () => resolveAddress(name),
+  });
+
+  return address;
 };
