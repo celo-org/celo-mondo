@@ -1,7 +1,7 @@
 /* eslint no-console: 0 */
 
 import { governanceABI } from '@celo/abis';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from 'viem';
@@ -145,11 +145,25 @@ async function mergeProposalDataIntoPGRow({
   );
   let mostRecentProposalState = await getProposalOnChain(client, proposalId);
   if (BigInt(mostRecentProposalState[0]) === 0n) {
+    const lastVoteEvent = (
+      await database
+        .select()
+        .from(eventsTable)
+        .where(
+          and(
+            eq(eventsTable.eventName, 'ProposalVotedV2'),
+            eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposalId),
+          ),
+        )
+        .orderBy(desc(eventsTable.blockNumber))
+        .limit(1)
+    )[0];
+
     // we can't rely on events as they don't all contain timestamps
     mostRecentProposalState = await getProposalOnChain(
       client,
       proposalId,
-      BigInt(lastProposalEvent.blockNumber) - 1n,
+      lastVoteEvent?.blockNumber || BigInt(lastProposalEvent.blockNumber),
     );
   }
 
@@ -185,19 +199,7 @@ async function mergeProposalDataIntoPGRow({
 
   // NOTE: use last block where the proposal was still on chain to know about network weight
   const networkWeightIndex = 5;
-  const networkWeight =
-    mostRecentProposalState[networkWeightIndex] ||
-    (await client
-      .readContract({
-        blockNumber: BigInt(lastProposalEvent.blockNumber!) - 1n,
-        abi: governanceABI,
-        address: Addresses.Governance,
-        functionName: 'getProposal',
-        args: [BigInt(proposalId)],
-      })
-      .then((x) => x[networkWeightIndex])
-      .catch((_) => 0n));
-
+  const networkWeight = mostRecentProposalState[networkWeightIndex];
   // NOTE: use earliest possible block where the proposal was on chain to know about numTransactions
   // however they can be not present for really old blocks so infer from the event which can also be
   // missing them
@@ -206,6 +208,7 @@ async function mergeProposalDataIntoPGRow({
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
+  console.log({ proposalId, networkWeight });
   return {
     id: proposalId,
     chainId: client.chain.id,
