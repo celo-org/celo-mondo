@@ -47,7 +47,7 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-export function useStCELOBalance(address: Address) {
+export function useStCELOBalance(address?: Address) {
   const stCELOResult = useReadContract({
     ...StakedCeloABI,
     functionName: 'balanceOf',

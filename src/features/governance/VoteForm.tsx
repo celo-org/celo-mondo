@@ -8,6 +8,7 @@ import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQue
 import {
   useGovernanceVoteRecord,
   useGovernanceVotingPower,
+  useStCELOVoteRecord,
   useStCELOVotingPower,
 } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteFormValues, VoteType, VoteTypes } from 'src/features/governance/types';
@@ -42,10 +43,14 @@ export function VoteForm({
     votingAccount,
     defaultFormValues?.proposalId,
   );
+  const { refetch: refetchStCELOVoteRecord } = useStCELOVoteRecord(
+    votingAccount,
+    defaultFormValues?.proposalId,
+  );
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || [], mode, stCeloVotingPower),
-    onStepSuccess: () => refetchVoteRecord(),
+    onStepSuccess: () => (mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord()),
     onPlanSuccess: (v, r) => {
       const properties = [
         { label: 'Vote', value: v.vote },
@@ -64,6 +69,7 @@ export function VoteForm({
       });
     },
   });
+
   const { writeContract, isLoading } = useWriteContractWithReceipt('vote', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
 

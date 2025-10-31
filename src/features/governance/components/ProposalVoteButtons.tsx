@@ -1,11 +1,16 @@
 import clsx from 'clsx';
+import { useCallback } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { VotingPower } from 'src/features/governance/components/VotingPower';
 import { useIsDequeueReady } from 'src/features/governance/hooks/useProposalQueue';
-import { useGovernanceVoteRecord } from 'src/features/governance/hooks/useVotingStatus';
+import {
+  useGovernanceVoteRecord,
+  useStCELOVoteRecord,
+} from 'src/features/governance/hooks/useVotingStatus';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
+import { useStakingMode } from 'src/utils/useStakingMode';
 import { useAccount } from 'wagmi';
 
 export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
@@ -36,8 +41,20 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
 export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
   const { address } = useAccount();
   const { votingRecord } = useGovernanceVoteRecord(address, proposalId);
+  const { stCELOVotingRecord } = useStCELOVoteRecord(address, proposalId);
+  const { mode } = useStakingMode();
 
-  const isVoting = (vote: keyof VoteAmounts) => votingRecord && votingRecord[vote] > 0n;
+  const isVoting = useCallback(
+    (vote: keyof VoteAmounts) => {
+      switch (mode) {
+        case 'CELO':
+          return votingRecord && votingRecord[vote] > 0n;
+        case 'stCELO':
+          return stCELOVotingRecord && stCELOVotingRecord[vote] > 0n;
+      }
+    },
+    [mode, votingRecord, stCELOVotingRecord],
+  );
 
   const showTxModal = useTransactionModal();
   const onClick = (vote: VoteType) => {

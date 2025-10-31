@@ -1,10 +1,12 @@
 import { governanceABI, lockedGoldABI } from '@celo/abis';
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { config } from 'src/config/config';
 import { StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import VoteABI from 'src/config/stcelo/VoteABI';
-import { useVoteSignerToAccount } from 'src/features/account/hooks';
+import { useStCELOBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { getStCeloProposalVotes } from 'src/features/governance/getStCELOProposalVotes';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { isNullish } from 'src/utils/typeof';
@@ -126,62 +128,37 @@ export function useGovernanceVotingPower(address?: Address) {
 }
 
 export function useStCELOVotingPower(address?: Address) {
-  const { data, isError, isLoading, error } = useReadContract({
-    ...VoteABI,
-    functionName: 'getVoteWeight',
-    args: [address!],
-    query: {
-      enabled: !!address,
-    },
-  } as const);
+  // TODO: use this when pavel fixes it
+  // const { data, isError, isLoading, error } = useReadContract({
+  //   ...VoteABI,
+  //   functionName: 'getVoteWeight',
+  //   args: [address!],
+  //   query: {
+  //     enabled: !!address,
+  //   },
+  // } as const);
+  // useToastError(error, 'Error fetching stcelo voting power');
 
-  useToastError(error, 'Error fetching stcelo voting power');
+  const { stCELOBalances, isLoading, isError } = useStCELOBalance(address);
 
   return {
-    stCeloVotingPower: data,
+    stCeloVotingPower: stCELOBalances.total,
     isError,
     isLoading,
   };
 }
 
 export function useStCELOVoteRecord(address?: Address, proposalId?: number) {
-  const { dequeue } = useProposalDequeue();
-  const proposalIndex = proposalId ? dequeue?.indexOf(proposalId) : undefined;
-
-  const { data, isError, isLoading, error, refetch } = useReadContract({
-    ...VoteABI,
-    functionName: 'getVoteRecord',
-    args: [BigInt(proposalIndex || 0)],
-    query: {
-      enabled: address && !isNullish(proposalIndex) && proposalIndex >= 0,
-      staleTime: StaleTime.Short,
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['getStCELOVoteRecord', address, proposalId],
+    queryFn: async () => {
+      return await getStCeloProposalVotes(config.chain.id, proposalId!, address!);
     },
+    enabled: !!(address && proposalId),
   });
-
-  const { data: xyz } = useReadContract({
-    ...VoteABI,
-    functionName: 'getVotedStillRelevantProposals',
-    args: [address!],
-    query: {
-      enabled: !!address,
-    },
-  });
-
-  console.log({ xyz });
-
-  useToastError(error, 'Error fetching voting record');
-
-  const votingRecord: VoteAmounts | undefined = useMemo(() => {
-    if (!data) return undefined;
-    return {
-      [VoteType.Yes]: data[3],
-      [VoteType.No]: data[4],
-      [VoteType.Abstain]: data[5],
-    };
-  }, [data]);
 
   return {
-    votingRecord,
+    stCELOVotingRecord: data,
     isError,
     isLoading,
     refetch,
