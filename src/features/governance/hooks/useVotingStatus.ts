@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import VoteABI from 'src/config/stcelo/VoteABI';
 import { useVoteSignerToAccount } from 'src/features/account/hooks';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
@@ -121,5 +122,68 @@ export function useGovernanceVotingPower(address?: Address) {
     votingPower: data,
     isError,
     isLoading,
+  };
+}
+
+export function useStCELOVotingPower(address?: Address) {
+  const { data, isError, isLoading, error } = useReadContract({
+    ...VoteABI,
+    functionName: 'getVoteWeight',
+    args: [address!],
+    query: {
+      enabled: !!address,
+    },
+  } as const);
+
+  useToastError(error, 'Error fetching stcelo voting power');
+
+  return {
+    stCeloVotingPower: data,
+    isError,
+    isLoading,
+  };
+}
+
+export function useStCELOVoteRecord(address?: Address, proposalId?: number) {
+  const { dequeue } = useProposalDequeue();
+  const proposalIndex = proposalId ? dequeue?.indexOf(proposalId) : undefined;
+
+  const { data, isError, isLoading, error, refetch } = useReadContract({
+    ...VoteABI,
+    functionName: 'getVoteRecord',
+    args: [BigInt(proposalIndex || 0)],
+    query: {
+      enabled: address && !isNullish(proposalIndex) && proposalIndex >= 0,
+      staleTime: StaleTime.Short,
+    },
+  });
+
+  const { data: xyz } = useReadContract({
+    ...VoteABI,
+    functionName: 'getVotedStillRelevantProposals',
+    args: [address!],
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  console.log({ xyz });
+
+  useToastError(error, 'Error fetching voting record');
+
+  const votingRecord: VoteAmounts | undefined = useMemo(() => {
+    if (!data) return undefined;
+    return {
+      [VoteType.Yes]: data[3],
+      [VoteType.No]: data[4],
+      [VoteType.Abstain]: data[5],
+    };
+  }, [data]);
+
+  return {
+    votingRecord,
+    isError,
+    isLoading,
+    refetch,
   };
 }

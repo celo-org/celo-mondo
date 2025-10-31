@@ -1,15 +1,12 @@
 import { TokenId } from 'src/config/tokens';
-import type { TransactionReceipt } from 'viem';
+import type { SimulateContractParameters, TransactionReceipt } from 'viem';
 
-export type TxPlan<A extends string = string, F extends string = string> = Array<{
-  action: A;
-  chainId: number;
-  address: Address;
-  abi: any;
-  functionName: F;
-  args?: ReadonlyArray<bigint | number | string | Address>;
-  value?: bigint;
-}>;
+export type TxPlan<A extends string = string> = Array<
+  {
+    action: A;
+    chainId: number;
+  } & SimulateContractParameters
+>;
 
 export interface ConfirmationDetails {
   message: string;

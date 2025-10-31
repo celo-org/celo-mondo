@@ -47,7 +47,7 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-export function useStCELOBalance(address?: Address) {
+export function useStCELOBalance(address: Address) {
   const stCELOResult = useReadContract({
     ...StakedCeloABI,
     functionName: 'balanceOf',
@@ -65,6 +65,8 @@ export function useStCELOBalance(address?: Address) {
     args: [address as Address],
     query: {
       enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
     },
   });
 
@@ -84,8 +86,11 @@ export function useStCELOBalance(address?: Address) {
   );
 
   return {
-    stCELOBalance: stCELOResult.data ?? 0n,
-    stCELOLockedVoteBalance: stCELOLockedVoteResult.data ?? 0n,
+    stCELOBalances: {
+      usable: stCELOResult.data ?? 0n,
+      total: (stCELOResult.data ?? 0n) + (stCELOLockedVoteResult.data ?? 0n),
+      lockedVote: stCELOLockedVoteResult.data ?? 0n,
+    },
     isError: stCELOResult.isError || stCELOLockedVoteResult.isError,
     isLoading: stCELOResult.isLoading || stCELOLockedVoteResult.isLoading,
     refetch,

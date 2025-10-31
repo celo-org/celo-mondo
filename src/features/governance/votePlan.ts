@@ -1,16 +1,25 @@
 import { governanceABI } from '@celo/abis';
 import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
+import ManagerABI from 'src/config/stcelo/ManagerABI';
 import {
   OrderedVoteValue,
   UpvoteFormValues,
   UpvoteRecord,
   VoteFormValues,
+  VoteType,
 } from 'src/features/governance/types';
 import { TxPlan } from 'src/features/transactions/types';
 import { logger } from 'src/utils/logger';
+import { StakingMode } from 'src/utils/useStakingMode';
+import { SimulateContractParameters } from 'viem';
 
-export function getVoteTxPlan(values: VoteFormValues, dequeued: number[]): TxPlan {
+export function getVoteTxPlan(
+  values: VoteFormValues,
+  dequeued: number[],
+  mode: StakingMode,
+  stCeloVotingPower?: bigint,
+): TxPlan {
   const { proposalId, vote } = values;
   const proposalIndex = dequeued.indexOf(proposalId);
   const voteInt = OrderedVoteValue.indexOf(vote);
@@ -20,16 +29,45 @@ export function getVoteTxPlan(values: VoteFormValues, dequeued: number[]): TxPla
     return [];
   }
 
-  return [
-    {
-      action: 'vote',
-      chainId: config.chain.id,
+  if (mode === 'CELO') {
+    const call = {
       address: Addresses.Governance,
       abi: governanceABI,
       functionName: 'vote',
-      args: [proposalId, proposalIndex, voteInt],
-    },
-  ];
+      args: [BigInt(proposalId), BigInt(proposalIndex), voteInt],
+    } as SimulateContractParameters<typeof governanceABI, 'vote'>;
+    return [
+      {
+        ...call,
+        action: 'vote',
+        chainId: config.chain.id,
+      },
+    ];
+  }
+  if (mode === 'stCELO') {
+    const call = {
+      address: ManagerABI.address,
+      abi: ManagerABI.abi,
+      functionName: 'voteProposal',
+      args: [
+        BigInt(proposalId),
+        BigInt(proposalIndex),
+        vote === VoteType.Yes ? stCeloVotingPower : 0n,
+        vote === VoteType.No ? stCeloVotingPower : 0n,
+        vote === VoteType.Abstain ? stCeloVotingPower : 0n,
+      ],
+    } as SimulateContractParameters<typeof ManagerABI.abi, 'voteProposal'>;
+    return [
+      {
+        ...call,
+        action: 'vote',
+        chainId: config.chain.id,
+      },
+    ];
+  }
+
+  logger.error(`mode ${mode} unrecognized`);
+  return [];
 }
 
 export function getUpvoteTxPlan(

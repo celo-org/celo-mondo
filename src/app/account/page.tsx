@@ -49,7 +49,7 @@ export default function Page() {
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
-  const { stCELOBalance, stCELOLockedVoteBalance } = useStCELOBalance(signingFor);
+  const { stCELOBalances } = useStCELOBalance(signingFor);
   const { lockedBalances } = useLockedStatus(signingFor);
   const { delegations } = useDelegationBalances(signingFor);
   const { addressToDelegatee } = useDelegatees();
@@ -97,10 +97,7 @@ export default function Page() {
           totalDelegated={totalDelegated}
         />
       ) : (
-        <StCELOAccountStats
-          stCELOBalance={stCELOBalance}
-          stCELOLockedVoteBalance={stCELOLockedVoteBalance}
-        />
+        <StCELOAccountStats stCELOBalances={stCELOBalances} />
       )}
       {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
       <TableTabs
@@ -220,11 +217,9 @@ function AccountStats({
 }
 
 function StCELOAccountStats({
-  stCELOBalance,
-  stCELOLockedVoteBalance,
+  stCELOBalances,
 }: {
-  stCELOBalance: bigint;
-  stCELOLockedVoteBalance: bigint;
+  stCELOBalances: ReturnType<typeof useStCELOBalance>['stCELOBalances'];
   totalRewards?: bigint;
 }) {
   const { annualProjectedRate } = useAnnualProjectedRate();
@@ -232,12 +227,12 @@ function StCELOAccountStats({
     <div className="flex items-center justify-between">
       <AccountStat
         title="Total stCELO"
-        valueWei={stCELOBalance}
+        valueWei={stCELOBalances.total}
         tokenId={TokenId.stCELO}
         subtitle="Usable"
-        subValueWei={stCELOBalance - stCELOLockedVoteBalance}
+        subValueWei={stCELOBalances.usable}
       />
-      <AccountStat title="Total used in governance" valueWei={stCELOLockedVoteBalance} />
+      <AccountStat title="Total used in governance" valueWei={stCELOBalances.lockedVote} />
       <div>
         <h3 className="text-sm">{'Annual projected rate'}</h3>
         <span className="-my-0.5 flex items-baseline space-x-1 font-serif text-2xl text-green-600 md:text-3xl">
@@ -278,6 +273,7 @@ function AccountStat({
   );
 }
 
+type Tab = 'stakes' | 'rewards' | 'delegations' | 'history';
 function TableTabs({
   groupToStake,
   addressToGroup,
@@ -297,7 +293,8 @@ function TableTabs({
   activateStake: (g: Address) => void;
   mode: StakingMode;
 }) {
-  const tabs = ['stakes', 'rewards', 'delegations', 'history'] as const;
+  const tabs: Tab[] =
+    mode === 'CELO' ? ['stakes', 'rewards', 'delegations', 'history'] : ['stakes', 'history'];
   const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
@@ -315,17 +312,17 @@ function TableTabs({
           </TabHeaderButton>
         ))}
       </div>
-      {tab === 'stakes' &&
-        (mode === 'CELO' ? (
-          <ActiveStakesTable
-            groupToStake={groupToStake}
-            addressToGroup={addressToGroup}
-            groupToIsActivatable={groupToIsActivatable}
-            activateStake={activateStake}
-          />
-        ) : (
-          <ActiveStrategyTable addressToGroup={addressToGroup} />
-        ))}
+      {tab === 'stakes' && mode === 'CELO' && (
+        <ActiveStakesTable
+          groupToStake={groupToStake}
+          addressToGroup={addressToGroup}
+          groupToIsActivatable={groupToIsActivatable}
+          activateStake={activateStake}
+        />
+      )}
+      {tab === 'stakes' && mode === 'stCELO' && (
+        <ActiveStrategyTable addressToGroup={addressToGroup} />
+      )}
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
       )}

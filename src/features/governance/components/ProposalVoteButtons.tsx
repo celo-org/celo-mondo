@@ -60,10 +60,7 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
           onClick={() => onClick(VoteType.No)}
         >{`👎 No`}</SolidButton>
         <SolidButton
-          className={clsx(
-            'btn-neutral grow',
-            isVoting(VoteType.Abstain) && 'bg-accent text-white',
-          )}
+          className={clsx('btn-neutral grow', isVoting(VoteType.Abstain) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.Abstain)}
         >{`⚪ Abstain`}</SolidButton>
       </div>
