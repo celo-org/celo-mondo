@@ -8,9 +8,12 @@ import { useAccount } from 'wagmi';
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
   const { address } = useAccount();
-  const { stCELOBalance, isLoading: stCELOLoading } = useStCELOBalance(address);
+  const { stCELOBalances, isLoading: stCELOLoading } = useStCELOBalance(address);
   const { lockedBalance, isLoading: lockedLoading } = useLockedBalance(address);
-  const [mode, setMode] = useLocalStorage<StakingMode>('mode', stCELOBalance ? 'stCELO' : 'CELO');
+  const [mode, setMode] = useLocalStorage<StakingMode>(
+    'mode',
+    stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
+  );
 
   const toggleMode = useCallback(
     () => setMode((mode) => (mode === 'CELO' ? 'stCELO' : 'CELO')),
@@ -28,8 +31,7 @@ function useStakingModeInternal() {
     mode,
     toggleMode,
     shouldRender:
-      true ||
-      (!stCELOLoading && !lockedLoading && (stCELOBalance || 0) > 0 && (lockedBalance || 0) > 0),
+      true || (!stCELOLoading && !lockedLoading && stCELOBalances.total > 0 && lockedBalance > 0),
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',

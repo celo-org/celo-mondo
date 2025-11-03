@@ -38,7 +38,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   const { signingFor: signingForAccount, isLoading: isAccountLoading } =
     useVoteSignerToAccount(address);
   const { lockedBalance } = useLockedBalance(address);
-  const { stCELOBalance } = useStCELOBalance(address);
+  const { stCELOBalances } = useStCELOBalance(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
   const isVoteSigner = Boolean(signingForAccount && signingForAccount !== address);
 
@@ -68,7 +68,7 @@ export function TransactionFlow<FormDefaults extends {}>({
     !willVoteAndHasVotingPower
   ) {
     Component = <LockForm showTip={true} />;
-  } else if (requiresStCelo && stCELOBalance <= 0n) {
+  } else if (requiresStCelo && stCELOBalances.total <= 0n) {
     // Will be caught by error boundary
     // but we should never be here because no stCELO component should ever be
     // shown without a stCELOBalance being positive in the first place

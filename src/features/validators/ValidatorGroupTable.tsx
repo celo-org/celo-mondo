@@ -349,7 +349,7 @@ function useTableColumns(totalVotes: bigint) {
         ),
       }),
     ];
-  }, [totalVotes, showTxModal]);
+  }, [totalVotes, ui.action, showTxModal, mode]);
 }
 
 function useTableRows({

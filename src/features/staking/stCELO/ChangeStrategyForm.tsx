@@ -42,15 +42,15 @@ export function ChangeStrategyForm({
   const { address } = useAccount();
   const { addressToGroup } = useValidatorGroups();
   const { signingFor } = useVoteSignerToAccount(address);
-  const { stCELOBalance } = useStCELOBalance(signingFor);
+  const { stCELOBalances } = useStCELOBalance(signingFor);
   const { group, refetch: refetchStrategy } = useStrategy(signingFor);
 
-  const humanReadableStCelo = formatNumberString(fromWei(stCELOBalance), 2);
+  const humanReadableStCelo = formatNumberString(fromWei(stCELOBalances.total), 2);
 
   const onPlanSuccess = (v: ChangeStrategyFormValues, r: TransactionReceipt) => {
     onConfirmed({
       message: `${v.action} successful`,
-      amount: stCELOBalance,
+      amount: stCELOBalances.total,
       receipt: r,
       properties: [
         { label: 'Action', value: toTitleCase(v.action) },
@@ -73,11 +73,11 @@ export function ChangeStrategyForm({
   const onSubmit = (values: ChangeStrategyFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: ChangeStrategyFormValues) => {
-    if (!stCELOBalance || !addressToGroup) {
+    if (!stCELOBalances.total || !addressToGroup) {
       return { amount: 'Form data not ready' };
     }
     if (txPlanIndex > 0) return {};
-    return validateForm(values, stCELOBalance, addressToGroup);
+    return validateForm(values, stCELOBalances.total, addressToGroup);
   };
 
   return (

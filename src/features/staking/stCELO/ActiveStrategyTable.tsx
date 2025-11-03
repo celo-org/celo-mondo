@@ -28,7 +28,7 @@ export function ActiveStrategyTable({
   groupToIsActivatable?: AddressTo<boolean>;
 }) {
   const account = useAccount();
-  const { stCELOBalance } = useStCELOBalance(account.address);
+  const { stCELOBalances } = useStCELOBalance(account.address);
   const { group, isLoading } = useStrategy(account.address);
   const showModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
 
@@ -39,7 +39,7 @@ export function ActiveStrategyTable({
 
     const tableData = [
       {
-        stake: fromWei(stCELOBalance),
+        stake: fromWei(stCELOBalances.total),
         percentage: 100,
         name: addressToGroup?.[group]?.name,
         address: group,
@@ -54,7 +54,7 @@ export function ActiveStrategyTable({
       })),
     );
     return { chartData, tableData };
-  }, [group, addressToGroup, stCELOBalance]);
+  }, [group, addressToGroup, stCELOBalances.total]);
 
   if (isLoading || !addressToGroup) {
     return <FullWidthSpinner>Loading staking data</FullWidthSpinner>;

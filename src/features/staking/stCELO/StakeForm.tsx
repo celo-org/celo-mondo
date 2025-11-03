@@ -42,7 +42,7 @@ export function StakeStCeloForm({
   const { address } = useAccount();
   const { balance: walletBalance } = useBalance(address);
   const { unlockingPeriod } = useLockedStatus(address);
-  const { stCELOBalance, stCELOLockedVoteBalance, refetch } = useStCELOBalance(address);
+  const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);
   const { stakeBalances } = useStakingBalances(address);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
@@ -68,16 +68,11 @@ export function StakeStCeloForm({
   const onSubmit = (values: LiquidStakeFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: LiquidStakeFormValues) => {
-    if (
-      isNullish(walletBalance) ||
-      !stCELOBalance ||
-      !stakeBalances ||
-      isNullish(stCELOLockedVoteBalance)
-    ) {
+    if (isNullish(walletBalance) || isLoadingStCELOBalances || !stakeBalances) {
       return { amount: 'Form data not ready' };
     }
     if (txPlanIndex > 0) return {};
-    return validateForm(values, stCELOBalance, walletBalance, stCELOLockedVoteBalance);
+    return validateForm(values, stCELOBalances, walletBalance);
   };
 
   const unlockingPeriodReadable = getHumanReadableDuration(Number((unlockingPeriod || 0n) * 1000n));
@@ -101,7 +96,7 @@ export function StakeStCeloForm({
             )}
             <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <LockAmountField
-              stCELOBalance={stCELOBalance}
+              stCELOBalances={stCELOBalances}
               walletBalance={walletBalance}
               action={values.action}
               disabled={isInputDisabled}
@@ -139,20 +134,21 @@ function ActionTypeField({
 }
 
 function LockAmountField({
-  stCELOBalance,
+  stCELOBalances,
   walletBalance,
   action,
   disabled,
 }: {
-  stCELOBalance?: bigint;
+  stCELOBalances?: ReturnType<typeof useStCELOBalance>['stCELOBalances'];
   walletBalance?: bigint;
   action: LiquidStakeActionType;
   disabled?: boolean;
 }) {
   const { stakingRate, unstakingRate } = useExchangeRates();
   const maxAmountWei = useMemo(
-    () => (getMaxAmount(action, stCELOBalance, walletBalance) || 0n) - MIN_REMAINING_BALANCE,
-    [action, stCELOBalance, walletBalance],
+    () =>
+      (getMaxAmount(action, stCELOBalances?.usable, walletBalance) || 0n) - MIN_REMAINING_BALANCE,
+    [action, stCELOBalances, walletBalance],
   );
   const rate = action === LiquidStakeActionType.Stake ? stakingRate : unstakingRate;
   const { setFieldValue, values } = useFormikContext<LiquidStakeFormValues>();
@@ -186,9 +182,8 @@ function LockAmountField({
 
 function validateForm(
   values: LiquidStakeFormValues,
-  stCELOBalance: bigint,
+  stCELOBalances: ReturnType<typeof useStCELOBalance>['stCELOBalances'],
   walletBalance: bigint,
-  stCELOLockedVoteBalance: bigint,
 ): FormikErrors<LiquidStakeFormValues> {
   const { action, amount } = values;
 
@@ -196,14 +191,14 @@ function validateForm(
   const amountWei = toWei(amount);
   if (!amountWei || amountWei <= 0n) return { amount: 'Invalid amount' };
 
-  const maxAmountWei = getMaxAmount(action, stCELOBalance, walletBalance);
+  const maxAmountWei = getMaxAmount(action, stCELOBalances.usable, walletBalance);
   if (!maxAmountWei || amountWei > maxAmountWei) {
     return { amount: 'Amount exceeds max' };
   }
 
   // Special case handling for locking whole balance
   if (action === LiquidStakeActionType.Stake) {
-    const remainingAfterPending = amountWei - stCELOBalance;
+    const remainingAfterPending = amountWei - stCELOBalances.usable;
     if (walletBalance - remainingAfterPending <= MIN_REMAINING_BALANCE) {
       return { amount: 'Cannot lock entire balance' };
     }
@@ -211,14 +206,14 @@ function validateForm(
 
   // Ensure user isn't trying to unlock CELO used for staking
   if (action === LiquidStakeActionType.Unstake) {
-    if (stCELOLockedVoteBalance > amountWei) {
+    if (stCELOBalances.lockedVote > amountWei) {
       toast.warn(
         'Locked funds that have voted for a governance cannot be unlocked until the proposal is resolved.',
       );
       return { amount: 'Locked funds in use' };
     }
 
-    const nonVotingBalance = stCELOBalance; // TODO
+    const nonVotingBalance = stCELOBalances.usable;
     if (amountWei > nonVotingBalance) {
       toast.warn(
         'Locked funds that are current staked must be unstaked before they can be unlocked.',
