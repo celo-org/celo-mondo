@@ -72,7 +72,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
           className="w-full text-sm md:w-64"
         />
       </div>
-      <table className="mt-2 w-full lg:min-w-248 xl:min-w-300">
+      <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>

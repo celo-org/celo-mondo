@@ -30,8 +30,7 @@ function useStakingModeInternal() {
   return {
     mode,
     toggleMode,
-    shouldRender:
-      true || (!stCELOLoading && !lockedLoading && stCELOBalances.total > 0 && lockedBalance > 0),
+    shouldRender: !stCELOLoading && !lockedLoading && stCELOBalances.total > 0 && lockedBalance > 0,
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',

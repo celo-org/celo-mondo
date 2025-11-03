@@ -21,7 +21,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
   return (
     <div className="max-w-full space-y-4 " style={{ maxWidth: 'min(96vw, 700px)' }}>
       <BackLink href="/delegate">Browse delegates</BackLink>
-      <div className="flex items-center gap-1 mt-2">
+      <div className="mt-2 flex items-center gap-1">
         <DelegateeLogo address={delegatee.address} size={90} />
         <div className="ml-4 flex flex-col">
           <h1 className="font-serif text-2xl md:text-3xl">{delegatee.name}</h1>
@@ -49,9 +49,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
         </div>
       </div>
       <h2 className="font-serif text-xl">Introduction</h2>
-      <p className="overflow-auto leading-relaxed">
-        {delegatee.description}
-      </p>
+      <p className="overflow-auto leading-relaxed">{delegatee.description}</p>
       <GovernanceParticipation delegatee={delegatee} />
     </div>
   );
@@ -71,7 +69,7 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
   const hasVotes = proposalToVotes && sortedIds.length > 0;
 
   return (
-    <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1" >
+    <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1">
       <h2 className="font-serif text-xl">Governance Participation</h2>
       {isLoading ? (
         <SpinnerWithLabel className="py-10">Loading governance history</SpinnerWithLabel>

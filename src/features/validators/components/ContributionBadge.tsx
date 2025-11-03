@@ -14,7 +14,7 @@ interface Props {
 export default function ContributionBadge({ className, title = '', asButton }: Props) {
   const onClick = useCallback(() => {
     toast.info(
-      <div className='flex flex-col gap-2'>
+      <div className="flex flex-col gap-2">
         <p>
           By either reinvesting their earnings on chain or by created apps/tools for CELO, this
           group has meaningfully impacted celo by giving back to the community.
