@@ -130,7 +130,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         label: 'Yes votes',
         value: fromWei(quorumMeetingVotes),
         percentage: isLoading ? 0 : percent(quorumMeetingVotes, quorumRequired || 1n),
-        color: !isPassing ? Color.Mint : Color.Wood,
+        color: isPassing ? Color.Mint : Color.Wood,
       },
     ],
     [quorumMeetingVotes, quorumRequired, isLoading, isPassing],
