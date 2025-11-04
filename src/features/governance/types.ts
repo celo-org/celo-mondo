@@ -81,6 +81,7 @@ export interface Proposal {
   numTransactions: bigint;
   networkWeight: bigint;
   isApproved: boolean;
+  isPassing: boolean;
   upvotes: bigint;
   votes: VoteAmounts;
 }
