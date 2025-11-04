@@ -143,7 +143,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Sand,
       },
     ],
-    [quorumMetByVoteCount, yesVotes, quorumMeetingVotes, quorumRequired, isLoading, isPassing.data],
+    [quorumMetByVoteCount, yesVotes, quorumRequired, abstainVotes, isLoading, isPassing.data],
   );
 
   return (
@@ -156,16 +156,18 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         className="bg-white"
       />
       <div className="flex items-center text-sm text-taupe-600">
-        {`Quorum required: ${formatNumberString(quorumRequired, 0, true)} CELO`}{' '}
-        {propData.stage > ProposalStage.Referendum
-          ? quorumMetByVoteCount
-            ? '(Passed)'
-            : '(Failed)'
-          : isPassing.isSuccess
-            ? isPassing.data
-              ? '(Passing)'
-              : '(Failing)'
-            : ''}
+        {`Quorum required: ${isLoading ? 'Unknown' : formatNumberString(quorumRequired, 0, true)} CELO`}{' '}
+        {isLoading
+          ? ''
+          : propData.stage > ProposalStage.Referendum
+            ? quorumMetByVoteCount
+              ? '(Passed)'
+              : '(Failed)'
+            : isPassing.isSuccess
+              ? isPassing.data
+                ? '(Passing)'
+                : '(Failing)'
+              : ''}
       </div>
     </div>
   );
