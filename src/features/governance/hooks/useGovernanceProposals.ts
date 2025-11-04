@@ -132,10 +132,6 @@ export function useGovernanceProposals() {
               url: proposal.url,
               expiryTimestamp: getExpiryTimestamp(proposal.stage, proposal.timestamp * 1000),
               timestamp: proposal.timestamp * 1000,
-              // approve only if the proposal has progressed past referendum and not been rejected
-              isApproved:
-                proposal.stage === ProposalStage.Execution ||
-                proposal.stage === ProposalStage.Executed,
               isPassing: await publicClient.readContract({
                 address: Addresses.Governance,
                 abi: governanceABI,
@@ -218,8 +214,6 @@ function computeStageAndVotes(mergedProposalData: MergedProposalData, votes?: Vo
       mergedProposalData.stage = computedStage;
       proposal.stage = computedStage;
       proposal.expiryTimestamp = getExpiryTimestamp(computedStage, proposal.timestamp * 1000);
-      proposal.isApproved =
-        proposal.stage === ProposalStage.Execution || proposal.stage === ProposalStage.Executed;
       if (metadata) metadata.stage = computedStage;
     }
   }

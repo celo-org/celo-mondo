@@ -80,7 +80,6 @@ export interface Proposal {
   deposit: bigint;
   numTransactions: bigint;
   networkWeight: bigint;
-  isApproved: boolean;
   isPassing: boolean;
   upvotes: bigint;
   votes: VoteAmounts;

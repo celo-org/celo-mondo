@@ -44,8 +44,4 @@ export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
   } else {
     return undefined;
   }
-} // proposer, deposit, timestamp, numTransactions, url, networkWeight, isApproved
-
-export type ProposalRaw = [Address, bigint, bigint, bigint, string, bigint, boolean];
-// Yes, no, abstain
-export type VoteTotalsRaw = [bigint, bigint, bigint];
+}
