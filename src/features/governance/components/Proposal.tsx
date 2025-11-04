@@ -126,7 +126,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           </ErrorBoundaryInline>
         </div>
       )}
-      {stage >= ProposalStage.Referendum && stage <= ProposalStage.Executed && proposalId && (
+      {stage >= ProposalStage.Referendum && stage !== ProposalStage.Executed && proposalId && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalApprovalsTable proposalId={proposalId} />

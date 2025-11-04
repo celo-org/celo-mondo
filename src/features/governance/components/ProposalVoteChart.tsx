@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
-import { Amount, formatNumberString } from 'src/components/numbers/Amount';
+import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import {
@@ -28,7 +28,7 @@ import { toTitleCase } from 'src/utils/strings';
 
 export function PastProposalVoteChart({
   id,
-  title = 'Result',
+  title = 'Votes',
   stage,
 }: {
   id: number;
@@ -60,7 +60,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
 
 function ViewVotes({
   votes,
-  title = 'Result',
+  title = 'Votes',
   totalVotes,
   isLoading,
   stage,
@@ -148,27 +148,39 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
 
   return (
     <div className="space-y-2 border-t border-taupe-300 pt-2">
-      <Amount valueWei={quorumMeetingVotes} className="text-2xl" decimals={0} />
+      <h2 className="font-serif text-2xl">
+        Quorum
+        <em>
+          {isLoading
+            ? ''
+            : propData.stage > ProposalStage.Referendum
+              ? quorumMetByVoteCount
+                ? ' — Passed'
+                : ' — Failed'
+              : isPassing.isSuccess
+                ? isPassing.data
+                  ? ' — Passing'
+                  : ' — Failing'
+                : ''}
+        </em>
+      </h2>
+      {isLoading}
+      <span className="py-2 text-sm  text-taupe-600">
+        {isLoading ? (
+          '...loading...'
+        ) : (
+          <>
+            {formatNumberString(quorumMeetingVotes, 0, true)} Votes <em>of</em>&nbsp;&nbsp;
+            {formatNumberString(quorumRequired, 0, true)}&nbsp; Required
+          </>
+        )}
+      </span>
       <StackedBarChart
         data={quorumBarChartData}
         showBorder={true}
         height="h-6"
         className="bg-white"
       />
-      <div className="flex items-center text-sm text-taupe-600">
-        {`Quorum required: ${isLoading ? 'Unknown' : formatNumberString(quorumRequired, 0, true)} CELO`}{' '}
-        {isLoading
-          ? ''
-          : propData.stage > ProposalStage.Referendum
-            ? quorumMetByVoteCount
-              ? '(Passed)'
-              : '(Failed)'
-            : isPassing.isSuccess
-              ? isPassing.data
-                ? '(Passing)'
-                : '(Failing)'
-              : ''}
-      </div>
     </div>
   );
 }
