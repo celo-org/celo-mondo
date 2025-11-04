@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 
-import { governanceABI } from '@celo/abis';
+import { governanceABI, lockedGoldABI } from '@celo/abis';
 import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
@@ -112,7 +112,8 @@ export default async function updateProposalsInDB(
       ? 'https://mondo.celo.org'
       : 'https://preview-celo-mondo.vercel.app';
     await fetch(`${BASE_URL}/api/governance/proposals`, { method: 'DELETE' });
-  } else {
+  } else if (process.env.NEXT_RUNTIME) {
+    // Only revalidate if running in a Next.js runtime
     revalidateTag(CacheKeys.AllProposals);
   }
 }
@@ -137,6 +138,7 @@ async function mergeProposalDataIntoPGRow({
     };
   };
   const lastProposalEvent = events.at(-1)!;
+  let mostRecentProposalBlockNumber = BigInt(lastProposalEvent.blockNumber);
 
   const proposalOnChainAtCreation = await getProposalOnChain(
     client,
@@ -145,13 +147,15 @@ async function mergeProposalDataIntoPGRow({
   );
   let mostRecentProposalState = await getProposalOnChain(client, proposalId);
   if (BigInt(mostRecentProposalState[0]) === 0n) {
+    // note ProposalVoted and ProposalVotedV2 have different arg data https://github.com/celo-org/celo-monorepo/blob/0a5c8c500559c291d14af236a15e621f74053c50/packages/protocol/contracts/governance/Governance.sol#L154
     const lastVoteEvent = (
       await database
         .select()
         .from(eventsTable)
         .where(
           and(
-            eq(eventsTable.eventName, 'ProposalVotedV2'),
+            // older proposals might have a ProposalVoted event
+            inArray(eventsTable.eventName, ['ProposalVotedV2', 'ProposalVoted']),
             eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposalId),
           ),
         )
@@ -159,11 +163,25 @@ async function mergeProposalDataIntoPGRow({
         .limit(1)
     )[0];
 
+    // Determine the most recent block number to query
+    if (lastProposalEvent.eventName === 'ProposalExecuted') {
+      // use the block before the execution as the most recent proposal state as execution removes from chain
+      mostRecentProposalBlockNumber = BigInt(lastProposalEvent.blockNumber - 1);
+    } else if (
+      // if proposal is voted on but never executed/expired then we will only have the latest vote event to find the proposal by
+      lastVoteEvent?.blockNumber &&
+      lastVoteEvent.blockNumber > BigInt(lastProposalEvent.blockNumber)
+    ) {
+      mostRecentProposalBlockNumber = lastVoteEvent.blockNumber;
+    } else {
+      mostRecentProposalBlockNumber = BigInt(lastProposalEvent.blockNumber);
+    }
+
     // we can't rely on events as they don't all contain timestamps
     mostRecentProposalState = await getProposalOnChain(
       client,
       proposalId,
-      lastVoteEvent?.blockNumber || BigInt(lastProposalEvent.blockNumber),
+      mostRecentProposalBlockNumber,
     );
   }
 
@@ -199,7 +217,20 @@ async function mergeProposalDataIntoPGRow({
 
   // NOTE: use last block where the proposal was still on chain to know about network weight
   const networkWeightIndex = 5;
-  const networkWeight = mostRecentProposalState[networkWeightIndex];
+  let networkWeight = mostRecentProposalState[networkWeightIndex];
+  if (networkWeight === 0n) {
+    console.log(
+      'network weight is 0, getting from locked celo amount at',
+      mostRecentProposalBlockNumber,
+    );
+    networkWeight = await getNetworkWeightFromLockedCeloAmount(
+      client,
+      mostRecentProposalBlockNumber,
+    );
+  } else {
+    console.log('network weight is not 0, using', networkWeight, 'at', mostRecentProposalState);
+  }
+
   // NOTE: use earliest possible block where the proposal was on chain to know about numTransactions
   // however they can be not present for really old blocks so infer from the event which can also be
   // missing them
@@ -344,5 +375,24 @@ async function relinkProposals() {
         .set({ pastId })
         .where(sql`${proposalsTable.id} = ${ids[0]}`);
     }
+  }
+}
+
+async function getNetworkWeightFromLockedCeloAmount(
+  client: PublicClient<Transport, Chain>,
+  blockNumber: bigint,
+): Promise<bigint> {
+  try {
+    const lockedCeloAmount = await client.readContract({
+      blockNumber,
+      abi: lockedGoldABI,
+      address: Addresses.LockedGold,
+      functionName: 'getTotalLockedGold',
+      args: [],
+    });
+    return lockedCeloAmount;
+  } catch (err) {
+    console.error('Error getting network weight from locked celo amount at', blockNumber, err);
+    return 0n;
   }
 }
