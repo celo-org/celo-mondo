@@ -28,6 +28,7 @@ import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types
 import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
+import useTabs from 'src/utils/useTabs';
 
 const NUM_COLLAPSED_GROUPS = 9;
 const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
@@ -45,7 +46,8 @@ export function ValidatorGroupTable({
   totalVotes: bigint;
   groups: ValidatorGroup[];
 }) {
-  const [filter, setFilter] = useState<Filter>(Filter.All);
+  const { tab: filter, onTabChange: setFilter } = useTabs<Filter>(Filter.All);
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
   const [columnVisibility, setColumnVisibility] = useState({});
