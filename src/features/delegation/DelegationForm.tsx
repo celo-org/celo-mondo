@@ -246,7 +246,7 @@ function DelegateeField({
             <ChevronIcon direction="s" width={14} height={14} />
           </div>
         }
-        menuClasses="py-2 left-0 right-0 -top-[5.5rem] overflow-y-auto max-h-[24.75rem] all:w-auto divide-y divide-gray-200"
+        menuClasses="py-2 left-0 right-0 -top-22 overflow-y-auto max-h-99 all:w-auto divide-y divide-gray-200"
         menuHeader={
           <div className="flex items-center justify-between px-4 pb-2 text-sm">
             <span>Group</span>

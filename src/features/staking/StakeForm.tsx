@@ -118,7 +118,7 @@ export function StakeForm({
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="stake-form">
           {/* Reserve space for group menu */}
-          <div className="min-h-[21.5rem] space-y-4">
+          <div className="min-h-86 space-y-4">
             <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <GroupField
               fieldName="group"
@@ -266,7 +266,7 @@ function GroupField({
             <ChevronIcon direction="s" width={14} height={14} />
           </div>
         }
-        menuClasses="py-2 left-0 right-0 -top-[5.5rem] overflow-y-auto max-h-[24.75rem] all:w-auto divide-y divide-gray-200"
+        menuClasses="py-2 left-0 right-0 -top-22 overflow-y-auto max-h-99 all:w-auto divide-y divide-gray-200"
         menuHeader={
           <div className="flex items-center justify-between px-4 pb-2 text-sm">
             <span>Group</span>

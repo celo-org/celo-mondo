@@ -1,4 +1,5 @@
 import { ChainId } from 'src/config/chains';
+import StakedCeloABI from 'src/config/stcelo/StakedCeloABI';
 import { Color } from 'src/styles/Color';
 import { eqAddress } from 'src/utils/addresses';
 
@@ -19,6 +20,7 @@ export enum TokenId {
   cUSD = 'cUSD',
   cEUR = 'cEUR',
   cREAL = 'cREAL',
+  stCELO = 'stCELO',
 }
 
 export const NativeStableTokenIds = [TokenId.cUSD, TokenId.cEUR, TokenId.cREAL];
@@ -51,12 +53,20 @@ export const cREAL: Token = Object.freeze({
   color: Color.OldGreen,
   decimals: 18,
 });
+export const stCELO: Token = Object.freeze({
+  id: TokenId.stCELO,
+  symbol: TokenId.stCELO,
+  name: 'stCELO',
+  color: Color.Lavender,
+  decimals: 18,
+});
 
 export const Tokens: Record<TokenId, Token> = {
   CELO,
   cUSD,
   cEUR,
   cREAL,
+  stCELO,
 };
 
 export const TokenAddresses: Record<number, Record<TokenId, Address>> = Object.freeze({
@@ -65,6 +75,7 @@ export const TokenAddresses: Record<number, Record<TokenId, Address>> = Object.f
     [TokenId.cUSD]: '0x765DE816845861e75A25fCA122bb6898B8B1282a',
     [TokenId.cEUR]: '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73',
     [TokenId.cREAL]: '0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787',
+    [TokenId.stCELO]: StakedCeloABI.address,
   } as Record<TokenId, Address>,
 });
 

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ModeToggle } from 'src/features/mode/ModeToggle';
 import { WalletDropdown } from 'src/features/wallet/WalletDropdown';
 import { useScrollBelowListener } from 'src/utils/scroll';
 import { CeloLogo } from '../logos/Celo';
@@ -21,7 +22,10 @@ export function Header() {
         <div className="hidden md:block">
           <NavBar collapsed={collapseHeader} />
         </div>
-        <WalletDropdown />
+        <div className="flew-row flex items-center justify-center gap-4">
+          <ModeToggle />
+          <WalletDropdown />
+        </div>
       </div>
     </header>
   );

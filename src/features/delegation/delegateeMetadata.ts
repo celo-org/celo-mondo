@@ -1,5 +1,6 @@
 import path from 'path';
 import DelegateeJsonData from 'src/config/delegates.json';
+import AccountABI from 'src/config/stcelo/AccountABI';
 import { SocialLinks } from 'src/config/types';
 import {
   DelegateeMetadata,
@@ -13,6 +14,15 @@ let cachedMetadata: AddressTo<DelegateeMetadata>;
 export function getDelegateeMetadata(): AddressTo<DelegateeMetadata> {
   if (!cachedMetadata) {
     cachedMetadata = parseDelegateeMetadata();
+    cachedMetadata[AccountABI.address] = {
+      address: AccountABI.address,
+      date: 'TODO',
+      description: 'https://app.stcelo.xyz',
+      interests: ['TODO test interest'],
+      links: {},
+      logoUri: '/logos/stCELO.png',
+      name: 'stCELO',
+    };
   }
   return cachedMetadata;
 }

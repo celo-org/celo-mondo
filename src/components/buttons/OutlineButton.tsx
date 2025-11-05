@@ -13,4 +13,4 @@ export function OutlineButton({
   );
 }
 
-export const OutlineButtonClassName = `btn btn-outline outline-none h-fit min-h-fit rounded-full border-taupe-300 px-4 py-2.5 font-semibold text-black hover:border-taupe-400 hover:bg-black/5 hover:text-black`;
+export const OutlineButtonClassName = `btn btn-outline outline-hidden h-fit min-h-fit rounded-full border-taupe-300 px-4 py-2.5 font-semibold text-black hover:border-taupe-400 hover:bg-black/5 hover:text-black`;

@@ -12,7 +12,7 @@ import DiscordIcon from 'src/images/logos/discord.svg';
 
 export function GetInvolvedCtaCard() {
   return (
-    <div className="flex w-fit flex-col space-y-2 border border-taupe-300 bg-taupe-100 bg-diamond-texture bg-right-bottom bg-no-repeat py-2.5 pl-4 pr-8 md:pr-14">
+    <div className="bg-bottom-right flex w-fit flex-col space-y-2 border border-taupe-300 bg-taupe-100 bg-diamond-texture bg-no-repeat py-2.5 pl-4 pr-8 md:pr-14">
       <h2 className="font-serif text-xl">Get Involved</h2>
       <A_Blank
         href={links.docs}
