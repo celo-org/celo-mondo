@@ -91,8 +91,7 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id: proposalId, stage, proposal, metadata, history } = propData;
-  const expiryTimestamp = proposal?.expiryTimestamp;
+  const { id: proposalId, stage, proposal, history } = propData;
 
   if (stage === ProposalStage.None) return null;
 
@@ -103,16 +102,12 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
         {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
-        {expiryTimestamp && expiryTimestamp > 0 && (
-          <>
-            <div className="text-sm text-taupe-600">
-              {getEndHumanEndTime({
-                timestampExecuted: metadata?.timestampExecuted,
-                expiryTimestamp,
-              })}
-            </div>
-          </>
-        )}
+        <div className="max-w-[340px] text-sm text-taupe-600">
+          {getEndHumanEndTime({
+            stage,
+            stageStartTimestamp: proposal?.timestamp,
+          })}
+        </div>
       </div>
       {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
