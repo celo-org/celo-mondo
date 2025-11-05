@@ -101,8 +101,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       <div className="space-y-4 border-taupe-300 p-3 lg:border">
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
-        {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
-        {stage >= ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
+        {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
+        {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
         {expiryTimestamp && expiryTimestamp > 0 && (
           <>
             <div className="text-sm text-taupe-600">
@@ -119,14 +119,14 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           <ProposalUpvotersTable propData={propData} />
         </div>
       )}
-      {stage >= ProposalStage.Referendum && (
+      {stage >= ProposalStage.Approval && (
         <div className="overflow-auto border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalVotersTable propData={propData} />
           </ErrorBoundaryInline>
         </div>
       )}
-      {stage >= ProposalStage.Referendum && stage !== ProposalStage.Executed && proposalId && (
+      {stage >= ProposalStage.Approval && stage !== ProposalStage.Executed && proposalId && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalApprovalsTable proposalId={proposalId} />

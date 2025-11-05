@@ -92,7 +92,7 @@ export function ProposalBadgeRow({
 }) {
   const { stage, proposal, metadata, id } = propData;
 
-  const { timestamp, proposer, isApproved } = proposal || {};
+  const { timestamp, proposer } = proposal || {};
   const { timestamp: cgpTimestamp, cgp, timestampExecuted } = metadata || {};
 
   const proposedTimestamp = timestamp || cgpTimestamp;
@@ -107,7 +107,7 @@ export function ProposalBadgeRow({
     <div className="flex items-center space-x-2">
       <IdBadge cgp={cgp} />
       <IdBadge id={id} />
-      <StageBadge stage={stage} isApproved={isApproved} />
+      <StageBadge stage={stage} />
       {proposedTimeValue && (
         <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
       )}

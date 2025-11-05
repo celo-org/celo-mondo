@@ -4,10 +4,7 @@ import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/Sta
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import {
-  useIsProposalPassing,
-  useProposalQuorum,
-} from 'src/features/governance/hooks/useProposalQuorum';
+import { useProposalQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import {
   useHistoricalProposalVoteTotals,
   useProposalVoteTotals,
@@ -121,7 +118,7 @@ function ViewVotes({
 export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
   const { votes } = useProposalVoteTotals(propData);
   const { isLoading, data: quorumRequired } = useProposalQuorum(propData);
-  const isPassing = useIsProposalPassing(propData?.proposal?.id);
+  const isPassing = propData.proposal?.isPassing;
 
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
@@ -134,16 +131,16 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         label: 'Yes Votes',
         value: fromWei(yesVotes),
         percentage: isLoading ? 0 : percent(yesVotes, quorumRequired || 0n),
-        color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Lilac,
+        color: isPassing || quorumMetByVoteCount ? Color.Mint : Color.Lilac,
       },
       {
         label: 'Abstain Votes',
         value: fromWei(abstainVotes),
         percentage: isLoading ? 0 : percent(abstainVotes, quorumRequired || 1n),
-        color: isPassing.data || quorumMetByVoteCount ? Color.Mint : Color.Sand,
+        color: isPassing || quorumMetByVoteCount ? Color.Mint : Color.Sand,
       },
     ],
-    [quorumMetByVoteCount, yesVotes, quorumRequired, abstainVotes, isLoading, isPassing.data],
+    [quorumMetByVoteCount, yesVotes, quorumRequired, abstainVotes, isLoading, isPassing],
   );
 
   const isPastVotingStage = propData.stage > ProposalStage.Referendum;
