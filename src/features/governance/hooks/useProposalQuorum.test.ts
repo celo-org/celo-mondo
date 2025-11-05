@@ -46,17 +46,31 @@ describe('fetchThresholds', () => {
   it('fetches the constitution threshholds properly #1', async () => {
     // Proposal for Creation of Celo Governance Guild's execution block - 1
     process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1bb55ea';
-    const expectedNumberOfTxs = 1n;
     const proposalId = 195;
-    const spy = vi.spyOn(publicArchiveClient, 'multicall');
-    await expect(fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs)).resolves
-      .toMatchInlineSnapshot(`
+
+    // Mock fetch to return expected transaction data
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () =>
+        Promise.resolve([
+          {
+            to: '0x1234567890123456789012345678901234567890',
+            data: '0x11223344556677889900',
+            value: 0n,
+            index: 0,
+          },
+        ]),
+    });
+
+    // Mock multicall to return threshold of 0.6
+    const spy = vi.spyOn(publicArchiveClient, 'multicall').mockResolvedValue([toFixidity(0.6)]);
+
+    await expect(fetchThresholds(publicArchiveClient, proposalId)).resolves.toMatchInlineSnapshot(`
       [
         0.6,
       ]
     `);
-    await expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
-    expect(spy.mock.calls.length).toBe(2);
+    expect(global.fetch).toHaveBeenCalledWith('/governance/195/api/transactions');
+    expect(spy.mock.calls.length).toBe(1);
   });
 
   // Check for data sanity at known blocks for known proposals
@@ -64,14 +78,33 @@ describe('fetchThresholds', () => {
   it('fetches the constitution threshholds properly #2', async () => {
     // Enabling MENTO Governance's proposal block
     process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
-    const expectedNumberOfTxs = 50n;
     const proposalId = 196;
-    const spy = vi.spyOn(publicArchiveClient, 'multicall');
-    await expect(
-      fetchThresholds(publicArchiveClient, proposalId, expectedNumberOfTxs),
-    ).resolves.toMatchSnapshot();
-    await expect(spy.mock.results[0].value).resolves.toHaveLength(Number(expectedNumberOfTxs));
-    expect(spy.mock.calls.length).toBe(2);
+
+    // Mock fetch to return expected transaction data (50 transactions)
+    const mockTransactions = Array.from({ length: 50 }, (_, i) => ({
+      to: '0x1234567890123456789012345678901234567890',
+      data: '0x11223344556677889900',
+      value: 0n,
+      index: i,
+    }));
+
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve(mockTransactions),
+    });
+
+    // Mock multicall to return the expected snapshot thresholds (matching the original snapshot)
+    const expectedThresholds = [
+      0.5, 0.5, 0.5, 0.9, 0.9, 0.9, 0.9, 0.5, 0.8, 0.9, 0.5, 0.9, 0.9, 0.9, 0.8, 0.9, 0.5, 0.5, 0.5,
+      0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.9, 0.9, 0.5, 0.5,
+      0.5, 0.5, 0.8, 0.9, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+    ];
+    const spy = vi
+      .spyOn(publicArchiveClient, 'multicall')
+      .mockResolvedValue(expectedThresholds.map(toFixidity));
+
+    await expect(fetchThresholds(publicArchiveClient, proposalId)).resolves.toMatchSnapshot();
+    expect(global.fetch).toHaveBeenCalledWith('/governance/196/api/transactions');
+    expect(spy.mock.calls.length).toBe(1);
   });
 });
 
@@ -115,18 +148,20 @@ describe('useProposalQuorum', () => {
     process.env.NEXT_PUBLIC_FORK_BLOCK_NUMBER = '0x1baa98c';
     const baseline = 0.06;
     const baselineQuorumFactor = 0.5;
-    let calls = 0;
-    vi.spyOn(publicArchiveClient, 'multicall').mockImplementation(async () => {
-      if (calls++ === 0) {
-        return [
-          ['0x', '0x', '0x'],
-          ['0x', '0x', '0x'],
-          ['0x', '0x', '0x'],
-        ];
-      } else {
-        return [0.75, 0.1, 0.5].map(toFixidity);
-      }
+
+    // Mock fetch to return transaction data
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () =>
+        Promise.resolve([
+          { to: '0x1', data: '0x11111111', value: 0n, index: 0 },
+          { to: '0x2', data: '0x22222222', value: 0n, index: 1 },
+          { to: '0x3', data: '0x33333333', value: 0n, index: 2 },
+        ]),
     });
+
+    // Mock multicall to return the thresholds
+    vi.spyOn(publicArchiveClient, 'multicall').mockResolvedValue([0.75, 0.1, 0.5].map(toFixidity));
+
     const networkWeight = 200000000000000000000000000n;
 
     const quorumPct = baseline * baselineQuorumFactor;

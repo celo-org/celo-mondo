@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
-import { Amount, formatNumberString } from 'src/components/numbers/Amount';
+import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalQuorum } from 'src/features/governance/hooks/useProposalQuorum';
@@ -25,7 +25,7 @@ import { toTitleCase } from 'src/utils/strings';
 
 export function PastProposalVoteChart({
   id,
-  title = 'Result',
+  title = 'Votes',
   stage,
 }: {
   id: number;
@@ -57,7 +57,7 @@ export function ProposalVoteChart({ propData }: { propData: MergedProposalData }
 
 function ViewVotes({
   votes,
-  title = 'Result',
+  title = 'Votes',
   totalVotes,
   isLoading,
   stage,
@@ -124,26 +124,60 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
 
+  const quorumMetByVoteCount = quorumRequired ? quorumMeetingVotes > quorumRequired : false;
   const quorumBarChartData = useMemo(
     () => [
       {
-        label: 'Yes votes',
-        value: fromWei(quorumMeetingVotes),
-        percentage: isLoading ? 0 : percent(quorumMeetingVotes, quorumRequired || 1n),
-        color: isPassing ? Color.Mint : Color.Wood,
+        label: 'Yes Votes',
+        value: fromWei(yesVotes),
+        percentage: isLoading ? 0 : percent(yesVotes, quorumRequired || 0n),
+        color: isPassing || quorumMetByVoteCount ? Color.Mint : Color.Lilac,
+      },
+      {
+        label: 'Abstain Votes',
+        value: fromWei(abstainVotes),
+        percentage: isLoading ? 0 : percent(abstainVotes, quorumRequired || 1n),
+        color: isPassing || quorumMetByVoteCount ? Color.Mint : Color.Sand,
       },
     ],
-    [quorumMeetingVotes, quorumRequired, isLoading, isPassing],
+    [quorumMetByVoteCount, yesVotes, quorumRequired, abstainVotes, isLoading, isPassing],
   );
+
+  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
 
   return (
     <div className="space-y-2 border-t border-taupe-300 pt-2">
-      <Amount valueWei={quorumMeetingVotes} className="text-2xl" decimals={0} />
-      <StackedBarChart data={quorumBarChartData} showBorder={false} className="bg-taupe-300" />
-      <div className="flex items-center text-sm text-taupe-600">
-        {`Quorum required: ${formatNumberString(quorumRequired, 0, true)} CELO`}{' '}
-        {isPassing !== undefined ? (isPassing ? '(Passing)' : '(Failing)') : ''}
-      </div>
+      <h2 className="font-serif text-2xl">
+        Quorum
+        <em>
+          {isLoading
+            ? ''
+            : quorumMetByVoteCount
+              ? ` — Pass${tense(isPastVotingStage)}`
+              : ` — Fail${tense(isPastVotingStage)}`}
+        </em>
+      </h2>
+      {isLoading}
+      <span className="py-2 text-sm  text-taupe-600">
+        {isLoading ? (
+          '...loading...'
+        ) : (
+          <>
+            {formatNumberString(quorumMeetingVotes, 0, true)} Votes <em>of</em>&nbsp;&nbsp;
+            {formatNumberString(quorumRequired, 0, true)}&nbsp; Required
+          </>
+        )}
+      </span>
+      <StackedBarChart
+        data={quorumBarChartData}
+        showBorder={true}
+        height="h-6"
+        className="bg-white"
+      />
     </div>
   );
+}
+
+function tense(isPast: boolean) {
+  return isPast ? 'ed' : 'ing';
 }

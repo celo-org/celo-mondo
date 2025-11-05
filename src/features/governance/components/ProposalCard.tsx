@@ -34,7 +34,7 @@ export function ProposalCard({
 
   const { votes } = useProposalVoteTotals(propData);
 
-  const link = cgp ? `/governance/cgp-${cgp}` : `/governance/${id}`;
+  const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
   const endTimeValue = getEndHumanEndTime({ timestampExecuted, expiryTimestamp });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;

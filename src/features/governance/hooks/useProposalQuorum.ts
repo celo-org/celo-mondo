@@ -7,6 +7,7 @@ import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { Proposal } from 'src/features/governance/types';
+import type { ProposalTransaction } from 'src/features/governance/utils/transactionDecoder';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
@@ -95,9 +96,9 @@ export function useThresholds(proposal?: Proposal): {
 } {
   const publicClient = usePublicClient();
   const { error, isLoading, data } = useQuery({
-    queryKey: ['useThresholds', publicClient, proposal?.id, Number(proposal!.numTransactions)],
+    queryKey: ['useThresholds', publicClient, proposal?.id],
     queryFn: async () => {
-      return await fetchThresholds(publicClient!, proposal!.id, proposal!.numTransactions);
+      return await fetchThresholds(publicClient!, proposal!.id);
     },
     enabled: Boolean(publicClient && proposal?.id),
   });
@@ -110,29 +111,9 @@ export function useThresholds(proposal?: Proposal): {
   };
 }
 
-export async function fetchThresholds(
-  publicClient: PublicClient,
-  proposalId: number,
-  numTransactions: bigint,
-) {
-  const txIds = new Array(Number(numTransactions)).fill(0).map((_, id) => id);
-
-  // Extracting the base contract call avoids the following error:
-  // Type instantiation is excessively deep and possibly infinite. ts(2589)
-  const getProposalTransactionContract = {
-    address: Addresses.Governance,
-    abi: governanceABI,
-    functionName: 'getProposalTransaction',
-  } as const;
-
-  const results = await publicClient?.multicall({
-    ...getRuntimeBlock(),
-    allowFailure: false,
-    contracts: txIds.map((txId: number) => ({
-      ...getProposalTransactionContract,
-      args: [proposalId, txId],
-    })),
-  });
+export async function fetchThresholds(publicClient: PublicClient, proposalId: number) {
+  const response = await fetch(`/governance/${proposalId}/api/transactions`);
+  const results = (await response.json()) as ProposalTransaction[];
 
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
@@ -144,13 +125,18 @@ export async function fetchThresholds(
 
   if (results.length === 0) {
     // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1730
-    results.push([0n, '0x0000000000000000000000000000000000000000', '0x00000000']);
+    results.push({
+      to: '0x0000000000000000000000000000000000000000',
+      data: '0x00000000',
+      value: 0n,
+      index: 0,
+    });
   }
 
   const thresholds = await publicClient?.multicall({
-    ...getRuntimeBlock(),
+    ...getRuntimeBlock(), // This is probably fine most of the time but in case thresholds change better to run against block from when proposal was in referendum.
     allowFailure: false,
-    contracts: results.map(([_value, destination, data]) => {
+    contracts: results.map(({ data, to: destination }) => {
       const functionId = extractFunctionSignature(data);
       return {
         ...getConstitutionContract,
