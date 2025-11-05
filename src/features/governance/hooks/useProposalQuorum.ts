@@ -60,21 +60,6 @@ export function useProposalQuorum(propData?: MergedProposalData): {
   }
 }
 
-export function useIsProposalPassing(id: number | undefined) {
-  return useReadContract({
-    address: Addresses.Governance,
-    abi: governanceABI,
-    args: [id ? BigInt(id) : 0n],
-    functionName: 'isProposalPassing',
-    scopeKey: `useIsProposalPassing-${id}`,
-    query: {
-      enabled: Boolean(id),
-      gcTime: GCTime.Shortest,
-      staleTime: StaleTime.Shortest,
-    },
-  });
-}
-
 export function useParticipationParameters(): {
   isLoading: boolean;
   data: ParticipationParameters;

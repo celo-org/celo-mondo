@@ -96,25 +96,4 @@ describe('Governance proposal stage logic', () => {
     }
     expect(stage).toBe(ProposalStage.Expiration);
   });
-
-  it('sets isApproved true only for Execution and Executed stages', () => {
-    const approvedStages = [ProposalStage.Execution, ProposalStage.Executed];
-    const nonApprovedStages = [
-      ProposalStage.None,
-      ProposalStage.Queued,
-      ProposalStage.Approval,
-      ProposalStage.Referendum,
-      ProposalStage.Expiration,
-      ProposalStage.Rejected,
-      ProposalStage.Withdrawn,
-    ];
-    approvedStages.forEach((stage) => {
-      const isApproved = stage === ProposalStage.Execution || stage === ProposalStage.Executed;
-      expect(isApproved).toBe(true);
-    });
-    nonApprovedStages.forEach((stage) => {
-      const isApproved = stage === ProposalStage.Execution || stage === ProposalStage.Executed;
-      expect(isApproved).toBe(false);
-    });
-  });
 });
