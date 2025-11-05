@@ -146,6 +146,8 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
     [quorumMetByVoteCount, yesVotes, quorumRequired, abstainVotes, isLoading, isPassing.data],
   );
 
+  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
+
   return (
     <div className="space-y-2 border-t border-taupe-300 pt-2">
       <h2 className="font-serif text-2xl">
@@ -153,15 +155,9 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         <em>
           {isLoading
             ? ''
-            : propData.stage > ProposalStage.Referendum
-              ? quorumMetByVoteCount
-                ? ' — Passed'
-                : ' — Failed'
-              : isPassing.isSuccess
-                ? isPassing.data
-                  ? ' — Passing'
-                  : ' — Failing'
-                : ''}
+            : quorumMetByVoteCount
+              ? ` — Pass${tense(isPastVotingStage)}`
+              : ` — Fail${tense(isPastVotingStage)}`}
         </em>
       </h2>
       {isLoading}
@@ -183,4 +179,8 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
       />
     </div>
   );
+}
+
+function tense(isPast: boolean) {
+  return isPast ? 'ed' : 'ing';
 }
