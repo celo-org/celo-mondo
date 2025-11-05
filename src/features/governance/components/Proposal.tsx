@@ -109,7 +109,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           })}
         </div>
       </div>
-      {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
+      {stage === ProposalStage.Queued && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ProposalUpvotersTable propData={propData} />
         </div>
