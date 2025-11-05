@@ -38,7 +38,7 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
     queryKey: ['useProposalVoteTotals', propData],
     queryFn: async () => {
       const { id, stage, proposal } = propData || {};
-      if (!id || !stage || stage < ProposalStage.Referendum) return null;
+      if (!id || !stage || stage < ProposalStage.Approval) return null;
 
       // First check if proposal data already includes total
       // This will be the case for active proposals or failed ones
