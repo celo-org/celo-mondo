@@ -41,7 +41,7 @@ const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
     Boolean(p.proposal) &&
     p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
   [Filter.Voting]: (p) => p.stage === ProposalStage.Referendum,
-  [Filter.Upcoming]: (p) => p.stage < ProposalStage.Referendum,
+  [Filter.Upcoming]: (p) => p.stage < ProposalStage.Approval,
   [Filter.History]: (p) => p.stage > ProposalStage.Execution,
 };
 
