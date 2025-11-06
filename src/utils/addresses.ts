@@ -55,8 +55,8 @@ export function eqAddressSafe(a1: string, a2: string) {
   }
 }
 
-export function ensure0x(hexstr: string) {
-  return hexstr.startsWith('0x') ? hexstr : `0x${hexstr}`;
+export function ensure0x(hexstr: string): Address {
+  return hexstr.startsWith('0x') ? (hexstr as Address) : `0x${hexstr}`;
 }
 
 export function strip0x(hexstr: string) {
