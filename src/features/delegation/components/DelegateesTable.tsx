@@ -22,7 +22,7 @@ import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
-import { Delegatee } from 'src/features/delegation/types';
+import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -52,7 +52,10 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const showTxModal = useTransactionModal(TransactionFlowType.Delegate);
+  const showTxModal = useTransactionModal(TransactionFlowType.Delegate, {
+    customDelegatee: true,
+    action: DelegateActionType.Delegate,
+  });
 
   // Set up responsive column visibility
   const isMobile = useIsMobile();

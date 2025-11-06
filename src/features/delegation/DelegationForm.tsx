@@ -128,18 +128,20 @@ export function DelegationForm({
                 <input
                   id="default-checkbox"
                   type="checkbox"
-                  value={values.customDelegatee ? 'true' : ''}
+                  name="customDelegatee"
+                  checked={values.customDelegatee}
                   onChange={() => {
                     setFieldValue('delegatee', '' as Address);
                     setFieldValue('customDelegatee', !values.customDelegatee);
                   }}
                   className="h-4 w-4 rounded-sm border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
                 />
+
                 <label
                   htmlFor="default-checkbox"
-                  className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  className="m-0 ms-2 p-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                 >
-                  Check to use a private delegatee address
+                  Use custom delegatee address
                 </label>
               </div>
               <CurrentPercentField delegations={delegations} />
@@ -259,6 +261,7 @@ function DelegateeField({
         </label>
         <input
           id="custom-delegatee-address"
+          placeholder="Address"
           className="btn btn-outline w-full border-taupe-300 px-3 text-left disabled:input-disabled hover:border-taupe-300 hover:bg-white hover:text-black"
           value={field.value}
           onPaste={(evt) => {
