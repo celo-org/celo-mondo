@@ -13,7 +13,6 @@ import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { bigIntMin } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
-import { useStakingMode } from 'src/utils/useStakingMode';
 
 export default function Page() {
   const { groups, totalVotes } = useValidatorGroups();
@@ -47,18 +46,21 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
     return { minVotes, numValidators };
   }, [groups]);
 
-  const { mode, ui } = useStakingMode();
-  const showStakeModal = useTransactionModal(
-    mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
-  );
+  const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const showLiquidStakeModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <H1>Discover Validators</H1>
-        <SolidButton onClick={() => showStakeModal()} className="px-8">
-          {ui.action}
-        </SolidButton>
+        <div className="flex flex-row gap-2">
+          <SolidButton onClick={() => showStakeModal()} className="px-8">
+            Stake
+          </SolidButton>
+          <SolidButton onClick={() => showLiquidStakeModal()} className="bg-[#B490FF] px-8">
+            Liquid Stake
+          </SolidButton>
+        </div>
       </div>
       <div className="flex items-center justify-between gap-2 sm:gap-8">
         <StatBox

@@ -10,6 +10,7 @@ import {
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
+import { StakeStCeloForm } from 'src/features/staking/stCELO/StakeForm';
 import { TransactionConfirmation } from 'src/features/transactions/TransactionConfirmation';
 import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/types';
 import { isNullish } from 'src/utils/typeof';
@@ -72,7 +73,7 @@ export function TransactionFlow<FormDefaults extends {}>({
     // Will be caught by error boundary
     // but we should never be here because no stCELO component should ever be
     // shown without a stCELOBalance being positive in the first place
-    throw new Error('TODO: should never end up here');
+    Component = <StakeStCeloForm showTip={true} />;
   } else if (!confirmationDetails) {
     Component = <FormComponent defaultFormValues={defaultFormValues} onConfirmed={onConfirmed} />;
   } else {

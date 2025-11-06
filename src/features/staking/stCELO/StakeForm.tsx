@@ -34,6 +34,7 @@ const initialValues: LiquidStakeFormValues = {
 export function StakeStCeloForm({
   defaultFormValues,
   onConfirmed,
+  showTip,
 }: {
   defaultFormValues?: Partial<LiquidStakeFormValues>;
   showTip?: boolean;
@@ -91,6 +92,12 @@ export function StakeStCeloForm({
       {({ values }) => (
         <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="lock-form">
           <div className="space-y-5">
+            {showTip && (
+              <TipBox color="purple">
+                You currently have no stCELO. Liquid staking and governance requires funds. Stake
+                stCELO to begin.
+              </TipBox>
+            )}
             {values.action === LiquidStakeActionType.Unstake && (
               <TipBox color="purple">Unstaking takes {unlockingPeriodReadable}. </TipBox>
             )}
