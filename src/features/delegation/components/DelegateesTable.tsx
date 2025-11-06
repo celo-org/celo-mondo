@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { SearchField } from 'src/components/input/SearchField';
@@ -22,6 +23,8 @@ import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { Delegatee } from 'src/features/delegation/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
@@ -49,6 +52,8 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const showTxModal = useTransactionModal(TransactionFlowType.Delegate);
+
   // Set up responsive column visibility
   const isMobile = useIsMobile();
   useEffect(() => {
@@ -65,12 +70,18 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
         <TabHeaderButton isActive={true} count={rows.length}>
           Delegates
         </TabHeaderButton>
-        <SearchField
-          value={searchQuery}
-          setValue={setSearchQuery}
-          placeholder="Search delegates"
-          className="w-full text-sm md:w-64"
-        />
+        <div className="flex flex-row gap-2">
+          <SolidButton
+            className="btn-neutral h-full text-xs"
+            onClick={() => showTxModal()}
+          >{`️🗳️ Delegate voting power`}</SolidButton>
+          <SearchField
+            value={searchQuery}
+            setValue={setSearchQuery}
+            placeholder="Search delegates"
+            className="w-full text-sm md:w-64"
+          />
+        </div>
       </div>
       <table className="mt-2 w-full lg:min-w-[62rem] xl:min-w-[75rem]">
         <thead>

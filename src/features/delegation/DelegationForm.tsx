@@ -257,6 +257,9 @@ function DelegateeField({
           id="custom-delegatee-address"
           className="btn btn-outline w-full border-taupe-300 px-3 text-left disabled:input-disabled hover:border-taupe-300 hover:bg-white hover:text-black"
           value={field.value}
+          onPaste={(evt) => {
+            helpers.setValue(ensure0x(evt.target.value), false);
+          }}
           onChange={(evt) => {
             helpers.setValue(ensure0x(evt.target.value), false);
           }}
