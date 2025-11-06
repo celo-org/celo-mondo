@@ -27,7 +27,7 @@ import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteC
 import { cleanDelegateeName } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
-import { isValidAddress, shortenAddress } from 'src/utils/addresses';
+import { ensure0x, isValidAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 import useAddressToLabel from 'src/utils/useAddressToLabel';
@@ -38,6 +38,7 @@ const initialValues: DelegateFormValues = {
   percent: 0,
   delegatee: '' as Address,
   transferDelegatee: '' as Address,
+  customDelegatee: false,
 };
 
 export function DelegationForm({
@@ -102,7 +103,7 @@ export function DelegationForm({
       validateOnChange={false}
       validateOnBlur={false}
     >
-      {({ values }) => (
+      {({ values, setFieldValue }) => (
         <Form
           className="mt-4 flex flex-1 flex-col justify-between space-y-3"
           data-testid="delegate-form"
@@ -119,8 +120,24 @@ export function DelegationForm({
                 }
                 addressToDelegatee={addressToDelegatee}
                 defaultValue={defaultFormValues?.delegatee}
+                allowUserInput={values.customDelegatee}
                 disabled={isInputDisabled}
               />
+              <div className="mb-4 flex items-center">
+                <input
+                  id="default-checkbox"
+                  type="checkbox"
+                  value={values.customDelegatee ? 'true' : ''}
+                  onChange={() => setFieldValue('customDelegatee', !values.customDelegatee)}
+                  className="h-4 w-4 rounded-sm border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+                />
+                <label
+                  htmlFor="default-checkbox"
+                  className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  Check to use a private delegatee address
+                </label>
+              </div>
               <CurrentPercentField delegations={delegations} />
             </div>
             {values.action === DelegateActionType.Transfer && (
@@ -186,15 +203,16 @@ function DelegateeField({
   addressToDelegatee,
   defaultValue,
   disabled,
+  allowUserInput,
 }: {
   fieldName: 'delegatee' | 'transferDelegatee';
   label: string;
   addressToDelegatee?: AddressTo<Delegatee>;
   defaultValue?: Address;
   disabled?: boolean;
+  allowUserInput?: boolean;
 }) {
   const [field, , helpers] = useField<Address>(fieldName);
-
   useEffect(() => {
     helpers.setValue(defaultValue || ZERO_ADDRESS);
   }, [defaultValue, helpers]);
@@ -208,7 +226,7 @@ function DelegateeField({
   const delegateeName = currentDelegatee?.name
     ? cleanDelegateeName(currentDelegatee.name)
     : field.value && field.value !== ZERO_ADDRESS
-      ? shortenAddress(field.value)
+      ? field.value
       : 'Select delegatee';
 
   const sortedDelegatees = useMemo(() => {
@@ -228,6 +246,24 @@ function DelegateeField({
   );
 
   const onClickDelegatee = (address: Address) => helpers.setValue(address);
+
+  if (allowUserInput) {
+    return (
+      <div className="relative space-y-1">
+        <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
+          {label}
+        </label>
+        <input
+          id="custom-delegatee-address"
+          className="btn btn-outline w-full border-taupe-300 px-3 text-left disabled:input-disabled hover:border-taupe-300 hover:bg-white hover:text-black"
+          value={field.value}
+          onChange={(evt) => {
+            helpers.setValue(ensure0x(evt.target.value), false);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative space-y-1">
