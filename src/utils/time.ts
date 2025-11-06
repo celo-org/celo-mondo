@@ -1,3 +1,6 @@
+import { getExpiryTimestamp } from 'src/features/governance/governanceData';
+import { ProposalStage } from 'src/features/governance/types';
+
 export function areDatesSameDay(d1: Date, d2: Date) {
   return (
     d1.getDate() === d2.getDate() &&
@@ -82,20 +85,38 @@ export function getDateTimeString(timestamp: number) {
 }
 
 export function getEndHumanEndTime({
-  timestampExecuted,
-  expiryTimestamp,
+  stageStartTimestamp,
+  stage,
 }: {
-  timestampExecuted: number | undefined;
-  expiryTimestamp: number | undefined;
+  stageStartTimestamp: number | undefined;
+  stage: ProposalStage | undefined;
 }): string | undefined {
   const now = Date.now();
-  if (timestampExecuted) {
-    return `Executed ${getHumanReadableTimeString(timestampExecuted)}`;
-  } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp > now) {
-    return `Expires in ${getHumanReadableDuration(expiryTimestamp - now)} on ${getFullDateHumanDateString(expiryTimestamp)}`;
-  } else if (expiryTimestamp && expiryTimestamp > 0) {
-    return `Expired ${getHumanReadableTimeString(expiryTimestamp)}`;
-  } else {
+
+  if (!stageStartTimestamp || !stage) {
     return undefined;
+  }
+
+  switch (stage) {
+    case ProposalStage.Queued:
+    case ProposalStage.Referendum: {
+      const endDate = getExpiryTimestamp(stage, stageStartTimestamp)!;
+      return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+    }
+    case ProposalStage.Approval: {
+      const endDate = getExpiryTimestamp(ProposalStage.Approval, stageStartTimestamp)!;
+      return `Passed on ${getFullDateHumanDateString(stageStartTimestamp)} to be approved before ${getFullDateHumanDateString(endDate)}`;
+    }
+    case ProposalStage.Execution: {
+      return `Approved on ${getFullDateHumanDateString(stageStartTimestamp)}`;
+    }
+    case ProposalStage.Withdrawn:
+    case ProposalStage.Rejected:
+    case ProposalStage.Expiration: {
+      return `Expired ${getHumanReadableTimeString(stageStartTimestamp)}`;
+    }
+    case ProposalStage.Executed: {
+      return `Executed ${getHumanReadableTimeString(stageStartTimestamp)}`;
+    }
   }
 }

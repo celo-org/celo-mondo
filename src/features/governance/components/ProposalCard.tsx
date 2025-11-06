@@ -27,15 +27,15 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, proposal, metadata } = propData;
+  const { id, proposal, metadata, stage } = propData;
 
-  const { expiryTimestamp } = proposal || {};
-  const { title, timestampExecuted, cgp } = metadata || {};
+  const { timestamp } = proposal || {};
+  const { title, cgp } = metadata || {};
 
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
-  const endTimeValue = getEndHumanEndTime({ timestampExecuted, expiryTimestamp });
+  const endTimeValue = getEndHumanEndTime({ stageStartTimestamp: timestamp, stage });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})
