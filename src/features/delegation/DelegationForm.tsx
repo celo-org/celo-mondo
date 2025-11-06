@@ -374,7 +374,7 @@ async function validateForm(
     if (!isValidAddress(delegatee)) {
       return { delegatee: 'Invalid address' };
     }
-    if (!isAddressAnAccount(delegatee)) {
+    if (!(await isAddressAnAccount(delegatee))) {
       return { delegatee: 'Address must be registered as an Account.' };
     }
 
