@@ -92,10 +92,10 @@ export function ProposalBadgeRow({
 }) {
   const { stage, proposal, metadata, id } = propData;
 
-  const { proposer, timestamp } = proposal || {};
-  const { cgp, timestampExecuted } = metadata || {};
+  const { timestamp, proposer } = proposal || {};
+  const { timestamp: cgpTimestamp, cgp, timestampExecuted } = metadata || {};
 
-  const proposedTimestamp = cgpTimestamp;
+  const proposedTimestamp = timestamp || cgpTimestamp;
   const proposedTimeValue = proposedTimestamp
     ? new Date(proposedTimestamp).toLocaleDateString()
     : undefined;
