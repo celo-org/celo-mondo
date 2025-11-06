@@ -121,7 +121,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           </ErrorBoundaryInline>
         </div>
       )}
-      {stage >= ProposalStage.Approval && stage !== ProposalStage.Executed && proposalId && (
+      {(stage === ProposalStage.Approval || stage === ProposalStage.Referendum) && proposalId && (
+        // Approvals are fetched from onchain therefore only can be displayed in Approval, Referendum Stages.
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalApprovalsTable proposalId={proposalId} />
