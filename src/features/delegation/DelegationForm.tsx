@@ -20,6 +20,7 @@ import {
   Delegatee,
   DelegationBalances,
 } from 'src/features/delegation/types';
+import { isAddressAnAccount } from 'src/features/delegation/utils';
 import { LockedBalances } from 'src/features/locking/types';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
@@ -360,17 +361,23 @@ function PercentField({
   );
 }
 
-function validateForm(
+async function validateForm(
   values: DelegateFormValues,
   delegations: DelegationBalances,
-): FormikErrors<DelegateFormValues> {
+): Promise<FormikErrors<DelegateFormValues>> {
   const { action, percent, delegatee, transferDelegatee } = values;
   const { delegateeToAmount } = delegations;
 
   if (!delegatee || delegatee === ZERO_ADDRESS) return { delegatee: 'Delegatee required' };
 
   if (action === DelegateActionType.Delegate) {
-    if (!isValidAddress(delegatee)) return { delegatee: 'Invalid address' };
+    if (!isValidAddress(delegatee)) {
+      return { delegatee: 'Invalid address' };
+    }
+    if (!isAddressAnAccount(delegatee)) {
+      return { delegatee: 'Address must be registered as an Account.' };
+    }
+
     const currentAmount = delegateeToAmount[delegatee];
     if (!currentAmount && objLength(delegateeToAmount) >= MAX_NUM_DELEGATEES)
       return { delegatee: `Max number of delegatees is ${MAX_NUM_DELEGATEES}` };
