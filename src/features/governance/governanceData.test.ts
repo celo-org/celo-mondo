@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe('getExpiryTimestamp', () => {
   test('Approval', () => {
-    expect(getExpiryTimestamp(ProposalStage.Approval, 1000)).toMatchInlineSnapshot(`691201000`);
+    expect(getExpiryTimestamp(ProposalStage.Approval, 1000)).toMatchInlineSnapshot(`864001000`);
   });
   test('Queued', () => {
     expect(getExpiryTimestamp(ProposalStage.Queued, 1000)).toMatchInlineSnapshot(`2419201000`);
