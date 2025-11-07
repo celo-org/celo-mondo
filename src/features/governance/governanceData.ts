@@ -1,5 +1,5 @@
 import {
-  APPROVAL_STAGE_EXPIRY_TIME,
+  EXECUTION_STAGE_EXPIRY_TIME,
   QUEUED_STAGE_EXPIRY_TIME,
   REFERENDUM_STAGE_EXPIRY_TIME,
 } from 'src/config/consts';
@@ -34,7 +34,7 @@ export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
   if (stage === ProposalStage.Queued) {
     return timestamp + QUEUED_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Approval) {
-    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME + APPROVAL_STAGE_EXPIRY_TIME;
+    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Referendum || stage === ProposalStage.Expiration) {
     return timestamp + REFERENDUM_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Execution) {
