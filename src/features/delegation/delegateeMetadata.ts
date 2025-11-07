@@ -16,12 +16,16 @@ export function getDelegateeMetadata(): AddressTo<DelegateeMetadata> {
     cachedMetadata = parseDelegateeMetadata();
     cachedMetadata[AccountABI.address] = {
       address: AccountABI.address,
-      date: 'TODO',
-      description: 'https://app.stcelo.xyz',
-      interests: ['TODO test interest'],
-      links: {},
+      date: '2022-08-17',
+      description:
+        'StakedCelo is a Celo-native open source liquid staking protocol developed by cLabs to encourage the active participation of users in the protocol. It allows anyone to stake CELO, thus supporting the network and receiving the Epoch Rewards associated with staking, and at the same time to keep these assets liquid so that they can be used to participate in and engage across other applications in the ecosystem. ',
+      interests: ['Liquid Staking', 'StakedCelo'],
+      links: {
+        website: 'https://docs.stcelo.xyz/',
+      },
       logoUri: '/logos/stCELO.png',
       name: 'stCELO',
+      stCELO: true,
     };
   }
   return cachedMetadata;

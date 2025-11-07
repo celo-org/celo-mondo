@@ -1,8 +1,13 @@
 import { useToastError } from 'src/components/notifications/useToastError';
+import { ZERO_ADDRESS } from 'src/config/consts';
 import ManagerABI from 'src/config/stcelo/ManagerABI';
+import StakedCeloABI from 'src/config/stcelo/StakedCeloABI';
+import { queryCeloBlockscoutLogs } from 'src/features/explorers/blockscout';
+import { TransactionLog } from 'src/features/explorers/types';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
+import { logger } from 'src/utils/logger';
 import { useStakingMode } from 'src/utils/useStakingMode';
-import { TransactionReceipt } from 'viem';
+import { decodeEventLog, encodeEventTopics, PublicClient, TransactionReceipt } from 'viem';
 import { useReadContract } from 'wagmi';
 
 export function useStrategy(address?: Address) {
@@ -80,3 +85,66 @@ export function useChangeStrategy(callback: (receipt: TransactionReceipt) => any
 //     refetch,
 //   };
 // }
+
+export async function fetchStCELOStakers(client: PublicClient): Promise<AddressTo<bigint>> {
+  const topics = encodeEventTopics({
+    abi: StakedCeloABI.abi,
+    eventName: 'Transfer',
+    args: { from: ZERO_ADDRESS },
+  });
+
+  const params = `topic0=${topics[0]}&topic2=${topics[2]}&topic0_2_opr=and`;
+  const events = await queryCeloBlockscoutLogs(StakedCeloABI.address, params);
+  const allStakers: Address[] = [];
+  reduceLogs(allStakers, events);
+
+  // Filter out duplicates
+  const allStakersUnique = Array.from(new Set(allStakers));
+
+  // Fetch the amount of gold delegated by each delegator using multicall
+  const allStakersAndAmount: [Address, bigint][] = (
+    await client.multicall({
+      allowFailure: false,
+      contracts: allStakersUnique.map(
+        (address) =>
+          ({
+            address: StakedCeloABI.address,
+            abi: StakedCeloABI.abi,
+            functionName: 'balanceOf',
+            args: [address],
+          }) as const,
+      ),
+    })
+  ).map((balance, index) => [allStakersUnique[index], balance]);
+
+  // Filter out delegators with 0 amount (as they might have undelegated)
+  return Object.fromEntries(allStakersAndAmount.filter(([, balance]) => balance > 0n));
+}
+
+function reduceLogs(stakers: Address[], logs: TransactionLog[]) {
+  for (const log of logs) {
+    try {
+      if (!log.topics || log.topics.length < 3) {
+        continue;
+      }
+
+      const { eventName, args } = decodeEventLog({
+        abi: StakedCeloABI.abi,
+        data: log.data,
+        topics: log.topics,
+        strict: false,
+      });
+
+      if (eventName !== 'Transfer') continue;
+
+      const { to } = args;
+      if (!to) {
+        continue;
+      }
+
+      stakers.push(to);
+    } catch (error) {
+      logger.warn('Error decoding stcelo transfer event log', error, log);
+    }
+  }
+}
