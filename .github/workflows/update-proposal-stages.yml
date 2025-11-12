@@ -1,0 +1,70 @@
+name: Update Proposal Stages
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: yarn-install
+        run: |
+          yarn install --immutable
+          CHANGES=$(git status -s)
+          if [[ ! -z $CHANGES ]]; then
+            echo "Changes found: $CHANGES"
+            git diff
+            exit 1
+          fi
+
+  update-stages:
+    runs-on: ubuntu-latest
+    needs: [install]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: Update proposal stages (production)
+        run: npx tsx src/scripts/updateProposalStages.ts
+        env:
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          IS_PRODUCTION_DATABASE: true
+          CI: true
+
+      - name: Update proposal stages (staging)
+        run: npx tsx src/scripts/updateProposalStages.ts
+        env:
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
+          IS_PRODUCTION_DATABASE: false
+          CI: true
+
+      - name: Revalidate cache (production)
+        if: success()
+        run: |
+          curl -X DELETE "https://mondo.celo.org/api/governance/proposals" || true
+        continue-on-error: true
+
+      - name: Revalidate cache (staging)
+        if: success()
+        run: |
+          curl -X DELETE "https://preview-celo-mondo.vercel.app/api/governance/proposals" || true
+        continue-on-error: true
