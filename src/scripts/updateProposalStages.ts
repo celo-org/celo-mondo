@@ -1,3 +1,5 @@
+import 'dotenv/config';
+
 /* eslint no-console: 0 */
 import { governanceABI } from '@celo/abis';
 import { and, eq, inArray } from 'drizzle-orm';
