@@ -36,7 +36,7 @@ export default async function updateProposalsInDB(
     inArray(eventsTable.eventName, [
       'ProposalQueued',
       'ProposalDequeued',
-      'ProposalApproved',
+      // ProposalApproved removed: approval doesn't change stage, it's a boolean state
       'ProposalExecuted',
       'ProposalExpired',
     ]),
@@ -313,11 +313,6 @@ async function getProposalStage(
   switch (eventName) {
     case 'ProposalExecuted':
       stage = ProposalStage.Executed;
-      break;
-
-    // this is wrong. proposals can be approved while in referendum. approving does not change the stage
-    case 'ProposalApproved':
-      stage = ProposalStage.Execution;
       break;
 
     case 'ProposalExpired':
