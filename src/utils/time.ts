@@ -104,18 +104,23 @@ export function getEndHumanEndTime({
   }
 
   switch (stage) {
-    case ProposalStage.Queued:
-    case ProposalStage.Referendum: {
+    case ProposalStage.Queued: {
       const endDate = getStageEndTimestamp(stage, proposalTimestamp)!;
-      // for refernedum stage we should say "Voting ends" not expires. since expiration happens later
       return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
-    case ProposalStage.Approval: {
-      const endDate = getStageEndTimestamp(ProposalStage.Approval, proposalTimestamp)!;
-      return `Passed on ${getFullDateHumanDateString(proposalTimestamp)} to be approved before ${getFullDateHumanDateString(endDate)}`;
+    case ProposalStage.Referendum: {
+      const endDate = getStageEndTimestamp(stage, proposalTimestamp)!;
+      return `Voting ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
+    case ProposalStage.Approval:
+    // DEPRECATED: Treat like Execution (awaiting execution after approval)
+    // Fall through to Execution case
     case ProposalStage.Execution: {
-      return `Approved on ${getFullDateHumanDateString(proposalTimestamp)}`;
+      const endDate = getStageEndTimestamp(stage, proposalTimestamp);
+      if (endDate) {
+        return `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+      }
+      return 'Awaiting execution';
     }
     case ProposalStage.Withdrawn:
     case ProposalStage.Rejected:
