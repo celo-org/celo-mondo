@@ -101,6 +101,7 @@ export function getEndHumanEndTime({
     case ProposalStage.Queued:
     case ProposalStage.Referendum: {
       const endDate = getExpiryTimestamp(stage, stageStartTimestamp)!;
+      // for refernedum stage we should say "Voting ends" not expires. since expiration happens later
       return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
     case ProposalStage.Approval: {

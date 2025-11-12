@@ -2,7 +2,7 @@ import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
-import { GCTime, StaleTime } from 'src/config/consts';
+import { GCTime, REFERENDUM_STAGE_EXPIRY_TIME, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import type { getProposals } from 'src/features/governance/getProposals';
@@ -192,14 +192,56 @@ function computeStageAndVotes(mergedProposalData: MergedProposalData, votes?: Vo
     });
 
     let computedStage = proposal.stage;
-    // compute approval stage if still in referedum but expired by date
-    // and passing on chain
+    // I dont like using computed stages. if we do it should exactly match the constract logic
+
+    /*
+        function getProposalStage(uint256 proposalId) external view returns (Proposals.Stage) {
+          if (proposalId == 0 || proposalId > proposalCount) {
+            return Proposals.Stage.None;
+          }
+          Proposals.Proposal storage proposal = proposals[proposalId];
+          if (isQueued(proposalId)) {
+            return
+              _isQueuedProposalExpired(proposal) ? Proposals.Stage.Expiration : Proposals.Stage.Queued;
+          } else {
+            Proposals.Stage stage = getProposalDequeuedStage(proposal);
+            return _isDequeuedProposalExpired(proposal, stage) ? Proposals.Stage.Expiration : stage;
+          }
+        }
+
+        function getProposalDequeuedStage(
+          Proposals.Proposal storage proposal
+        ) internal view returns (Proposals.Stage) {
+          uint256 stageStartTime = proposal.timestamp.add(stageDurations.referendum).add(
+            stageDurations.execution
+          );
+          // solhint-disable-next-line not-rely-on-time
+          if (
+            now >= stageStartTime &&
+            (proposal.transactions.length != 0 ||
+              // proposals with 0 transactions can expire only when not approved or not passing
+              !proposal.isApproved() ||
+              !_isProposalPassing(proposal))
+          ) {
+            return Proposals.Stage.Expiration;
+          }
+          stageStartTime = stageStartTime.sub(stageDurations.execution);
+          // solhint-disable-next-line not-rely-on-time
+          if (now >= stageStartTime) {
+            return Proposals.Stage.Execution;
+          }
+          return Proposals.Stage.Referendum;
+        }
+    */
     if (
       proposal.stage === ProposalStage.Referendum &&
-      proposal.timestamp! <= Date.now() &&
-      proposal.isPassing
+      proposal.timestamp + REFERENDUM_STAGE_EXPIRY_TIME <= Date.now()
     ) {
-      computedStage = ProposalStage.Approval;
+      computedStage = proposal.isPassing ? ProposalStage.Execution : ProposalStage.Expiration;
+      console.info(
+        'timestamp',
+        new Date(proposal.timestamp + REFERENDUM_STAGE_EXPIRY_TIME).toDateString(),
+      );
       // compute rejected stage if expired and majority of votes are "No"
     } else if (proposal.stage === ProposalStage.Expiration) {
       const yesVotes = proposal.votes[VoteType.Yes];
