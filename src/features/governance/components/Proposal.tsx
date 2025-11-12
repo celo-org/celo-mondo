@@ -105,7 +105,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         <div className="max-w-[340px] text-sm text-taupe-600">
           {getEndHumanEndTime({
             stage,
-            stageStartTimestamp: proposal?.timestamp,
+            proposalTimestamp: proposal?.timestamp,
           })}
         </div>
       </div>

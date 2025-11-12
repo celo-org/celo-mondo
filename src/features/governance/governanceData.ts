@@ -30,13 +30,34 @@ export type MergedProposalData = { stage: ProposalStage; id?: number } & (
     }
 );
 
-export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
+/**
+ * Returns the timestamp when the current stage ends (not when proposal expires).
+ *
+ * IMPORTANT: The proposalTimestamp parameter is the proposal's base timestamp, which is:
+ * - For Queued stage: the time when proposal was queued
+ * - For dequeued stages (Referendum/Execution/Expiration): the time when proposal was dequeued
+ *
+ * This is NOT the start time of the current stage, but the reference point for calculating stage durations.
+ *
+ * Stage transitions (from Governance.sol contract):
+ * - Queued: 28 days → Expiration
+ * - Referendum: 7 days → Execution
+ * - Execution: 3 days more (10 days total from dequeue) → Expiration
+ *
+ * @param stage - Current proposal stage
+ * @param proposalTimestamp - Proposal's base timestamp in milliseconds (queue or dequeue time)
+ * @returns Timestamp in milliseconds when stage ends, or undefined if terminal/unknown
+ */
+export function getStageEndTimestamp(
+  stage: ProposalStage,
+  proposalTimestamp: number,
+): number | undefined {
   if (stage === ProposalStage.Queued) {
-    return timestamp + QUEUED_STAGE_EXPIRY_TIME;
+    return proposalTimestamp + QUEUED_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Approval) {
-    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
+    return proposalTimestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Referendum || stage === ProposalStage.Expiration) {
-    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME;
+    return proposalTimestamp + REFERENDUM_STAGE_EXPIRY_TIME;
   } else if (stage === ProposalStage.Execution) {
     // NOTE: it seems once approved and passing (thus in Execution stage)
     // they can't quite expire?
@@ -45,3 +66,6 @@ export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
     return undefined;
   }
 }
+
+// Backwards compatibility alias
+export const getExpiryTimestamp = getStageEndTimestamp;
