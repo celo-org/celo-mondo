@@ -24,19 +24,44 @@ For support, you can [file an issue](https://github.com/celo-org/celo-mondo/issu
 4. Run locally: `yarn dev`
 5. Test locally: `yarn test`
 
+### Getting Started (for Contributors / Local Database Development)
+
+If you're not part of the cLabs Vercel team or want to modify the database locally:
+
+1. Clone the repository
+2. Install dependencies: `yarn`
+3. Start a local PostgreSQL database:
+   ```bash
+   docker run -d \
+     --name celo-mondo-postgres \
+     -e POSTGRES_PASSWORD=postgres \
+     -e POSTGRES_DB=postgres \
+     -p 5432:5432 \
+     postgres:16
+   ```
+4. Restore the database from the dump file:
+   ```bash
+   cat ./db_dump.sql | docker exec -i celo-mondo-postgres psql -U postgres
+   ```
+5. Create a `.env` file with your local database connection:
+   ```bash
+   POSTGRES_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+   NEXT_PUBLIC_RPC_URL="https://forno.celo.org"
+   ```
+6. Backfill the database with historical governance events:
+   ```bash
+   yarn backfill-db
+   ```
+7. Update proposal stages to current state:
+   ```bash
+   yarn update-proposal-stages
+   ```
+8. Run locally: `yarn dev`
+9. Test locally: `yarn test`
+
 ### Running Against Different Networks
 
-To run Celo Mondo against alfajores network set `NEXT_PUBLIC_RPC_URL` env variable to `alfajores`.
-
-To run Celo Mondo against any other network (such as your local testnet) set `NEXT_PUBLIC_RPC_URL` env variable to `http://<your-rpc-url>`.
-
-### Local Database Setup (Optional)
-
-If you need to run a local database instead of using the staging database:
-
-1. The `/governance` pages are powered by a postgresql database that needs to be setup, there's a docker file for your convenience as well as a (hopefully not too dated) data dump in `./db_dump.sql`
-2. Restore with `cat ./db_dump.sql | docker exec -i <your-db-container> psql -U postgres`
-3. Make sure your .env has a valid `POSTGRES_URL` variable
+To run Celo Mondo against a different network, set the `NEXT_PUBLIC_RPC_URL` env variable to your desired RPC endpoint (e.g., `http://<your-rpc-url>`).
 
 For more information about the architecture and internals of this app, see [DEVELOPER.md](./DEVELOPER.md).
 
