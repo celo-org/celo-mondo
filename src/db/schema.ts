@@ -1,4 +1,4 @@
-import { governanceABI } from '@celo/abis';
+import { governanceABI, multiSigABI } from '@celo/abis';
 import { sql } from 'drizzle-orm';
 import {
   bigint,
@@ -27,7 +27,10 @@ export const eventsTable = pgTable(
     chainId: integer().notNull(),
     eventName: text()
       .notNull()
-      .$type<GetContractEventsParameters<typeof governanceABI>['eventName']>(),
+      .$type<
+        | GetContractEventsParameters<typeof governanceABI>['eventName']
+        | GetContractEventsParameters<typeof multiSigABI>['eventName']
+      >(),
     args: jsonb().notNull(),
     address: varchar({ length: 42 }).notNull(),
     topics: text().array().notNull().$type<[signature: `0x${string}`, ...args: `0x${string}`[]]>(),
@@ -113,3 +116,28 @@ export const votesTable = pgTable(
     primaryKey({ columns: [table.chainId, table.type, table.proposalId] }),
   ],
 );
+
+export const approvalsTable = pgTable(
+  'approvals',
+  {
+    chainId: integer().notNull(),
+    proposalId: bigint({ mode: 'number' }).notNull(),
+    multisigTxId: bigint({ mode: 'number' }).notNull(),
+    approver: varchar({ length: 42 }).notNull(),
+    confirmedAt: integer().notNull(),
+    blockNumber: numeric({ mode: 'bigint' }).notNull(),
+    transactionHash: varchar({ length: 66 }).notNull(),
+  },
+  (table) => [
+    foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
+    foreignKey({
+      columns: [table.proposalId, table.chainId],
+      foreignColumns: [proposalsTable.id, proposalsTable.chainId],
+    }).onDelete('cascade'),
+    primaryKey({ columns: [table.chainId, table.proposalId, table.approver] }),
+    index().on(table.proposalId),
+    index().on(table.multisigTxId),
+    index().on(table.chainId),
+  ],
+);
+export type Approval = typeof approvalsTable.$inferSelect;
