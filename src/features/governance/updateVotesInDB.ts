@@ -40,7 +40,11 @@ export default async function updateVotesInDB(
         : 'https://preview-celo-mondo.vercel.app';
       await fetch(`${BASE_URL}/api/governance/proposals`, { method: 'DELETE' });
     } else {
-      revalidateTag(CacheKeys.AllVotes);
+      try {
+        revalidateTag(CacheKeys.AllVotes);
+      } catch {
+        console.info('skipped cache purge');
+      }
     }
   }
 }
