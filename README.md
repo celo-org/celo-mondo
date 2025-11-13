@@ -43,21 +43,31 @@ If you're not part of the cLabs Vercel team or want to modify the database local
    ```bash
    cat ./db_dump.sql | docker exec -i celo-mondo-postgres psql -U postgres
    ```
-5. Create a `.env` file with your local database connection:
+5. Update your `.env` file with your local database connection:
    ```bash
    POSTGRES_URL="postgresql://postgres:postgres@localhost:5432/postgres"
    NEXT_PUBLIC_RPC_URL="https://forno.celo.org"
    ```
-6. Backfill the database with historical governance events:
+6. Get a WalletConnect Project ID (required for app to run):
+    If you cant use the `setup:env` script you will need to create your own.
+   - Visit https://cloud.walletconnect.com
+   - Sign up or log in (free)
+   - Create a new project
+   - Copy your Project ID
+   - Add it to your `.env` file:
+     ```bash
+     NEXT_PUBLIC_WALLET_CONNECT_ID="your_project_id_here"
+     ```
+7. Backfill the database with historical governance events:
    ```bash
    yarn backfill-db
    ```
-7. Update proposal stages to current state:
+8. Update proposal stages to current state:
    ```bash
    yarn update-proposal-stages
    ```
-8. Run locally: `yarn dev`
-9. Test locally: `yarn test`
+9. Run locally: `yarn dev`
+10. Test locally: `yarn test`
 
 ### Running Against Different Networks
 
