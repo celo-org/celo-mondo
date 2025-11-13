@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import database from 'src/config/database';
 import { eventsTable } from 'src/db/schema';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const proposalId = parseInt(params.id, 10);
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const proposalId = parseInt(id, 10);
 
   if (isNaN(proposalId)) {
     return NextResponse.json({ error: 'Invalid proposal ID' }, { status: 400 });
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       ),
     )
     .limit(1);
-
+  console.info(approvalEvent);
   if (approvalEvent.length > 0) {
     const event = approvalEvent[0];
     return NextResponse.json({

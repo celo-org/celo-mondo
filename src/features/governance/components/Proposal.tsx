@@ -7,7 +7,6 @@ import { BackLink } from 'src/components/buttons/BackLink';
 import { ErrorBoundaryInline } from 'src/components/errors/ErrorBoundaryInline';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
 import { links } from 'src/config/links';
-import { ApprovalBadge } from 'src/features/governance/components/ApprovalBadge';
 import { ProposalApprovalsTable } from 'src/features/governance/components/ProposalApprovalsTable';
 import { ProposalBadgeRow, ProposalLinkRow } from 'src/features/governance/components/ProposalCard';
 import { ProposalUpvotersTable } from 'src/features/governance/components/ProposalUpvotersTable';
@@ -110,9 +109,6 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
               proposalTimestamp: proposal?.timestamp,
             })}
           </div>
-          {stage >= ProposalStage.Referendum && proposalId && (
-            <ApprovalBadge proposalId={proposalId} stage={stage} />
-          )}
         </div>
       </div>
       {stage === ProposalStage.Queued && (
@@ -127,11 +123,10 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           </ErrorBoundaryInline>
         </div>
       )}
-      {(stage === ProposalStage.Execution || stage === ProposalStage.Referendum) && proposalId && (
-        // Approvals are fetched from onchain therefore only can be displayed in Execution and Referendum Stages.
+      {stage >= ProposalStage.Referendum && proposalId && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
-            <ProposalApprovalsTable proposalId={proposalId} />
+            <ProposalApprovalsTable proposalId={proposalId} stage={stage} />
           </ErrorBoundaryInline>
         </div>
       )}

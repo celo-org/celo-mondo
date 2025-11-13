@@ -22,7 +22,7 @@ export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage
     return (
       <div className="text-jade-600 inline-flex items-center space-x-1 text-sm">
         <span>✓</span>
-        <span>Passed Technical Approval</span>
+        <span>Passed Approval</span>
       </div>
     );
   }
@@ -30,14 +30,14 @@ export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
         <span>⏳</span>
-        <span>Technical Approval Pending</span>
+        <span> Approval Pending</span>
       </div>
     );
   } else if (stage === ProposalStage.Expiration) {
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
         <span>❌</span>
-        <span>Missed Technical Approval</span>
+        <span>Missed Approval</span>
       </div>
     );
   } else {

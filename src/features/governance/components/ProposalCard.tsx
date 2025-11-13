@@ -6,6 +6,7 @@ import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { SocialLogo } from 'src/components/logos/SocialLogo';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { SocialLinkType } from 'src/config/types';
+import { ApprovalBadge } from 'src/features/governance/components/ApprovalBadge';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
@@ -113,12 +114,16 @@ export function ProposalBadgeRow({
       )}
       {showProposer && proposer && (
         <>
-          <div className="hidden text-xs opacity-50 sm:block">•</div>
+          <div className="hidden text-xs opacity-50 sm:block"> By </div>
           <ShortAddress
             address={proposer}
             className="hidden font-mono text-sm text-taupe-600 sm:block"
           />
         </>
+      )}
+      {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
+      {showExecutedTime && !executedTimeValue && id && (
+        <ApprovalBadge proposalId={id} stage={stage} />
       )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
       {showExecutedTime && executedTimeValue && !proposer && (
