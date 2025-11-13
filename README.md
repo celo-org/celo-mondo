@@ -14,17 +14,29 @@ For support, you can [file an issue](https://github.com/celo-org/celo-mondo/issu
 
 ## Development
 
+### Getting Started (for cLabs Vercel Team Members)
+
+1. Clone the repository
+2. Install dependencies: `yarn`
+3. Setup environment: `yarn setup:env`
+   - This will log you into Vercel, link the project, and pull environment variables
+   - The environment includes connection to the staging database (no local DB setup needed)
+4. Run locally: `yarn dev`
+5. Test locally: `yarn test`
+
+### Running Against Different Networks
+
 To run Celo Mondo against alfajores network set `NEXT_PUBLIC_RPC_URL` env variable to `alfajores`.
 
 To run Celo Mondo against any other network (such as your local testnet) set `NEXT_PUBLIC_RPC_URL` env variable to `http://<your-rpc-url>`.
 
-1. Install: `yarn`
-2. Setup: `yarn prepare`
-3. Run locally: `yarn dev`
-   1. the `/governance` pages are powered by a postgresql database that needs to be setup, there's a docker file for your convenience as well as a (hopefully not too dated) data dump in `./db_dump.sql`
-   2. restore with `cat ./db_dump.sql | docker exec -i <your-db-container> psql -U postgres`
-   3. make sure your .env has a valid `POSTGRES_URL` variable
-4. Test locally: `yarn test`
+### Local Database Setup (Optional)
+
+If you need to run a local database instead of using the staging database:
+
+1. The `/governance` pages are powered by a postgresql database that needs to be setup, there's a docker file for your convenience as well as a (hopefully not too dated) data dump in `./db_dump.sql`
+2. Restore with `cat ./db_dump.sql | docker exec -i <your-db-container> psql -U postgres`
+3. Make sure your .env has a valid `POSTGRES_URL` variable
 
 For more information about the architecture and internals of this app, see [DEVELOPER.md](./DEVELOPER.md).
 
