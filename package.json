@@ -100,6 +100,7 @@
     "dev": "yarn migrate && next dev --turbopack",
     "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
+    "update-proposal-stages": "tsx ./src/scripts/updateProposalStages.ts",
     "update-known-tx-selectors": "tsx ./src/scripts/cacheProposalSelectors.ts",
     "build:ci": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
     "build:delegatees-json": "tsx ./src/scripts/combineDelegateesMetadata.ts",

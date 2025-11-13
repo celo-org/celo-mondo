@@ -4,7 +4,7 @@ import { decodeAndPrepareVoteEvent } from 'src/features/governance/utils/events/
 import { describe, expect, it, vi } from 'vitest';
 
 describe('decodeAndPrepareVoteEvent', () => {
-  it('ignores unhandled events', () => {
+  it('ignores unhandled events', async () => {
     const mockEvent: Event = {
       address: '0x0',
       args: {},
@@ -16,7 +16,7 @@ describe('decodeAndPrepareVoteEvent', () => {
       transactionHash: '0x',
     };
     const stdoutSpy = vi.spyOn(console, 'info').mockReturnValueOnce();
-    expect(decodeAndPrepareVoteEvent('WrongEvent', mockEvent, 42220)).resolves.toEqual([]);
+    await expect(decodeAndPrepareVoteEvent('WrongEvent', mockEvent, 42220)).resolves.toEqual([]);
     expect(stdoutSpy).toHaveBeenCalledTimes(1);
     expect(stdoutSpy.mock.calls[0]).toMatchInlineSnapshot(`
       [
@@ -25,7 +25,7 @@ describe('decodeAndPrepareVoteEvent', () => {
     `);
   });
 
-  it('throws on malformed events', () => {
+  it('throws on malformed events', async () => {
     const mockEvent: Event = {
       address: '0x0',
       args: {},
@@ -36,7 +36,7 @@ describe('decodeAndPrepareVoteEvent', () => {
       topics: ['0x'],
       transactionHash: '0x',
     };
-    expect(
+    await expect(
       decodeAndPrepareVoteEvent('ProposalVoted', mockEvent, 42220),
     ).rejects.toMatchInlineSnapshot(
       `[Error: Couldnt decode the vote event: {"address":"0x0","args":{},"blockNumber":"123","chainId":42220,"data":"0x","eventName":"ProposalVoted","topics":["0x"],"transactionHash":"0x"}]`,
