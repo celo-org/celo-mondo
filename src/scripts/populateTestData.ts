@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import 'dotenv/config';
 
 import database from 'src/config/database';
@@ -132,7 +133,7 @@ async function main() {
 
   const now = Math.floor(Date.now() / 1000);
   const DAY = 86400;
-  const WEEK = DAY * 7;
+  // const WEEK = DAY * 7;
   const MONTH = DAY * 28;
 
   // Network weight for quorum calculations

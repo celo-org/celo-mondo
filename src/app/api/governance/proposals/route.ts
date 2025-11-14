@@ -16,6 +16,5 @@ export async function GET(): Promise<Response> {
 
 export async function DELETE(): Promise<Response> {
   revalidateTag(CacheKeys.AllProposals);
-  console.info('Invalidated cache for proposals');
   return new Response(null, { status: 204 });
 }

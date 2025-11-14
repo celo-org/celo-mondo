@@ -16,7 +16,6 @@ export async function decodeAndPrepareProposalEvent(
   event: Event,
 ): Promise<bigint | null> {
   if (!assertEvent(ALLOWED_EVENTS, eventName)) {
-    console.info('Not a proposal event');
     return null;
   }
 
