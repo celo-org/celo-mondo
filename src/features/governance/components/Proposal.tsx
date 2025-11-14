@@ -102,11 +102,13 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
         {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
-        <div className="max-w-[340px] text-sm text-taupe-600">
-          {getEndHumanEndTime({
-            stage,
-            proposalTimestamp: proposal?.timestamp,
-          })}
+        <div className="max-w-[340px] space-y-2">
+          <div className="text-sm text-taupe-600">
+            {getEndHumanEndTime({
+              stage,
+              proposalTimestamp: proposal?.timestamp,
+            })}
+          </div>
         </div>
       </div>
       {stage === ProposalStage.Queued && (
@@ -121,11 +123,10 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
           </ErrorBoundaryInline>
         </div>
       )}
-      {(stage === ProposalStage.Approval || stage === ProposalStage.Referendum) && proposalId && (
-        // Approvals are fetched from onchain therefore only can be displayed in Approval, Referendum Stages.
+      {stage >= ProposalStage.Referendum && proposalId && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
-            <ProposalApprovalsTable proposalId={proposalId} />
+            <ProposalApprovalsTable proposalId={proposalId} stage={stage} />
           </ErrorBoundaryInline>
         </div>
       )}
