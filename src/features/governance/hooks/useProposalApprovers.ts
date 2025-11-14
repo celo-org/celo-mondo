@@ -2,46 +2,38 @@ import { governanceABI, multiSigABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { useProposalDequeueIndex } from 'src/features/governance/hooks/useProposalQueue';
-import { PublicClient, encodeFunctionData } from 'viem';
+import { Address, PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
+
+type ApprovalConfirmation = {
+  approver: string;
+  multisigTxId: number;
+  confirmedAt: number;
+  blockNumber: number;
+  transactionHash: string;
+};
+
+type ApprovalConfirmationsResponse = {
+  proposalId: number;
+  approvals: ApprovalConfirmation[];
+  count: number;
+};
 
 // @returns addresses of approvers that have confirmed the proposal
 export function useProposalApprovers(proposalId: number) {
-  const publicClient = usePublicClient();
-
   const {
     data: approversMultisigAddress,
-    isSuccess: isApproversMultisigAddressSuccess,
     isLoading: isApproversMultisigAddressLoading,
     isError: isApproversMultisigAddressError,
   } = useGovernanceApproverMultiSigAddress();
 
   const {
-    index: dequeueIndex,
-    isLoading: isIndexLoading,
-    isError: isDequeueIndexError,
-  } = useProposalDequeueIndex(proposalId);
-
-  const {
-    data: confirmations,
+    data: confirmationsData,
     isLoading: isConfirmationsLoading,
     isError: isConfirmationsError,
   } = useQuery({
-    queryKey: [
-      'ProposalApprovers',
-      publicClient,
-      approversMultisigAddress,
-      proposalId,
-      dequeueIndex,
-    ],
-    queryFn: () =>
-      fetchProposalApprovers(publicClient!, {
-        governanceApproverMultisigAddress: approversMultisigAddress!,
-        proposalId: BigInt(proposalId),
-        dequeueIndex: dequeueIndex!,
-      }),
-    enabled: isApproversMultisigAddressSuccess && dequeueIndex !== undefined,
+    queryKey: ['ProposalApprovalConfirmations', proposalId],
+    queryFn: () => fetchProposalApprovalConfirmations(proposalId),
     staleTime: StaleTime.Default,
   });
 
@@ -53,16 +45,11 @@ export function useProposalApprovers(proposalId: number) {
 
   return {
     isLoading:
-      isConfirmationsLoading ||
-      isIndexLoading ||
-      isApproversMultisigAddressLoading ||
-      isRequiredCountLoading,
-    isError:
-      isConfirmationsError ||
-      isDequeueIndexError ||
-      isApproversMultisigAddressError ||
-      isRequiredCountError,
-    confirmedBy: confirmations,
+      isConfirmationsLoading || isApproversMultisigAddressLoading || isRequiredCountLoading,
+    isError: isConfirmationsError || isApproversMultisigAddressError || isRequiredCountError,
+    confirmedBy: (confirmationsData?.approvals.map((a) => a.approver as Address) ||
+      []) as Address[],
+    confirmations: confirmationsData?.approvals || [],
     requiredConfirmationsCount,
   };
 }
@@ -88,84 +75,20 @@ function useRequiredApproversCount(approversMultisigAddress: Address | undefined
   });
 }
 
-type ParamsFetchApproversInfo = {
-  governanceApproverMultisigAddress: Address;
-  proposalId: bigint;
-  dequeueIndex: bigint;
-};
-
 /*
- * @returns addresses of approvers that have confirmed the proposal
+ * Fetches approval confirmations from the database via API
+ * @returns approval confirmations for the proposal
  */
-async function fetchProposalApprovers(
-  publicClient: PublicClient,
-  { proposalId, dequeueIndex, governanceApproverMultisigAddress }: ParamsFetchApproversInfo,
-) {
-  // first need to find transaction in multisig that corresponds to the proposal
-  const txIndexInMultisig = await fetchIndexOfTransactionForProposalInMultisig(publicClient, {
-    governanceApproverMultisigAddress,
-    proposalId,
-    dequeueIndex,
-  });
+async function fetchProposalApprovalConfirmations(
+  proposalId: number,
+): Promise<ApprovalConfirmationsResponse> {
+  const response = await fetch(`/api/governance/${proposalId}/approval-confirmations`);
 
-  if (txIndexInMultisig === -1) {
-    return [];
+  if (!response.ok) {
+    throw new Error(`Failed to fetch approval confirmations: ${response.statusText}`);
   }
 
-  const confirmations = await publicClient.readContract({
-    address: governanceApproverMultisigAddress,
-    abi: multiSigABI,
-    functionName: 'getConfirmations',
-    args: [BigInt(txIndexInMultisig)],
-  });
-  return confirmations;
-}
-
-/*
- * @param proposalId - id of the proposal
- * @param dequeueIndex - index of the proposal in the queue
- * @param governanceApproverMultisigAddress - address of the multisig that holds the approvers
- * @returns index of transaction in multisig that corresponds to the proposal
- */
-async function fetchIndexOfTransactionForProposalInMultisig(
-  publicClient: PublicClient,
-  { proposalId, dequeueIndex, governanceApproverMultisigAddress }: ParamsFetchApproversInfo,
-) {
-  // sadly the Multisig gives no other way to fetch a specific transaction other than already
-  // knowing the index or iterating through all transactions and matching the calldata
-
-  const countOfMultisigTransactions = await publicClient.readContract({
-    address: governanceApproverMultisigAddress,
-    abi: multiSigABI,
-    functionName: 'getTransactionCount',
-    args: [true, true],
-  });
-
-  const allTransactionsInMultisig = await publicClient.multicall({
-    contracts: Array(Number(countOfMultisigTransactions ?? 0))
-      .fill(0)
-      .map((_, i) => ({
-        address: governanceApproverMultisigAddress,
-        abi: multiSigABI,
-        functionName: 'transactions',
-        args: [BigInt(i)],
-      })),
-  });
-
-  const approveTxData = encodeFunctionData({
-    abi: governanceABI,
-    functionName: 'approve',
-    args: [proposalId, dequeueIndex],
-  });
-
-  const indexOfTxToFindApproversOf = allTransactionsInMultisig.findIndex((query) => {
-    if (query.status === 'success') {
-      const [_destination, _value, data] = query.result as [string, bigint, string, boolean];
-      return data === approveTxData;
-    }
-    return false;
-  });
-  return indexOfTxToFindApproversOf;
+  return response.json();
 }
 
 async function fetchRequiredConfirmationsCount(
