@@ -7,13 +7,8 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import type { getProposals } from 'src/features/governance/getProposals';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import { getExpiryTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
-import {
-  ProposalMetadata,
-  ProposalStage,
-  VoteAmounts,
-  VoteType,
-} from 'src/features/governance/types';
+import { getStageEndTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
+import { ProposalMetadata, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { sortByIdThenCGP } from 'src/utils/proposals';
 import { usePublicClient } from 'wagmi';
@@ -130,7 +125,7 @@ export function useGovernanceProposals() {
               proposer: proposal.proposer,
               upvotes,
               url: proposal.url,
-              expiryTimestamp: getExpiryTimestamp(proposal.stage, proposal.timestamp * 1000),
+              expiryTimestamp: getStageEndTimestamp(proposal.stage, proposal.timestamp * 1000),
               timestamp: proposal.timestamp * 1000,
               isPassing: await publicClient.readContract({
                 address: Addresses.Governance,
@@ -161,7 +156,7 @@ export function useGovernanceProposals() {
 
     proposals_?.forEach((proposal) => {
       const votes = votesResults.votes?.[proposal.id!];
-      computeStageAndVotes(proposal, votes);
+      normalizeProposalVotes(proposal, votes);
     });
     return sortByIdThenCGP(proposals_);
   }, [draftsResults.drafts, data, votesResults.votes]);
@@ -173,48 +168,28 @@ export function useGovernanceProposals() {
   };
 }
 
-function computeStageAndVotes(mergedProposalData: MergedProposalData, votes?: VoteAmounts) {
+/**
+ * Normalizes vote totals to bigint and assigns them to the proposal.
+ * Stage computation removed - stages are now kept current in the database by:
+ * 1. Event-based updates (backfill) for Queued, Executed, Expiration
+ * 2. Time-based updates (cron) for Referendum → Execution → Expiration transitions
+ */
+function normalizeProposalVotes(mergedProposalData: MergedProposalData, votes?: VoteAmounts) {
   if (!mergedProposalData.proposal) return;
 
-  const { proposal, metadata } = mergedProposalData;
-  proposal!.votes = votes ?? {
+  const { proposal } = mergedProposalData;
+  proposal.votes = votes ?? {
     [VoteType.Yes]: 0n,
     [VoteType.No]: 0n,
     [VoteType.Abstain]: 0n,
   };
 
   if (votes) {
-    // normalise bigint vote totals
+    // Normalize bigint vote totals
     Object.keys(proposal.votes).forEach((voteType) => {
       proposal.votes[voteType as keyof VoteAmounts] = BigInt(
         proposal.votes[voteType as keyof VoteAmounts],
       );
     });
-
-    let computedStage = proposal.stage;
-    // compute approval stage if still in referedum but expired by date
-    // and passing on chain
-    if (
-      proposal.stage === ProposalStage.Referendum &&
-      proposal.timestamp! <= Date.now() &&
-      proposal.isPassing
-    ) {
-      computedStage = ProposalStage.Approval;
-      // compute rejected stage if expired and majority of votes are "No"
-    } else if (proposal.stage === ProposalStage.Expiration) {
-      const yesVotes = proposal.votes[VoteType.Yes];
-      const noVotes = proposal.votes[VoteType.No];
-      if (noVotes >= yesVotes) {
-        computedStage = ProposalStage.Rejected;
-      }
-    }
-
-    // mutate proposal object with computed stage
-    if (computedStage !== proposal.stage) {
-      mergedProposalData.stage = computedStage;
-      proposal.stage = computedStage;
-      proposal.expiryTimestamp = getExpiryTimestamp(computedStage, proposal.timestamp * 1000);
-      if (metadata) metadata.stage = computedStage;
-    }
   }
 }

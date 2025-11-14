@@ -35,7 +35,7 @@ export function ProposalCard({
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
-  const endTimeValue = getEndHumanEndTime({ stageStartTimestamp: timestamp, stage });
+  const endTimeValue = getEndHumanEndTime({ proposalTimestamp: timestamp, stage });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})

@@ -1,4 +1,4 @@
-import { getExpiryTimestamp } from 'src/features/governance/governanceData';
+import { getStageEndTimestamp } from 'src/features/governance/governanceData';
 import { ProposalStage } from 'src/features/governance/types';
 
 export function areDatesSameDay(d1: Date, d2: Date) {
@@ -84,39 +84,53 @@ export function getDateTimeString(timestamp: number) {
   return `${date.toLocaleTimeString()} ${getFullDateHumanDateString(timestamp)}`;
 }
 
+/**
+ * Returns human-readable text about when a proposal stage ends or its current status.
+ *
+ * @param stage - Current proposal stage
+ * @param proposalTimestamp - Proposal's base timestamp (queue time for Queued, dequeue time for others)
+ */
 export function getEndHumanEndTime({
-  stageStartTimestamp,
+  proposalTimestamp,
   stage,
 }: {
-  stageStartTimestamp: number | undefined;
+  proposalTimestamp: number | undefined;
   stage: ProposalStage | undefined;
 }): string | undefined {
   const now = Date.now();
 
-  if (!stageStartTimestamp || !stage) {
+  if (!proposalTimestamp || !stage) {
     return undefined;
   }
 
   switch (stage) {
-    case ProposalStage.Queued:
-    case ProposalStage.Referendum: {
-      const endDate = getExpiryTimestamp(stage, stageStartTimestamp)!;
+    case ProposalStage.Queued: {
+      const endDate = getStageEndTimestamp(stage, proposalTimestamp)!;
       return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
-    case ProposalStage.Approval: {
-      const endDate = getExpiryTimestamp(ProposalStage.Approval, stageStartTimestamp)!;
-      return `Passed on ${getFullDateHumanDateString(stageStartTimestamp)} to be approved before ${getFullDateHumanDateString(endDate)}`;
+    case ProposalStage.Referendum: {
+      const endDate = getStageEndTimestamp(stage, proposalTimestamp)!;
+      return `Voting ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
+    case ProposalStage.Approval:
+    // DEPRECATED: Treat like Execution (awaiting execution after approval)
+    // Fall through to Execution case
     case ProposalStage.Execution: {
-      return `Approved on ${getFullDateHumanDateString(stageStartTimestamp)}`;
+      const endDate = getStageEndTimestamp(stage, proposalTimestamp);
+      if (endDate) {
+        return `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+      }
+      return 'Awaiting execution';
     }
     case ProposalStage.Withdrawn:
     case ProposalStage.Rejected:
     case ProposalStage.Expiration: {
-      return `Expired ${getHumanReadableTimeString(stageStartTimestamp)}`;
+      return `Expired ${getHumanReadableTimeString(proposalTimestamp)}`;
     }
     case ProposalStage.Executed: {
-      return `Executed ${getHumanReadableTimeString(stageStartTimestamp)}`;
+      return `Executed ${getHumanReadableTimeString(proposalTimestamp)}`;
     }
+    default:
+      return 'Unknown';
   }
 }

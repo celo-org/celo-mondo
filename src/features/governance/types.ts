@@ -46,12 +46,16 @@ export const VoteToColor: Record<VoteType, string> = {
 export enum ProposalStage {
   None = 0,
   Queued = 1,
+  // DEPRECATED: Approval stage exists in the on-chain Solidity enum but getProposalStage() never returns it.
+  // The approval process happens during Referendum/Execution stages and is tracked via proposal.approved boolean.
+  // We keep this enum value (2) to maintain alignment with the Solidity contract enum values.
+  // If somehow displayed in UI, treat it like Execution stage (awaiting execution after approval).
   Approval = 2,
   Referendum = 3,
   Execution = 4,
   Expiration = 5,
   // NOTE: solidity enum ends here
-  // Adding extra stages that may be used in the metadata
+  // Below are off-chain only stages (not in Solidity contract):
   Executed = 6,
   Withdrawn = 7,
   Rejected = 8,
