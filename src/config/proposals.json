@@ -3007,7 +3007,7 @@
     "timestamp": 1753142400000,
     "timestampExecuted": 1754611200000,
     "votes": {
-      "yes": "24639434689842498152840252",
+      "yes": "24639434689903401243515252",
       "no": "1014923756835672072254036",
       "abstain": "104257283133712661408424"
     }
@@ -3212,5 +3212,64 @@
       "no": "4694041753637975878879",
       "abstain": "500891799610424104206"
     }
+  },
+  {
+    "cgp": 207,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0207.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0207.md",
+    "title": "Mento Reserve Rebalancing",
+    "author": "Celo Community",
+    "stage": 0,
+    "timestamp": 1759968000000
+  },
+  {
+    "cgp": 208,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0208.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0208.md",
+    "title": "Contracts Release 14",
+    "author": "cLabs Primitives Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-core-contracts-release-14",
+    "timestamp": 1760054400000
+  },
+  {
+    "cgp": 209,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0209.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0209.md",
+    "title": "Transfer CELO from Governance Reserve to Governance Proxy",
+    "author": "Governance ops team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/proposal-to-transfer-celo-from-governance-reserve-to-governance-proxy/12472",
+    "timestamp": 1760054400000
+  },
+  {
+    "cgp": 210,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0210.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0210.md",
+    "title": "Score Management Committee - 6 Month Extension and Continued Funding",
+    "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/score-management-committee-6-month-extension-and-continued-funding/",
+    "timestamp": 1761004800000
+  },
+  {
+    "cgp": 211,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0211.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0211.md",
+    "title": "Setting WETH oracle for gas pricing",
+    "author": "Martín Volpe @martinvol",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/setting-weth-oracle-for-gas-pricing/12552",
+    "timestamp": 1761523200000
+  },
+  {
+    "cgp": 212,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0212.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0212.md",
+    "title": "Jello Hardfork Temperature Check - OP Succinct Lite and ZK Proofs for Celo Mainnet",
+    "author": "cLabs Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/introducing-the-jello-hardfork-op-succinct-lite-now-live-on-celo-sepolia/12603",
+    "timestamp": 1762300800000
   }
 ]

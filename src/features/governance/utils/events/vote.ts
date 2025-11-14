@@ -19,7 +19,6 @@ export async function decodeAndPrepareVoteEvent(
   chainId: number,
 ): Promise<(typeof votesTable)['$inferInsert'][]> {
   if (!assertEvent(ALLOWED_EVENTS, eventName)) {
-    console.info('Not a vote event');
     return [];
   }
 
