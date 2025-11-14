@@ -95,9 +95,10 @@
   },
   "scripts": {
     "prepare": "husky",
+    "setup:env": "node setup-env.js",
     "clean": "rm -rf dist cache .next",
     "migrate": "tsx ./src/scripts/migrate.ts",
-    "dev": "yarn migrate && next dev --turbopack",
+    "dev": "next dev --turbopack",
     "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
     "update-proposal-stages": "tsx ./src/scripts/updateProposalStages.ts",
