@@ -145,7 +145,6 @@ export interface ProposalMetadata {
   title: string;
   author: string;
   timestampExecuted?: number;
-  votes?: VoteAmounts;
 }
 
 /**
