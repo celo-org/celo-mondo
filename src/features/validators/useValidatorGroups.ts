@@ -51,7 +51,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   const validatorDetails = await fetchValidatorDetails(publicClient, validatorAddrs);
   const validatorNames = await fetchNamesForAccounts(publicClient, validatorAddrs);
   const scoreManagerContract = await getScoreManagerContract({
-    public: publicClient as PublicCeloClient,
+    public: publicClient as unknown as PublicCeloClient,
   });
 
   if (
