@@ -18,10 +18,9 @@ const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string
   [ProposalStage.None]: { color: Color.Sky, label: 'Draft' },
   [ProposalStage.Queued]: { color: Color.Lavender, label: 'Upvoting' },
   [ProposalStage.Referendum]: { color: Color.Lavender, label: 'Voting' },
-  // Both approval and execution aren't set in the blockchain, but we do compute
-  // them in the `useGovernanceProposal
+  // Approval stage is never used
   [ProposalStage.Approval]: { color: Color.Lavender, label: 'Approval' },
-  [ProposalStage.Execution]: { color: Color.Lavender, label: 'Execution Pending' },
+  [ProposalStage.Execution]: { color: Color.Lavender, label: 'Execution' },
   [ProposalStage.Expiration]: { color: Color.Red, label: 'Expired' },
   [ProposalStage.Executed]: { color: Color.Jade, label: 'Executed' },
   [ProposalStage.Withdrawn]: { color: Color.Red, label: 'Withdrawn' },

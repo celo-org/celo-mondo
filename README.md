@@ -82,6 +82,13 @@ Now, since the introduction of the backend we set-up a flow to make the front-en
 
 Events are indexed in the `events` table (for redundancy, data is fetched from both [webhooks](https://t3bb35o5zzb6zpgwizsfvu6r2a.multibaas.com/webhooks/2) and a [github action cronjob](./.github/workflows/cronjob.yml) just in case).
 When a new events is received, we can decode it and update the `proposals` table according the event to have an always up to date table that the each front-end client can fetch without further data manipulation. See `src/app/api/webhooks/multibaas/route.ts` to see the webhook and the function calls.
+
+**Proposal Stages:** The `proposals` table stores the current stage for each proposal. Stages are kept current through two mechanisms:
+1. **Event-based updates** (backfill/webhooks): Process events like `ProposalQueued`, `ProposalDequeued`, `ProposalExecuted`, `ProposalExpired`
+2. **Time-based updates** (cron): A [GitHub Action](./.github/workflows/update-proposal-stages.yml) runs every 5 minutes to query `getProposalStage()` from the blockchain for proposals in Referendum or Execution stages, which can transition without emitting events
+
+The frontend reads stages directly from the database with no client-side computation, ensuring consistency and correctness.
+
 There's a small schema explaining each table in more details here: [<img src="./readme-schema.svg" alt="celo-mondo excalidraw">](https://excalidraw.com/#json=cKbblqlCm0IvTZaW1u232,ZQcreoxqt3tt1jShIbwgIw)
 
 ### Helper scripts
@@ -104,3 +111,7 @@ It can take an optional argument proposalIds eg: `123,457,789`. To replay events
 #### `updateVotesTable.ts`
 
 This script computes all proposals votes from the store events. It will **OVERWRITE** votes' table data from the events. It can take an optional argument proposalIds eg: `123,457,789`. To replay events from only the given specific proposals.
+
+#### `updateProposalStages.ts`
+
+This script finds proposals in database inproposals in Referendum or Execution stage and use the blockchain's `getProposalStage()` function to updates the database with the current on-chain stage. It also computes off-chain stages like Rejected (when expired with No votes >= Yes votes) and respects Withdrawn status from metadata. This script is automatically run every 5 minutes via [GitHub Actions](./.github/workflows/update-proposal-stages.yml) to catch time-based stage transitions that don't emit events.

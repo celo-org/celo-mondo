@@ -36,7 +36,7 @@ export default async function updateProposalsInDB(
     inArray(eventsTable.eventName, [
       'ProposalQueued',
       'ProposalDequeued',
-      'ProposalApproved',
+      // ProposalApproved removed: approval doesn't change stage, it's a boolean state
       'ProposalExecuted',
       'ProposalExpired',
     ]),
@@ -68,7 +68,6 @@ export default async function updateProposalsInDB(
       events,
       proposalsMetadata,
     });
-
     if (proposal) {
       rowsToInsert.push(proposal);
     }
@@ -178,6 +177,7 @@ async function mergeProposalDataIntoPGRow({
     }
 
     // we can't rely on events as they don't all contain timestamps
+    // Why we need timestamps from them? timestamp only changes when queing and dequeuing which do contain timestamps
     mostRecentProposalState = await getProposalOnChain(
       client,
       proposalId,
@@ -313,10 +313,6 @@ async function getProposalStage(
   switch (eventName) {
     case 'ProposalExecuted':
       stage = ProposalStage.Executed;
-      break;
-
-    case 'ProposalApproved':
-      stage = ProposalStage.Execution;
       break;
 
     case 'ProposalExpired':

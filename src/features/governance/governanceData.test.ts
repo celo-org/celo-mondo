@@ -1,7 +1,7 @@
 import { afterEach, beforeEach } from 'node:test';
 import { publicClient } from 'src/test/anvil/utils';
 import { describe, expect, test, vi } from 'vitest';
-import { getExpiryTimestamp } from './governanceData';
+import { getStageEndTimestamp } from './governanceData';
 import { ProposalStage } from './types';
 
 beforeEach(() => {
@@ -20,29 +20,31 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe('getExpiryTimestamp', () => {
+describe('getStageEndTimestamp', () => {
   test('Approval', () => {
-    expect(getExpiryTimestamp(ProposalStage.Approval, 1000)).toMatchInlineSnapshot(`864001000`);
+    expect(getStageEndTimestamp(ProposalStage.Approval, 1000)).toMatchInlineSnapshot(`864001000`);
   });
   test('Queued', () => {
-    expect(getExpiryTimestamp(ProposalStage.Queued, 1000)).toMatchInlineSnapshot(`2419201000`);
+    expect(getStageEndTimestamp(ProposalStage.Queued, 1000)).toMatchInlineSnapshot(`2419201000`);
   });
   test('Referendum', () => {
-    expect(getExpiryTimestamp(ProposalStage.Referendum, 1000)).toMatchInlineSnapshot(`604801000`);
+    expect(getStageEndTimestamp(ProposalStage.Referendum, 1000)).toMatchInlineSnapshot(`604801000`);
   });
   test('Expiration', () => {
-    expect(getExpiryTimestamp(ProposalStage.Expiration, 1000)).toMatchInlineSnapshot(`604801000`);
+    expect(getStageEndTimestamp(ProposalStage.Expiration, 1000)).toMatchInlineSnapshot(`864001000`);
+  });
+  test('Execution', () => {
+    expect(getStageEndTimestamp(ProposalStage.Execution, 1000)).toMatchInlineSnapshot(`864001000`);
   });
   describe('Others', () => {
     [
       ProposalStage.None,
       ProposalStage.Rejected,
       ProposalStage.Withdrawn,
-      ProposalStage.Execution,
       ProposalStage.Executed,
     ].forEach((stage) => {
       test(ProposalStage[stage], () => {
-        expect(getExpiryTimestamp(stage, 1000)).toBeUndefined();
+        expect(getStageEndTimestamp(stage, 1000)).toBeUndefined();
       });
     });
   });
