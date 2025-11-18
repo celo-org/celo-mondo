@@ -280,7 +280,9 @@ async function mergeProposalDataIntoPGRow({
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
     transactionCount: Number(numTransactions),
-    [column]: new Date().toISOString(),
+    [column + 'BlockNumber']: lastProposalEvent.blockNumber,
+    [column]: (await client.getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) }))
+      .timestamp,
   };
 }
 
@@ -334,7 +336,7 @@ async function getProposalStage(
   proposalId: number,
   eventName: string | undefined,
 ): Promise<ProposalStage> {
-  let stage: ProposalStage;
+  let stage: ProposalStage | undefined;
   switch (eventName) {
     case 'ProposalExecuted':
       stage = ProposalStage.Executed;
@@ -347,6 +349,9 @@ async function getProposalStage(
     // NOTE: approval doesn't change stage, it's a boolean state
     // but we still want to update the approvedAt column
     case 'ProposalApproved':
+      stage = undefined;
+      break;
+
     case 'ProposalDequeued':
       stage = ProposalStage.Referendum;
       break;
@@ -371,10 +376,11 @@ async function getProposalStage(
       functionName: 'getProposalStage',
       args: [BigInt(proposalId)],
     });
-    if (stageOnChain > stage) {
+    if (!stage || stageOnChain > stage) {
       stage = stageOnChain;
     }
   }
+
   return stage;
 }
 
