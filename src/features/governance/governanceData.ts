@@ -3,6 +3,7 @@ import {
   QUEUED_STAGE_EXPIRY_TIME,
   REFERENDUM_STAGE_EXPIRY_TIME,
 } from 'src/config/consts';
+import { type ProposalWithHistory } from 'src/features/governance/getProposals';
 import { Proposal, ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 const ID_PARAM_REGEX = /^(cgp-)?(\d+)$/;
@@ -20,15 +21,16 @@ export function findProposal(proposals: MergedProposalData[] | undefined, id: st
     return undefined;
   }
 }
-export type MergedProposalData = { stage: ProposalStage; id?: number } & (
-  | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
-  | { proposal?: Proposal; metadata: ProposalMetadata; history?: undefined }
-  | {
-      proposal: Proposal;
-      metadata: ProposalMetadata;
-      history?: { id: number; stage: ProposalStage }[];
-    }
-);
+export type MergedProposalData = ProposalWithHistory &
+  (
+    | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
+    | { proposal?: Proposal; metadata: ProposalMetadata; history?: undefined }
+    | {
+        proposal: Proposal;
+        metadata: ProposalMetadata;
+        history?: { id: number; stage: ProposalStage }[];
+      }
+  );
 
 /**
  * Returns the timestamp when the current stage ends (not when proposal expires).

@@ -36,7 +36,7 @@ export default async function updateProposalsInDB(
     inArray(eventsTable.eventName, [
       'ProposalQueued',
       'ProposalDequeued',
-      // ProposalApproved removed: approval doesn't change stage, it's a boolean state
+      'ProposalApproved',
       'ProposalExecuted',
       'ProposalExpired',
     ]),
@@ -186,6 +186,26 @@ async function mergeProposalDataIntoPGRow({
   }
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
+  let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt' | undefined;
+  switch (stage) {
+    case ProposalStage.Executed:
+      column = 'executedAt';
+      break;
+    case ProposalStage.Execution:
+      column = 'approvedAt';
+      break;
+    case ProposalStage.Expiration:
+      column = 'expiredAt';
+      break;
+    case ProposalStage.Referendum:
+      column = 'dequeuedAt';
+      break;
+    case ProposalStage.Queued:
+      column = 'queuedAt';
+      break;
+    default:
+      break;
+  }
 
   let url = mostRecentProposalState[URL_INDEX];
   let cgpMatch = url.match(/cgp-(\d+)\.md/i);
@@ -239,7 +259,6 @@ async function mergeProposalDataIntoPGRow({
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
-  console.log({ proposalId, networkWeight });
   return {
     id: proposalId,
     chainId: client.chain.id,
@@ -254,12 +273,12 @@ async function mergeProposalDataIntoPGRow({
     proposer: proposalQueuedEvent.args.proposer,
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
-    executedAt: metadata?.timestampExecuted ? metadata.timestampExecuted / 1000 : null,
     transactionCount: Number(numTransactions),
+    [column!]: new Date(),
   };
 }
 
-async function getProposalOnChain(
+export async function getProposalOnChain(
   client: PublicClient<Transport, Chain>,
   proposalId: number,
   blockNumber?: bigint,
@@ -319,6 +338,9 @@ async function getProposalStage(
       stage = ProposalStage.Expiration;
       break;
 
+    // NOTE: approval doesn't change stage, it's a boolean state
+    // but we still want to update the approvedAt column
+    case 'ProposalApproved':
     case 'ProposalDequeued':
       stage = ProposalStage.Referendum;
       break;

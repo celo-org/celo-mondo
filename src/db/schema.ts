@@ -11,6 +11,7 @@ import {
   pgTable,
   primaryKey,
   text,
+  timestamp,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
@@ -74,11 +75,18 @@ export const proposalsTable = pgTable(
     title: text().notNull(),
     author: text().notNull(),
     timestamp: integer().notNull(),
-    executedAt: integer(),
     proposer: text(),
     deposit: numeric({ mode: 'bigint' }),
     networkWeight: numeric({ mode: 'bigint' }),
     transactionCount: integer(),
+    queuedAt: timestamp({ mode: 'string' }),
+    queuedAtBlockNumber: numeric({ mode: 'bigint' }),
+    dequeuedAt: timestamp({ mode: 'string' }),
+    dequeuedAtBlockNumber: numeric({ mode: 'bigint' }),
+    approvedAt: timestamp({ mode: 'string' }),
+    approvedAtBlockNumber: numeric({ mode: 'bigint' }),
+    executedAt: timestamp({ mode: 'string' }),
+    executedAtBlockNumber: numeric({ mode: 'bigint' }),
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),

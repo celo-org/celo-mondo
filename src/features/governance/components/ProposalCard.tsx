@@ -28,15 +28,16 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, proposal, metadata, stage } = propData;
-
-  const { timestamp } = proposal || {};
-  const { title, cgp } = metadata || {};
+  const { id, stage, queuedAt, dequeuedAt, executedAt, approvedAt, title, cgp } = propData;
 
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
-  const endTimeValue = getEndHumanEndTime({ proposalTimestamp: timestamp, stage });
+  const lastTs = executedAt || approvedAt || dequeuedAt || queuedAt;
+  const endTimeValue = getEndHumanEndTime({
+    stage,
+    proposalTimestamp: lastTs ? new Date(lastTs).getTime() : undefined,
+  });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})
@@ -91,19 +92,13 @@ export function ProposalBadgeRow({
   showProposer?: boolean;
   showExecutedTime?: boolean;
 }) {
-  const { stage, proposal, metadata, id } = propData;
+  const { stage, proposal, metadata, id, queuedAt, executedAt } = propData;
 
-  const { timestamp, proposer } = proposal || {};
-  const { timestamp: cgpTimestamp, cgp, timestampExecuted } = metadata || {};
+  const { proposer } = proposal || {};
+  const { cgp } = metadata || {};
 
-  const proposedTimestamp = timestamp || cgpTimestamp;
-  const proposedTimeValue = proposedTimestamp
-    ? new Date(proposedTimestamp).toLocaleDateString()
-    : undefined;
-  const executedTimeValue = timestampExecuted
-    ? new Date(timestampExecuted).toLocaleDateString()
-    : undefined;
-
+  const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
+  const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
   return (
     <div className="flex items-center space-x-2">
       <IdBadge cgp={cgp} />
