@@ -280,7 +280,7 @@ async function mergeProposalDataIntoPGRow({
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
     transactionCount: Number(numTransactions),
-    [column]: new Date(),
+    [column]: new Date().toISOString(),
   };
 }
 

@@ -28,12 +28,12 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, stage, queuedAt, dequeuedAt, executedAt, approvedAt, title, cgp } = propData;
+  const { id, stage, queuedAt, dequeuedAt, title, cgp } = propData;
 
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
-  const lastTs = executedAt || approvedAt || dequeuedAt || queuedAt;
+  const lastTs = dequeuedAt || queuedAt;
   const endTimeValue = getEndHumanEndTime({
     stage,
     proposalTimestamp: lastTs ? new Date(lastTs).getTime() : undefined,
