@@ -187,30 +187,24 @@ async function mergeProposalDataIntoPGRow({
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
   let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt';
-  switch (stage) {
-    case ProposalStage.Executed:
+  switch (lastProposalEvent.eventName) {
+    case 'ProposalExecuted':
       column = 'executedAt';
       break;
-    case ProposalStage.Execution:
+    case 'ProposalApproved':
       column = 'approvedAt';
       break;
-    case ProposalStage.Expiration:
+    case 'ProposalExpired':
       column = 'expiredAt';
       break;
-    case ProposalStage.Referendum:
+    case 'ProposalDequeued':
       column = 'dequeuedAt';
       break;
-    case ProposalStage.Queued:
+    case 'ProposalQueued':
       column = 'queuedAt';
       break;
-    // NOTE: make sure the switch/case handles all ProposalStages
-    case ProposalStage.Approval:
-    case ProposalStage.None:
-    case ProposalStage.Rejected:
-    case ProposalStage.Withdrawn:
-      // these stages are computed (and we don't like computed stages)
-      // so can't come from the blockchain event
-      throw new Error('Unhandled stage');
+    default:
+      throw new Error('Unhandled event');
   }
 
   let url = mostRecentProposalState[URL_INDEX];
