@@ -5,18 +5,14 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { sleep } from 'src/utils/async';
-import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
-import { celo } from 'viem/chains';
+
+const API_TOKEN = process.env.ETHERSCAN_API_TOKEN;
+if (!API_TOKEN) {
+  throw new Error('env.ETHERSCAN_API_TOKEN is required for this script');
+}
 
 async function backfillTimestamps() {
   console.log('Starting backfilling timestamps update...');
-
-  // Setup client using the same env var pattern as other scripts
-  const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
-  const client = createPublicClient({
-    chain: celo,
-    transport: http(archiveNode),
-  }) as PublicClient<Transport, Chain>;
 
   const eventNames = [
     'ProposalQueued',
@@ -48,7 +44,6 @@ async function backfillTimestamps() {
     const approvedAt = events.find((x) => x.eventName === 'ProposalApproved');
     const executedAt = events.find((x) => x.eventName === 'ProposalExecuted');
 
-    const API_TOKEN = 'redacted';
     const base = `https://api.etherscan.io/v2/api?chainid=42220&module=block&action=getblockreward&apikey=${API_TOKEN}`;
     const [approvedAtTs, executedAtTs] = (
       await Promise.all([
