@@ -186,7 +186,7 @@ async function mergeProposalDataIntoPGRow({
   }
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
-  let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt' | undefined;
+  let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt';
   switch (stage) {
     case ProposalStage.Executed:
       column = 'executedAt';
@@ -203,8 +203,14 @@ async function mergeProposalDataIntoPGRow({
     case ProposalStage.Queued:
       column = 'queuedAt';
       break;
-    default:
-      break;
+    // NOTE: make sure the switch/case handles all ProposalStages
+    case ProposalStage.Approval:
+    case ProposalStage.None:
+    case ProposalStage.Rejected:
+    case ProposalStage.Withdrawn:
+      // these stages are computed (and we don't like computed stages)
+      // so can't come from the blockchain event
+      throw new Error('Unhandled stage');
   }
 
   let url = mostRecentProposalState[URL_INDEX];
@@ -274,7 +280,7 @@ async function mergeProposalDataIntoPGRow({
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
     transactionCount: Number(numTransactions),
-    [column!]: new Date(),
+    [column]: new Date(),
   };
 }
 
