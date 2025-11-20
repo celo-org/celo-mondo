@@ -105,7 +105,10 @@ export default async function updateProposalsInDB(
   console.info(`Upserted ${count} proposals`);
 
   await relinkProposals();
-
+  if (process.env.NODE_ENV === 'test') {
+    console.info('not revalidating cache in test mode');
+    return;
+  } // Revalidate the cache
   if (process.env.CI === 'true') {
     const BASE_URL = process.env.IS_PRODUCTION_DATABASE
       ? 'https://mondo.celo.org'

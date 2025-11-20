@@ -57,8 +57,11 @@ export default async function updateApprovalsInDB(
   // Process Revocation events (remove approvals)
   await processRevocations(client, approverMultisigAddress, multisigTxIds);
 
-  // Revalidate the cache
-  if (process.env.CI === 'true') {
+  if (process.env.NODE_ENV === 'test') {
+    console.info('not revalidating cache in test mode');
+    return;
+  } // Revalidate the cache
+  else if (process.env.CI === 'true') {
     const BASE_URL = process.env.IS_PRODUCTION_DATABASE
       ? 'https://mondo.celo.org'
       : 'https://preview-celo-mondo.vercel.app';
