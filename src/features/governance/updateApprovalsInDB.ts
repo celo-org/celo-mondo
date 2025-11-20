@@ -96,9 +96,12 @@ async function processConfirmations(
     );
   }
 
-  console.info(`Processing ${confirmationEvents.length} Confirmation events`);
-
   const rowsToInsert = [] as (typeof approvalsTable.$inferInsert)[];
+  if (!confirmationEvents) {
+    console.info('No ConfirmationEvents found');
+    return;
+  }
+  console.info(`Processing ${confirmationEvents.length} Confirmation events`);
 
   for (const event of confirmationEvents) {
     const args = event.args as unknown as ConfirmationEventArgs;

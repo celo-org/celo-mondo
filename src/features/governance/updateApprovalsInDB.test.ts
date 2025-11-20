@@ -1,4 +1,5 @@
 import { governanceABI } from '@celo/abis';
+import { fetchMultiSigEvents } from 'src/app/governance/multisigEvents';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import updateApprovalsInDB from 'src/features/governance/updateApprovalsInDB';
@@ -16,7 +17,13 @@ vi.mock('src/config/database', () => ({
     values: vi.fn().mockReturnThis(),
     onConflictDoNothing: vi.fn().mockResolvedValue({ count: 0 }),
     delete: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue([]),
   },
+}));
+
+// Mock the fetchMultiSigEvents function
+vi.mock('src/app/governance/multisigEvents', () => ({
+  fetchMultiSigEvents: vi.fn(),
 }));
 
 // Mock the revalidateTag function
@@ -40,12 +47,8 @@ describe('updateApprovalsInDB', () => {
 
     mockClient.readContract.mockResolvedValueOnce(mockMultisigAddress);
 
-    // Mock empty events
-    vi.mocked(database.select).mockReturnValue({
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      orderBy: vi.fn().mockResolvedValue([]),
-    } as any);
+    // Mock empty events for both Confirmation and Revocation
+    vi.mocked(fetchMultiSigEvents).mockResolvedValue([]);
 
     await updateApprovalsInDB(mockClient as any);
 
@@ -63,6 +66,21 @@ describe('updateApprovalsInDB', () => {
     const dequeueIndex = 0n;
     const approver = '0x1234567890123456789012345678901234567890' as Address;
     const multisigTxId = 5n;
+
+    // Mock Confirmation event
+    const mockConfirmationEvent = {
+      chainId: 42220,
+      eventName: 'Confirmation' as const,
+      args: {
+        sender: approver,
+        transactionId: multisigTxId,
+      },
+      address: mockMultisigAddress.toLowerCase(),
+      blockNumber: 12345678n,
+      transactionHash: '0xabcdef' as `0x${string}`,
+      topics: ['0x' as `0x${string}`],
+      data: '0x' as `0x${string}`,
+    };
 
     // Mock approver multisig address
     mockClient.readContract
@@ -82,37 +100,47 @@ describe('updateApprovalsInDB', () => {
     // Mock block timestamp
     mockClient.getBlock.mockResolvedValue({ timestamp: 1234567890n });
 
-    // Mock Confirmation event from database
-    const mockConfirmationEvent = {
-      chainId: 42220,
-      eventName: 'Confirmation',
-      args: {
-        sender: approver,
-        transactionId: multisigTxId,
-      },
-      address: mockMultisigAddress.toLowerCase(),
-      blockNumber: 12345678n,
-      transactionHash: '0xabcdef',
-      topics: ['0x'],
-      data: '0x',
-    };
-
-    vi.mocked(database.select).mockReturnValue({
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      orderBy: vi.fn().mockResolvedValueOnce([mockConfirmationEvent]).mockResolvedValueOnce([]),
-    } as any);
+    // Mock fetchMultiSigEvents to return Confirmation event, then empty for Revocation
+    vi.mocked(fetchMultiSigEvents)
+      .mockResolvedValueOnce([mockConfirmationEvent])
+      .mockResolvedValueOnce([]);
 
     await updateApprovalsInDB(mockClient as any);
 
     // Verify that insert was called with correct data
     expect(database.insert).toHaveBeenCalled();
+    expect(database.values).toHaveBeenCalledWith([
+      {
+        chainId: 42220,
+        proposalId: Number(proposalId),
+        multisigTxId: Number(multisigTxId),
+        approver,
+        confirmedAt: 1234567890,
+        blockNumber: 12345678n,
+        transactionHash: '0xabcdef',
+      },
+    ]);
   });
 
   it('should skip non-governance transactions', async () => {
     const mockMultisigAddress = '0x41822d8A191fcfB1cfcA5F7048818aCd8eE933d3' as Address;
     const approver = '0x1234567890123456789012345678901234567890' as Address;
     const multisigTxId = 5n;
+
+    // Mock Confirmation event
+    const mockConfirmationEvent = {
+      chainId: 42220,
+      eventName: 'Confirmation' as const,
+      args: {
+        sender: approver,
+        transactionId: multisigTxId,
+      },
+      address: mockMultisigAddress.toLowerCase(),
+      blockNumber: 12345678n,
+      transactionHash: '0xabcdef' as `0x${string}`,
+      topics: ['0x' as `0x${string}`],
+      data: '0x' as `0x${string}`,
+    };
 
     // Mock approver multisig address
     mockClient.readContract
@@ -121,30 +149,14 @@ describe('updateApprovalsInDB', () => {
       .mockResolvedValueOnce([
         '0x0000000000000000000000000000000000000000' as Address, // non-governance destination
         0n,
-        '0x',
+        '0x' as `0x${string}`,
         false,
       ]);
 
-    // Mock Confirmation event from database
-    const mockConfirmationEvent = {
-      chainId: 42220,
-      eventName: 'Confirmation',
-      args: {
-        sender: approver,
-        transactionId: multisigTxId,
-      },
-      address: mockMultisigAddress.toLowerCase(),
-      blockNumber: 12345678n,
-      transactionHash: '0xabcdef',
-      topics: ['0x'],
-      data: '0x',
-    };
-
-    vi.mocked(database.select).mockReturnValue({
-      from: vi.fn().mockReturnThis(),
-      where: vi.fn().mockReturnThis(),
-      orderBy: vi.fn().mockResolvedValueOnce([mockConfirmationEvent]).mockResolvedValueOnce([]),
-    } as any);
+    // Mock fetchMultiSigEvents to return Confirmation event, then empty for Revocation
+    vi.mocked(fetchMultiSigEvents)
+      .mockResolvedValueOnce([mockConfirmationEvent])
+      .mockResolvedValueOnce([]);
 
     const consoleLogSpy = vi.spyOn(console, 'log');
 
@@ -152,6 +164,8 @@ describe('updateApprovalsInDB', () => {
 
     // Should log that we're skipping this transaction
     expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Skipping multisigTxId'));
+    // Should NOT insert into database
+    expect(database.insert).not.toHaveBeenCalled();
   });
 
   it('should handle Revocation events and delete approvals', async () => {
@@ -160,22 +174,19 @@ describe('updateApprovalsInDB', () => {
     const multisigTxId = 5n;
     const proposalId = 100;
 
-    // Mock approver multisig address
-    mockClient.readContract.mockResolvedValueOnce(mockMultisigAddress);
-
-    // Mock Revocation event from database
+    // Mock Revocation event
     const mockRevocationEvent = {
       chainId: 42220,
-      eventName: 'Revocation',
+      eventName: 'Revocation' as const,
       args: {
         sender: approver,
         transactionId: multisigTxId,
       },
       address: mockMultisigAddress.toLowerCase(),
       blockNumber: 12345678n,
-      transactionHash: '0xabcdef',
-      topics: ['0x'],
-      data: '0x',
+      transactionHash: '0xabcdef' as `0x${string}`,
+      topics: ['0x' as `0x${string}`],
+      data: '0x' as `0x${string}`,
     };
 
     // Mock existing approval in database
@@ -189,19 +200,18 @@ describe('updateApprovalsInDB', () => {
       transactionHash: '0xabcdef',
     };
 
-    let callCount = 0;
+    // Mock approver multisig address
+    mockClient.readContract.mockResolvedValueOnce(mockMultisigAddress);
+
+    // Mock fetchMultiSigEvents to return empty for Confirmation, then Revocation event
+    vi.mocked(fetchMultiSigEvents)
+      .mockResolvedValueOnce([]) // Confirmation events
+      .mockResolvedValueOnce([mockRevocationEvent]); // Revocation events
+
+    // Mock database query for existing approval
     vi.mocked(database.select).mockReturnValue({
       from: vi.fn().mockReturnThis(),
       where: vi.fn().mockReturnThis(),
-      orderBy: vi.fn().mockImplementation(() => {
-        callCount++;
-        // First call: return empty for Confirmation events
-        // Second call: return revocation event
-        // Third call: return existing approval
-        if (callCount === 1) return Promise.resolve([]);
-        if (callCount === 2) return Promise.resolve([mockRevocationEvent]);
-        return Promise.resolve([mockExistingApproval]);
-      }),
       limit: vi.fn().mockResolvedValue([mockExistingApproval]),
     } as any);
 
