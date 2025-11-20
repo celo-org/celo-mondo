@@ -23,10 +23,11 @@ import { ProposalVotersTable } from 'src/features/governance/components/Proposal
 import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
+import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
-import { getEndHumanEndTime } from 'src/utils/time';
+import { getHumanEndTime } from 'src/utils/time';
 import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
@@ -91,7 +92,8 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id: proposalId, stage, proposal, history } = propData;
+  const { id: proposalId, stage, history, queuedAt, dequeuedAt, executedAt } = propData;
+  const { quorumMet } = useIsProposalPassingQuorum(propData);
 
   if (stage === ProposalStage.None) return null;
 
@@ -104,9 +106,12 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
         <div className="max-w-[340px] space-y-2">
           <div className="text-sm text-taupe-600">
-            {getEndHumanEndTime({
+            {getHumanEndTime({
               stage,
-              proposalTimestamp: proposal?.timestamp,
+              queuedAt,
+              dequeuedAt,
+              executedAt,
+              quorumMet,
             })}
           </div>
         </div>

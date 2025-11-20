@@ -80,6 +80,7 @@ export default async function updateProposalsInDB(
       set:
         intent === 'replay'
           ? {
+              // NOTE: make sure all values are here
               cgp: sql`excluded."cgp"`,
               author: sql`excluded."author"`,
               url: sql`excluded."url"`,
@@ -90,14 +91,29 @@ export default async function updateProposalsInDB(
               proposer: sql`excluded."proposer"`,
               deposit: sql`excluded."deposit"`,
               networkWeight: sql`excluded."networkWeight"`,
-              executedAt: sql`excluded."executedAt"`,
               transactionCount: sql`excluded."transactionCount"`,
               timestamp: sql`excluded."timestamp"`,
+              queuedAt: sql`excluded."queuedAt"`,
+              queuedAtBlockNumber: sql`excluded."queuedAtBlockNumber"`,
+              dequeuedAt: sql`excluded."dequeuedAt"`,
+              dequeuedAtBlockNumber: sql`excluded."dequeuedAtBlockNumber"`,
+              approvedAt: sql`excluded."approvedAt"`,
+              approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
+              executedAt: sql`excluded."executedAt"`,
+              executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
             }
           : {
               stage: sql`excluded."stage"`,
               networkWeight: sql`excluded."networkWeight"`,
               timestamp: sql`excluded."timestamp"`,
+              queuedAt: sql`excluded."queuedAt"`,
+              queuedAtBlockNumber: sql`excluded."queuedAtBlockNumber"`,
+              dequeuedAt: sql`excluded."dequeuedAt"`,
+              dequeuedAtBlockNumber: sql`excluded."dequeuedAtBlockNumber"`,
+              approvedAt: sql`excluded."approvedAt"`,
+              approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
+              executedAt: sql`excluded."executedAt"`,
+              executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
             },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
@@ -259,7 +275,19 @@ async function mergeProposalDataIntoPGRow({
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
+  const eventUnixTimestampInSeconds = (
+    await client.getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) })
+  ).timestamp;
+
+  const [existingProposal] = await database
+    .select()
+    .from(proposalsTable)
+    .where(eq(proposalsTable.id, proposalId));
+
   return {
+    // NOTE: we need to make sure the existing values (dequeuedAt, queuedAt, etc) are
+    // present in the object to not override them with NULL values
+    ...existingProposal,
     id: proposalId,
     chainId: client.chain.id,
     timestamp: parseInt(mostRecentProposalState[TIMESTAMP_INDEX].toString(), 10),
@@ -275,8 +303,7 @@ async function mergeProposalDataIntoPGRow({
     networkWeight,
     transactionCount: Number(numTransactions),
     [column + 'BlockNumber']: lastProposalEvent.blockNumber,
-    [column]: (await client.getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) }))
-      .timestamp,
+    [column]: new Date(Number(eventUnixTimestampInSeconds) * 1000),
   };
 }
 

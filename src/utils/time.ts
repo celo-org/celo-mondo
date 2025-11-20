@@ -90,45 +90,64 @@ export function getDateTimeString(timestamp: number) {
  * @param stage - Current proposal stage
  * @param proposalTimestamp - Proposal's base timestamp (queue time for Queued, dequeue time for others)
  */
-export function getEndHumanEndTime({
-  proposalTimestamp,
+export function getHumanEndTime({
+  queuedAt,
+  dequeuedAt,
+  executedAt,
   stage,
+  quorumMet,
 }: {
-  proposalTimestamp: number | undefined;
+  queuedAt: string | null;
+  dequeuedAt: string | null;
+  executedAt: string | null;
   stage: ProposalStage | undefined;
+  quorumMet: boolean | null;
 }): string | undefined {
   const now = Date.now();
 
-  if (!proposalTimestamp || !stage) {
+  const hasAnyTS = queuedAt || dequeuedAt || executedAt;
+  if (!stage || !hasAnyTS) {
     return undefined;
   }
 
   switch (stage) {
     case ProposalStage.Queued: {
-      const endDate = getStageEndTimestamp(stage, proposalTimestamp)!;
+      const endDate = getStageEndTimestamp(stage, new Date(queuedAt!).getTime())!;
       return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
     case ProposalStage.Referendum: {
-      const endDate = getStageEndTimestamp(stage, proposalTimestamp)!;
+      const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime())!;
       return `Voting ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
     case ProposalStage.Approval:
     // DEPRECATED: Treat like Execution (awaiting execution after approval)
     // Fall through to Execution case
     case ProposalStage.Execution: {
-      const endDate = getStageEndTimestamp(stage, proposalTimestamp);
+      const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime());
       if (endDate) {
         return `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
       }
       return 'Awaiting execution';
     }
+    case ProposalStage.Rejected: {
+      const endDate = getStageEndTimestamp(
+        ProposalStage.Referendum,
+        new Date(dequeuedAt!).getTime(),
+      );
+      return `Rejected ${getHumanReadableTimeString(endDate!)}`;
+    }
     case ProposalStage.Withdrawn:
-    case ProposalStage.Rejected:
     case ProposalStage.Expiration: {
-      return `Expired ${getHumanReadableTimeString(proposalTimestamp)}`;
+      const _stage = quorumMet
+        ? // stage = ProposalStage.Expiration if expired by not executing in time
+          ProposalStage.Expiration
+        : // stage = ProposalStage.Referendum if expired by not meeting quorum
+          ProposalStage.Referendum;
+      const endDate = getStageEndTimestamp(_stage, new Date(dequeuedAt!).getTime());
+      return `Expired ${getHumanReadableTimeString(endDate!)}`;
     }
     case ProposalStage.Executed: {
-      return `Executed ${getHumanReadableTimeString(proposalTimestamp)}`;
+      return `Executed ${getHumanReadableTimeString(new Date(executedAt!).getTime())}`;
     }
     default:
       return 'Unknown';

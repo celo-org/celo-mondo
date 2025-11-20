@@ -6,7 +6,8 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { Proposal } from 'src/features/governance/types';
+import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
+import { Proposal, VoteType } from 'src/features/governance/types';
 import type { ProposalTransaction } from 'src/features/governance/utils/transactionDecoder';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
@@ -61,6 +62,36 @@ export function useProposalQuorum(propData?: MergedProposalData): {
   }
 }
 
+export function useIsProposalPassingQuorum(propData?: MergedProposalData): {
+  isLoading: boolean;
+  quorumMet: boolean;
+  quorumVotesRequired?: bigint;
+} {
+  const { isLoading, data: quorumVotesRequired } = useProposalQuorum(propData);
+  const { isLoading: votesLoading, votes } = useProposalVoteTotals(propData);
+
+  if (isLoading || votesLoading) {
+    return {
+      isLoading: true,
+      quorumMet: false,
+    };
+  }
+
+  const yesVotes = votes?.[VoteType.Yes] || 0n;
+  const abstainVotes = votes?.[VoteType.Abstain] || 0n;
+  const quorumMeetingVotes = yesVotes + abstainVotes;
+
+  const quorumMetByVoteCount = quorumVotesRequired
+    ? quorumMeetingVotes > quorumVotesRequired
+    : false;
+
+  return {
+    isLoading: isLoading || votesLoading,
+    quorumMet: quorumMetByVoteCount,
+    quorumVotesRequired: quorumVotesRequired,
+  };
+}
+
 export function useParticipationParameters(): {
   isLoading: boolean;
   data: ParticipationParameters;
@@ -112,7 +143,7 @@ export function useThresholds(proposal?: Proposal): {
 }
 
 export async function fetchThresholds(publicClient: PublicClient, proposalId: number) {
-  const response = await fetch(`/governance/${proposalId}/api/transactions`);
+  const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
   const results = (await response.json()) as ProposalTransaction[];
 
   // Extracting the base contract call avoids the following error:

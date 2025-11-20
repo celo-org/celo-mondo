@@ -4,7 +4,7 @@ import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/Sta
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { useProposalQuorum } from 'src/features/governance/hooks/useProposalQuorum';
+import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import {
   useHistoricalProposalVoteTotals,
   useProposalVoteTotals,
@@ -117,30 +117,27 @@ function ViewVotes({
 
 export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
   const { votes } = useProposalVoteTotals(propData);
-  const { isLoading, data: quorumRequired } = useProposalQuorum(propData);
-  const isPassing = propData.proposal?.isPassing;
-
+  const { isLoading, quorumMet, quorumVotesRequired } = useIsProposalPassingQuorum(propData);
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
 
-  const quorumMetByVoteCount = quorumRequired ? quorumMeetingVotes > quorumRequired : false;
   const quorumBarChartData = useMemo(
     () => [
       {
         label: 'Yes Votes',
         value: fromWei(yesVotes),
-        percentage: isLoading ? 0 : percent(yesVotes, quorumRequired || 0n),
-        color: isPassing || quorumMetByVoteCount ? Color.Mint : Color.Lilac,
+        percentage: isLoading ? 0 : percent(yesVotes, quorumVotesRequired || 0n),
+        color: quorumMet ? Color.Mint : Color.Lilac,
       },
       {
         label: 'Abstain Votes',
         value: fromWei(abstainVotes),
-        percentage: isLoading ? 0 : percent(abstainVotes, quorumRequired || 1n),
-        color: isPassing || quorumMetByVoteCount ? Color.Mint : Color.Sand,
+        percentage: isLoading ? 0 : percent(abstainVotes, quorumVotesRequired || 1n),
+        color: quorumMet ? Color.Mint : Color.Sand,
       },
     ],
-    [quorumMetByVoteCount, yesVotes, quorumRequired, abstainVotes, isLoading, isPassing],
+    [yesVotes, isLoading, quorumVotesRequired, quorumMet, abstainVotes],
   );
 
   const isPastVotingStage = propData.stage > ProposalStage.Referendum;
@@ -152,7 +149,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         <em>
           {isLoading
             ? ''
-            : quorumMetByVoteCount
+            : quorumMet
               ? ` — Pass${tense(isPastVotingStage)}`
               : ` — Fail${tense(isPastVotingStage)}`}
         </em>
@@ -164,7 +161,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         ) : (
           <>
             {formatNumberString(quorumMeetingVotes, 0, true)} Votes <em>of</em>&nbsp;&nbsp;
-            {formatNumberString(quorumRequired, 0, true)}&nbsp; Required
+            {formatNumberString(quorumVotesRequired, 0, true)}&nbsp; Required
           </>
         )}
       </span>

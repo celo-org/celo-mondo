@@ -5,6 +5,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { sleep } from 'src/utils/async';
+import { celo } from 'viem/chains';
 
 const API_TOKEN = process.env.ETHERSCAN_API_TOKEN;
 if (!API_TOKEN) {
@@ -12,7 +13,12 @@ if (!API_TOKEN) {
 }
 
 async function backfillTimestamps() {
-  console.log('Starting backfilling timestamps update...');
+  const proposalIds = process.argv[2]
+    ? process.argv[2].split(',').map((x) => parseInt(x, 10))
+    : undefined;
+  console.log(
+    `Starting backfilling timestamps update ${proposalIds ? `for ids ${proposalIds.join(', ')}` : ''}…`,
+  );
 
   const eventNames = [
     'ProposalQueued',
@@ -21,7 +27,17 @@ async function backfillTimestamps() {
     'ProposalExecuted',
   ] as const;
 
-  const proposals = await database.select().from(proposalsTable).orderBy(proposalsTable.id);
+  const conditions = [eq(proposalsTable.chainId, celo.id)];
+
+  if (proposalIds) {
+    conditions.push(inArray(proposalsTable.id, proposalIds));
+  }
+
+  const proposals = await database
+    .select()
+    .from(proposalsTable)
+    .where(and(...conditions))
+    .orderBy(proposalsTable.id);
 
   for (const proposal of proposals) {
     const events = await database

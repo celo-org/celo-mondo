@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import Image from 'next/image';
 import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
@@ -11,11 +10,9 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { VoteToColor, VoteType } from 'src/features/governance/types';
-import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
-import { getEndHumanEndTime } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -28,16 +25,11 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, stage, queuedAt, dequeuedAt, title, cgp } = propData;
+  const { id, title, cgp } = propData;
 
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
-  const lastTs = dequeuedAt || queuedAt;
-  const endTimeValue = getEndHumanEndTime({
-    stage,
-    proposalTimestamp: lastTs ? new Date(lastTs).getTime() : undefined,
-  });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})
@@ -73,12 +65,6 @@ export function ProposalCard({
           </div>
         </div>
       )}
-      {!isCompact && endTimeValue && (
-        <div className="flex items-center space-x-2">
-          <Image src={ClockIcon} alt="" width={16} height={16} />
-          <div className="text-sm font-medium">{`${endTimeValue}`}</div>
-        </div>
-      )}
     </Link>
   );
 }
@@ -99,6 +85,7 @@ export function ProposalBadgeRow({
 
   const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
   const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
+
   return (
     <div className="flex items-center space-x-2">
       <IdBadge cgp={cgp} />
