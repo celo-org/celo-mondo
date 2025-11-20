@@ -6,9 +6,8 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
-import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import { ProposalMetadata, ProposalStage, VoteType } from 'src/features/governance/types';
+import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { createPublicClient, http } from 'viem';
 import { celo } from 'viem/chains';
 
@@ -36,21 +35,11 @@ async function updateProposalStages() {
 
   console.log(`Found ${activeProposals.length} active proposals to check`);
 
-  // 2. Get metadata for Withdrawn status and build lookup map
-  const cached = (await import('src/config/proposals.json')).default;
-  const metadataArray = await fetchProposalsFromRepo(cached as ProposalMetadata[], false);
-
-  // Build lookup map by proposal ID for O(1) access instead of O(n) find() per proposal
-  const metadataById = new Map<number, ProposalMetadata>();
-  for (const meta of metadataArray) {
-    if (meta.id) metadataById.set(meta.id, meta);
-  }
-
-  // 3. Lazy-load votes only if needed (for Rejected calculation)
+  // 2. Lazy-load votes only if needed (for Rejected calculation)
   // Only fetched when we encounter a proposal in Expiration stage
   let allVotes: Awaited<ReturnType<typeof getProposalVotes>> | null = null;
 
-  // 4. For each active proposal, query on-chain stage
+  // 3. For each active proposal, query on-chain stage
   const updates: Array<{ id: number; chainId: number; stage: ProposalStage }> = [];
 
   for (const proposal of activeProposals) {
@@ -84,13 +73,6 @@ async function updateProposalStages() {
             console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
           }
         }
-      }
-
-      // Check if proposal is withdrawn in metadata (off-chain only stage)
-      const meta = metadataById.get(proposal.id);
-      if (meta && meta.stage === ProposalStage.Withdrawn) {
-        onChainStage = ProposalStage.Withdrawn;
-        console.log(`  → Marking as Withdrawn (from metadata)`);
       }
 
       // Only update if stage changed
