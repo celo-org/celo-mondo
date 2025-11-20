@@ -139,9 +139,10 @@ export function getHumanEndTime({
     case ProposalStage.Withdrawn:
     case ProposalStage.Expiration: {
       const _stage = quorumMet
-        ? // stage = ProposalStage.Expiration if expired by not executing in time
+        ? // use stage as ProposalStage.Expiration if expired by not executing in time.
           ProposalStage.Expiration
-        : // stage = ProposalStage.Referendum if expired by not meeting quorum
+        : // use stage as ProposalStage.Referendum if expired by not meeting quorum
+          // as in this case Expiration occurs immediately when voting ended.
           ProposalStage.Referendum;
       const endDate = getStageEndTimestamp(_stage, new Date(dequeuedAt!).getTime());
       return `Expired ${getHumanReadableTimeString(endDate!)}`;
