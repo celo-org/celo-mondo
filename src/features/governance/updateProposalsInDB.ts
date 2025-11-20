@@ -371,8 +371,8 @@ async function getProposalStage(
     // but we still want to update the approvedAt column
     // in this case setting stage to undefined will force
     // the next if statement to fetch stage from the blockchain
-    // as it could be referedum or execution but no event is emitted
-    // for execution
+    // as it could be 'referendum' or 'execution' but no event is emitted
+    // for the transition from 'referendum' stage  to 'execution' stage
     case 'ProposalApproved':
       stage = undefined;
       break;
