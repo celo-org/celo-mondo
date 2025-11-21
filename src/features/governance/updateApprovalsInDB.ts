@@ -183,13 +183,22 @@ async function processConfirmations(
     return;
   }
 
-  // Insert into the approvals table with conflict handling
-  const { count } = await database
-    .insert(approvalsTable)
-    .values(rowsToInsert)
-    .onConflictDoNothing(); // If the same approver confirms the same proposal again, ignore
+  // Insert rows individually to handle errors gracefully
+  let insertedCount = 0;
+  for (const row of rowsToInsert) {
+    try {
+      const { count } = await database.insert(approvalsTable).values(row).onConflictDoNothing(); // If the same approver confirms the same proposal again, ignore
+      insertedCount += count;
+    } catch (error) {
+      console.error(
+        `Failed to insert approval for proposal ${row.proposalId} by ${row.approver}:`,
+        error,
+      );
+      // Continue processing other rows
+    }
+  }
 
-  console.info(`Inserted ${count} new approvals`);
+  console.info(`Inserted ${insertedCount} new approvals`);
 }
 
 async function processRevocations(

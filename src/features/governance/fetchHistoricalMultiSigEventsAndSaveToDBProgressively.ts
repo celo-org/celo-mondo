@@ -6,6 +6,7 @@ import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { blocksProcessedTable, eventsTable } from 'src/db/schema';
 import { assertEvent } from 'src/features/governance/utils/votes';
+import { sleep } from 'src/utils/async';
 import {
   Address,
   Chain,
@@ -34,6 +35,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
   eventName: string,
   client: PublicClient<Transport, Chain>,
   fromBlock?: bigint,
+  untilBlock?: bigint,
 ): Promise<bigint[]> {
   if (!assertEvent(VALID_MULTISIG_EVENTS, eventName)) {
     console.info('Not a valid MultiSig event', eventName);
@@ -50,7 +52,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
 
   console.info(`Fetching ${eventName} events from MultiSig: ${approverMultisigAddress}`);
 
-  const latestBlock = await client.getBlockNumber();
+  const latestBlock = untilBlock || (await client.getBlockNumber());
   const transactionIds: bigint[] = [];
 
   if (!fromBlock) {
@@ -80,8 +82,9 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
   } as const;
 
   let step = default_step;
+  let toBlock: bigint | 'latest';
   while (fromBlock < latestBlock) {
-    const toBlock = fromBlock + step >= latestBlock ? 'latest' : fromBlock + step;
+    toBlock = fromBlock + step >= latestBlock ? 'latest' : fromBlock + step;
     try {
       // Fetch events from `fromBlock` to `fromBlock+step`
       const events = await client.getContractEvents({
@@ -101,6 +104,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
           .onConflictDoNothing();
         console.log({ inserts: count });
       }
+      await sleep(1000);
     } catch (e) {
       // If there's any network issue, retry with smaller step
       if (
@@ -108,12 +112,13 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
         e instanceof HttpRequestError ||
         e instanceof RpcRequestError
       ) {
-        step /= 2n;
+        step /= 3n;
         if (step <= 1_000) {
           console.log(e);
           throw new Error('Retried too many times now...');
         }
-
+        console.info('waiting to avoid rate limte');
+        await sleep(3000);
         console.log(`Halved the block step down to ${step}`);
         // Continue the loop without incrementing fromBlock nor saving progress to DB
         continue;
@@ -129,12 +134,12 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
       .values({
         // fromBlock+step can def overshoot the latestBlock, so we make sure not to overshoot
         // but also we wanna save processed blocks incrementally
-        blockNumber: bigintMath.min(fromBlock + step, latestBlock),
+        blockNumber: bigintMath.min(fromBlock + step, toBlock === 'latest' ? latestBlock : toBlock),
         eventName: eventName as string,
         chainId: client.chain.id,
       })
       .onConflictDoUpdate({
-        set: { blockNumber: latestBlock },
+        set: { blockNumber: toBlock === 'latest' ? latestBlock : toBlock },
         target: [blocksProcessedTable.eventName, blocksProcessedTable.chainId],
       });
 
