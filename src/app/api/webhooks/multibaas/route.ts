@@ -1,21 +1,28 @@
-import { governanceABI } from '@celo/abis';
+import { governanceABI, multiSigABI } from '@celo/abis';
 import { sql } from 'drizzle-orm';
 import { revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { Event } from 'src/app/governance/events';
+import { MultisigEvent } from 'src/app/governance/multisigEvents';
 import { CacheKeys } from 'src/config/consts';
+import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { sendAlertToSlack } from 'src/config/slackbot';
 import { votesTable } from 'src/db/schema';
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
+import fetchHistoricalMultiSigEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalMultiSigEventsAndSaveToDBProgressively';
+import updateApprovalsInDB from 'src/features/governance/updateApprovalsInDB';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
 import { decodeAndPrepareProposalEvent } from 'src/features/governance/utils/events/proposal';
 import { decodeAndPrepareVoteEvent } from 'src/features/governance/utils/events/vote';
 import { celoPublicClient } from 'src/utils/client';
-import { GetContractEventsParameters } from 'viem';
+import { Address, GetContractEventsParameters } from 'viem';
 
-type EventName = GetContractEventsParameters<typeof governanceABI>['eventName'];
+type GovernanceEventName = GetContractEventsParameters<typeof governanceABI>['eventName'];
+type MultiSigEventName = GetContractEventsParameters<typeof multiSigABI>['eventName'];
+type EventName = GovernanceEventName | MultiSigEventName;
+
 type MultibassEvent = {
   id: string;
   event: 'event.emitted';
@@ -51,37 +58,71 @@ export async function POST(request: NextRequest): Promise<Response> {
   try {
     let proposalId: bigint | undefined | null;
     const proposalIdsToUpdate: Set<bigint> = new Set();
+    const multisigTxIdsToProcess: Set<bigint> = new Set();
+
+    // Fetch the approver multisig address once for all events
+    const approverMultisigAddress = await celoPublicClient.readContract({
+      address: Addresses.Governance,
+      abi: governanceABI,
+      functionName: 'approver',
+      args: [],
+    });
+
     for (const {
       data: { event },
     } of body) {
-      // NOTE: in theory we _could_ just insert the `event.rawFields` directly in the db...
-      await fetchHistoricalEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
+      // Check if this is a MultiSig event by comparing contract address
+      const isMultiSigEvent =
+        event.contract.address.toLowerCase() === approverMultisigAddress.toLowerCase() &&
+        ['Confirmation', 'Revocation', 'Execution'].includes(event.name!);
 
-      const eventData: Event = JSON.parse(event.rawFields);
+      if (isMultiSigEvent) {
+        // Process MultiSig events
+        await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
 
-      // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
-      // since they just exit early when the event doesnt match
-      proposalId = await decodeAndPrepareProposalEvent(event.name!, eventData);
-      if (proposalId) {
-        proposalIdsToUpdate.add(proposalId);
-        continue;
-      }
+        const eventData: MultisigEvent = JSON.parse(event.rawFields);
+        const transactionId = (eventData.args as any)?.transactionId;
 
-      proposalId = await decodeAndPrepareVoteEvent(
-        event.name!,
-        eventData,
-        celoPublicClient.chain.id,
-      ).then(upsertVotes);
+        if (transactionId !== undefined) {
+          multisigTxIdsToProcess.add(BigInt(transactionId));
+        }
+      } else {
+        // Process Governance events
+        // NOTE: in theory we _could_ just insert the `event.rawFields` directly in the db...
+        await fetchHistoricalEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
 
-      // NOTE: we're keeping track of the proposalId because voting for a
-      // proposal means the networkWeight will be changed and the proposal row
-      // needs to be updated
-      if (proposalId) {
-        proposalIdsToUpdate.add(proposalId);
-        revalidateTag(CacheKeys.AllVotes);
+        const eventData: Event = JSON.parse(event.rawFields);
+
+        // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
+        // since they just exit early when the event doesnt match
+        proposalId = await decodeAndPrepareProposalEvent(event.name!, eventData);
+        if (proposalId) {
+          proposalIdsToUpdate.add(proposalId);
+          continue;
+        }
+
+        proposalId = await decodeAndPrepareVoteEvent(
+          event.name!,
+          eventData,
+          celoPublicClient.chain.id,
+        ).then(upsertVotes);
+
+        // NOTE: we're keeping track of the proposalId because voting for a
+        // proposal means the networkWeight will be changed and the proposal row
+        // needs to be updated
+        if (proposalId) {
+          proposalIdsToUpdate.add(proposalId);
+          revalidateTag(CacheKeys.AllVotes);
+        }
       }
     }
 
+    // Update approvals if we have MultiSig events
+    if (multisigTxIdsToProcess.size) {
+      await updateApprovalsInDB(celoPublicClient, [...multisigTxIdsToProcess]);
+    }
+
+    // Update proposals if needed
     if (proposalIdsToUpdate.size) {
       await updateProposalsInDB(celoPublicClient, [...proposalIdsToUpdate], 'update');
     }

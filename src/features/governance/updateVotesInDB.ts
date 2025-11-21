@@ -34,6 +34,10 @@ export default async function updateVotesInDB(
       });
     console.info(`Inserted ${count} vote records for proposal: ${rows[0].proposalId}`);
 
+    if (process.env.NODE_ENV === 'test') {
+      console.info('not revalidating cache in test mode');
+      return;
+    } // Revalidate the cache
     if (process.env.CI === 'true') {
       const BASE_URL = process.env.IS_PRODUCTION_DATABASE
         ? 'https://mondo.celo.org'

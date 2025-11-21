@@ -15,6 +15,13 @@
       "when": 1755863898635,
       "tag": "0001_wonderful_wolverine",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763046296305,
+      "tag": "0002_eminent_doctor_spectrum",
+      "breakpoints": true
     }
   ]
 }
