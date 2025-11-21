@@ -90,6 +90,7 @@ For each test run, the script generates:
 - **CGP numbers** starting from 9000 (9000-9025)
 - **~60+ events** (ProposalQueued, ProposalDequeued, ProposalApproved, ProposalExecuted, etc.)
 - **~70+ vote records** (Yes, No, Abstain votes for each proposal)
+- **~18+ approvals records** (0-3 for proposals in referendum, 3 for executed proposals)
 
 All proposals reference the mock proposal file at:
 ```
@@ -127,6 +128,7 @@ The script populates three main tables:
 - `events` - Governance events (ProposalQueued, ProposalDequeued, etc.)
 - `proposals` - Proposal metadata and state
 - `votes` - Vote counts (Yes, No, Abstain) for each proposal
+- `approvals` Approval Confirmations for proposals
 
 ## Cleanup
 
