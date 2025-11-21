@@ -10,6 +10,7 @@ import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
+import HistoryProvider from 'src/utils/useHistory';
 import 'src/vendor/inpage-metamask.js';
 import 'src/vendor/polyfill';
 
@@ -18,11 +19,13 @@ export function App({ children }: PropsWithChildren<any>) {
     <ErrorBoundary>
       <SafeHydrate>
         <WagmiContext>
-          <LegalRestrict>
-            <BodyLayout>{children}</BodyLayout>
-          </LegalRestrict>
-          <TransactionModal />
-          <ToastContainer transition={Zoom} position="bottom-right" />
+          <HistoryProvider>
+            <LegalRestrict>
+              <BodyLayout>{children}</BodyLayout>
+            </LegalRestrict>
+            <TransactionModal />
+            <ToastContainer transition={Zoom} position="bottom-right" />
+          </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>
       <Analytics />
