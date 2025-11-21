@@ -136,7 +136,6 @@ export function getHumanEndTime({
       );
       return `Rejected ${getHumanReadableTimeString(endDate!)}`;
     }
-    case ProposalStage.Withdrawn:
     case ProposalStage.Expiration: {
       const _stage = quorumMet
         ? // use stage as ProposalStage.Expiration if expired by not executing in time.
@@ -150,6 +149,7 @@ export function getHumanEndTime({
     case ProposalStage.Executed: {
       return `Executed ${getHumanReadableTimeString(new Date(executedAt!).getTime())}`;
     }
+    case ProposalStage.Withdrawn:
     default:
       return 'Unknown';
   }
