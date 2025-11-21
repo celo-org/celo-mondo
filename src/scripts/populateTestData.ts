@@ -2,7 +2,13 @@
 import 'dotenv/config';
 
 import database from 'src/config/database';
-import { chainsTable, eventsTable, proposalsTable, votesTable } from 'src/db/schema';
+import {
+  approvalsTable,
+  chainsTable,
+  eventsTable,
+  proposalsTable,
+  votesTable,
+} from 'src/db/schema';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { celo } from 'viem/chains';
 
@@ -121,6 +127,62 @@ function createVotes(proposalId: number, yes: bigint, no: bigint, abstain: bigin
   ];
 }
 
+// Mock multisig address for test data
+const MOCK_MULTISIG_ADDRESS = '0xA533Ca259b330c7A88f74E000a3FaEa2d63B7ABC';
+
+// Mock approver addresses (signers)
+const MOCK_APPROVERS = [
+  '0x1111111111111111111111111111111111111111',
+  '0x2222222222222222222222222222222222222222',
+  '0x3333333333333333333333333333333333333333',
+];
+
+// Helper to create multisig Confirmation event
+function createConfirmationEvent(
+  proposalId: number,
+  multisigTxId: number,
+  approver: string,
+  blockNumber: number,
+  transactionHash: string,
+) {
+  return {
+    chainId: celo.id,
+    eventName: 'Confirmation' as any,
+    args: {
+      sender: approver,
+      transactionId: BigInt(multisigTxId),
+    },
+    address: MOCK_MULTISIG_ADDRESS.toLowerCase() as `0x${string}`,
+    topics: [
+      `0x${'0'.repeat(64)}` as `0x${string}`,
+      `0x${multisigTxId.toString(16).padStart(64, '0')}` as `0x${string}`,
+    ],
+    data: '0x' as `0x${string}`,
+    blockNumber: BigInt(blockNumber),
+    transactionHash: transactionHash as `0x${string}`,
+  };
+}
+
+// Helper to create approval data
+function createApproval(
+  proposalId: number,
+  multisigTxId: number,
+  approver: string,
+  confirmedAt: number,
+  blockNumber: number,
+  transactionHash: string,
+) {
+  return {
+    chainId: celo.id,
+    proposalId,
+    multisigTxId: BigInt(multisigTxId),
+    approver: approver as `0x${string}`,
+    confirmedAt,
+    blockNumber: BigInt(blockNumber),
+    transactionHash: transactionHash as `0x${string}`,
+  };
+}
+
 async function main() {
   console.log('🚀 Starting test data population...');
   console.log('');
@@ -151,8 +213,28 @@ async function main() {
   const events: any[] = [];
   const proposals: any[] = [];
   const votes: any[] = [];
+  const approvals: any[] = [];
 
   const getTxHash = () => `0x${'a'.repeat(64 - txCounter.toString().length)}${txCounter++}`;
+
+  // Helper to add approvals for a proposal
+  const addApprovals = (proposalId: number, count: 1 | 2 | 3, timestamp: number) => {
+    const multisigTxId = proposalId + 10000; // Unique multisig tx ID
+    for (let i = 0; i < count; i++) {
+      const approver = MOCK_APPROVERS[i];
+      const txHash = getTxHash();
+      const block = blockNumber++;
+      const confirmedAt = timestamp + i * 60; // Each approval 1 minute apart
+
+      // Add Confirmation event
+      events.push(createConfirmationEvent(proposalId, multisigTxId, approver, block, txHash));
+
+      // Add approval record
+      approvals.push(
+        createApproval(proposalId, multisigTxId, approver, confirmedAt, block, txHash),
+      );
+    }
+  };
 
   console.log('📝 Creating test proposals...');
 
@@ -258,6 +340,8 @@ async function main() {
     ),
   );
   votes.push(...createVotes(refYesNoQuorumNoApprovalId, halfQuorum, halfQuorum / BigInt(2), 0n));
+  // Add 1 approval
+  addApprovals(refYesNoQuorumNoApprovalId, 1, now - 2 * DAY);
 
   // 6. In referendum - more YES than NO, passing quorum, not approved
   const refYesQuorumNoApprovalId = proposalId++;
@@ -286,6 +370,8 @@ async function main() {
     ),
   );
   votes.push(...createVotes(refYesQuorumNoApprovalId, doubleQuorum, quorum, 0n));
+  // Add 2 approvals
+  addApprovals(refYesQuorumNoApprovalId, 2, now - 2 * DAY);
 
   // 7. In referendum - more YES than NO, not passing quorum, approved
   const refYesNoQuorumApprovedId = proposalId++;
@@ -319,6 +405,8 @@ async function main() {
     ),
   );
   votes.push(...createVotes(refYesNoQuorumApprovedId, halfQuorum, halfQuorum / BigInt(2), 0n));
+  // Add 3 approvals (fully approved)
+  addApprovals(refYesNoQuorumApprovedId, 3, now - 2 * DAY);
 
   // 8. In referendum - more YES than NO, passing quorum, approved
   const refYesQuorumApprovedId = proposalId++;
@@ -352,6 +440,8 @@ async function main() {
     ),
   );
   votes.push(...createVotes(refYesQuorumApprovedId, doubleQuorum, quorum, 0n));
+  // Add 3 approvals (fully approved)
+  addApprovals(refYesQuorumApprovedId, 3, now - 2 * DAY);
 
   // 9. In referendum - more NO than YES, not passing quorum
   const refNoNoQuorumId = proposalId++;
@@ -565,6 +655,8 @@ async function main() {
     ),
   );
   votes.push(...createVotes(executedId, doubleQuorum, quorum / BigInt(2), 0n));
+  // All executed proposals need 3 approval confirmations
+  addApprovals(executedId, 3, now - 6 * DAY);
 
   // 16. Expired from referendum - with full approval
   const expiredRefApprovedId = proposalId++;
@@ -598,6 +690,8 @@ async function main() {
     ),
   );
   votes.push(...createVotes(expiredRefApprovedId, doubleQuorum, quorum / BigInt(2), 0n));
+  // All executed proposals need 3 approval confirmations
+  addApprovals(expiredRefApprovedId, 3, now - 3 * DAY);
 
   // 17. Expired from referendum - never approved
   const expiredRefNoApprovalId = proposalId++;
@@ -659,6 +753,7 @@ async function main() {
     ),
   );
   votes.push(...createVotes(expiredExecApprovedId, doubleQuorum, quorum / BigInt(2), 0n));
+  addApprovals(expiredExecApprovedId, 3, now - 2 * DAY);
 
   // 19. Expired from execution - never approved
   const expiredExecNoApprovalId = proposalId++;
@@ -708,62 +803,6 @@ async function main() {
       'Test Proposal 20: Withdrawn From Queue',
     ),
   );
-
-  // 21. Withdrawn from referendum
-  const withdrawnRefId = proposalId++;
-  events.push(
-    createEvent('ProposalQueued', withdrawnRefId, blockNumber++, getTxHash(), {
-      proposalId: withdrawnRefId.toString(),
-      proposer: '0x1234567890123456789012345678901234567890',
-      transactionCount: '3',
-      timestamp: (now - 10 * DAY).toString(),
-      deposit: '100000000000000000000',
-    }),
-  );
-  events.push(
-    createEvent('ProposalDequeued', withdrawnRefId, blockNumber++, getTxHash(), {
-      proposalId: withdrawnRefId.toString(),
-      timestamp: (now - 5 * DAY).toString(),
-    }),
-  );
-  proposals.push(
-    createProposal(
-      withdrawnRefId,
-      cgp++,
-      ProposalStage.Withdrawn,
-      now - 5 * DAY,
-      'Test Proposal 21: Withdrawn From Referendum',
-    ),
-  );
-  votes.push(...createVotes(withdrawnRefId, quorum, quorum / BigInt(2), 0n));
-
-  // 22. Withdrawn from execution
-  const withdrawnExecId = proposalId++;
-  events.push(
-    createEvent('ProposalQueued', withdrawnExecId, blockNumber++, getTxHash(), {
-      proposalId: withdrawnExecId.toString(),
-      proposer: '0x1234567890123456789012345678901234567890',
-      transactionCount: '3',
-      timestamp: (now - 12 * DAY).toString(),
-      deposit: '100000000000000000000',
-    }),
-  );
-  events.push(
-    createEvent('ProposalDequeued', withdrawnExecId, blockNumber++, getTxHash(), {
-      proposalId: withdrawnExecId.toString(),
-      timestamp: (now - 5 * DAY).toString(),
-    }),
-  );
-  proposals.push(
-    createProposal(
-      withdrawnExecId,
-      cgp++,
-      ProposalStage.Withdrawn,
-      now - 5 * DAY,
-      'Test Proposal 22: Withdrawn From Execution',
-    ),
-  );
-  votes.push(...createVotes(withdrawnExecId, doubleQuorum, quorum / BigInt(2), 0n));
 
   // 23. Rejected (expired with more NO than YES)
   const rejectedId = proposalId++;
@@ -952,6 +991,12 @@ async function main() {
     console.log(`✅ Inserted ${votes.length} vote records`);
   }
 
+  console.log('💾 Inserting approvals...');
+  if (approvals.length > 0) {
+    await database.insert(approvalsTable).values(approvals).onConflictDoNothing();
+    console.log(`✅ Inserted ${approvals.length} approval records`);
+  }
+
   console.log('');
   console.log('🎉 Test data population complete!');
   console.log('');
@@ -959,6 +1004,7 @@ async function main() {
   console.log(`   - Proposals: ${proposals.length}`);
   console.log(`   - Events: ${events.length}`);
   console.log(`   - Vote records: ${votes.length}`);
+  console.log(`   - Approval records: ${approvals.length}`);
   console.log(`   - Proposal ID range: 1000-${proposalId - 1}`);
   console.log(`   - CGP range: 9000-${cgp - 1}`);
   console.log('');
