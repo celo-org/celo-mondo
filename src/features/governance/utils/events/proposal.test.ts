@@ -35,9 +35,15 @@ describe('decodeAndPrepareProposalEvent', () => {
       topics: ['0x'],
       transactionHash: '0x',
     };
-    await expect(decodeAndPrepareProposalEvent('ProposalExecuted', mockEvent)).rejects.toMatch(
-      /AbiEventSignatureNotFoundError/,
-    );
+    await expect(decodeAndPrepareProposalEvent('ProposalExecuted', mockEvent)).rejects
+      .toMatchInlineSnapshot(`
+      [AbiEventSignatureNotFoundError: Encoded event signature "0x" not found on ABI.
+      Make sure you are using the correct ABI and that the event exists on it.
+      You can look up the signature here: https://openchain.xyz/signatures?query=0x.
+
+      Docs: https://viem.sh/docs/contract/decodeEventLog
+      Version: viem@2.39.3]
+    `);
   });
 
   it('processes proper events', async () => {
