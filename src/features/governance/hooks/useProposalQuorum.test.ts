@@ -69,7 +69,7 @@ describe('fetchThresholds', () => {
         0.6,
       ]
     `);
-    expect(global.fetch).toHaveBeenCalledWith('/governance/195/api/transactions');
+    expect(global.fetch).toHaveBeenCalledWith('/governance/195/api/transactions?decoded=false');
     expect(spy.mock.calls.length).toBe(1);
   });
 
@@ -103,7 +103,7 @@ describe('fetchThresholds', () => {
       .mockResolvedValue(expectedThresholds.map(toFixidity));
 
     await expect(fetchThresholds(publicArchiveClient, proposalId)).resolves.toMatchSnapshot();
-    expect(global.fetch).toHaveBeenCalledWith('/governance/196/api/transactions');
+    expect(global.fetch).toHaveBeenCalledWith('/governance/196/api/transactions?decoded=false');
     expect(spy.mock.calls.length).toBe(1);
   });
 });
