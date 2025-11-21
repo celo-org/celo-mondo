@@ -220,7 +220,7 @@ async function mergeProposalDataIntoPGRow({
       column = 'queuedAt';
       break;
     default:
-      throw new Error('Unhandled event');
+      throw new Error(`Unhandled event: ${lastProposalEvent.eventName}`);
   }
 
   let url = mostRecentProposalState[URL_INDEX];
