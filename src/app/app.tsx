@@ -46,7 +46,7 @@ function SafeHydrate({ children }: PropsWithChildren<any>) {
 
 export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
-    <div className="bg-taupe-100 relative flex h-full min-h-screen w-screen flex-col justify-between text-black">
+    <div className="relative flex h-full min-h-screen w-screen flex-col justify-between bg-taupe-100 text-black">
       <Header />
       <main className="flex w-full flex-1">{children}</main>
       <Footer />
