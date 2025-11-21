@@ -10,6 +10,7 @@ import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
+import HistoryProvider from 'src/utils/useHistory';
 import 'src/vendor/inpage-metamask.js';
 import 'src/vendor/polyfill';
 
@@ -18,11 +19,13 @@ export function App({ children }: PropsWithChildren<any>) {
     <ErrorBoundary>
       <SafeHydrate>
         <WagmiContext>
-          <LegalRestrict>
-            <BodyLayout>{children}</BodyLayout>
-          </LegalRestrict>
-          <TransactionModal />
-          <ToastContainer transition={Zoom} position="bottom-right" />
+          <HistoryProvider>
+            <LegalRestrict>
+              <BodyLayout>{children}</BodyLayout>
+            </LegalRestrict>
+            <TransactionModal />
+            <ToastContainer transition={Zoom} position="bottom-right" />
+          </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>
       <Analytics />
@@ -43,7 +46,7 @@ function SafeHydrate({ children }: PropsWithChildren<any>) {
 
 export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
-    <div className="relative flex h-full min-h-screen w-screen flex-col justify-between bg-taupe-100 text-black">
+    <div className="bg-taupe-100 relative flex h-full min-h-screen w-screen flex-col justify-between text-black">
       <Header />
       <main className="flex w-full flex-1">{children}</main>
       <Footer />
