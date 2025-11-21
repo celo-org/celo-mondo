@@ -36,7 +36,7 @@ export default async function updateProposalsInDB(
     inArray(eventsTable.eventName, [
       'ProposalQueued',
       'ProposalDequeued',
-      // ProposalApproved removed: approval doesn't change stage, it's a boolean state
+      'ProposalApproved',
       'ProposalExecuted',
       'ProposalExpired',
     ]),
@@ -80,6 +80,7 @@ export default async function updateProposalsInDB(
       set:
         intent === 'replay'
           ? {
+              // NOTE: make sure all values are here
               cgp: sql`excluded."cgp"`,
               author: sql`excluded."author"`,
               url: sql`excluded."url"`,
@@ -90,14 +91,29 @@ export default async function updateProposalsInDB(
               proposer: sql`excluded."proposer"`,
               deposit: sql`excluded."deposit"`,
               networkWeight: sql`excluded."networkWeight"`,
-              executedAt: sql`excluded."executedAt"`,
               transactionCount: sql`excluded."transactionCount"`,
               timestamp: sql`excluded."timestamp"`,
+              queuedAt: sql`excluded."queuedAt"`,
+              queuedAtBlockNumber: sql`excluded."queuedAtBlockNumber"`,
+              dequeuedAt: sql`excluded."dequeuedAt"`,
+              dequeuedAtBlockNumber: sql`excluded."dequeuedAtBlockNumber"`,
+              approvedAt: sql`excluded."approvedAt"`,
+              approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
+              executedAt: sql`excluded."executedAt"`,
+              executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
             }
           : {
               stage: sql`excluded."stage"`,
               networkWeight: sql`excluded."networkWeight"`,
               timestamp: sql`excluded."timestamp"`,
+              queuedAt: sql`excluded."queuedAt"`,
+              queuedAtBlockNumber: sql`excluded."queuedAtBlockNumber"`,
+              dequeuedAt: sql`excluded."dequeuedAt"`,
+              dequeuedAtBlockNumber: sql`excluded."dequeuedAtBlockNumber"`,
+              approvedAt: sql`excluded."approvedAt"`,
+              approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
+              executedAt: sql`excluded."executedAt"`,
+              executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
             },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
@@ -189,6 +205,26 @@ async function mergeProposalDataIntoPGRow({
   }
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
+  let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt';
+  switch (lastProposalEvent.eventName) {
+    case 'ProposalExecuted':
+      column = 'executedAt';
+      break;
+    case 'ProposalApproved':
+      column = 'approvedAt';
+      break;
+    case 'ProposalExpired':
+      column = 'expiredAt';
+      break;
+    case 'ProposalDequeued':
+      column = 'dequeuedAt';
+      break;
+    case 'ProposalQueued':
+      column = 'queuedAt';
+      break;
+    default:
+      throw new Error(`Unhandled event: ${lastProposalEvent.eventName}`);
+  }
 
   let url = mostRecentProposalState[URL_INDEX];
   let cgpMatch = url.match(/cgp-(\d+)\.md/i);
@@ -242,8 +278,19 @@ async function mergeProposalDataIntoPGRow({
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
-  console.log({ proposalId, networkWeight });
+  const eventUnixTimestampInSeconds = (
+    await client.getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) })
+  ).timestamp;
+
+  const [existingProposal] = await database
+    .select()
+    .from(proposalsTable)
+    .where(eq(proposalsTable.id, proposalId));
+
   return {
+    // NOTE: we need to make sure the existing values (dequeuedAt, queuedAt, etc) are
+    // present in the object to not override them with NULL values
+    ...existingProposal,
     id: proposalId,
     chainId: client.chain.id,
     timestamp: parseInt(mostRecentProposalState[TIMESTAMP_INDEX].toString(), 10),
@@ -257,12 +304,13 @@ async function mergeProposalDataIntoPGRow({
     proposer: proposalQueuedEvent.args.proposer,
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
-    executedAt: metadata?.timestampExecuted ? metadata.timestampExecuted / 1000 : null,
     transactionCount: Number(numTransactions),
+    [column + 'BlockNumber']: lastProposalEvent.blockNumber,
+    [column]: new Date(Number(eventUnixTimestampInSeconds) * 1000),
   };
 }
 
-async function getProposalOnChain(
+export async function getProposalOnChain(
   client: PublicClient<Transport, Chain>,
   proposalId: number,
   blockNumber?: bigint,
@@ -312,7 +360,7 @@ async function getProposalStage(
   proposalId: number,
   eventName: string | undefined,
 ): Promise<ProposalStage> {
-  let stage: ProposalStage;
+  let stage: ProposalStage | undefined;
   switch (eventName) {
     case 'ProposalExecuted':
       stage = ProposalStage.Executed;
@@ -320,6 +368,16 @@ async function getProposalStage(
 
     case 'ProposalExpired':
       stage = ProposalStage.Expiration;
+      break;
+
+    // NOTE: approval doesn't change stage, it's a boolean state
+    // but we still want to update the approvedAt column
+    // in this case setting stage to undefined will force
+    // the next if statement to fetch stage from the blockchain
+    // as it could be 'referendum' or 'execution' but no event is emitted
+    // for the transition from 'referendum' stage  to 'execution' stage
+    case 'ProposalApproved':
+      stage = undefined;
       break;
 
     case 'ProposalDequeued':
@@ -346,10 +404,11 @@ async function getProposalStage(
       functionName: 'getProposalStage',
       args: [BigInt(proposalId)],
     });
-    if (stageOnChain > stage) {
+    if (!stage || stageOnChain > stage) {
       stage = stageOnChain;
     }
   }
+
   return stage;
 }
 

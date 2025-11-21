@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import Image from 'next/image';
 import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
@@ -11,11 +10,9 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { VoteToColor, VoteType } from 'src/features/governance/types';
-import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
-import { getEndHumanEndTime } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -28,15 +25,11 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, proposal, metadata, stage } = propData;
-
-  const { timestamp } = proposal || {};
-  const { title, cgp } = metadata || {};
+  const { id, title, cgp } = propData;
 
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
-  const endTimeValue = getEndHumanEndTime({ proposalTimestamp: timestamp, stage });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})
@@ -72,12 +65,6 @@ export function ProposalCard({
           </div>
         </div>
       )}
-      {!isCompact && endTimeValue && (
-        <div className="flex items-center space-x-2">
-          <Image src={ClockIcon} alt="" width={16} height={16} />
-          <div className="text-sm font-medium">{`${endTimeValue}`}</div>
-        </div>
-      )}
     </Link>
   );
 }
@@ -91,18 +78,13 @@ export function ProposalBadgeRow({
   showProposer?: boolean;
   showExecutedTime?: boolean;
 }) {
-  const { stage, proposal, metadata, id } = propData;
+  const { stage, proposal, metadata, id, queuedAt, executedAt } = propData;
 
-  const { timestamp, proposer } = proposal || {};
-  const { timestamp: cgpTimestamp, cgp, timestampExecuted } = metadata || {};
+  const { proposer } = proposal || {};
+  const { cgp } = metadata || {};
 
-  const proposedTimestamp = timestamp || cgpTimestamp;
-  const proposedTimeValue = proposedTimestamp
-    ? new Date(proposedTimestamp).toLocaleDateString()
-    : undefined;
-  const executedTimeValue = timestampExecuted
-    ? new Date(timestampExecuted).toLocaleDateString()
-    : undefined;
+  const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
+  const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
 
   return (
     <div className="flex items-center space-x-2">

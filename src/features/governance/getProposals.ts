@@ -30,7 +30,7 @@ function findHistory(
   return history;
 }
 
-interface ProposalWithHistory extends Proposal {
+export interface ProposalWithHistory extends Proposal {
   history: { id: number; stage: ProposalStage }[];
 }
 

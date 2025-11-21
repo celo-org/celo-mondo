@@ -5,7 +5,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import type { getProposals } from 'src/features/governance/getProposals';
+import type { ProposalWithHistory } from 'src/features/governance/getProposals';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
 import { getStageEndTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
 import { ProposalMetadata, VoteAmounts, VoteType } from 'src/features/governance/types';
@@ -83,7 +83,7 @@ export function useGovernanceProposals() {
       // Fetch on-chain data
       const [proposals, [ids, upvotesArr]] = await Promise.all([
         fetch(`/api/governance/proposals?chainId=${publicClient.chain!.id}`).then(
-          (x) => x.json() as ReturnType<typeof getProposals>,
+          (x) => x.json() as Promise<ProposalWithHistory[]>,
         ),
         publicClient.readContract({
           address: Addresses.Governance,
@@ -101,9 +101,7 @@ export function useGovernanceProposals() {
           }
 
           return {
-            id: proposal.id,
-            stage: proposal.stage,
-            history: proposal.history,
+            ...proposal,
             metadata: {
               author: proposal.author,
               cgp: proposal.cgp,
@@ -112,7 +110,9 @@ export function useGovernanceProposals() {
               stage: proposal.stage,
               title: proposal.title,
               timestamp: proposal.timestamp * 1000,
-              timestampExecuted: proposal.executedAt ? proposal.executedAt * 1000 : null,
+              timestampExecuted: proposal.executedAt
+                ? new Date(proposal.executedAt).getTime()
+                : null,
               id: proposal.id,
               url: proposal.url,
             },
@@ -126,6 +126,7 @@ export function useGovernanceProposals() {
               upvotes,
               url: proposal.url,
               expiryTimestamp: getStageEndTimestamp(proposal.stage, proposal.timestamp * 1000),
+              // deprecated field, prefer <root>.queuedAt, dequeuedAt, etc
               timestamp: proposal.timestamp * 1000,
               isPassing: await publicClient.readContract({
                 address: Addresses.Governance,
