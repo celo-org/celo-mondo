@@ -17,7 +17,7 @@ const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Governance', to: '/governance', icon: Governance },
   { label: 'Delegate', to: '/delegate', icon: Delegate },
   { label: 'Bridge', to: '/bridge', icon: Bridge },
-  ...(isWalletConnected ? [{ label: 'Dashboard', to: '/account', icon: Dashboard }] : []),
+  ...(isWalletConnected ? [{ label: 'Account', to: '/account', icon: Dashboard }] : []),
 ];
 
 export function NavBar({ collapsed }: { collapsed?: boolean }) {

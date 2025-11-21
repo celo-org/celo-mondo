@@ -65,7 +65,7 @@ export default function Page() {
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4 max-w-screen-md">
-      <h1 className="hidden font-serif text-3xl sm:block">Dashboard</h1>
+      <h1 className="hidden font-serif text-3xl sm:block">Account</h1>
       <div className="items-top flex justify-between md:gap-x-40">
         <div>
           <h2>Total Balance</h2>
