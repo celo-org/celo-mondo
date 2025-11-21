@@ -78,7 +78,7 @@ export function DelegationForm({
     });
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('delegation', onTxSuccess);
-  const isInputDisabled = isLoading || isPlanStarted;
+  const isInputDisabled = isLoading || isPlanStarted || !!defaultFormValues?.delegatee;
   const canDelegate =
     !isValidator &&
     !isValidatorGroup &&
@@ -112,7 +112,7 @@ export function DelegationForm({
           <div
             className={values.action === DelegateActionType.Transfer ? 'space-y-3' : 'space-y-5'}
           >
-            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
+            {isInputDisabled ? null : <ActionTypeField defaultAction={defaultFormValues?.action} />}
             <div className="space-y-1">
               <DelegateeField
                 fieldName="delegatee"
@@ -128,26 +128,28 @@ export function DelegationForm({
                 allowUserInput={values.customDelegatee}
                 disabled={isInputDisabled}
               />
-              <div className="mb-4 flex items-center">
-                <input
-                  id="default-checkbox"
-                  type="checkbox"
-                  name="customDelegatee"
-                  checked={values.customDelegatee}
-                  onChange={() => {
-                    setFieldValue('delegatee', '' as Address);
-                    setFieldValue('customDelegatee', !values.customDelegatee);
-                  }}
-                  className="h-4 w-4 rounded-sm border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-                />
+              {!defaultFormValues?.delegatee && (
+                <div className="mb-4 flex items-center">
+                  <input
+                    id="default-checkbox"
+                    type="checkbox"
+                    name="customDelegatee"
+                    checked={values.customDelegatee}
+                    onChange={() => {
+                      setFieldValue('delegatee', '' as Address);
+                      setFieldValue('customDelegatee', !values.customDelegatee);
+                    }}
+                    className="h-4 w-4 rounded-sm border-gray-300 bg-gray-100 text-blue-600 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+                  />
 
-                <label
-                  htmlFor="default-checkbox"
-                  className="m-0 ms-2 p-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                >
-                  Use custom delegatee address
-                </label>
-              </div>
+                  <label
+                    htmlFor="default-checkbox"
+                    className="m-0 ms-2 p-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                  >
+                    Use custom delegatee address
+                  </label>
+                </div>
+              )}
               <CurrentPercentField delegations={delegations} />
             </div>
             {values.action === DelegateActionType.Transfer && (
@@ -158,7 +160,7 @@ export function DelegationForm({
                 disabled={isInputDisabled}
               />
             )}
-            <PercentField delegations={delegations} disabled={isInputDisabled} />
+            <PercentField delegations={delegations} />
           </div>
 
           {
@@ -294,7 +296,8 @@ function DelegateeField({
               <DelegateeLogo address={field.value} size={28} />
               <span className="text-black">{delegateeName}</span>
             </div>
-            <ChevronIcon direction="s" width={14} height={14} />
+
+            {disabled ? null : <ChevronIcon direction="s" width={14} height={14} />}
           </div>
         }
         menuClasses="py-2 left-0 right-0 -top-[5.5rem] overflow-y-auto max-h-[24.75rem] all:w-auto divide-y divide-gray-200"
@@ -321,17 +324,19 @@ function DelegateeField({
           );
         })}
       />
-      <div className="absolute right-10 top-9 flex items-center space-x-4">
-        <IconButton
-          imgSrc={ShuffleIcon}
-          width={14}
-          height={10}
-          title="Random"
-          onClick={onClickRandom}
-          className="px-1 py-1"
-          disabled={disabled}
-        />
-      </div>
+      {disabled ? null : (
+        <div className="absolute right-10 top-9 flex items-center space-x-4">
+          <IconButton
+            imgSrc={ShuffleIcon}
+            width={14}
+            height={10}
+            title="Random"
+            onClick={onClickRandom}
+            className="px-1 py-1"
+            disabled={disabled}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -357,9 +362,15 @@ function PercentField({
   delegations?: DelegationBalances;
   disabled?: boolean;
 }) {
-  const { values } = useFormikContext<DelegateFormValues>();
+  const { values, setFieldValue } = useFormikContext<DelegateFormValues>();
   const { action, delegatee } = values;
   const maxPercent = getMaxPercent(action, delegatee, delegations);
+
+  useEffect(() => {
+    if (action === DelegateActionType.Undelegate) {
+      setFieldValue('percent', maxPercent);
+    }
+  }, [action, maxPercent, setFieldValue]);
 
   return (
     <RangeField
