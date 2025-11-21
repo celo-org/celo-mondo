@@ -117,7 +117,11 @@ export function DelegationForm({
               <DelegateeField
                 fieldName="delegatee"
                 label={
-                  values.action === DelegateActionType.Transfer ? 'From delegatee' : 'Delegate to'
+                  values.action === DelegateActionType.Transfer
+                    ? 'From delegatee'
+                    : values.action === DelegateActionType.Delegate
+                      ? 'Delegate to'
+                      : 'Undelegate from'
                 }
                 addressToDelegatee={addressToDelegatee}
                 defaultValue={defaultFormValues?.delegatee}
