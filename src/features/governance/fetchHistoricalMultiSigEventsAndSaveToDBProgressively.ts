@@ -52,7 +52,6 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
 
   console.info(`Fetching ${eventName} events from MultiSig: ${approverMultisigAddress}`);
 
-  const latestBlock = untilBlock || (await client.getBlockNumber());
   const transactionIds: bigint[] = [];
 
   if (!fromBlock) {
@@ -69,10 +68,10 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
 
     fromBlock = lastBlock?.blockNumber || 0n;
   }
-
+  untilBlock = untilBlock || (await client.getBlockNumber());
   console.log('------');
   if (fromBlock > 0n) {
-    console.log(`Resuming ${eventName} from block ${fromBlock}... until ${latestBlock}`);
+    console.log(`Resuming ${eventName} from block ${fromBlock}... until ${untilBlock}`);
   }
 
   const query = {
@@ -82,9 +81,10 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
   } as const;
 
   let step = default_step;
-  let toBlock: bigint | 'latest';
-  while (fromBlock < latestBlock) {
-    toBlock = fromBlock + step >= latestBlock ? 'latest' : fromBlock + step;
+  let toBlock: bigint;
+  let wait = 1010;
+  while (fromBlock < untilBlock) {
+    toBlock = fromBlock + step >= untilBlock ? untilBlock : fromBlock + step;
     try {
       // Fetch events from `fromBlock` to `fromBlock+step`
       const events = await client.getContractEvents({
@@ -92,7 +92,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
         fromBlock,
         toBlock: toBlock,
       });
-
+      console.info('events found', events.length);
       // If there were any events, save them in the db
       if (events.length) {
         transactionIds.push(
@@ -104,7 +104,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
           .onConflictDoNothing();
         console.log({ inserts: count });
       }
-      await sleep(1000);
+      await sleep(wait);
     } catch (e) {
       // If there's any network issue, retry with smaller step
       if (
@@ -112,13 +112,14 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
         e instanceof HttpRequestError ||
         e instanceof RpcRequestError
       ) {
-        step /= 3n;
+        step /= 2n;
+        console.log(e);
         if (step <= 1_000) {
           console.log(e);
           throw new Error('Retried too many times now...');
         }
-        console.info('waiting to avoid rate limte');
-        await sleep(3000);
+        console.info('waiting to avoid rate limit');
+        await sleep((wait *= 3));
         console.log(`Halved the block step down to ${step}`);
         // Continue the loop without incrementing fromBlock nor saving progress to DB
         continue;
@@ -127,19 +128,19 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
     }
 
     console.log(
-      `Saving last processed block for ${eventName}: ${toBlock === 'latest' ? latestBlock : toBlock}`,
+      `Saving last processed block for ${eventName}: ${toBlock > untilBlock ? untilBlock : toBlock}`,
     );
     await database
       .insert(blocksProcessedTable)
       .values({
-        // fromBlock+step can def overshoot the latestBlock, so we make sure not to overshoot
+        // fromBlock+step can def overshoot the untilBlock, so we make sure not to overshoot
         // but also we wanna save processed blocks incrementally
-        blockNumber: bigintMath.min(fromBlock + step, toBlock === 'latest' ? latestBlock : toBlock),
+        blockNumber: bigintMath.min(fromBlock + step, toBlock ? untilBlock : toBlock),
         eventName: eventName as string,
         chainId: client.chain.id,
       })
       .onConflictDoUpdate({
-        set: { blockNumber: toBlock === 'latest' ? latestBlock : toBlock },
+        set: { blockNumber: toBlock > untilBlock ? untilBlock : toBlock },
         target: [blocksProcessedTable.eventName, blocksProcessedTable.chainId],
       });
 

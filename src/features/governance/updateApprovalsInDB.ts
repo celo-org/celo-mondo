@@ -46,17 +46,21 @@ async function getApproverMultisigAddress(
 export default async function updateApprovalsInDB(
   client: PublicClient<Transport, Chain>,
   multisigTxIds?: bigint[],
+  type?: 'confirmations' | 'revocations',
 ): Promise<void> {
   // First, get the approver multisig address from the Governance contract
   const approverMultisigAddress = await getApproverMultisigAddress(client);
   console.info(`Processing events for approver multisig: ${approverMultisigAddress}`);
 
-  // Process Confirmation events (add approvals)
-  await processConfirmations(client, approverMultisigAddress, multisigTxIds);
-
-  // Process Revocation events (remove approvals)
-  await processRevocations(client, approverMultisigAddress, multisigTxIds);
-
+  // no type means do all
+  if (!type || type === 'confirmations') {
+    // Process Confirmation events (add approvals)
+    await processConfirmations(client, approverMultisigAddress, multisigTxIds);
+  }
+  if (!type || type === 'revocations') {
+    // Process Revocation events (remove approvals)
+    await processRevocations(client, approverMultisigAddress, multisigTxIds);
+  }
   if (process.env.NODE_ENV === 'test') {
     console.info('not revalidating cache in test mode');
     return;

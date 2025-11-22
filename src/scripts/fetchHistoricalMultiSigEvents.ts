@@ -50,7 +50,7 @@ async function main() {
   if (confirmationTxIds.length) {
     try {
       console.info('adding confirmations');
-      await updateApprovalsInDB(client, [...confirmationTxIds]);
+      await updateApprovalsInDB(client, [...confirmationTxIds], 'confirmations');
     } catch (error) {
       console.error('Error updating approvals in DB:', error);
       console.info('Some approvals may not have been updated. Check logs for details.');
@@ -70,7 +70,7 @@ async function main() {
   if (revocationTxIds.length) {
     try {
       console.info('removing confirmations');
-      await updateApprovalsInDB(client, [...revocationTxIds]);
+      await updateApprovalsInDB(client, [...revocationTxIds], 'revocations');
     } catch (error) {
       console.error('Error updating approvals in DB:', error);
       console.info('Some approvals may not have been updated. Check logs for details.');
@@ -87,6 +87,7 @@ async function main() {
       untilBlock,
     )),
   );
+  // exectution events for multisig are saved just to keep track but we dont yet create any other db entries from them
 
   if (process.env.UPDATE_ALL) {
     console.info(`Processing all multisig transaction IDs...`);
