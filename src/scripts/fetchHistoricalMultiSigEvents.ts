@@ -76,7 +76,7 @@ async function main() {
     { fromBlock, untilBlock },
   );
   // exectution events for multisig are saved just to keep track but we dont yet create any other db entries from them
-
+  console.info('execution result', executionResult);
   if (process.env.UPDATE_ALL) {
     console.info(`Processing all multisig transaction IDs...`);
     try {
