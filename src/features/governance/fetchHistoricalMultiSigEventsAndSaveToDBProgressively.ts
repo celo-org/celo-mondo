@@ -134,7 +134,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
 
   let step = default_step;
   let toBlock: bigint;
-  let wait = 1010;
+  let wait = 800; //ms
   let retryCount = 0;
   const MAX_RETRIES = 10; // Prevent infinite retry loops
   const MAX_WAIT_TIME = 30_000; // Cap wait time at 30 seconds
@@ -170,8 +170,8 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
 
       // Reset retry counter and reduce wait time on successful request
       retryCount = 0;
-      if (wait > 1010) {
-        wait = Math.max(1010, Math.floor(wait / 2)); // Gradually decrease wait time
+      if (wait > 800) {
+        wait = Math.max(800, Math.floor(wait / 2)); // Gradually decrease wait time
       }
 
       // If there were any events, save them in the db
@@ -216,7 +216,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
                   console.warn(
                     `Database connection error on early exit save, retrying... (${saveRetries} attempts left)`,
                   );
-                  await sleep(2000);
+                  await sleep(wait);
                   if (saveRetries === 0) {
                     throw dbError;
                   }
@@ -244,7 +244,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
             retries--;
             if (dbError.cause?.code === 'ECONNRESET' || dbError.cause?.code === 'ECONNREFUSED') {
               console.warn(`Database connection error, retrying... (${retries} attempts left)`);
-              await sleep(2000); // Wait 2 seconds before retry
+              await sleep(wait); // Wait milliseconds before retry
               if (retries === 0) {
                 throw dbError; // Re-throw if out of retries
               }
@@ -323,7 +323,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
             console.warn(
               `Database connection error saving progress, retrying... (${progressRetries} attempts left)`,
             );
-            await sleep(2000);
+            await sleep(wait);
             if (progressRetries === 0) {
               throw dbError;
             }
