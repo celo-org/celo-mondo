@@ -155,8 +155,9 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
       toBlock = fromBlock - step <= untilBlock ? untilBlock : fromBlock - step;
     }
 
+    const rangeSize = searchDirection === 'forward' ? toBlock - fromBlock : fromBlock - toBlock;
     console.log(
-      `🔍 Requesting blocks ${fromBlock} to ${toBlock} (step: ${step}, range: ${toBlock - fromBlock})`,
+      `🔍 Requesting blocks ${fromBlock} to ${toBlock} (step: ${step}, range: ${rangeSize})`,
     );
 
     try {
@@ -306,14 +307,13 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
           await database
             .insert(blocksProcessedTable)
             .values({
-              // fromBlock+step can def overshoot the untilBlock, so we make sure not to overshoot
-              // but also we wanna save processed blocks incrementally
-              blockNumber: bigintMath.min(fromBlock + step, toBlock ? untilBlock : toBlock),
+              // toBlock is already capped at untilBlock in the calculation above
+              blockNumber: toBlock,
               eventName: eventName as string,
               chainId: client.chain.id,
             })
             .onConflictDoUpdate({
-              set: { blockNumber: toBlock > untilBlock ? untilBlock : toBlock },
+              set: { blockNumber: toBlock },
               target: [blocksProcessedTable.eventName, blocksProcessedTable.chainId],
             });
           progressSaved = true;

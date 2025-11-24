@@ -120,9 +120,11 @@ async function main() {
   console.info(`Found ${allDequeuedEvents.length} total dequeued proposals`);
   console.info(`Already processed: ${processedProposalIds.size}`);
   if (skipProposalIds.size > 0) {
-    console.info(`Skipping (via SKIP_PROPOSALS): ${skipProposalIds.size}`);
+    console.info(`Skipping (via --skip): ${skipProposalIds.size}`);
   }
-  console.info(`Remaining to process: ${dequeuedEvents.map((event) => `${event.proposalId}`)}\n`);
+  console.info(
+    `Remaining to process: ${dequeuedEvents.map((event) => event.proposalId).join(', ')}\n`,
+  );
 
   if (dequeuedEvents.length === 0) {
     console.info('✅ All proposals already processed! Nothing to do.');
