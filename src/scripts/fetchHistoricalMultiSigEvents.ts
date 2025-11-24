@@ -31,26 +31,22 @@ async function main() {
     chain: celo,
     transport: http(archiveNode, {
       batch: true,
-      timeout: 30_000, // half a min
+      timeout: 60_000, // 1 minute - archive nodes can be slow
     }),
   }) as PublicClient<Transport, Chain>;
 
   console.info('Starting MultiSig event backfill...');
 
   // Fetch all Confirmation events
-  const confirmationTxIds: bigint[] = [];
-  confirmationTxIds.push(
-    ...(await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-      'Confirmation',
-      client,
-      fromBlock,
-      untilBlock,
-    )),
+  const confirmationResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+    'Confirmation',
+    client,
+    { fromBlock, untilBlock },
   );
-  if (confirmationTxIds.length) {
+  if (confirmationResult.transactionIds.length) {
     try {
       console.info('adding confirmations');
-      await updateApprovalsInDB(client, [...confirmationTxIds], 'confirmations');
+      await updateApprovalsInDB(client, [...confirmationResult.transactionIds], 'confirmations');
     } catch (error) {
       console.error('Error updating approvals in DB:', error);
       console.info('Some approvals may not have been updated. Check logs for details.');
@@ -58,19 +54,15 @@ async function main() {
   }
 
   // Fetch all Revocation events
-  const revocationTxIds: bigint[] = [];
-  revocationTxIds.push(
-    ...(await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-      'Revocation',
-      client,
-      fromBlock,
-      untilBlock,
-    )),
+  const revocationResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+    'Revocation',
+    client,
+    { fromBlock, untilBlock },
   );
-  if (revocationTxIds.length) {
+  if (revocationResult.transactionIds.length) {
     try {
       console.info('removing confirmations');
-      await updateApprovalsInDB(client, [...revocationTxIds], 'revocations');
+      await updateApprovalsInDB(client, [...revocationResult.transactionIds], 'revocations');
     } catch (error) {
       console.error('Error updating approvals in DB:', error);
       console.info('Some approvals may not have been updated. Check logs for details.');
@@ -78,14 +70,10 @@ async function main() {
   }
 
   // Fetch all Execution events (useful for tracking execution state)
-  const executionTxIds: bigint[] = [];
-  executionTxIds.push(
-    ...(await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-      'Execution',
-      client,
-      fromBlock,
-      untilBlock,
-    )),
+  const executionResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+    'Execution',
+    client,
+    { fromBlock, untilBlock },
   );
   // exectution events for multisig are saved just to keep track but we dont yet create any other db entries from them
 

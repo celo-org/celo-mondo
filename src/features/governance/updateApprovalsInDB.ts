@@ -125,15 +125,7 @@ async function processConfirmations(
       });
 
       // multisigTx returns: [destination, value, data, executed]
-      const [destination, _value, data, _executed] = multisigTx;
-
-      // Check if this is a governance approval by checking the destination
-      if (destination.toLowerCase() !== Addresses.Governance.toLowerCase()) {
-        console.log(
-          `Skipping multisigTxId ${multisigTxId}: not a governance transaction (destination: ${destination})`,
-        );
-        continue;
-      }
+      const [_destination, _value, data, _executed] = multisigTx;
 
       // Decode the calldata to extract the proposalId
       let proposalId: number | undefined;

@@ -102,6 +102,7 @@
     "build": "yarn build:ci",
     "backfill-db": "tsx ./src/scripts/fetchHistoricalGovernanceEvents.ts",
     "backfill-approvals": "tsx ./src/scripts/fetchHistoricalMultiSigEvents.ts",
+    "backfill-approvals-optimized": "tsx ./src/scripts/fetchHistoricalMultiSigEventsOptimized.ts",
     "update-proposal-stages": "tsx ./src/scripts/updateProposalStages.ts",
     "update-known-tx-selectors": "tsx ./src/scripts/cacheProposalSelectors.ts",
     "build:ci": "yarn build:proposals && yarn build:delegatees-json && yarn build:app",
