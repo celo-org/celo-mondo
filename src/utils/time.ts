@@ -154,3 +154,13 @@ export function getHumanEndTime({
       return 'Unknown';
   }
 }
+
+export function unixTimestampToISOString(timestamp: string | number) {
+  if (!timestamp) {
+    return null;
+  }
+
+  const ts = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+
+  return new Date(ts * 1000).toISOString();
+}

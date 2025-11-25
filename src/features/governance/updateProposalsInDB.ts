@@ -12,6 +12,7 @@ import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';
+import { unixTimestampToISOString } from 'src/utils/time';
 import '../../vendor/polyfill';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
@@ -278,14 +279,12 @@ async function mergeProposalDataIntoPGRow({
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
-  const eventUnixTimestampInSeconds = (
-    await client.getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) })
-  ).timestamp;
-
-  const [existingProposal] = await database
-    .select()
-    .from(proposalsTable)
-    .where(eq(proposalsTable.id, proposalId));
+  const [[existingProposal], eventUnixTimestampInSeconds] = await Promise.all([
+    database.select().from(proposalsTable).where(eq(proposalsTable.id, proposalId)),
+    client
+      .getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) })
+      .then(({ timestamp }) => Number(timestamp)),
+  ]);
 
   return {
     // NOTE: we need to make sure the existing values (dequeuedAt, queuedAt, etc) are
@@ -306,7 +305,7 @@ async function mergeProposalDataIntoPGRow({
     networkWeight,
     transactionCount: Number(numTransactions),
     [column + 'BlockNumber']: lastProposalEvent.blockNumber,
-    [column]: new Date(Number(eventUnixTimestampInSeconds) * 1000),
+    [column]: unixTimestampToISOString(eventUnixTimestampInSeconds),
   };
 }
 
