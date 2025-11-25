@@ -107,25 +107,25 @@ describe('updateApprovalsInDB', () => {
 
     await updateApprovalsInDB(mockClient as any);
 
-    // Verify that insert was called with correct data
+    // Verify that insert was called with correct data (rows are inserted individually now)
     expect(database.insert).toHaveBeenCalled();
-    expect(database.values).toHaveBeenCalledWith([
-      {
-        chainId: 42220,
-        proposalId: Number(proposalId),
-        multisigTxId: Number(multisigTxId),
-        approver,
-        confirmedAt: 1234567890,
-        blockNumber: 12345678n,
-        transactionHash: '0xabcdef',
-      },
-    ]);
+    expect(database.values).toHaveBeenCalledWith({
+      chainId: 42220,
+      proposalId: Number(proposalId),
+      multisigTxId: Number(multisigTxId),
+      approver,
+      confirmedAt: 1234567890,
+      blockNumber: 12345678n,
+      transactionHash: '0xabcdef',
+    });
   });
 
-  it('should skip non-governance transactions', async () => {
+  it('should skip non-approval function calls', async () => {
     const mockMultisigAddress = '0x41822d8A191fcfB1cfcA5F7048818aCd8eE933d3' as Address;
     const approver = '0x1234567890123456789012345678901234567890' as Address;
     const multisigTxId = 5n;
+    const proposalId = 100n;
+    const dequeueIndex = 0n;
 
     // Mock Confirmation event
     const mockConfirmationEvent = {
@@ -145,11 +145,15 @@ describe('updateApprovalsInDB', () => {
     // Mock approver multisig address
     mockClient.readContract
       .mockResolvedValueOnce(mockMultisigAddress)
-      // Mock multisig transaction with non-governance destination
+      // Mock multisig transaction with "execute" function instead of "approve"
       .mockResolvedValueOnce([
-        '0x0000000000000000000000000000000000000000' as Address, // non-governance destination
+        Addresses.Governance, // governance destination (correct)
         0n,
-        '0x' as `0x${string}`,
+        encodeFunctionData({
+          abi: governanceABI,
+          functionName: 'execute', // non-approval function
+          args: [proposalId, dequeueIndex],
+        }),
         false,
       ]);
 
@@ -162,8 +166,8 @@ describe('updateApprovalsInDB', () => {
 
     await updateApprovalsInDB(mockClient as any);
 
-    // Should log that we're skipping this transaction
-    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Skipping multisigTxId'));
+    // Should log that we're skipping this transaction (not an approve call)
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('not an approve call'));
     // Should NOT insert into database
     expect(database.insert).not.toHaveBeenCalled();
   });

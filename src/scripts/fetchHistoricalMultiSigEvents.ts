@@ -17,9 +17,12 @@ import { celo } from 'viem/chains';
  */
 async function main() {
   let fromBlock: bigint | undefined;
-
+  let untilBlock: bigint | undefined;
   if (process.env.RESUME_FROM_BLOCK) {
     fromBlock = BigInt(process.env.RESUME_FROM_BLOCK);
+  }
+  if (process.env.END_AT_BLOCK) {
+    untilBlock = BigInt(process.env.END_AT_BLOCK);
   }
 
   const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
@@ -28,50 +31,60 @@ async function main() {
     chain: celo,
     transport: http(archiveNode, {
       batch: true,
-      timeout: 30_000, // half a min
+      timeout: 60_000, // 1 minute - archive nodes can be slow
     }),
   }) as PublicClient<Transport, Chain>;
 
   console.info('Starting MultiSig event backfill...');
 
   // Fetch all Confirmation events
-  const confirmationTxIds: bigint[] = [];
-  confirmationTxIds.push(
-    ...(await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-      'Confirmation',
-      client,
-      fromBlock,
-    )),
+  const confirmationResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+    'Confirmation',
+    client,
+    { fromBlock, untilBlock },
   );
+  if (confirmationResult.transactionIds.length) {
+    try {
+      console.info('adding confirmations');
+      await updateApprovalsInDB(client, [...confirmationResult.transactionIds], 'confirmations');
+    } catch (error) {
+      console.error('Error updating approvals in DB:', error);
+      console.info('Some approvals may not have been updated. Check logs for details.');
+    }
+  }
 
   // Fetch all Revocation events
-  const revocationTxIds: bigint[] = [];
-  revocationTxIds.push(
-    ...(await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-      'Revocation',
-      client,
-      fromBlock,
-    )),
+  const revocationResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+    'Revocation',
+    client,
+    { fromBlock, untilBlock },
   );
+  if (revocationResult.transactionIds.length) {
+    try {
+      console.info('removing confirmations');
+      await updateApprovalsInDB(client, [...revocationResult.transactionIds], 'revocations');
+    } catch (error) {
+      console.error('Error updating approvals in DB:', error);
+      console.info('Some approvals may not have been updated. Check logs for details.');
+    }
+  }
 
   // Fetch all Execution events (useful for tracking execution state)
-  const executionTxIds: bigint[] = [];
-  executionTxIds.push(
-    ...(await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-      'Execution',
-      client,
-      fromBlock,
-    )),
+  const executionResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+    'Execution',
+    client,
+    { fromBlock, untilBlock },
   );
-
-  // Combine all transaction IDs and process them
-  const allTxIds = new Set([...confirmationTxIds, ...revocationTxIds, ...executionTxIds]);
-
-  if (allTxIds.size > 0) {
-    console.info(`Processing ${allTxIds.size} unique multisig transaction IDs...`);
-    await updateApprovalsInDB(client, [...allTxIds]);
-  } else {
-    console.info('No multisig events found to process.');
+  // exectution events for multisig are saved just to keep track but we dont yet create any other db entries from them
+  console.info('execution result', executionResult);
+  if (process.env.UPDATE_ALL) {
+    console.info(`Processing all multisig transaction IDs...`);
+    try {
+      await updateApprovalsInDB(client);
+    } catch (error) {
+      console.error('Error updating approvals in DB:', error);
+      console.info('Some approvals may not have been updated. Check logs for details.');
+    }
   }
 
   console.info('✅ MultiSig event backfill completed successfully!');

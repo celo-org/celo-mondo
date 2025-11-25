@@ -46,17 +46,21 @@ async function getApproverMultisigAddress(
 export default async function updateApprovalsInDB(
   client: PublicClient<Transport, Chain>,
   multisigTxIds?: bigint[],
+  type?: 'confirmations' | 'revocations',
 ): Promise<void> {
   // First, get the approver multisig address from the Governance contract
   const approverMultisigAddress = await getApproverMultisigAddress(client);
   console.info(`Processing events for approver multisig: ${approverMultisigAddress}`);
 
-  // Process Confirmation events (add approvals)
-  await processConfirmations(client, approverMultisigAddress, multisigTxIds);
-
-  // Process Revocation events (remove approvals)
-  await processRevocations(client, approverMultisigAddress, multisigTxIds);
-
+  // no type means do all
+  if (!type || type === 'confirmations') {
+    // Process Confirmation events (add approvals)
+    await processConfirmations(client, approverMultisigAddress, multisigTxIds);
+  }
+  if (!type || type === 'revocations') {
+    // Process Revocation events (remove approvals)
+    await processRevocations(client, approverMultisigAddress, multisigTxIds);
+  }
   if (process.env.NODE_ENV === 'test') {
     console.info('not revalidating cache in test mode');
     return;
@@ -121,15 +125,7 @@ async function processConfirmations(
       });
 
       // multisigTx returns: [destination, value, data, executed]
-      const [destination, _value, data, _executed] = multisigTx;
-
-      // Check if this is a governance approval by checking the destination
-      if (destination.toLowerCase() !== Addresses.Governance.toLowerCase()) {
-        console.log(
-          `Skipping multisigTxId ${multisigTxId}: not a governance transaction (destination: ${destination})`,
-        );
-        continue;
-      }
+      const [_destination, _value, data, _executed] = multisigTx;
 
       // Decode the calldata to extract the proposalId
       let proposalId: number | undefined;
@@ -183,13 +179,22 @@ async function processConfirmations(
     return;
   }
 
-  // Insert into the approvals table with conflict handling
-  const { count } = await database
-    .insert(approvalsTable)
-    .values(rowsToInsert)
-    .onConflictDoNothing(); // If the same approver confirms the same proposal again, ignore
+  // Insert rows individually to handle errors gracefully
+  let insertedCount = 0;
+  for (const row of rowsToInsert) {
+    try {
+      const { count } = await database.insert(approvalsTable).values(row).onConflictDoNothing(); // If the same approver confirms the same proposal again, ignore
+      insertedCount += count;
+    } catch (error) {
+      console.error(
+        `Failed to insert approval for proposal ${row.proposalId} by ${row.approver}:`,
+        error,
+      );
+      // Continue processing other rows
+    }
+  }
 
-  console.info(`Inserted ${count} new approvals`);
+  console.info(`Inserted ${insertedCount} new approvals`);
 }
 
 async function processRevocations(
