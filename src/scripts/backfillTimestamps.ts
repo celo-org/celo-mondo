@@ -5,6 +5,7 @@ import { and, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { sleep } from 'src/utils/async';
+import { unixTimestampToISOString } from 'src/utils/time';
 import { celo } from 'viem/chains';
 
 const API_TOKEN = process.env.ETHERSCAN_API_TOKEN;
@@ -74,48 +75,40 @@ async function backfillTimestamps() {
     console.log({
       id: proposal.id,
       queuedAtTs,
-      queuedAt: unixTimestampToDate(queuedAtTs),
+      queuedAt: unixTimestampToISOString(queuedAtTs),
       queuedAtBlockNumber: queuedAt?.blockNumber,
 
       dequeuedAtTs,
-      dequeuedAt: unixTimestampToDate(dequeuedAtTs),
+      dequeuedAt: unixTimestampToISOString(dequeuedAtTs),
       dequeuedAtBlockNumber: dequeuedAt?.blockNumber,
 
       approvedAtTs,
-      approvedAt: unixTimestampToDate(approvedAtTs),
+      approvedAt: unixTimestampToISOString(approvedAtTs),
       approvedAtBlockNumber: approvedAt?.blockNumber,
 
       executedAtTs,
-      executedAt: unixTimestampToDate(executedAtTs),
+      executedAt: unixTimestampToISOString(executedAtTs),
       executedAtBlockNumber: executedAt?.blockNumber,
     });
     await database
       .update(proposalsTable)
       .set({
-        queuedAt: unixTimestampToDate(queuedAtTs),
+        queuedAt: unixTimestampToISOString(queuedAtTs),
         queuedAtBlockNumber: queuedAt?.blockNumber,
 
-        dequeuedAt: unixTimestampToDate(dequeuedAtTs),
+        dequeuedAt: unixTimestampToISOString(dequeuedAtTs),
         dequeuedAtBlockNumber: dequeuedAt?.blockNumber,
 
-        approvedAt: unixTimestampToDate(approvedAtTs),
+        approvedAt: unixTimestampToISOString(approvedAtTs),
         approvedAtBlockNumber: approvedAt?.blockNumber,
 
-        executedAt: unixTimestampToDate(executedAtTs),
+        executedAt: unixTimestampToISOString(executedAtTs),
         executedAtBlockNumber: executedAt?.blockNumber,
       })
       .where(eq(proposalsTable.id, proposal.id));
 
     await sleep(500);
   }
-}
-
-function unixTimestampToDate(dateStr: string) {
-  if (!dateStr) {
-    return null;
-  }
-
-  return new Date(parseInt(dateStr, 10) * 1000).toISOString();
 }
 
 // Run the script
