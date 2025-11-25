@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import 'dotenv/config';
 
 import { migrate } from 'drizzle-orm/postgres-js/migrator';
