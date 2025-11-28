@@ -55,14 +55,19 @@ type UseProposalQuorumReturnType =
   | { isLoading: true; data?: never }
   | { isLoading: false; data: bigint };
 export function useProposalQuorum(propData?: MergedProposalData): UseProposalQuorumReturnType {
-  const shouldFetch = !propData?.quorumVotesRequired;
+  const shouldFetch = propData?.quorumVotesRequired == null;
   const { isLoading: isLoadingParticipationParameters, data: participationParameters } =
     useParticipationParameters(shouldFetch);
   const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(
     propData?.proposal,
     shouldFetch,
   );
-  if (!propData || !propData.proposal || isLoadingParticipationParameters || isLoadingThresholds) {
+  if (
+    !propData ||
+    !propData.networkWeight ||
+    isLoadingParticipationParameters ||
+    isLoadingThresholds
+  ) {
     return { isLoading: true };
   }
 
@@ -77,7 +82,7 @@ export function useProposalQuorum(propData?: MergedProposalData): UseProposalQuo
     return {
       data: calculateQuorum({
         participationParameters: participationParameters!,
-        networkWeight: propData.proposal.networkWeight,
+        networkWeight: propData.networkWeight!,
         thresholds: thresholds!,
       }),
       isLoading: false,
@@ -88,7 +93,7 @@ export function useProposalQuorum(propData?: MergedProposalData): UseProposalQuo
       'thresholds',
       thresholds,
       'networkWeight',
-      propData.proposal.networkWeight.toString(),
+      propData.networkWeight!.toString(),
       error,
     );
     return {
@@ -141,7 +146,7 @@ export function useIsProposalPassingQuorum(propData?: MergedProposalData): {
   };
 }
 
-export function useParticipationParameters(enabled: boolean): {
+export function useParticipationParameters(enabled = true): {
   isLoading: boolean;
   data: ParticipationParameters | undefined;
   error: Error | null;
@@ -167,7 +172,7 @@ export function useParticipationParameters(enabled: boolean): {
 
 export function useThresholds(
   proposal: Proposal | undefined,
-  enabled: boolean,
+  enabled = true,
 ): {
   isLoading: boolean;
   data?: number[];
