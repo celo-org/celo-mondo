@@ -157,53 +157,13 @@ async function mergeProposalDataIntoPGRow({
     };
   };
   const lastProposalEvent = events.at(-1)!;
-  let mostRecentProposalBlockNumber = BigInt(lastProposalEvent.blockNumber);
-
   const proposalOnChainAtCreation = await getProposalOnChain(
     client,
     proposalId,
     BigInt(proposalQueuedEvent.blockNumber),
   );
-  let mostRecentProposalState = await getProposalOnChain(client, proposalId);
-  if (BigInt(mostRecentProposalState[0]) === 0n) {
-    // note ProposalVoted and ProposalVotedV2 have different arg data https://github.com/celo-org/celo-monorepo/blob/0a5c8c500559c291d14af236a15e621f74053c50/packages/protocol/contracts/governance/Governance.sol#L154
-    const lastVoteEvent = (
-      await database
-        .select()
-        .from(eventsTable)
-        .where(
-          and(
-            // older proposals might have a ProposalVoted event
-            inArray(eventsTable.eventName, ['ProposalVotedV2', 'ProposalVoted']),
-            eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposalId),
-          ),
-        )
-        .orderBy(desc(eventsTable.blockNumber))
-        .limit(1)
-    )[0];
-
-    // Determine the most recent block number to query
-    if (lastProposalEvent.eventName === 'ProposalExecuted') {
-      // use the block before the execution as the most recent proposal state as execution removes from chain
-      mostRecentProposalBlockNumber = BigInt(lastProposalEvent.blockNumber - 1);
-    } else if (
-      // if proposal is voted on but never executed/expired then we will only have the latest vote event to find the proposal by
-      lastVoteEvent?.blockNumber &&
-      lastVoteEvent.blockNumber > BigInt(lastProposalEvent.blockNumber)
-    ) {
-      mostRecentProposalBlockNumber = lastVoteEvent.blockNumber;
-    } else {
-      mostRecentProposalBlockNumber = BigInt(lastProposalEvent.blockNumber);
-    }
-
-    // we can't rely on events as they don't all contain timestamps
-    // Why we need timestamps from them? timestamp only changes when queing and dequeuing which do contain timestamps
-    mostRecentProposalState = await getProposalOnChain(
-      client,
-      proposalId,
-      mostRecentProposalBlockNumber,
-    );
-  }
+  const { state: mostRecentProposalState, blockNumber: mostRecentProposalBlockNumber } =
+    await getMostRecentProposalStateAndBlockNumber(client, proposalId, lastProposalEvent);
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
   let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt';
@@ -452,4 +412,55 @@ async function getNetworkWeightFromLockedCeloAmount(
     console.error('Error getting network weight from locked celo amount at', blockNumber, err);
     return 0n;
   }
+}
+
+export async function getMostRecentProposalStateAndBlockNumber(
+  client: PublicClient<Transport, Chain>,
+  proposalId: number,
+  lastEvent: Event | JsonAggEvent,
+) {
+  let mostRecentProposalState = await getProposalOnChain(client, proposalId);
+  let mostRecentProposalBlockNumber = BigInt(lastEvent.blockNumber);
+  if (BigInt(mostRecentProposalState[0]) === 0n) {
+    // note ProposalVoted and ProposalVotedV2 have different arg data https://github.com/celo-org/celo-monorepo/blob/0a5c8c500559c291d14af236a15e621f74053c50/packages/protocol/contracts/governance/Governance.sol#L154
+    const lastVoteEvent = (
+      await database
+        .select()
+        .from(eventsTable)
+        .where(
+          and(
+            // older proposals might have a ProposalVoted event
+            inArray(eventsTable.eventName, ['ProposalVotedV2', 'ProposalVoted']),
+            eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposalId),
+          ),
+        )
+        .orderBy(desc(eventsTable.blockNumber))
+        .limit(1)
+    )[0];
+
+    // Determine the most recent block number to query
+    if (lastEvent.eventName === 'ProposalExecuted') {
+      // use the block before the execution as the most recent proposal state as execution removes from chain
+      mostRecentProposalBlockNumber = BigInt(lastEvent.blockNumber) - 1n;
+    } else if (
+      // if proposal is voted on but never executed/expired then we will only have the latest vote event to find the proposal by
+      lastVoteEvent?.blockNumber &&
+      lastVoteEvent.blockNumber > lastEvent.blockNumber
+    ) {
+      mostRecentProposalBlockNumber = lastVoteEvent.blockNumber;
+    }
+
+    // we can't rely on events as they don't all contain timestamps
+    // Why we need timestamps from them? timestamp only changes when queing and dequeuing which do contain timestamps
+    mostRecentProposalState = await getProposalOnChain(
+      client,
+      proposalId,
+      mostRecentProposalBlockNumber,
+    );
+  }
+
+  return {
+    state: mostRecentProposalState,
+    blockNumber: mostRecentProposalBlockNumber,
+  };
 }

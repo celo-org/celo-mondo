@@ -90,6 +90,7 @@ export const proposalsTable = pgTable(
     approvedAtBlockNumber: numeric({ mode: 'bigint' }),
     executedAt: timestamp({ mode: 'string' }),
     executedAtBlockNumber: numeric({ mode: 'bigint' }),
+    quorumVotesRequired: numeric({ mode: 'bigint' }),
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
