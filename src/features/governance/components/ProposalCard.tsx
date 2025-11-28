@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import Image from 'next/image';
 import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
@@ -8,11 +9,14 @@ import { SocialLinkType } from 'src/config/types';
 import { ApprovalBadge } from 'src/features/governance/components/ApprovalBadge';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
+import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { VoteToColor, VoteType } from 'src/features/governance/types';
+import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
+import { getHumanEndTime } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -25,11 +29,19 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, title, cgp } = propData;
+  const { id, title, cgp, dequeuedAt, executedAt, queuedAt, stage } = propData;
+  const { quorumMet } = useIsProposalPassingQuorum(propData);
 
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
+  const endTimeValue = getHumanEndTime({
+    quorumMet,
+    executedAt,
+    dequeuedAt,
+    queuedAt,
+    stage,
+  });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})
@@ -63,6 +75,12 @@ export function ProposalCard({
               </div>
             ))}
           </div>
+        </div>
+      )}
+      {!isCompact && endTimeValue && (
+        <div className="flex items-center space-x-2">
+          <Image src={ClockIcon} alt="" width={16} height={16} />
+          <div className="text-sm font-medium">{`${endTimeValue}`}</div>
         </div>
       )}
     </Link>
