@@ -29,12 +29,12 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, title, cgp, dequeuedAt, executedAt, queuedAt, stage } = propData;
+  const { id, cgp, dequeuedAt, executedAt, queuedAt, stage, metadata } = propData;
   const { quorumMet } = useIsProposalPassingQuorum(propData);
 
   const { votes } = useProposalVoteTotals(propData);
 
-  const link = id ? `/governance/${id}` : `/governance/cgp-${cgp}`;
+  const link = id ? `/governance/${id}` : `/governance/cgp-${cgp || metadata.cgp}`;
   const endTimeValue = getHumanEndTime({
     quorumMet,
     executedAt,
@@ -57,9 +57,9 @@ export function ProposalCard({
   return (
     <Link href={link} className={clsx('space-y-2.5', className)}>
       <ProposalBadgeRow propData={propData} />
-      {title && (
+      {metadata.title && (
         <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
-          {title}
+          {metadata.title}
         </h2>
       )}
       {!isCompact && votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
