@@ -1,23 +1,14 @@
-import { governanceABI } from '@celo/abis';
 import 'dotenv/config';
 
 /* eslint no-console: 0 */
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
-import { Addresses } from 'src/config/contracts';
+import { and, eq, inArray } from 'drizzle-orm';
 import database from 'src/config/database';
-import { eventsTable, proposalsTable } from 'src/db/schema';
+import { proposalsTable } from 'src/db/schema';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import {
-  calculateQuorum,
-  fetchThresholds,
-  isProposalPassingQuorum,
-  parseParticipationParameters,
-} from 'src/features/governance/hooks/useProposalQuorum';
+import { isProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { ProposalStage } from 'src/features/governance/types';
-import { getMostRecentProposalStateAndBlockNumber } from 'src/features/governance/updateProposalsInDB';
-import { getProposalTransactions } from 'src/features/governance/utils/transactionDecoder';
+import { getOnChainQuorumRequired } from 'src/features/governance/utils/quorum';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
-import { readContract } from 'viem/actions';
 import { celo } from 'viem/chains';
 
 const API_TOKEN = process.env.ETHERSCAN_API_TOKEN;
@@ -62,43 +53,8 @@ async function backfillpassingQuorum() {
   type Update = { id: number; chainId: number; quorumVotesRequired: bigint };
   const updates: Update[] = [];
   for (const proposal of proposals) {
-    console.log(allVotes, allVotes[proposal.id]);
-    const earliestEvent = (
-      await database
-        .select()
-        .from(eventsTable)
-        .where(and(eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposalIds)))
-        .orderBy(asc(eventsTable.blockNumber))
-        .limit(1)
-    )[0];
-
-    const { blockNumber: mostRecentBlockNumber, state } =
-      await getMostRecentProposalStateAndBlockNumber(client, proposal.id, earliestEvent);
-
-    const [rawParticipationParameters, thresholds] = await Promise.all([
-      readContract(client, {
-        abi: governanceABI,
-        address: Addresses.Governance,
-        functionName: 'getParticipationParameters',
-        blockNumber: mostRecentBlockNumber,
-      }),
-      fetchThresholds(
-        client,
-        proposal.id,
-        await getProposalTransactions(
-          proposal.id,
-          proposal.transactionCount || 0,
-          earliestEvent.blockNumber,
-        ),
-      ),
-    ]);
-
-    const participationParameters = parseParticipationParameters(rawParticipationParameters);
-    const quorumVotesRequired = calculateQuorum({
-      participationParameters,
-      thresholds,
-      networkWeight: state[5] || proposal.networkWeight!,
-    });
+    const { quorumVotesRequired, participationParameters, thresholds, networkWeight } =
+      await getOnChainQuorumRequired(client, proposal);
 
     const passingQuorum = isProposalPassingQuorum({
       votes: allVotes[proposal.id],
@@ -109,11 +65,7 @@ async function backfillpassingQuorum() {
       console.error(`❌ ${proposal.id} - investigate ! Executed but not passing?!`, {
         participationParameters,
         thresholds,
-        networkWeight: state[5],
-        _networkWeight: proposal.networkWeight,
-        earliestEvent,
-        mostRecentBlockNumber,
-        state,
+        networkWeight,
       });
     } else {
       console.log(
