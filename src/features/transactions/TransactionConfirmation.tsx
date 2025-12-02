@@ -42,7 +42,15 @@ export function TransactionConfirmation({
           </div>
         </div>
       </div>
-      <SolidButton onClick={closeModal}>Close</SolidButton>
+      <SolidButton
+        onClick={() => {
+          // i give up. sometimes tan query will fetch new data but not use it unless we do a page refresh
+          window.location.reload();
+          closeModal();
+        }}
+      >
+        Close
+      </SolidButton>
     </div>
   );
 }

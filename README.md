@@ -14,17 +14,64 @@ For support, you can [file an issue](https://github.com/celo-org/celo-mondo/issu
 
 ## Development
 
-To run Celo Mondo against alfajores network set `NEXT_PUBLIC_RPC_URL` env variable to `alfajores`.
+### Getting Started (for cLabs Vercel Team Members)
 
-To run Celo Mondo against any other network (such as your local testnet) set `NEXT_PUBLIC_RPC_URL` env variable to `http://<your-rpc-url>`.
+1. Clone the repository
+2. Install dependencies: `yarn`
+3. Setup environment: `yarn setup:env`
+   - This will log you into Vercel, link the project, and pull environment variables
+   - The environment includes connection to the staging database (no local DB setup needed)
+4. Run locally: `yarn dev`
+5. Test locally: `yarn test`
 
-1. Install: `yarn`
-2. Setup: `yarn prepare`
-3. Run locally: `yarn dev`
-   1. the `/governance` pages are powered by a postgresql database that needs to be setup, there's a docker file for your convenience as well as a (hopefully not too dated) data dump in `./db_dump.sql`
-   2. restore with `cat ./db_dump.sql | docker exec -i <your-db-container> psql -U postgres`
-   3. make sure your .env has a valid `POSTGRES_URL` variable
-4. Test locally: `yarn test`
+### Getting Started (for Contributors / Local Database Development)
+
+If you're not part of the cLabs Vercel team or want to modify the database locally:
+
+1. Clone the repository
+2. Install dependencies: `yarn`
+3. Start a local PostgreSQL database:
+   ```bash
+   docker run -d \
+     --name celo-mondo-postgres \
+     -e POSTGRES_PASSWORD=postgres \
+     -e POSTGRES_DB=postgres \
+     -p 5432:5432 \
+     postgres:16
+   ```
+4. Restore the database from the dump file:
+   ```bash
+   cat ./db_dump.sql | docker exec -i celo-mondo-postgres psql -U postgres
+   ```
+5. Update your `.env` file with your local database connection:
+   ```bash
+   POSTGRES_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+   NEXT_PUBLIC_RPC_URL="https://forno.celo.org"
+   ```
+6. Get a WalletConnect Project ID (required for app to run):
+    If you cant use the `setup:env` script you will need to create your own.
+   - Visit https://cloud.walletconnect.com
+   - Sign up or log in (free)
+   - Create a new project
+   - Copy your Project ID
+   - Add it to your `.env` file:
+     ```bash
+     NEXT_PUBLIC_WALLET_CONNECT_ID="your_project_id_here"
+     ```
+7. Backfill the database with historical governance events:
+   ```bash
+   yarn backfill-db
+   ```
+8. Update proposal stages to current state:
+   ```bash
+   yarn update-proposal-stages
+   ```
+9. Run locally: `yarn dev`
+10. Test locally: `yarn test`
+
+### Running Against Different Networks
+
+To run Celo Mondo against a different network, set the `NEXT_PUBLIC_RPC_URL` env variable to your desired RPC endpoint (e.g., `http://<your-rpc-url>`).
 
 For more information about the architecture and internals of this app, see [DEVELOPER.md](./DEVELOPER.md).
 
@@ -35,6 +82,13 @@ Now, since the introduction of the backend we set-up a flow to make the front-en
 
 Events are indexed in the `events` table (for redundancy, data is fetched from both [webhooks](https://t3bb35o5zzb6zpgwizsfvu6r2a.multibaas.com/webhooks/2) and a [github action cronjob](./.github/workflows/cronjob.yml) just in case).
 When a new events is received, we can decode it and update the `proposals` table according the event to have an always up to date table that the each front-end client can fetch without further data manipulation. See `src/app/api/webhooks/multibaas/route.ts` to see the webhook and the function calls.
+
+**Proposal Stages:** The `proposals` table stores the current stage for each proposal. Stages are kept current through two mechanisms:
+1. **Event-based updates** (backfill/webhooks): Process events like `ProposalQueued`, `ProposalDequeued`, `ProposalExecuted`, `ProposalExpired`
+2. **Time-based updates** (cron): A [GitHub Action](./.github/workflows/update-proposal-stages.yml) runs every 5 minutes to query `getProposalStage()` from the blockchain for proposals in Referendum or Execution stages, which can transition without emitting events
+
+The frontend reads stages directly from the database with no client-side computation, ensuring consistency and correctness.
+
 There's a small schema explaining each table in more details here: [<img src="./readme-schema.svg" alt="celo-mondo excalidraw">](https://excalidraw.com/#json=cKbblqlCm0IvTZaW1u232,ZQcreoxqt3tt1jShIbwgIw)
 
 ### Helper scripts
@@ -57,3 +111,7 @@ It can take an optional argument proposalIds eg: `123,457,789`. To replay events
 #### `updateVotesTable.ts`
 
 This script computes all proposals votes from the store events. It will **OVERWRITE** votes' table data from the events. It can take an optional argument proposalIds eg: `123,457,789`. To replay events from only the given specific proposals.
+
+#### `updateProposalStages.ts`
+
+This script finds proposals in database inproposals in Referendum or Execution stage and use the blockchain's `getProposalStage()` function to updates the database with the current on-chain stage. It also computes off-chain stages like Rejected (when expired with No votes >= Yes votes) and respects Withdrawn status from metadata. This script is automatically run every 5 minutes via [GitHub Actions](./.github/workflows/update-proposal-stages.yml) to catch time-based stage transitions that don't emit events.

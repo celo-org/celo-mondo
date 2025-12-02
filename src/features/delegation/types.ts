@@ -29,6 +29,7 @@ export interface DelegateFormValues {
   delegatee: Address;
   // Only used in transfer actions, the new target group
   transferDelegatee: Address;
+  customDelegatee?: boolean;
 }
 
 export interface RegisterDelegateFormValues {

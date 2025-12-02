@@ -29,7 +29,7 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
         return [];
       }
 
-      const response = await fetch(`/governance/${proposalId}/api/transactions`);
+      const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=true`);
       if (!response.ok) {
         throw new Error(`Failed to fetch transactions: ${response.statusText}`);
       }

@@ -15,6 +15,27 @@
       "when": 1755863898635,
       "tag": "0001_wonderful_wolverine",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763046296305,
+      "tag": "0002_eminent_doctor_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763715770021,
+      "tag": "0003_common_timeslip",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764334263633,
+      "tag": "0004_glossy_deathstrike",
+      "breakpoints": true
     }
   ]
 }

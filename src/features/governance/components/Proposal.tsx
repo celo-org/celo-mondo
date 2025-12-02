@@ -23,10 +23,11 @@ import { ProposalVotersTable } from 'src/features/governance/components/Proposal
 import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
+import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
-import { getEndHumanEndTime } from 'src/utils/time';
+import { getHumanEndTime } from 'src/utils/time';
 import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
@@ -91,8 +92,8 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id: proposalId, stage, proposal, metadata, history } = propData;
-  const expiryTimestamp = proposal?.expiryTimestamp;
+  const { id: proposalId, stage, history, queuedAt, dequeuedAt, executedAt } = propData;
+  const { quorumMet } = useIsProposalPassingQuorum(propData);
 
   if (stage === ProposalStage.None) return null;
 
@@ -101,35 +102,36 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       <div className="space-y-4 border-taupe-300 p-3 lg:border">
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
-        {stage >= ProposalStage.Referendum && <ProposalVoteChart propData={propData} />}
-        {stage === ProposalStage.Referendum && <ProposalQuorumChart propData={propData} />}
-        {expiryTimestamp && expiryTimestamp > 0 && (
-          <>
-            <div className="text-sm text-taupe-600">
-              {getEndHumanEndTime({
-                timestampExecuted: metadata?.timestampExecuted,
-                expiryTimestamp,
-              })}
-            </div>
-          </>
-        )}
+        {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
+        {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
+        <div className="max-w-[340px] space-y-2">
+          <div className="text-sm text-taupe-600">
+            {getHumanEndTime({
+              stage,
+              queuedAt,
+              dequeuedAt,
+              executedAt,
+              quorumMet,
+            })}
+          </div>
+        </div>
       </div>
-      {stage >= ProposalStage.Queued && stage < ProposalStage.Referendum && (
+      {stage === ProposalStage.Queued && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ProposalUpvotersTable propData={propData} />
         </div>
       )}
-      {stage >= ProposalStage.Referendum && (
+      {stage >= ProposalStage.Approval && (
         <div className="overflow-auto border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
             <ProposalVotersTable propData={propData} />
           </ErrorBoundaryInline>
         </div>
       )}
-      {stage >= ProposalStage.Referendum && stage <= ProposalStage.Executed && proposalId && (
+      {stage >= ProposalStage.Referendum && proposalId && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
-            <ProposalApprovalsTable proposalId={proposalId} />
+            <ProposalApprovalsTable proposalId={proposalId} stage={stage} />
           </ErrorBoundaryInline>
         </div>
       )}

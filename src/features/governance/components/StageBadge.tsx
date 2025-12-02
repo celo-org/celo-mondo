@@ -2,16 +2,8 @@ import clsx from 'clsx';
 import { ProposalStage } from 'src/features/governance/types';
 import { Color } from 'src/styles/Color';
 
-export function StageBadge({
-  stage,
-  isApproved,
-  className,
-}: {
-  stage: ProposalStage;
-  isApproved?: boolean;
-  className?: string;
-}) {
-  const { color, label } = getProposalStageStyle(stage, isApproved);
+export function StageBadge({ stage, className }: { stage: ProposalStage; className?: string }) {
+  const { color, label } = getProposalStageStyle(stage);
   return (
     <div
       style={{ backgroundColor: color }}
@@ -25,9 +17,10 @@ export function StageBadge({
 const ProposalStageToBgClass: Record<ProposalStage, { color: string; label: string }> = {
   [ProposalStage.None]: { color: Color.Sky, label: 'Draft' },
   [ProposalStage.Queued]: { color: Color.Lavender, label: 'Upvoting' },
-  [ProposalStage.Approval]: { color: Color.Lavender, label: 'Approval' },
   [ProposalStage.Referendum]: { color: Color.Lavender, label: 'Voting' },
-  [ProposalStage.Execution]: { color: Color.Lavender, label: 'Execution Pending' },
+  // Approval stage is never used
+  [ProposalStage.Approval]: { color: Color.Lavender, label: 'Approval' },
+  [ProposalStage.Execution]: { color: Color.Lavender, label: 'Execution' },
   [ProposalStage.Expiration]: { color: Color.Red, label: 'Expired' },
   [ProposalStage.Executed]: { color: Color.Jade, label: 'Executed' },
   [ProposalStage.Withdrawn]: { color: Color.Red, label: 'Withdrawn' },

@@ -6,15 +6,17 @@ import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { SocialLogo } from 'src/components/logos/SocialLogo';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { SocialLinkType } from 'src/config/types';
+import { ApprovalBadge } from 'src/features/governance/components/ApprovalBadge';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
+import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
-import { getEndHumanEndTime } from 'src/utils/time';
+import { getHumanEndTime } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -27,15 +29,19 @@ export function ProposalCard({
   isCompact?: boolean;
   className?: string;
 }) {
-  const { id, proposal, metadata } = propData;
-
-  const { expiryTimestamp } = proposal || {};
-  const { title, timestampExecuted, cgp } = metadata || {};
+  const { id, cgp, dequeuedAt, executedAt, queuedAt, stage, metadata } = propData;
+  const { quorumMet } = useIsProposalPassingQuorum(propData);
 
   const { votes } = useProposalVoteTotals(propData);
 
-  const link = cgp ? `/governance/cgp-${cgp}` : `/governance/${id}`;
-  const endTimeValue = getEndHumanEndTime({ timestampExecuted, expiryTimestamp });
+  const link = id ? `/governance/${id}` : `/governance/cgp-${cgp || metadata.cgp}`;
+  const endTimeValue = getHumanEndTime({
+    quorumMet,
+    executedAt,
+    dequeuedAt,
+    queuedAt,
+    stage,
+  });
 
   const sum = bigIntSum(Object.values(votes || {})) || 1n;
   const barChartData = Object.entries(votes || {})
@@ -51,9 +57,9 @@ export function ProposalCard({
   return (
     <Link href={link} className={clsx('space-y-2.5', className)}>
       <ProposalBadgeRow propData={propData} />
-      {title && (
+      {metadata.title && (
         <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
-          {title}
+          {metadata.title}
         </h2>
       )}
       {!isCompact && votes && sum > MIN_VOTE_SUM_FOR_GRAPH && (
@@ -90,35 +96,34 @@ export function ProposalBadgeRow({
   showProposer?: boolean;
   showExecutedTime?: boolean;
 }) {
-  const { stage, proposal, metadata, id } = propData;
+  const { stage, proposal, metadata, id, queuedAt, executedAt } = propData;
 
-  const { timestamp, proposer, isApproved } = proposal || {};
-  const { timestamp: cgpTimestamp, cgp, timestampExecuted } = metadata || {};
+  const { proposer } = proposal || {};
+  const { cgp } = metadata || {};
 
-  const proposedTimestamp = timestamp || cgpTimestamp;
-  const proposedTimeValue = proposedTimestamp
-    ? new Date(proposedTimestamp).toLocaleDateString()
-    : undefined;
-  const executedTimeValue = timestampExecuted
-    ? new Date(timestampExecuted).toLocaleDateString()
-    : undefined;
+  const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
+  const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
 
   return (
     <div className="flex items-center space-x-2">
       <IdBadge cgp={cgp} />
       <IdBadge id={id} />
-      <StageBadge stage={stage} isApproved={isApproved} />
+      <StageBadge stage={stage} />
       {proposedTimeValue && (
         <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
       )}
       {showProposer && proposer && (
         <>
-          <div className="hidden text-xs opacity-50 sm:block">•</div>
+          <div className="hidden text-xs opacity-50 sm:block"> By </div>
           <ShortAddress
             address={proposer}
             className="hidden font-mono text-sm text-taupe-600 sm:block"
           />
         </>
+      )}
+      {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
+      {showExecutedTime && !executedTimeValue && id && (
+        <ApprovalBadge proposalId={id} stage={stage} />
       )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
       {showExecutedTime && executedTimeValue && !proposer && (

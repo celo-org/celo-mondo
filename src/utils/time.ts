@@ -1,3 +1,6 @@
+import { getStageEndTimestamp } from 'src/features/governance/governanceData';
+import { ProposalStage } from 'src/features/governance/types';
+
 export function areDatesSameDay(d1: Date, d2: Date) {
   return (
     d1.getDate() === d2.getDate() &&
@@ -81,21 +84,83 @@ export function getDateTimeString(timestamp: number) {
   return `${date.toLocaleTimeString()} ${getFullDateHumanDateString(timestamp)}`;
 }
 
-export function getEndHumanEndTime({
-  timestampExecuted,
-  expiryTimestamp,
+/**
+ * Returns human-readable text about when a proposal stage ends or its current status.
+ *
+ * @param stage - Current proposal stage
+ * @param proposalTimestamp - Proposal's base timestamp (queue time for Queued, dequeue time for others)
+ */
+export function getHumanEndTime({
+  queuedAt,
+  dequeuedAt,
+  executedAt,
+  stage,
+  quorumMet,
 }: {
-  timestampExecuted: number | undefined;
-  expiryTimestamp: number | undefined;
+  queuedAt: string | null;
+  dequeuedAt: string | null;
+  executedAt: string | null;
+  stage: ProposalStage | undefined;
+  quorumMet: boolean | null;
 }): string | undefined {
   const now = Date.now();
-  if (timestampExecuted) {
-    return `Executed ${getHumanReadableTimeString(timestampExecuted)}`;
-  } else if (expiryTimestamp && expiryTimestamp > 0 && expiryTimestamp > now) {
-    return `Expires in ${getHumanReadableDuration(expiryTimestamp - now)} on ${getFullDateHumanDateString(expiryTimestamp)}`;
-  } else if (expiryTimestamp && expiryTimestamp > 0) {
-    return `Expired ${getHumanReadableTimeString(expiryTimestamp)}`;
-  } else {
+
+  const hasAnyTS = queuedAt || dequeuedAt || executedAt;
+  if (!stage || !hasAnyTS) {
     return undefined;
   }
+
+  switch (stage) {
+    case ProposalStage.Queued: {
+      const endDate = getStageEndTimestamp(stage, new Date(queuedAt!).getTime())!;
+      return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+    }
+    case ProposalStage.Referendum: {
+      const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime())!;
+      return `Voting ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+    }
+    case ProposalStage.Approval:
+    // DEPRECATED: Treat like Execution (awaiting execution after approval)
+    // Fall through to Execution case
+    case ProposalStage.Execution: {
+      const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime());
+      if (endDate) {
+        return `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+      }
+      return 'Awaiting execution';
+    }
+    case ProposalStage.Rejected: {
+      const endDate = getStageEndTimestamp(
+        ProposalStage.Referendum,
+        new Date(dequeuedAt!).getTime(),
+      );
+      return `Rejected ${getHumanReadableTimeString(endDate!)}`;
+    }
+    case ProposalStage.Expiration: {
+      const _stage = quorumMet
+        ? // use stage as ProposalStage.Expiration if expired by not executing in time.
+          ProposalStage.Expiration
+        : // use stage as ProposalStage.Referendum if expired by not meeting quorum
+          // as in this case Expiration occurs immediately when voting ended.
+          ProposalStage.Referendum;
+      const endDate = getStageEndTimestamp(_stage, new Date(dequeuedAt!).getTime());
+      return `Expired ${getHumanReadableTimeString(endDate!)}`;
+    }
+    case ProposalStage.Executed: {
+      return `Executed ${getHumanReadableTimeString(new Date(executedAt!).getTime())}`;
+    }
+    case ProposalStage.Withdrawn:
+    default:
+      return 'Unknown';
+  }
+}
+
+export function unixTimestampToISOString(timestamp: string | number) {
+  if (!timestamp) {
+    return null;
+  }
+
+  const ts = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+
+  return new Date(ts * 1000).toISOString();
 }

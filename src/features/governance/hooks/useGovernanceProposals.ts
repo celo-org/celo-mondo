@@ -5,15 +5,10 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import type { getProposals } from 'src/features/governance/getProposals';
+import type { ProposalWithHistory } from 'src/features/governance/getProposals';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import { getExpiryTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
-import {
-  ProposalMetadata,
-  ProposalStage,
-  VoteAmounts,
-  VoteType,
-} from 'src/features/governance/types';
+import { getStageEndTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
+import { ProposalMetadata, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { sortByIdThenCGP } from 'src/utils/proposals';
 import { usePublicClient } from 'wagmi';
@@ -86,58 +81,64 @@ export function useGovernanceProposals() {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
       // Fetch on-chain data
-      const proposals: Awaited<ReturnType<typeof getProposals>> = await fetch(
-        `/api/governance/proposals?chainId=${publicClient.chain!.id}&version=2`,
-      ).then((x) => x.json());
+      const [proposals, [ids, upvotesArr]] = await Promise.all([
+        fetch(`/api/governance/proposals?chainId=${publicClient.chain!.id}`).then(
+          (x) => x.json() as Promise<ProposalWithHistory[]>,
+        ),
+        publicClient.readContract({
+          address: Addresses.Governance,
+          abi: governanceABI,
+          functionName: 'getQueue',
+        }),
+      ]);
 
-      const [ids, upvotesArr] = await publicClient.readContract({
-        address: Addresses.Governance,
-        abi: governanceABI,
-        functionName: 'getQueue',
-      });
+      return await Promise.all(
+        proposals.map(async (proposal) => {
+          const queuedId = ids.indexOf(BigInt(proposal.id));
+          let upvotes = 0n;
+          if (queuedId !== -1) {
+            upvotes = upvotesArr.at(queuedId)!;
+          }
 
-      return proposals.map((proposal) => {
-        const queuedId = ids.indexOf(BigInt(proposal.id));
-        let upvotes = 0n;
-        if (queuedId !== -1) {
-          upvotes = upvotesArr.at(queuedId)!;
-        }
-
-        return {
-          id: proposal.id,
-          stage: proposal.stage,
-          history: proposal.history,
-          metadata: {
-            author: proposal.author,
-            cgp: proposal.cgp,
-            cgpUrl: proposal.cgpUrl,
-            cgpUrlRaw: proposal.cgpUrlRaw,
-            stage: proposal.stage,
-            title: proposal.title,
-            timestamp: proposal.timestamp * 1000,
-            timestampExecuted: proposal.executedAt ? proposal.executedAt * 1000 : null,
-            id: proposal.id,
-            url: proposal.url,
-          },
-          proposal: {
-            deposit: BigInt(proposal.deposit || 0),
-            id: proposal.id,
-            networkWeight: BigInt(proposal.networkWeight || 0),
-            numTransactions: BigInt(proposal.transactionCount || 0),
-            stage: proposal.stage,
-            proposer: proposal.proposer,
-            upvotes,
-            url: proposal.url,
-            expiryTimestamp: getExpiryTimestamp(proposal.stage, proposal.timestamp * 1000),
-            timestamp: proposal.timestamp * 1000,
-            // approve only if the proposal has progressed past referendum and not been rejected
-            isApproved:
-              proposal.stage === ProposalStage.Execution ||
-              proposal.stage === ProposalStage.Executed,
-            votes: {},
-          },
-        } as MergedProposalData;
-      });
+          return {
+            ...proposal,
+            metadata: {
+              author: proposal.author,
+              cgp: proposal.cgp,
+              cgpUrl: proposal.cgpUrl,
+              cgpUrlRaw: proposal.cgpUrlRaw,
+              stage: proposal.stage,
+              title: proposal.title,
+              timestamp: proposal.timestamp * 1000,
+              timestampExecuted: proposal.executedAt
+                ? new Date(proposal.executedAt).getTime()
+                : null,
+              id: proposal.id,
+              url: proposal.url,
+            },
+            proposal: {
+              deposit: BigInt(proposal.deposit || 0),
+              id: proposal.id,
+              networkWeight: BigInt(proposal.networkWeight || 0),
+              numTransactions: BigInt(proposal.transactionCount || 0),
+              stage: proposal.stage,
+              proposer: proposal.proposer,
+              upvotes,
+              url: proposal.url,
+              expiryTimestamp: getStageEndTimestamp(proposal.stage, proposal.timestamp * 1000),
+              // deprecated field, prefer <root>.queuedAt, dequeuedAt, etc
+              timestamp: proposal.timestamp * 1000,
+              isPassing: await publicClient.readContract({
+                address: Addresses.Governance,
+                abi: governanceABI,
+                args: [BigInt(proposal.id)],
+                functionName: 'isProposalPassing',
+              }),
+              votes: {},
+            },
+          } as MergedProposalData;
+        }),
+      );
     },
     gcTime: GCTime.Default,
     staleTime: StaleTime.Default,
@@ -156,7 +157,7 @@ export function useGovernanceProposals() {
 
     proposals_?.forEach((proposal) => {
       const votes = votesResults.votes?.[proposal.id!];
-      computeStageAndVotes(proposal, votes);
+      normalizeProposalVotes(proposal, votes);
     });
     return sortByIdThenCGP(proposals_);
   }, [draftsResults.drafts, data, votesResults.votes]);
@@ -168,42 +169,28 @@ export function useGovernanceProposals() {
   };
 }
 
-function computeStageAndVotes(mergedProposalData: MergedProposalData, votes?: VoteAmounts) {
+/**
+ * Normalizes vote totals to bigint and assigns them to the proposal.
+ * Stage computation removed - stages are now kept current in the database by:
+ * 1. Event-based updates (backfill) for Queued, Executed, Expiration
+ * 2. Time-based updates (cron) for Referendum → Execution → Expiration transitions
+ */
+function normalizeProposalVotes(mergedProposalData: MergedProposalData, votes?: VoteAmounts) {
   if (!mergedProposalData.proposal) return;
 
-  const { proposal, metadata } = mergedProposalData;
-  proposal!.votes = votes ?? {
+  const { proposal } = mergedProposalData;
+  proposal.votes = votes ?? {
     [VoteType.Yes]: 0n,
     [VoteType.No]: 0n,
     [VoteType.Abstain]: 0n,
   };
 
   if (votes) {
-    // normalise bigint vote totals
+    // Normalize bigint vote totals
     Object.keys(proposal.votes).forEach((voteType) => {
       proposal.votes[voteType as keyof VoteAmounts] = BigInt(
         proposal.votes[voteType as keyof VoteAmounts],
       );
     });
-
-    // compute rejected stage if expired and majority of votes are "No"
-    let computedStage = proposal.stage;
-    if (proposal.stage === ProposalStage.Expiration) {
-      const yesVotes = proposal.votes[VoteType.Yes];
-      const noVotes = proposal.votes[VoteType.No];
-      if (noVotes >= yesVotes) {
-        computedStage = ProposalStage.Rejected;
-      }
-    }
-
-    // mutate proposal object with computed stage
-    if (computedStage !== proposal.stage) {
-      mergedProposalData.stage = computedStage;
-      proposal.stage = computedStage;
-      proposal.expiryTimestamp = getExpiryTimestamp(computedStage, proposal.timestamp * 1000);
-      proposal.isApproved =
-        proposal.stage === ProposalStage.Execution || proposal.stage === ProposalStage.Executed;
-      if (metadata) metadata.stage = computedStage;
-    }
   }
 }
