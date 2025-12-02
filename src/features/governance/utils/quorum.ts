@@ -24,7 +24,7 @@ export async function getOnChainQuorumRequired(
       .where(
         and(
           // older proposals might have a ProposalVoted event
-          inArray(eventsTable.eventName, ['ProposalVotedV2', 'ProposalVoted']),
+          inArray(eventsTable.eventName, ['ProposalVotedV2', 'ProposalVoted', 'ProposalUpvoted']),
           eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposal.id),
         ),
       )
@@ -45,8 +45,18 @@ export async function getOnChainQuorumRequired(
       .then((x) => x[0]),
   ]);
 
-  const mostRecentBlockNumber =
-    approvedEvent?.blockNumber && approvedEvent?.blockNumber > lastVoteEvent.blockNumber
+  let otherEvents: (typeof eventsTable.$inferSelect)[] = [];
+  if (!approvedEvent && !lastVoteEvent) {
+    otherEvents = await database
+      .select()
+      .from(eventsTable)
+      .where(eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposal.id))
+      .orderBy(desc(eventsTable.blockNumber))
+      .limit(1);
+  }
+  const mostRecentBlockNumber = otherEvents.length
+    ? otherEvents.at(0)!.blockNumber!
+    : approvedEvent?.blockNumber && approvedEvent?.blockNumber > lastVoteEvent.blockNumber
       ? approvedEvent?.blockNumber
       : lastVoteEvent.blockNumber;
   const state = await getProposalOnChain(client, proposal.id, mostRecentBlockNumber);
