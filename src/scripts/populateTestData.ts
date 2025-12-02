@@ -186,7 +186,7 @@ function createConfirmationEvent(
     eventName: 'Confirmation' as any,
     args: {
       sender: approver,
-      transactionId: BigInt(multisigTxId),
+      transactionId: BigInt(multisigTxId).toString(),
     },
     address: MOCK_MULTISIG_ADDRESS.toLowerCase() as `0x${string}`,
     topics: [
