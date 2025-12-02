@@ -47,7 +47,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
   }, [groups]);
 
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
-  const showLiquidStakeModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
+  // const showLiquidStakeModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
 
   return (
     <div className="space-y-4">
@@ -57,9 +57,10 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
           <SolidButton onClick={() => showStakeModal()} className="px-8">
             Stake
           </SolidButton>
+          {/* TODO: add-this back when needed
           <SolidButton onClick={() => showLiquidStakeModal()} className="bg-[#B490FF] px-8">
             Liquid Stake
-          </SolidButton>
+          </SolidButton> */}
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 sm:gap-8">
