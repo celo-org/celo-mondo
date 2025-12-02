@@ -70,7 +70,7 @@ async function updateProposalStages() {
         if (votes) {
           const yesVotes = votes[VoteType.Yes] || 0n;
           const noVotes = votes[VoteType.No] || 0n;
-          if (noVotes >= yesVotes) {
+          if (noVotes > yesVotes) {
             onChainStage = ProposalStage.Rejected;
             console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
           }
