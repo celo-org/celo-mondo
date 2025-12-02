@@ -80,10 +80,7 @@ async function updateProposalStages() {
       // Only update if stage changed
       if (onChainStage !== proposal.stage) {
         // 4.1 Get events related to the proposal in order to calculate quorum
-        let quorumVotesRequired: bigint | undefined;
-        if (onChainStage > ProposalStage.Referendum) {
-          ({ quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal));
-        }
+        const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
 
         updates.push({
           id: proposal.id,
