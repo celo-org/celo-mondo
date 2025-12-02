@@ -170,10 +170,23 @@ describe('useProposalQuorum', () => {
 
     const { result } = renderHook(() =>
       // @ts-expect-error
-      useProposalQuorum({ proposal: { id: 1, numTransactions: 3, networkWeight } }),
+      useProposalQuorum({ proposal: { id: 1, numTransactions: 3 }, networkWeight }),
     );
     await waitFor(() => expect(result.current.isLoading).not.toBe(true));
     expect(result.current.data).toBe(BigInt(maxThreshold.toFixed(0)));
     expect(BigInt(maxThreshold.toFixed(0))).toMatchInlineSnapshot(`4500000000000000000000000n`);
+  });
+
+  it('doesnt calculate if precalculated from the db', async () => {
+    const { result } = renderHook(() =>
+      // @ts-expect-error
+      useProposalQuorum({
+        proposal: { id: 1 },
+        quorumVotesRequired: 42n,
+        networkWeight: 1000n,
+      }),
+    );
+    await waitFor(() => expect(result.current.isLoading).not.toBe(true));
+    expect(result.current.data).toBe(BigInt(42n));
   });
 });

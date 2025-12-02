@@ -8,7 +8,8 @@ import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
-import { createPublicClient, http } from 'viem';
+import { getOnChainQuorumRequired } from 'src/features/governance/utils/quorum';
+import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
 async function updateProposalStages() {
@@ -19,7 +20,7 @@ async function updateProposalStages() {
   const client = createPublicClient({
     chain: celo,
     transport: http(archiveNode),
-  });
+  }) as PublicClient<Transport, Chain>;
 
   // 1. Get all proposals in Referendum or Execution stages from DB
   // These are the only stages that can transition without emitting events
@@ -40,7 +41,8 @@ async function updateProposalStages() {
   let allVotes: Awaited<ReturnType<typeof getProposalVotes>> | null = null;
 
   // 3. For each active proposal, query on-chain stage
-  const updates: Array<{ id: number; chainId: number; stage: ProposalStage }> = [];
+  type Update = { id: number; chainId: number; stage: ProposalStage; quorumVotesRequired?: bigint };
+  const updates: Update[] = [];
 
   for (const proposal of activeProposals) {
     try {
@@ -56,7 +58,7 @@ async function updateProposalStages() {
         `Proposal ${proposal.id}: DB stage=${proposal.stage}, On-chain stage=${onChainStage}`,
       );
 
-      // Check if proposal should be marked as Rejected (off-chain only stage)
+      //  4. Check if proposal should be marked as Rejected (off-chain only stage)
       if (onChainStage === ProposalStage.Expiration) {
         // Lazy-load votes only when we encounter an expired proposal
         if (!allVotes) {
@@ -77,10 +79,14 @@ async function updateProposalStages() {
 
       // Only update if stage changed
       if (onChainStage !== proposal.stage) {
+        // 4.1 Get events related to the proposal in order to calculate quorum
+        const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
+
         updates.push({
           id: proposal.id,
           chainId: proposal.chainId,
           stage: onChainStage,
+          ...(quorumVotesRequired && { quorumVotesRequired }),
         });
         console.log(`  → Stage changed: ${proposal.stage} → ${onChainStage}`);
       }
@@ -95,7 +101,10 @@ async function updateProposalStages() {
     for (const update of updates) {
       await database
         .update(proposalsTable)
-        .set({ stage: update.stage })
+        .set({
+          stage: update.stage,
+          ...(update.quorumVotesRequired && { quorumVotesRequired: update.quorumVotesRequired }),
+        })
         .where(and(eq(proposalsTable.chainId, update.chainId), eq(proposalsTable.id, update.id)));
     }
     console.log('✅ Stage updates complete');

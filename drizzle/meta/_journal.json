@@ -29,6 +29,13 @@
       "when": 1763715770021,
       "tag": "0003_common_timeslip",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764334263633,
+      "tag": "0004_glossy_deathstrike",
+      "breakpoints": true
     }
   ]
 }

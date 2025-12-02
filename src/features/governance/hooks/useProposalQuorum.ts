@@ -7,7 +7,7 @@ import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
-import { Proposal, VoteType } from 'src/features/governance/types';
+import { Proposal, VoteAmounts, VoteType } from 'src/features/governance/types';
 import type { ProposalTransaction } from 'src/features/governance/utils/transactionDecoder';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
@@ -22,28 +22,69 @@ interface ParticipationParameters {
   baselineQuorumFactor: number;
 }
 
-export function useProposalQuorum(propData?: MergedProposalData): {
-  isLoading: boolean;
-  data?: bigint;
-} {
+export function calculateQuorum({
+  participationParameters,
+  networkWeight,
+  thresholds,
+}: {
+  participationParameters: ParticipationParameters;
+  networkWeight: bigint;
+  thresholds: number[];
+}) {
+  const quorumPct = new BigNumber(participationParameters.baseline).times(
+    participationParameters.baselineQuorumFactor,
+  );
+  // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1734-L1746
+  const quorumVotes = BigInt(quorumPct.times(networkWeight.toString()).toFixed(0));
+  const maxThreshold = Math.max(...thresholds!);
+  return BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0));
+}
+
+export function parseParticipationParameters(
+  data: readonly [bigint, bigint, bigint, bigint],
+): ParticipationParameters {
+  return {
+    baseline: fromFixidity(data[0]),
+    baselineFloor: fromFixidity(data[1]),
+    baselineUpdateFactor: fromFixidity(data[2]),
+    baselineQuorumFactor: fromFixidity(data[3]),
+  };
+}
+
+type UseProposalQuorumReturnType =
+  | { isLoading: true; data?: never }
+  | { isLoading: false; data: bigint };
+export function useProposalQuorum(propData?: MergedProposalData): UseProposalQuorumReturnType {
+  const shouldFetch = propData?.quorumVotesRequired == null;
   const { isLoading: isLoadingParticipationParameters, data: participationParameters } =
-    useParticipationParameters();
-  const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(propData?.proposal);
-  if (!propData || !propData.proposal || isLoadingParticipationParameters || isLoadingThresholds) {
+    useParticipationParameters(shouldFetch);
+  const { isLoading: isLoadingThresholds, data: thresholds } = useThresholds(
+    propData?.proposal,
+    shouldFetch,
+  );
+  if (
+    !propData ||
+    !propData.networkWeight ||
+    isLoadingParticipationParameters ||
+    isLoadingThresholds
+  ) {
     return { isLoading: true };
   }
-  try {
-    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1724-L1726
-    const quorumPct = new BigNumber(participationParameters.baseline).times(
-      participationParameters.baselineQuorumFactor,
-    );
-    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1734-L1746
-    const quorumVotes = BigInt(
-      quorumPct.times(propData.proposal.networkWeight.toString()).toFixed(0),
-    );
-    const maxThreshold = Math.max(...thresholds!);
+
+  if (propData.quorumVotesRequired) {
     return {
-      data: BigInt(new BigNumber(quorumVotes.toString()).times(maxThreshold).toFixed(0)),
+      isLoading: false,
+      data: propData.quorumVotesRequired,
+    };
+  }
+
+  try {
+    return {
+      data: calculateQuorum({
+        participationParameters: participationParameters!,
+        networkWeight: propData.networkWeight!,
+        thresholds: thresholds!,
+      }),
       isLoading: false,
     };
   } catch (error) {
@@ -52,7 +93,7 @@ export function useProposalQuorum(propData?: MergedProposalData): {
       'thresholds',
       thresholds,
       'networkWeight',
-      propData.proposal.networkWeight.toString(),
+      propData.networkWeight!.toString(),
       error,
     );
     return {
@@ -62,21 +103,13 @@ export function useProposalQuorum(propData?: MergedProposalData): {
   }
 }
 
-export function useIsProposalPassingQuorum(propData?: MergedProposalData): {
-  isLoading: boolean;
-  quorumMet: boolean;
-  quorumVotesRequired?: bigint;
-} {
-  const { isLoading, data: quorumVotesRequired } = useProposalQuorum(propData);
-  const { isLoading: votesLoading, votes } = useProposalVoteTotals(propData);
-
-  if (isLoading || votesLoading) {
-    return {
-      isLoading: true,
-      quorumMet: false,
-    };
-  }
-
+export function isProposalPassingQuorum({
+  votes,
+  quorumVotesRequired,
+}: {
+  votes: VoteAmounts;
+  quorumVotesRequired: bigint;
+}) {
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
@@ -85,16 +118,37 @@ export function useIsProposalPassingQuorum(propData?: MergedProposalData): {
     ? quorumMeetingVotes > quorumVotesRequired
     : false;
 
+  return quorumMetByVoteCount;
+}
+
+export function useIsProposalPassingQuorum(propData?: MergedProposalData): {
+  isLoading: boolean;
+  quorumMet: boolean;
+  quorumVotesRequired?: bigint;
+} {
+  const { isLoading: isVotesLoading, votes } = useProposalVoteTotals(propData);
+  const { isLoading, data: quorumVotesRequired } = useProposalQuorum(propData);
+
+  if (isVotesLoading || isLoading) {
+    return {
+      isLoading: true,
+      quorumMet: false,
+    };
+  }
+
   return {
-    isLoading: isLoading || votesLoading,
-    quorumMet: quorumMetByVoteCount,
-    quorumVotesRequired: quorumVotesRequired,
+    isLoading: isLoading,
+    quorumMet: isProposalPassingQuorum({
+      votes: votes!,
+      quorumVotesRequired,
+    }),
+    quorumVotesRequired,
   };
 }
 
-export function useParticipationParameters(): {
+export function useParticipationParameters(enabled = true): {
   isLoading: boolean;
-  data: ParticipationParameters;
+  data: ParticipationParameters | undefined;
   error: Error | null;
 } {
   const { data, isLoading, error } = useReadContract({
@@ -105,22 +159,21 @@ export function useParticipationParameters(): {
     query: {
       gcTime: GCTime.Default,
       staleTime: StaleTime.Default,
+      enabled,
     },
   });
 
   return {
     isLoading,
-    data: {
-      baseline: fromFixidity(data?.[0]),
-      baselineFloor: fromFixidity(data?.[1]),
-      baselineUpdateFactor: fromFixidity(data?.[2]),
-      baselineQuorumFactor: fromFixidity(data?.[3]),
-    },
+    data: data ? parseParticipationParameters(data) : undefined,
     error,
   };
 }
 
-export function useThresholds(proposal?: Proposal): {
+export function useThresholds(
+  proposal: Proposal | undefined,
+  enabled = true,
+): {
   isLoading: boolean;
   data?: number[];
   error: Error | null;
@@ -131,7 +184,7 @@ export function useThresholds(proposal?: Proposal): {
     queryFn: async () => {
       return await fetchThresholds(publicClient!, proposal!.id);
     },
-    enabled: Boolean(publicClient && proposal?.id),
+    enabled: enabled && Boolean(publicClient && proposal?.id),
   });
   useToastError(error, 'Error fetching proposal quorum data');
 
@@ -142,10 +195,25 @@ export function useThresholds(proposal?: Proposal): {
   };
 }
 
-export async function fetchThresholds(publicClient: PublicClient, proposalId: number) {
-  const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
-  const results = (await response.json()) as ProposalTransaction[];
+export async function fetchThresholds(
+  publicClient: PublicClient,
+  proposalId: number,
+  proposalTransactions?: ProposalTransaction[],
+) {
+  if (!proposalTransactions) {
+    const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
+    proposalTransactions = (await response.json()) as ProposalTransaction[];
+  }
 
+  if (proposalTransactions.length === 0) {
+    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1730
+    proposalTransactions.push({
+      to: '0x0000000000000000000000000000000000000000',
+      data: '0x00000000',
+      value: 0n,
+      index: 0,
+    });
+  }
   // Extracting the base contract call avoids the following error:
   // Type instantiation is excessively deep and possibly infinite. ts(2589)
   const getConstitutionContract = {
@@ -154,20 +222,10 @@ export async function fetchThresholds(publicClient: PublicClient, proposalId: nu
     functionName: 'getConstitution',
   } as const;
 
-  if (results.length === 0) {
-    // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1730
-    results.push({
-      to: '0x0000000000000000000000000000000000000000',
-      data: '0x00000000',
-      value: 0n,
-      index: 0,
-    });
-  }
-
   const thresholds = await publicClient?.multicall({
     ...getRuntimeBlock(), // This is probably fine most of the time but in case thresholds change better to run against block from when proposal was in referendum.
     allowFailure: false,
-    contracts: results.map(({ data, to: destination }) => {
+    contracts: proposalTransactions.map(({ data, to: destination }) => {
       const functionId = extractFunctionSignature(data);
       return {
         ...getConstitutionContract,
