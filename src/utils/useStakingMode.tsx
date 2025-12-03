@@ -1,17 +1,18 @@
 'use client';
 
-import { createContext, PropsWithChildren, useCallback, useContext } from 'react';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
+import { useLockedBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { useLocalStorage } from 'src/utils/useLocalStorage';
+import { useAccount } from 'wagmi';
 
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
-  // const { address } = useAccount();
-  // const { stCELOBalances, isLoading: stCELOLoading } = useStCELOBalance(address);
-  // const { lockedBalance, isLoading: lockedLoading } = useLockedBalance(address);
+  const { address } = useAccount();
+  const { stCELOBalances, isLoading: stCELOLoading } = useStCELOBalance(address);
+  const { lockedBalance, isLoading: lockedLoading } = useLockedBalance(address);
   const [mode, setMode] = useLocalStorage<StakingMode>(
     'mode',
-    // stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
-    'CELO',
+    stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
   );
 
   const toggleMode = useCallback(
@@ -19,19 +20,17 @@ function useStakingModeInternal() {
     [setMode],
   );
 
-  // useEffect(() => {
-  //   document
-  //     .getElementsByTagName('html')
-  //     .item(0)
-  //     ?.setAttribute('data-theme', mode === 'CELO' ? 'light' : 'light-liquid');
-  // }, [mode]);
+  useEffect(() => {
+    document
+      .getElementsByTagName('html')
+      .item(0)
+      ?.setAttribute('data-theme', mode === 'CELO' ? 'light' : 'light-liquid');
+  }, [mode]);
 
   return {
-    // mode,
-    mode: 'CELO',
+    mode,
     toggleMode,
-    // shouldRender: !stCELOLoading && !lockedLoading && stCELOBalances.total > 0 && lockedBalance > 0,
-    shouldRender: false,
+    shouldRender: !stCELOLoading && !lockedLoading && stCELOBalances.total > 0 && lockedBalance > 0,
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',
