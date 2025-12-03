@@ -2,17 +2,21 @@
 
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
 import { useLockedBalance, useStCELOBalance } from 'src/features/account/hooks';
+import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useLocalStorage } from 'src/utils/useLocalStorage';
 import { useAccount } from 'wagmi';
 
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
+  const featureFlag = useFeatureFlag();
+  const enabled = featureFlag === 'stcelo';
+
   const { address } = useAccount();
   const { stCELOBalances, isLoading: stCELOLoading } = useStCELOBalance(address);
   const { lockedBalance, isLoading: lockedLoading } = useLockedBalance(address);
   const [mode, setMode] = useLocalStorage<StakingMode>(
     'mode',
-    stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
+    enabled && stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
   );
 
   const toggleMode = useCallback(

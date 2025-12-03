@@ -13,6 +13,7 @@ import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { bigIntMin } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
+import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 
 export default function Page() {
   const { groups, totalVotes } = useValidatorGroups();
@@ -48,6 +49,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
 
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
   const showLiquidStakeModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
+  const featureFlag = useFeatureFlag();
 
   return (
     <div className="space-y-4">
@@ -57,9 +59,11 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
           <SolidButton onClick={() => showStakeModal()} className="px-8">
             Stake
           </SolidButton>
-          <SolidButton onClick={() => showLiquidStakeModal()} className="bg-[#B490FF] px-8">
-            Liquid Stake
-          </SolidButton>
+          {featureFlag === 'stcelo' && (
+            <SolidButton onClick={() => showLiquidStakeModal()} className="bg-[#B490FF] px-8">
+              Liquid Stake
+            </SolidButton>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 sm:gap-8">
