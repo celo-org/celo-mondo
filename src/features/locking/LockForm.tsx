@@ -202,8 +202,6 @@ function validateForm(
   isVoting: boolean,
 ): FormikErrors<LockFormValues> {
   const { action, amount } = values;
-
-  // TODO implement toWeiAdjusted() and use it here
   const amountWei = toWei(amount);
   if (!amountWei || amountWei <= 0n) return { amount: 'Invalid amount' };
 

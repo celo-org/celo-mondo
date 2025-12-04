@@ -193,8 +193,6 @@ function validateForm(
   walletBalance: bigint,
 ): FormikErrors<LiquidStakeFormValues> {
   const { action, amount } = values;
-
-  // TODO implement toWeiAdjusted() and use it here
   const amountWei = toWei(amount);
   if (!amountWei || amountWei <= 0n) return { amount: 'Invalid amount' };
 
@@ -223,7 +221,7 @@ function validateForm(
     const nonVotingBalance = stCELOBalances.usable;
     if (amountWei > nonVotingBalance) {
       toast.warn(
-        'Locked funds that are current staked must be unstaked before they can be unlocked.',
+        'Amount to unstake must not be greater than the unstakable stCelo. stCelo voting on proposals is locked while proposal is in flight.',
       );
       return { amount: 'Locked funds in use' };
     }

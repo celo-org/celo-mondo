@@ -17,7 +17,6 @@ export function getLockTxPlan(
   // TODO add governance, delegation state here
 ): TxPlan {
   const { action, amount } = values;
-  // TODO toWeiAdjusted here
   const amountWei = toWeiSafe(amount);
 
   // TODO update this to account for staking, governance, and delegation revocations first

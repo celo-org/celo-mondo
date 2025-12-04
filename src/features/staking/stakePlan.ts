@@ -19,7 +19,6 @@ export function getStakeTxPlan(
   groupToStake: GroupToStake,
 ): TxPlan {
   const { action, amount, group, transferGroup, delegate } = values;
-  // TODO toWeiAdjusted here
   const amountWei = toWeiSafe(amount);
 
   if (action === StakeActionType.Stake) {

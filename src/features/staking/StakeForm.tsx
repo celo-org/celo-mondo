@@ -352,7 +352,6 @@ function validateForm(
       return { group: 'Transfer group has max votes' };
   }
 
-  // TODO implement toWeiAdjusted() and use it here
   const amountWei = toWei(amount);
   if (!amountWei || amountWei <= 0n) return { amount: 'Invalid amount' };
 
