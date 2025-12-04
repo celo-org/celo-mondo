@@ -23,6 +23,13 @@ function ensureLocalDatabase() {
     process.exit(1);
   }
 
+  if (isCI && dbUrl === process.env.STAGING_POSTGRES_URL && process.env.UNSAFE) {
+    console.log('✅ Safety check bypassed: Running on staging database from CI');
+    console.log(`   Database: ${dbUrl.substring(0, 30)}...`);
+    console.log('');
+    return;
+  }
+
   // Check if database URL points to localhost or local development
   const isLocal =
     dbUrl.includes('localhost') ||
@@ -32,13 +39,6 @@ function ensureLocalDatabase() {
 
   // Allow running on remote database only if in CI (assumes staging)
   if (!isLocal) {
-    if (isCI) {
-      console.log('✅ Safety check passed: Running on staging database from CI');
-      console.log(`   Database: ${dbUrl.substring(0, 30)}...`);
-      console.log('');
-      return;
-    }
-
     console.error('❌ ERROR: This script can only be run on a local database!');
     console.error('   Your POSTGRES_URL appears to point to a remote database.');
     console.error(`   Database URL: ${dbUrl.substring(0, 30)}...`);

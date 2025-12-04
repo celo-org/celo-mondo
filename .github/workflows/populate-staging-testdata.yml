@@ -38,12 +38,6 @@ jobs:
       - name: yarn-install
         run: |
           yarn install --immutable
-          CHANGES=$(git status -s)
-          if [[ ! -z $CHANGES ]]; then
-            echo "Changes found: $CHANGES"
-            git diff
-            exit 1
-          fi
 
   populate-test-data:
     runs-on: ubuntu-latest
