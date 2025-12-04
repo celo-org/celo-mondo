@@ -2,7 +2,7 @@
 
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 
-export function useLocalStorage<T>(
+export function useSessionStorage<T>(
   key: string,
   initialValue: T,
 ): readonly [storedValue: T, setValue: Dispatch<SetStateAction<T>>, removeValue: () => void] {
@@ -13,6 +13,7 @@ export function useLocalStorage<T>(
       try {
         parsed = JSON.parse(value);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error parsing JSON:', error);
         return initialValue;
       }
@@ -24,10 +25,11 @@ export function useLocalStorage<T>(
 
   const readValue = useCallback((): T => {
     try {
-      const raw = window.localStorage.getItem(key);
+      const raw = window.sessionStorage.getItem(key);
       return raw ? deserializer(raw) : initialValue;
     } catch (error) {
-      console.warn(`Error reading localStorage key “${key}”:`, error);
+      // eslint-disable-next-line no-console
+      console.warn(`Error reading sessionStorage key “${key}”:`, error);
       return initialValue;
     }
   }, [key, deserializer, initialValue]);
@@ -38,17 +40,18 @@ export function useLocalStorage<T>(
     (value) => {
       try {
         const newValue = value instanceof Function ? value(readValue()!) : value;
-        window.localStorage.setItem(key, serializer(newValue));
+        window.sessionStorage.setItem(key, serializer(newValue));
         setStoredValue(newValue);
       } catch (error) {
-        console.warn(`Error setting localStorage key “${key}”:`, error);
+        // eslint-disable-next-line no-console
+        console.warn(`Error setting sessionStorage key “${key}”:`, error);
       }
     },
     [key, readValue, serializer],
   );
 
   const removeValue = useCallback(() => {
-    window.localStorage.removeItem(key);
+    window.sessionStorage.removeItem(key);
     setStoredValue(initialValue);
   }, [initialValue, key]);
 

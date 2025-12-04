@@ -5,7 +5,12 @@ const features = new Set<Features>(['stcelo']);
 
 export function useFeatureFlag(): Features | null {
   const params = useSearchParams();
-  const featureFlag = params?.get('feature') || null;
+  let featureFlag = params?.get('feature') || null;
+  if (featureFlag === null) {
+    featureFlag = sessionStorage.getItem('feature');
+  } else {
+    sessionStorage.setItem('feature', featureFlag);
+  }
 
   return features.has(featureFlag as Features) ? (featureFlag as Features) : null;
 }

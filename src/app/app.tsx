@@ -27,8 +27,7 @@ export function App({ children }: PropsWithChildren<any>) {
               </LegalRestrict>
               <TransactionModal />
             </StakingModeProvider>
-            <ToastContainer transition={Zoom} position="bottom-right" />
-            <ToastContainer transition={Zoom} position="bottom-right" />
+            <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
           </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>
