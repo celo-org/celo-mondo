@@ -26,6 +26,7 @@ import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { useStakingMode } from 'src/utils/useStakingMode';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
 
@@ -66,7 +67,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
       DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
     }
   }, [isMobile, table]);
-
+  const mode = useStakingMode();
   return (
     <div>
       <div className="flex justify-between">
@@ -74,10 +75,12 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
           Delegates
         </TabHeaderButton>
         <div className="flex flex-row gap-2">
-          <SolidButton
-            className="btn-neutral h-full text-xs"
-            onClick={() => showTxModal()}
-          >{`️🗳️ Delegate voting power`}</SolidButton>
+          {mode.mode === 'CELO' && (
+            <SolidButton
+              className="btn-neutral h-full text-xs"
+              onClick={() => showTxModal()}
+            >{`️🗳️ Delegate voting power`}</SolidButton>
+          )}
           <SearchField
             value={searchQuery}
             setValue={setSearchQuery}

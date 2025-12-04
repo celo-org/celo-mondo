@@ -1,9 +1,13 @@
 import clsx from 'clsx';
+import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useStakingMode } from 'src/utils/useStakingMode';
 
 export function ModeToggle() {
   const { mode, ui, shouldRender, toggleMode } = useStakingMode();
-
+  const feature = useFeatureFlag();
+  if (feature !== 'stcelo') {
+    return null;
+  }
   return (
     <div className={clsx('flex w-[120px] flex-col items-center', !shouldRender && 'hidden')}>
       <span className="text-md font-serif">{ui.participle}</span>

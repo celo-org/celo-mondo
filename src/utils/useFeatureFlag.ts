@@ -1,8 +1,11 @@
 import { useSearchParams } from 'next/navigation';
 
-export function useFeatureFlag() {
-  const params = useSearchParams();
-  const featureFlag = params.get('feature');
+type Features = 'stcelo';
+const features = new Set<Features>(['stcelo']);
 
-  return featureFlag;
+export function useFeatureFlag(): Features | null {
+  const params = useSearchParams();
+  const featureFlag = params?.get('feature') || null;
+
+  return features.has(featureFlag as Features) ? (featureFlag as Features) : null;
 }
