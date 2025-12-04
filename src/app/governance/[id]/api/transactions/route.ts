@@ -90,7 +90,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(decodedTransactions, { headers });
   } catch (error) {
-    console.error('Error fetching proposal transactions:', error);
     return NextResponse.json({ error: 'Failed to fetch proposal transactions' }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
-import { version } from 'src/../package.json';
+import pkgJson from 'src/../package.json';
 import { assert } from 'src/utils/validation';
 import { celo, celoAlfajores, Chain } from 'viem/chains';
-
+const version = pkgJson.version;
 interface Config {
   debug: boolean;
   version: string | null;

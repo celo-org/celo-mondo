@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { governanceABI } from '@celo/abis';
 import { Addresses } from 'src/config/contracts';
 import { celoPublicClient } from 'src/utils/client';

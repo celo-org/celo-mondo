@@ -6,7 +6,7 @@ export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage
   const { data: approvalData } = useQuery({
     queryKey: ['proposalApproval', proposalId],
     queryFn: async () => {
-      const res = await fetch(`/api/governance/approval/${proposalId}`);
+      const res = await fetch(`/api/governance/${proposalId}/approval`);
       if (!res.ok) return null;
       return res.json() as Promise<{
         approved: boolean;
