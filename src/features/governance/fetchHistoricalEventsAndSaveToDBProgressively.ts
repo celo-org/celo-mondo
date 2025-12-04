@@ -72,7 +72,6 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
   const query = {
     abi: governanceABI,
     eventName,
-    // @ts-expect-error - not sure why client isn't happy honestly
     address: await resolveAddress(client, 'Governance'),
   } as const;
 

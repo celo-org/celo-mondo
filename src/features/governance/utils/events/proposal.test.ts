@@ -42,7 +42,7 @@ describe('decodeAndPrepareProposalEvent', () => {
       You can look up the signature here: https://openchain.xyz/signatures?query=0x.
 
       Docs: https://viem.sh/docs/contract/decodeEventLog
-      Version: viem@2.39.3]
+      Version: viem@2.41.2]
     `);
   });
 

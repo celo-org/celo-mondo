@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';
 import { getProposals } from 'src/features/governance/getProposals';
