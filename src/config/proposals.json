@@ -2371,5 +2371,15 @@
     "stage": 0,
     "url": "https://forum.celo.org/t/introducing-the-jello-hardfork-op-succinct-lite-now-live-on-celo-sepolia/12603",
     "timestamp": 1762300800000
+  },
+  {
+    "cgp": 213,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0213.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0213.md",
+    "title": "Score Management Committee - 6 Month Extension and Continued Funding",
+    "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/score-management-committee-6-month-extension-and-continued-funding/",
+    "timestamp": 1761004800000
   }
 ]

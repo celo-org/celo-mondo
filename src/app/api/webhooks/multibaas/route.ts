@@ -158,6 +158,7 @@ async function upsertVotes(rows: (typeof votesTable)['$inferInsert'][]) {
       target: [votesTable.proposalId, votesTable.type, votesTable.chainId],
     });
 
+  // eslint-disable-next-line no-console
   console.info(`Inserted ${count} vote records for proposal: ${rows[0].proposalId}`);
   return BigInt(rows[0].proposalId);
 }
