@@ -14,9 +14,16 @@ import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanDelegateeName, cleanGroupName } from 'src/features/validators/utils';
 import { shortenAddress } from 'src/utils/addresses';
 import { useInterval } from 'src/utils/asyncHooks';
+import { mainnet } from 'viem/chains';
 // import { Client } from 'viem';
-// import { getEnsName } from 'viem/actions';
+import { createClient, http } from 'viem';
+import { getEnsName } from 'viem/actions';
 import { usePublicClient } from 'wagmi';
+
+const mainnetClient = createClient({
+  chain: mainnet,
+  transport: http(),
+});
 
 type Fallback = (address: Address) => string;
 const defaultFallback: Fallback = (address: Address) => shortenAddress(address);
@@ -47,7 +54,16 @@ function useAddressToLabelInternal() {
   const publicClient = usePublicClient();
   const localLookup = useLocalLookup();
   const [debouncedMap, setDebouncedMap] = useState<ENSMap>(singleton);
-
+  // const { data: name, error: error1 } = useEnsName({
+  //   address: '0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5',
+  //   chainId: mainnet.id, // resolution always starts from L1
+  // });
+  // console.log('marek name', name, error1);
+  // const { data: marek, error: error2 } = useEnsName({
+  //   address: '0x7F22646E85Da79953Ac09E9b45EE1b3Be3A42abC',
+  //   chain: mainnet.id, // resolution always starts from L1
+  // });
+  // console.log('marek name', marek, error2);
   // NOTE: for now 2 seconds seemed fine, it's sufficient for the UX and
   // gives *plenty* of time to batch calls, could lower it more.
   // NOTE: we're making sure we force singleton to be a new ref by destructuring
@@ -68,11 +84,20 @@ function useAddressToLabelInternal() {
     }
 
     void (async () => {
+      const example = await getEnsName(mainnetClient, {
+        address: '0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5',
+      }).catch((e) => console.error('example error', e));
+      const marekt = await getEnsName(mainnetClient, {
+        address: '0x7F22646E85Da79953Ac09E9b45EE1b3Be3A42abC',
+      }).catch((e) => console.error('marekt error ', e));
+      console.info('example', example);
+      console.info('marekt', marekt);
       const newEntries = await Promise.all(
         newAddresses.map(async (address) => {
           // NOTE: in theory that should be translated to a multicall when this works
           // but for now the getEnsName fails with
-          // const name = await getEnsName(publicClient as Client, { address });
+          // const name = await getEnsName(mainnetClient, { address }).catch();
+
           const name = null;
 
           return [address, name] as [Address, string | null];
