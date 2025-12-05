@@ -82,7 +82,22 @@ module.exports = {
         light: {
           primary: '#FCFF52',
           secondary: '#E7E3D4',
-          accent: '#B490FF',
+          accent: '#1E002B',
+          neutral: '#ffffff',
+          'base-100': '#ffffff',
+          info: '#F4EFFF',
+          success: '#56DF7C',
+          warning: '#fcd34d',
+          error: '#ef4444',
+
+          '--rounded-box': '0px',
+          '--rounded-btn': '0px',
+          '--rounded-badge': '0px',
+        },
+        'light-liquid': {
+          primary: '#B490FF',
+          secondary: '#E7E3D4',
+          accent: '#1E002B',
           neutral: '#ffffff',
           'base-100': '#ffffff',
           info: '#F4EFFF',

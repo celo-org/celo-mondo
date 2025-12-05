@@ -11,6 +11,7 @@ import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
 import HistoryProvider from 'src/utils/useHistory';
+import StakingModeProvider from 'src/utils/useStakingMode';
 import 'src/vendor/inpage-metamask.js';
 import 'src/vendor/polyfill';
 
@@ -20,11 +21,13 @@ export function App({ children }: PropsWithChildren<any>) {
       <SafeHydrate>
         <WagmiContext>
           <HistoryProvider>
-            <LegalRestrict>
-              <BodyLayout>{children}</BodyLayout>
-            </LegalRestrict>
-            <TransactionModal />
-            <ToastContainer transition={Zoom} position="bottom-right" />
+            <StakingModeProvider>
+              <LegalRestrict>
+                <BodyLayout>{children}</BodyLayout>
+              </LegalRestrict>
+              <TransactionModal />
+            </StakingModeProvider>
+            <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
           </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>

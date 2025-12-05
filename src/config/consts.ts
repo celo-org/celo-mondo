@@ -48,3 +48,7 @@ export const MAX_NUM_DELEGATEES = 10;
 
 // Wallets
 export const WALLET_CONNECT_CONNECTOR_ID = 'walletConnect';
+
+// stCELO
+export const ST_CELO_API_URL =
+  'https://us-central1-staked-celo-bot.cloudfunctions.net/mainnet-functions';

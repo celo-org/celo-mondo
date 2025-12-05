@@ -26,6 +26,7 @@ import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { useStakingMode } from 'src/utils/useStakingMode';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
 
@@ -66,7 +67,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
       DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
     }
   }, [isMobile, table]);
-
+  const mode = useStakingMode();
   return (
     <div>
       <div className="flex justify-between">
@@ -74,10 +75,12 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
           Delegates
         </TabHeaderButton>
         <div className="flex flex-row gap-2">
-          <SolidButton
-            className="btn-neutral h-full text-xs"
-            onClick={() => showTxModal()}
-          >{`️🗳️ Delegate voting power`}</SolidButton>
+          {mode.mode === 'CELO' && (
+            <SolidButton
+              className="btn-neutral h-full text-xs"
+              onClick={() => showTxModal()}
+            >{`️🗳️ Delegate voting power`}</SolidButton>
+          )}
           <SearchField
             value={searchQuery}
             setValue={setSearchQuery}
@@ -86,7 +89,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
           />
         </div>
       </div>
-      <table className="mt-2 w-full lg:min-w-[62rem] xl:min-w-[75rem]">
+      <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -201,7 +204,7 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-[8rem] xs:max-w-[4rem]',
+  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-32 xs:max-w-16',
   td: 'relative border-y border-taupe-300 text-nowrap',
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',

@@ -30,9 +30,9 @@ export function HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
         onClick={type === 'button' ? onClick : undefined}
       />
       {type === 'tooltip' && (
-        <span className="absolute left-1/2 mx-auto min-w-max -translate-x-1/2 translate-y-8 rounded-[2px] bg-purple-500 px-2 py-4 text-sm text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="absolute left-1/2 mx-auto min-w-max -translate-x-1/2 translate-y-8 rounded-[2px] bg-accent px-2 py-4 text-sm text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
           {text}
-          <span className="absolute bottom-[100%] left-[50%] ml-[-8px] border-[8px] border-transparent border-b-purple-500" />
+          <span className="absolute bottom-full left-[50%] ml-[-8px] border-8 border-transparent border-b-accent" />
         </span>
       )}
     </div>

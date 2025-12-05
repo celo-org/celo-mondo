@@ -41,7 +41,7 @@ export function ProposalVotesHistoryTable() {
             propData={proposals?.find((x) => x.id === parseInt(id, 10))}
             key={id}
             accountVotes={votes}
-            className="border-b-[1px] border-taupe-300 pb-2"
+            className="border-b border-taupe-300 pb-2"
           />
         ))}
     </div>
