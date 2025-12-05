@@ -31,7 +31,7 @@ import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { ensure0x, isValidAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
-import useAddressToLabel from 'src/utils/useAddressToLabel';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 import { useAccount } from 'wagmi';
 
 const initialValues: DelegateFormValues = {

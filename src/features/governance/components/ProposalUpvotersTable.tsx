@@ -5,7 +5,7 @@ import { Collapse } from 'src/components/menus/Collapse';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
 import { objKeys } from 'src/utils/objects';
-import useAddressToLabel from 'src/utils/useAddressToLabel';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 export function ProposalUpvotersTable({ propData }: { propData: MergedProposalData }) {
   return (

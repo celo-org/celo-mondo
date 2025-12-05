@@ -16,6 +16,8 @@ const CONNECT_SRC_HOSTS = [
   'wss://*.walletconnect.org',
   'https://api.web3modal.org',
   'https://api.github.com',
+  'https://eth.merkle.io',
+  'https://celo-gateway.namespace.ninja',
   'https://raw.githubusercontent.com',
   'https://celo-mainnet.infura.io',
   'https://qstash.upstash.io',
