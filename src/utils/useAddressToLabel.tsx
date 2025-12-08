@@ -97,13 +97,8 @@ function useAddressToLabelInternal() {
           throw errors;
         }
 
-        for (const address of newAddresses) {
-          const entry = data.names.items.find((x) => x.owner === address.toLowerCase());
-          if (entry) {
-            singleton[address] = entry.label;
-          } else {
-            singleton[address] = null;
-          }
+        for (const { label, owner } of data.names.items) {
+          singleton[owner] = label;
         }
       } catch (err) {
         console.error(err);
@@ -113,11 +108,15 @@ function useAddressToLabelInternal() {
 
   return useCallback(
     (fallbackFn: Fallback) => (address: Address) => {
+      // NOTE: lowercase for easier graphql matching
+      // because celonames lowercases addresses
+      const lowercased = address.toLowerCase() as Address;
       // NOTE: if address was never fetched, flag to fetch it
-      if (debouncedMap[address] === undefined) {
-        singleton[address] = FETCH_ME_PLEASE;
+      if (debouncedMap[lowercased] === undefined) {
+        singleton[lowercased] = FETCH_ME_PLEASE;
       }
-      const ensName = debouncedMap[address] === FETCH_ME_PLEASE ? null : debouncedMap[address];
+      const ensName =
+        debouncedMap[lowercased] === FETCH_ME_PLEASE ? null : debouncedMap[lowercased];
 
       // NOTE: make sure to always display something
       return ensName || localLookup(address) || fallbackFn(address);
