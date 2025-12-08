@@ -22,7 +22,7 @@ export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage
     return (
       <div className="text-jade-600 inline-flex items-center space-x-1 text-sm">
         <span>✓</span>
-        <span>Passed Approval</span>
+        <span>Approval Attained</span>
       </div>
     );
   }
@@ -37,7 +37,7 @@ export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
         <span>❌</span>
-        <span>Missed Approval</span>
+        <span>Approval Missed</span>
       </div>
     );
   } else {
