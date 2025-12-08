@@ -21,8 +21,9 @@ const defaultFallback: Fallback = (address: Address) => shortenAddress(address);
 
 // NOTE: this symbol is used to differenciate between not found and not searched yet
 const FETCH_ME_PLEASE = Symbol();
+const NAME_NOT_FOUND = Symbol();
 
-type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | null>;
+type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | typeof NAME_NOT_FOUND>;
 const singleton: ENSMap = {};
 
 const GRAPHQL_QueryWithAddresses = `
@@ -97,6 +98,11 @@ function useAddressToLabelInternal() {
           throw errors;
         }
 
+        for (const address of newAddresses) {
+          const entry = data.names.items.find((x) => x.owner === address);
+          singleton[address] = entry ? entry.label : NAME_NOT_FOUND;
+        }
+
         for (const { label, owner } of data.names.items) {
           singleton[owner] = label;
         }
@@ -112,7 +118,7 @@ function useAddressToLabelInternal() {
       // because celonames lowercases addresses
       const lowercased = address.toLowerCase() as Address;
       // NOTE: if address was never fetched, flag to fetch it
-      if (debouncedMap[lowercased] === undefined) {
+      if (!debouncedMap[lowercased]) {
         singleton[lowercased] = FETCH_ME_PLEASE;
       }
       const ensName =
