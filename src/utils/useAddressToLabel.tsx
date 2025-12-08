@@ -113,20 +113,21 @@ function useAddressToLabelInternal() {
   }, [newAddresses, publicClient]);
 
   return useCallback(
-    (fallbackFn: Fallback) => (address: Address) => {
-      // NOTE: lowercase for easier graphql matching
-      // because celonames lowercases addresses
-      const lowercased = address.toLowerCase() as Address;
-      // NOTE: if address was never fetched, flag to fetch it
-      if (!debouncedMap[lowercased]) {
-        singleton[lowercased] = FETCH_ME_PLEASE;
-      }
-      const ensName =
-        debouncedMap[lowercased] === FETCH_ME_PLEASE ? null : debouncedMap[lowercased];
+    (fallbackFn: Fallback) =>
+      (address: Address): string | null => {
+        // NOTE: lowercase for easier graphql matching
+        // because celonames lowercases addresses
+        const lowercased = address.toLowerCase() as Address;
+        // NOTE: if address was never fetched, flag to fetch it
+        if (!debouncedMap[lowercased]) {
+          singleton[lowercased] = FETCH_ME_PLEASE;
+        }
+        const ensName =
+          typeof debouncedMap[lowercased] === 'symbol' ? null : debouncedMap[lowercased];
 
-      // NOTE: make sure to always display something
-      return ensName || localLookup(address) || fallbackFn(address);
-    },
+        // NOTE: make sure to always display something
+        return ensName || localLookup(address) || fallbackFn(address);
+      },
     [debouncedMap, localLookup],
   );
 }
