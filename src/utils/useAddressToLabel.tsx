@@ -102,12 +102,12 @@ function useAddressToLabelInternal() {
           const entry = data.names.items.find((x) => x.owner === address);
           singleton[address] = entry ? entry.label : NAME_NOT_FOUND;
         }
-
-        for (const { label, owner } of data.names.items) {
-          singleton[owner] = label;
-        }
       } catch (err) {
-        console.error(err);
+        console.error('ens lookup failed', err);
+        // NOTE: prevent infinite lookups
+        for (const address of newAddresses) {
+          singleton[address] = NAME_NOT_FOUND;
+        }
       }
     })();
   }, [newAddresses, publicClient]);
