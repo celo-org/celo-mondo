@@ -14,15 +14,7 @@ import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanDelegateeName, cleanGroupName } from 'src/features/validators/utils';
 import { shortenAddress } from 'src/utils/addresses';
 import { useInterval } from 'src/utils/asyncHooks';
-import { mainnet } from 'viem/chains';
-// import { Client } from 'viem';
-import { createClient, http } from 'viem';
 import { usePublicClient } from 'wagmi';
-
-const mainnetClient = createClient({
-  chain: mainnet,
-  transport: http(),
-});
 
 type Fallback = (address: Address) => string;
 const defaultFallback: Fallback = (address: Address) => shortenAddress(address);
@@ -33,7 +25,7 @@ const FETCH_ME_PLEASE = Symbol();
 type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | null>;
 const singleton: ENSMap = {};
 
-const QueryWithAddresses = `
+const GRAPHQL_QueryWithAddresses = `
 query QueryWithAddresses($addresses: [String!]) {
   names(where: {owner_in: $addresses}) {
     items {
@@ -64,16 +56,6 @@ function useAddressToLabelInternal() {
   const publicClient = usePublicClient();
   const localLookup = useLocalLookup();
   const [debouncedMap, setDebouncedMap] = useState<ENSMap>(singleton);
-  // const { data: name, error: error1 } = useEnsName({
-  //   address: '0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5',
-  //   chainId: mainnet.id, // resolution always starts from L1
-  // });
-  // console.log('marek name', name, error1);
-  // const { data: marek, error: error2 } = useEnsName({
-  //   address: '0x7F22646E85Da79953Ac09E9b45EE1b3Be3A42abC',
-  //   chain: mainnet.id, // resolution always starts from L1
-  // });
-  // console.log('marek name', marek, error2);
   // NOTE: for now 2 seconds seemed fine, it's sufficient for the UX and
   // gives *plenty* of time to batch calls, could lower it more.
   // NOTE: we're making sure we force singleton to be a new ref by destructuring
@@ -103,7 +85,7 @@ function useAddressToLabelInternal() {
             Accept: 'application/json',
           },
           body: JSON.stringify({
-            query: QueryWithAddresses,
+            query: GRAPHQL_QueryWithAddresses,
             variables: { addresses: newAddresses.map((x) => x.toLowerCase()) },
           }),
         }).then((x) => x.json())) as {
