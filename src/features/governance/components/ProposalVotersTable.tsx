@@ -13,7 +13,7 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
-import useAddressToLabel from 'src/utils/useAddressToLabel';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 const NUM_TO_SHOW = 20;
 

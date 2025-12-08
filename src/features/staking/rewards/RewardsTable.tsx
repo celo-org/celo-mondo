@@ -12,7 +12,7 @@ import { ValidatorGroup } from 'src/features/validators/types';
 import { tableClasses } from 'src/styles/common';
 import { percent, sum } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
-import useAddressToLabel from 'src/utils/useAddressToLabel';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 export function RewardsTable({
   groupToReward,
