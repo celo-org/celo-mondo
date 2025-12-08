@@ -17,6 +17,7 @@ const CONNECT_SRC_HOSTS = [
   'https://api.web3modal.org',
   'https://api.github.com',
   'https://eth.merkle.io',
+  'https://celo-indexer-reader.namespace.ninja',
   'https://celo-gateway.namespace.ninja',
   'https://raw.githubusercontent.com',
   'https://celo-mainnet.infura.io',

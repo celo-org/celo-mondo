@@ -17,7 +17,6 @@ import { useInterval } from 'src/utils/asyncHooks';
 import { mainnet } from 'viem/chains';
 // import { Client } from 'viem';
 import { createClient, http } from 'viem';
-import { getEnsName } from 'viem/actions';
 import { usePublicClient } from 'wagmi';
 
 const mainnetClient = createClient({
@@ -33,6 +32,17 @@ const FETCH_ME_PLEASE = Symbol();
 
 type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | null>;
 const singleton: ENSMap = {};
+
+const QueryWithAddresses = `
+query QueryWithAddresses($addresses: [String!]) {
+  names(where: {owner_in: $addresses}) {
+    items {
+      label
+      owner
+    }
+  }
+}
+`;
 
 function useLocalLookup() {
   const { addressToGroup } = useValidatorGroups();
@@ -84,29 +94,38 @@ function useAddressToLabelInternal() {
     }
 
     void (async () => {
-      const example = await getEnsName(mainnetClient, {
-        address: '0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5',
-      }).catch((e) => console.error('example error', e));
-      const marekt = await getEnsName(mainnetClient, {
-        address: '0x7F22646E85Da79953Ac09E9b45EE1b3Be3A42abC',
-      }).catch((e) => console.error('marekt error ', e));
-      console.info('example', example);
-      console.info('marekt', marekt);
-      const newEntries = await Promise.all(
-        newAddresses.map(async (address) => {
-          // NOTE: in theory that should be translated to a multicall when this works
-          // but for now the getEnsName fails with
-          // const name = await getEnsName(mainnetClient, { address }).catch();
+      const endpoint = 'https://celo-indexer-reader.namespace.ninja/graphql';
+      try {
+        const { errors, data } = (await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            query: QueryWithAddresses,
+            variables: { addresses: newAddresses.map((x) => x.toLowerCase()) },
+          }),
+        }).then((x) => x.json())) as {
+          errors: { message: string }[] | undefined;
+          data: { names: { items: { label: string; owner: Address }[] } };
+        };
 
-          const name = null;
+        if (errors) {
+          throw errors;
+        }
 
-          return [address, name] as [Address, string | null];
-        }),
-      );
-
-      newEntries.forEach(([address, name]) => {
-        singleton[address] = name;
-      });
+        for (const address of newAddresses) {
+          const entry = data.names.items.find((x) => x.owner === address.toLowerCase());
+          if (entry) {
+            singleton[address] = entry.label;
+          } else {
+            singleton[address] = null;
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
     })();
   }, [newAddresses, publicClient]);
 
