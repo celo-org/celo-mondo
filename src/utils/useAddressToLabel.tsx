@@ -114,7 +114,7 @@ function useAddressToLabelInternal() {
 
   return useCallback(
     (fallbackFn: Fallback) =>
-      (address: Address): string | null => {
+      (address: Address): string => {
         // NOTE: lowercase for easier graphql matching
         // because celonames lowercases addresses
         const lowercased = address.toLowerCase() as Address;
