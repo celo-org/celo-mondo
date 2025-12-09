@@ -13,6 +13,7 @@ import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
+import useAddressToLabel from 'src/utils/useAddressToLabel';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
@@ -20,6 +21,8 @@ export function WalletDropdown() {
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
+
+  const addressToLabel = useAddressToLabel((a) => shortenAddress(a, true));
 
   const onDisconnect = async () => {
     try {
@@ -38,7 +41,7 @@ export function WalletDropdown() {
           button={() => (
             <div className="flex items-center justify-center space-x-1">
               <Identicon address={address} size={26} />
-              <div className="text-sm">{shortenAddress(address, true)}</div>
+              <div className="text-sm">{addressToLabel(address)}</div>
             </div>
           )}
           buttonClasses={`${OutlineButtonClassName} pl-1.5 pr-3 all:py-1`}
@@ -69,6 +72,7 @@ function DropdownContent({
   const { lockedBalance } = useLockedBalance(signingFor);
   const { groupToStake } = useStakingBalances(signingFor);
   const { totalRewards } = useStakingRewards(signingFor, groupToStake);
+  const addressToLabel = useAddressToLabel((a) => shortenAddress(a));
 
   const totalBalance = (walletBalance || 0n) + (lockedBalance || 0n);
 
@@ -79,7 +83,7 @@ function DropdownContent({
       <div className="flex flex-col items-center">
         <Identicon address={address} size={34} />
         <button title="Click to copy" onClick={onClickCopy} className="text-sm">
-          {shortenAddress(address)}
+          {addressToLabel(address)}
         </button>
       </div>
       {isVoteSigner ? (
