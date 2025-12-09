@@ -90,6 +90,16 @@ async function main() {
     );
   }
 
+  const onlyProposalIds = new Set<number>();
+  const onlyIndex = process.argv.indexOf('--only');
+  if (onlyIndex !== -1 && process.argv[onlyIndex + 1]) {
+    const ids = process.argv[onlyIndex + 1].split(',').map((id) => parseInt(id.trim(), 10));
+    ids.forEach((id) => onlyProposalIds.add(id));
+    console.info(
+      `⏭️  Will only process ${onlyProposalIds.size} proposals: ${Array.from(onlyProposalIds).join(', ')}\n`,
+    );
+  }
+
   // Step 1: Get all processed proposal IDs from approvals table (for resumability)
   console.info('🔍 Checking for already processed proposals...');
   const processedProposals = await database
@@ -114,12 +124,17 @@ async function main() {
 
   // Filter to only unprocessed proposals (not in processedProposalIds set)
   const dequeuedEvents = allDequeuedEvents.filter(
-    (e) => !processedProposalIds.has(e.proposalId) && !skipProposalIds.has(e.proposalId),
+    (e) =>
+      !processedProposalIds.has(e.proposalId) &&
+      onlyProposalIds.has(e.proposalId) &&
+      !skipProposalIds.has(e.proposalId),
   );
 
   console.info(`Found ${allDequeuedEvents.length} total dequeued proposals`);
   console.info(`Already processed: ${processedProposalIds.size}`);
-  if (skipProposalIds.size > 0) {
+  if (onlyProposalIds.size > 0) {
+    console.info(`Keeping (via --only): ${onlyProposalIds.size}`);
+  } else if (skipProposalIds.size > 0) {
     console.info(`Skipping (via --skip): ${skipProposalIds.size}`);
   }
   console.info(
