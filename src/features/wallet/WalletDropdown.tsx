@@ -13,7 +13,7 @@ import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
-import useAddressToLabel from 'src/utils/useAddressToLabel';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
