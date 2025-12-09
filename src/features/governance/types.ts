@@ -59,11 +59,13 @@ export enum ProposalStage {
   Executed = 6,
   Withdrawn = 7,
   Rejected = 8,
+  // Used for Proposals that have zero transactions and therefore execution would only be symbolic.
+  // We still want to show that the proposal was successful.
+  Adopted = 9,
 }
 
 export const ACTIVE_PROPOSAL_STAGES = [
   ProposalStage.Queued,
-  ProposalStage.Approval,
   ProposalStage.Referendum,
   ProposalStage.Execution,
 ];

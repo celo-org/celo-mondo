@@ -23,6 +23,7 @@ const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string
   [ProposalStage.Execution]: { color: Color.Lavender, label: 'Execution' },
   [ProposalStage.Expiration]: { color: Color.Red, label: 'Expired' },
   [ProposalStage.Executed]: { color: Color.Jade, label: 'Executed' },
+  [ProposalStage.Adopted]: { color: Color.Jade, label: 'Adopted' },
   [ProposalStage.Withdrawn]: { color: Color.Red, label: 'Withdrawn' },
   [ProposalStage.Rejected]: { color: Color.Red, label: 'Rejected' },
 };
