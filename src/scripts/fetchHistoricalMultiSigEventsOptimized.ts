@@ -126,8 +126,9 @@ async function main() {
   const dequeuedEvents = allDequeuedEvents.filter(
     (e) =>
       !processedProposalIds.has(e.proposalId) &&
-      onlyProposalIds.has(e.proposalId) &&
-      !skipProposalIds.has(e.proposalId),
+      (onlyProposalIds.size
+        ? onlyProposalIds.has(e.proposalId)
+        : !skipProposalIds.has(e.proposalId)),
   );
 
   console.info(`Found ${allDequeuedEvents.length} total dequeued proposals`);
