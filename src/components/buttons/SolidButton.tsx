@@ -5,7 +5,7 @@ export function SolidButton({
   className,
   ...props
 }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) {
-  if (!className?.includes('bg-')) {
+  if (className && !className.includes('bg-')) {
     className += ' bg-primary text-primary-content';
   }
   return (
