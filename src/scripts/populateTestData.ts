@@ -23,7 +23,7 @@ function ensureLocalDatabase() {
     process.exit(1);
   }
 
-  if (isCI && dbUrl === process.env.STAGING_POSTGRES_URL && process.env.UNSAFE) {
+  if (isCI && dbUrl === process.env.STAGING_POSTGRES_URL) {
     console.log('✅ Safety check bypassed: Running on staging database from CI');
     console.log(`   Database: ${dbUrl.substring(0, 30)}...`);
     console.log('');
@@ -32,7 +32,7 @@ function ensureLocalDatabase() {
 
   // Check if database URL points to localhost or local development
   const isLocal =
-    dbUrl.includes('localhost') ||
+    (!isCI && dbUrl.includes('localhost')) ||
     dbUrl.includes('127.0.0.1') ||
     dbUrl.includes('@localhost:') ||
     dbUrl.includes('@127.0.0.1:');
@@ -277,14 +277,14 @@ async function main() {
   const doubleQuorum = quorum * BigInt(2);
 
   // Test data ID ranges - using 1000-1099 to avoid conflicts with real data
-  const TEST_PROPOSAL_ID_START = 1000;
-  const TEST_PROPOSAL_ID_END = 1100; // Exclusive
-  const TEST_CGP_START = 9000;
+  const TEST_PROPOSAL_ID_START = 1_000;
+  const TEST_PROPOSAL_ID_END = 1_100; // Exclusive
+  const TEST_CGP_START = 9_000;
 
   // Multisig transaction IDs are calculated as proposalId + 10000 (see addApprovals helper)
   // So for proposals 1000-1099, multisigTxIds will be 11000-11099
-  const TEST_MULTISIG_TX_ID_START = TEST_PROPOSAL_ID_START + 10000;
-  const TEST_MULTISIG_TX_ID_END = TEST_PROPOSAL_ID_END + 10000; // Exclusive
+  const TEST_MULTISIG_TX_ID_START = TEST_PROPOSAL_ID_START + 10_000;
+  const TEST_MULTISIG_TX_ID_END = TEST_PROPOSAL_ID_END + 10_000; // Exclusive
 
   // Convert to hex for event topics queries (topics[2] stores these IDs in events)
   const TEST_PROPOSAL_ID_START_HEX = `0x${TEST_PROPOSAL_ID_START.toString(16).padStart(64, '0')}`;
@@ -294,7 +294,7 @@ async function main() {
 
   let proposalId = TEST_PROPOSAL_ID_START;
   let cgp = TEST_CGP_START;
-  let currentBlockNumber = 1000000000; // Start at a high block number
+  let currentBlockNumber = 1_000_000_000; // Start at a high block number
   let lastTimestamp = now - 80 * DAY; // Start from earliest timestamp we'll use
   let txCounter = 0;
 
