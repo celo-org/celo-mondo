@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import { sql } from 'drizzle-orm';
 
+import { STAGING_MOCK_PROPOSALS_START_ID } from 'src/config/config';
 import database from 'src/config/database';
 import {
   approvalsTable,
@@ -277,8 +278,8 @@ async function main() {
   const doubleQuorum = quorum * BigInt(2);
 
   // Test data ID ranges - using 1000-1099 to avoid conflicts with real data
-  const TEST_PROPOSAL_ID_START = 1_000;
-  const TEST_PROPOSAL_ID_END = 1_100; // Exclusive
+  const TEST_PROPOSAL_ID_START = STAGING_MOCK_PROPOSALS_START_ID;
+  const TEST_PROPOSAL_ID_END = STAGING_MOCK_PROPOSALS_START_ID + 100; // Exclusive
   const TEST_CGP_START = 9_000;
 
   // Multisig transaction IDs are calculated as proposalId + 10000 (see addApprovals helper)

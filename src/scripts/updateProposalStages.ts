@@ -2,7 +2,8 @@ import 'dotenv/config';
 
 /* eslint no-console: 0 */
 import { governanceABI } from '@celo/abis';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, lt } from 'drizzle-orm';
+import { STAGING_MOCK_PROPOSALS_START_ID } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
@@ -31,6 +32,7 @@ async function updateProposalStages() {
       and(
         eq(proposalsTable.chainId, client.chain.id),
         inArray(proposalsTable.stage, [ProposalStage.Referendum, ProposalStage.Execution]),
+        lt(proposalsTable.id, STAGING_MOCK_PROPOSALS_START_ID),
       ),
     );
 
