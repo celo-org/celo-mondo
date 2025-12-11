@@ -82,6 +82,18 @@ async function updateProposalStages() {
         // 4.1 Get events related to the proposal in order to calculate quorum
         const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
 
+        // 4.2
+        // Tempurature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
+        // So move them from Execution to Adopted when they leave Execution stage.
+        // Txcount 0 + Passed Quorum Flow === Referendum => Execution => Adopted (or Executed if someone bothers to approve and execute it)
+        if (
+          onChainStage !== ProposalStage.Executed &&
+          proposal.stage === ProposalStage.Execution &&
+          proposal.transactionCount === 0
+        ) {
+          onChainStage === ProposalStage.Adopted;
+        }
+
         updates.push({
           id: proposal.id,
           chainId: proposal.chainId,

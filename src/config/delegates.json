@@ -1389,5 +1389,48 @@
       "NFTs"
     ],
     "description": "Interested in building"
+  },
+  "0x12f8026072fa10a5796deffE7d54b9Ea42Ff9ccD": {
+    "name": "Al D",
+    "address": "0x12f8026072fa10a5796deffE7d54b9Ea42Ff9ccD",
+    "logoUri": "/logos/delegatees/0x12f8026072fa10a5796deffE7d54b9Ea42Ff9ccD.jpg",
+    "date": "2025-08-24",
+    "links": {
+      "website": "https://farcaster.xyz/alyonushka.eth",
+      "twitter": "https://x.com/theAlyonushka"
+    },
+    "interests": [
+      "blockchain",
+      "community"
+    ],
+    "description": "she/her"
+  },
+  "0x684CE5E96D0463A20977D2f5139167D13b92B7C2": {
+    "name": "Eduardo ",
+    "address": "0x684CE5E96D0463A20977D2f5139167D13b92B7C2",
+    "logoUri": "/logos/delegatees/0x684CE5E96D0463A20977D2f5139167D13b92B7C2.jpeg",
+    "date": "2025-11-14",
+    "links": {
+      "website": "https://www.instagram.com/eduardo030479?igsh=MXVvemRxb2FweGIxbg%3D%3D&utm_source=qr",
+      "twitter": "https://x.com/eduardo_333777?s=21"
+    },
+    "interests": [
+      "Blockchain stalking"
+    ],
+    "description": "Freedom"
+  },
+  "0x7C5730E7fcF3aDFBdF1C203e1F2491629310CeAd": {
+    "name": "Celo HT",
+    "address": "0x7C5730E7fcF3aDFBdF1C203e1F2491629310CeAd",
+    "logoUri": "/logos/delegatees/0x7C5730E7fcF3aDFBdF1C203e1F2491629310CeAd.jpg",
+    "date": "2025-10-25",
+    "links": {
+      "website": "https://celoht.com",
+      "twitter": "https://x.com/CeloHt327?t=wxf2Xks46aMs3GNz1otIRQ&s=09"
+    },
+    "interests": [
+      "Blockchain"
+    ],
+    "description": "Celo HT is a Haitian and Caribbean community dedicated to Web3 adoption and financial education through the Celo blockchain. We aim to build an inclusive ecosystem where everyone can learn, invest, and take part in Celo governance. As a delegate, Celo HT represents the voice of emerging communities, promoting transparency, sustainability, and digital economic growth across the region."
   }
 }
