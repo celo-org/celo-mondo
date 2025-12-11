@@ -1,4 +1,4 @@
-import pkg from 'src/../package.json';
+import { default as pkg } from 'src/../package.json';
 import { assert } from 'src/utils/validation';
 import { celo, celoAlfajores, Chain } from 'viem/chains';
 const version = pkg.version;
