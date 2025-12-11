@@ -9,9 +9,14 @@ import { PublicCeloClient } from '@celo/actions';
 import { getScoreManagerContract } from '@celo/actions/contracts/score-manager';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
+import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, MAX_NUM_ELECTABLE_VALIDATORS, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses, resolveAddress } from 'src/config/contracts';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
+import useDefaultGroups, {
+  useStCeloInDefaultGroups,
+} from 'src/features/staking/stCELO/hooks/useDefaultGroups';
 import { logger } from 'src/utils/logger';
 import { bigIntSum } from 'src/utils/math';
 import { fromFixidity } from 'src/utils/numbers';
@@ -19,9 +24,8 @@ import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 
-export function useValidatorGroups() {
+export function useValidatorGroups(includeStCeloDefault: boolean = false) {
   const publicClient = usePublicClient();
-
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useValidatorGroups', publicClient],
     queryFn: () => {
@@ -35,11 +39,51 @@ export function useValidatorGroups() {
 
   useToastError(error, 'Error fetching validator groups');
 
+  const { activeGroups: stCeloDefaultGroups } = useDefaultGroups(includeStCeloDefault);
+  const stCeloDefaultVotes = useStCeloInDefaultGroups(includeStCeloDefault);
+
+  const addressToGroup = useMemo(() => {
+    const _addressToGroup = data?.addressToGroup;
+
+    if (includeStCeloDefault && stCeloDefaultGroups.length) {
+      const safeAddressToGroup = _addressToGroup ? _addressToGroup : {};
+      return {
+        addressToGroup: {
+          ...safeAddressToGroup,
+          [ZERO_ADDRESS]: {
+            ...DEFAULT_STRATEGY,
+            votes: stCeloDefaultVotes.data ?? DEFAULT_STRATEGY.votes,
+            members: stCeloDefaultGroups.reduce((result, current) => {
+              return {
+                ...result,
+                [current]: {
+                  address: current,
+                  name: safeAddressToGroup[current]?.name,
+                  score: safeAddressToGroup[current]?.score || 0,
+                  signer: current,
+                  status: 1,
+                } satisfies Validator,
+              };
+            }, {}),
+          } as ValidatorGroup,
+        } satisfies AddressTo<ValidatorGroup>,
+        isLoading: stCeloDefaultVotes.isLoading,
+      };
+    }
+    return { addressToGroup: _addressToGroup, isLoading: false };
+  }, [
+    data?.addressToGroup,
+    includeStCeloDefault,
+    stCeloDefaultGroups,
+    stCeloDefaultVotes.data,
+    stCeloDefaultVotes.isLoading,
+  ]);
+
   return {
-    isLoading,
+    isLoading: isLoading || addressToGroup.isLoading,
     isError,
     groups: data?.groups,
-    addressToGroup: data?.addressToGroup,
+    addressToGroup: addressToGroup.addressToGroup,
     totalLocked: data?.totalLocked,
     totalVotes: data?.totalVotes,
   };

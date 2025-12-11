@@ -1,6 +1,7 @@
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
 import { shortenAddress } from 'src/utils/addresses';
 
 export function ValidatorGroupLogo({ address, size }: { address: Address; size: number }) {
@@ -23,9 +24,7 @@ export function ValidatorGroupLogoAndName({
     <div className={`flex items-center ${className}`}>
       <ValidatorGroupLogo address={address} size={size} />
       <div className="ml-2 flex flex-col">
-        <span>
-          {name || (address === ZERO_ADDRESS ? 'Default Voting Strategy' : 'Unknown Group')}
-        </span>
+        <span>{name || (address === ZERO_ADDRESS ? DEFAULT_STRATEGY.name : 'Unknown Group')}</span>
         <span className="font-mono text-xs text-taupe-600">{shortenAddress(address)}</span>
       </div>
     </div>

@@ -33,7 +33,7 @@ export function ActiveStrategyTable({
   const showModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
 
   const { chartData, tableData } = useMemo(() => {
-    if (!group || !addressToGroup) {
+    if (!group || !addressToGroup || stCELOBalances.total == 0n) {
       return { tableData: [], chartData: [PLACEHOLDER_BAR_CHART_ITEM] };
     }
 
@@ -62,12 +62,8 @@ export function ActiveStrategyTable({
 
   if (!tableData.length) {
     return (
-      <HeaderAndSubheader
-        header=""
-        subHeader={`Using default strategy. You don't currently have any specific validator selected.`}
-        className="my-10"
-      >
-        <OutlineButton onClick={() => showModal()}>Change strategy</OutlineButton>
+      <HeaderAndSubheader header="" subHeader={`No stCELO tokens`} className="my-10">
+        <OutlineButton onClick={() => showModal()}>Liquid Stake for stCELO</OutlineButton>
       </HeaderAndSubheader>
     );
   }
