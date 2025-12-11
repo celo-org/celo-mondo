@@ -9,14 +9,17 @@ const FEW_HOURS = 4 * 60 * 60 * 1000;
 
 const cacheKey = 'defaultGroups';
 
-export default function useDefaultGroups(): { activeGroups: Address[]; error?: Error } {
+export default function useDefaultGroups(enabled = true): {
+  activeGroups: Address[];
+  error?: Error;
+} {
   const [activeGroups, setActiveGroups] = useState<Address[]>([]);
   const [error, setError] = useState<Error>();
 
   const { data: activeGroupsLength } = useReadContract({
     ...DefaultStrategyABI,
     functionName: 'getNumberOfGroups',
-    query: { gcTime: FEW_HOURS },
+    query: { gcTime: FEW_HOURS, enabled },
     args: [],
   });
 
@@ -25,7 +28,7 @@ export default function useDefaultGroups(): { activeGroups: Address[]; error?: E
   const { data: groupsHead } = useReadContract({
     ...DefaultStrategyABI,
     functionName: 'getGroupsHead',
-    query: { gcTime: FEW_HOURS },
+    query: { gcTime: FEW_HOURS, enabled },
     args: [],
   });
 
@@ -67,4 +70,13 @@ export default function useDefaultGroups(): { activeGroups: Address[]; error?: E
   }, [groupsHead, activeGroupsLength, fetchGroups]);
 
   return { activeGroups, error };
+}
+
+export function useStCeloInDefaultGroups(enabled = true) {
+  return useReadContract({
+    ...DefaultStrategyABI,
+    functionName: 'totalStCeloInStrategy',
+    args: [],
+    query: { enabled, gcTime: FEW_HOURS },
+  });
 }

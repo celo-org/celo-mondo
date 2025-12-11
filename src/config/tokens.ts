@@ -21,6 +21,7 @@ export enum TokenId {
   cEUR = 'cEUR',
   cREAL = 'cREAL',
   stCELO = 'stCELO',
+  lockedCELO = 'LOCKEDCELO',
 }
 
 export const NativeStableTokenIds = [TokenId.cUSD, TokenId.cEUR, TokenId.cREAL];

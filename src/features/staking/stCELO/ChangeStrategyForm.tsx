@@ -40,16 +40,16 @@ export function ChangeStrategyForm({
   onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
-  const { addressToGroup } = useValidatorGroups();
+  const { addressToGroup } = useValidatorGroups(true);
   const { stCELOBalances } = useStCELOBalance(address);
-  const { group, refetch: refetchStrategy } = useStrategy(address);
+  const { group: currentGroup, refetch: refetchStrategy } = useStrategy(address);
 
   const humanReadableStCelo = formatNumberString(fromWei(stCELOBalances.total), 2);
 
   const onPlanSuccess = (v: ChangeStrategyFormValues, r: TransactionReceipt) => {
     onConfirmed({
       message: `${v.action} successful`,
-      amount: stCELOBalances.total,
+      amount: v.amount,
       receipt: r,
       properties: [
         { label: 'Action', value: toTitleCase(v.action) },
@@ -78,7 +78,6 @@ export function ChangeStrategyForm({
     if (txPlanIndex > 0) return {};
     return validateForm(values, stCELOBalances.total, addressToGroup);
   };
-
   return (
     <Formik<ChangeStrategyFormValues>
       initialValues={{
@@ -98,17 +97,18 @@ export function ChangeStrategyForm({
               fieldName="group"
               label="From group"
               addressToGroup={addressToGroup}
-              defaultGroup={group || defaultFormValues?.group}
+              defaultGroup={currentGroup}
               disabled={true}
             />
             <GroupField
               fieldName="transferGroup"
               label="To group"
               addressToGroup={addressToGroup}
+              defaultGroup={defaultFormValues?.group ?? ZERO_ADDRESS}
               disabled={isInputDisabled}
             />
             <div className="px-1">
-              <span className="mono">TODO: {humanReadableStCelo} stCELO</span>
+              <span className="mono">{humanReadableStCelo} stCELO</span>
             </div>
           </div>
           <MultiTxFormSubmitButton

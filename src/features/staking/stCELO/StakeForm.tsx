@@ -7,6 +7,7 @@ import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
+import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
 import {
   LiquidStakeActionType,
@@ -153,19 +154,19 @@ function LockAmountField({
 }) {
   const { stakingRate, unstakingRate } = useExchangeRates();
   const maxAmountWei = useMemo(
-    () =>
-      (getMaxAmount(action, stCELOBalances?.usable, walletBalance) || 0n) - MIN_REMAINING_BALANCE,
+    () => getMaxAmount(action, stCELOBalances?.usable, walletBalance) || 0n,
     [action, stCELOBalances, walletBalance],
   );
   const rate = action === LiquidStakeActionType.Stake ? stakingRate : unstakingRate;
   const { setFieldValue, values } = useFormikContext<LiquidStakeFormValues>();
   useEffect(() => {
-    setFieldValue('amount', Math.max(0, fromWei(maxAmountWei - MIN_REMAINING_BALANCE)));
+    setFieldValue('amount', Math.max(0, fromWei(maxAmountWei)));
   }, [maxAmountWei, setFieldValue]);
 
   return (
     <div>
       <AmountField
+        tokenId={TokenId.stCELO}
         maxValueWei={maxAmountWei}
         maxDescription={`${action === LiquidStakeActionType.Stake ? '' : 'st'}CELO available`}
         disabled={disabled}
@@ -209,15 +210,8 @@ function validateForm(
     }
   }
 
-  // Ensure user isn't trying to unlock CELO used for staking
+  // Ensure user isn't trying to unlock stCELO used for staking
   if (action === LiquidStakeActionType.Unstake) {
-    if (stCELOBalances.lockedVote > amountWei) {
-      toast.warn(
-        'Locked funds that have voted for a governance cannot be unlocked until the proposal is resolved.',
-      );
-      return { amount: 'Locked funds in use' };
-    }
-
     const nonVotingBalance = stCELOBalances.usable;
     if (amountWei > nonVotingBalance) {
       toast.warn(
@@ -236,7 +230,7 @@ function getMaxAmount(
   walletBalance?: bigint,
 ) {
   if (action === LiquidStakeActionType.Stake) {
-    return walletBalance;
+    return walletBalance ? walletBalance - MIN_REMAINING_BALANCE : walletBalance;
   } else if (action === LiquidStakeActionType.Unstake) {
     return stCELOBalance;
   } else {
@@ -250,7 +244,7 @@ const ActionToVerb: Record<LiquidStakeActionType, string> = {
 };
 
 const ActionToTipText: Record<LiquidStakeActionType, string> = {
-  // TODO
-  [LiquidStakeActionType.Stake]: 'TODO: stake description',
-  [LiquidStakeActionType.Unstake]: 'TODO: unstake description.',
+  [LiquidStakeActionType.Stake]:
+    'stCelo tokens are automatically staked in a basket of 8 validator groups. You may switch groups later if you wish',
+  [LiquidStakeActionType.Unstake]: 'Return in three days to withdraw',
 };

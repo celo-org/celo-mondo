@@ -128,17 +128,6 @@ export function useGovernanceVotingPower(address?: Address) {
 }
 
 export function useStCELOVotingPower(address?: Address) {
-  // TODO: use this when pavel fixes it
-  // const { data, isError, isLoading, error } = useReadContract({
-  //   ...VoteABI,
-  //   functionName: 'getVoteWeight',
-  //   args: [address!],
-  //   query: {
-  //     enabled: !!address,
-  //   },
-  // } as const);
-  // useToastError(error, 'Error fetching stcelo voting power');
-
   const { stCELOBalances, isLoading, isError } = useStCELOBalance(address);
 
   return {

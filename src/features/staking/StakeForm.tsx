@@ -10,8 +10,9 @@ import { DropdownMenu } from 'src/components/menus/Dropdown';
 import {
   MAX_NUM_GROUPS_VOTED_FOR,
   MIN_GROUP_SCORE_FOR_RANDOM,
-  ZERO_ADDRESS,
+  ONE_ADDRESS,
 } from 'src/config/consts';
+import { TokenId } from 'src/config/tokens';
 import { useVoteSignerToAccount } from 'src/features/account/hooks';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
 import { LockedBalances } from 'src/features/locking/types';
@@ -45,8 +46,8 @@ import { useAccount } from 'wagmi';
 const initialValues: StakeFormValues = {
   action: StakeActionType.Stake,
   amount: 0,
-  group: ZERO_ADDRESS,
-  transferGroup: ZERO_ADDRESS,
+  group: ONE_ADDRESS,
+  transferGroup: ONE_ADDRESS,
   delegate: false,
 };
 
@@ -196,7 +197,12 @@ function StakeAmountField({
   );
 
   return (
-    <AmountField maxValueWei={maxAmountWei} maxDescription="CELO available" disabled={disabled} />
+    <AmountField
+      tokenId={TokenId.CELO}
+      maxValueWei={maxAmountWei}
+      maxDescription="CELO available"
+      disabled={disabled}
+    />
   );
 }
 
@@ -216,13 +222,13 @@ function GroupField({
   const [field, , helpers] = useField<Address>(fieldName);
 
   useEffect(() => {
-    helpers.setValue(defaultGroup || ZERO_ADDRESS);
+    helpers.setValue(defaultGroup || ONE_ADDRESS);
   }, [defaultGroup, helpers]);
 
   const currentGroup = addressToGroup?.[field.value];
   const groupName = currentGroup?.name
     ? cleanGroupName(currentGroup.name)
-    : field.value && field.value !== ZERO_ADDRESS
+    : field.value && field.value !== ONE_ADDRESS
       ? shortenAddress(field.value)
       : 'Select group';
 
@@ -332,7 +338,7 @@ function validateForm(
 ): FormikErrors<StakeFormValues> {
   const { action, amount, group, transferGroup } = values;
 
-  if (!group || group === ZERO_ADDRESS) return { group: 'Validator group required' };
+  if (!group || group === ONE_ADDRESS) return { group: 'Validator group required' };
 
   if (action === StakeActionType.Stake) {
     const groupDetails = addressToGroup[group];
@@ -343,7 +349,7 @@ function validateForm(
   }
 
   if (action === StakeActionType.Transfer) {
-    if (!transferGroup || transferGroup === ZERO_ADDRESS)
+    if (!transferGroup || transferGroup === ONE_ADDRESS)
       return { transferGroup: 'Transfer group required' };
     if (transferGroup === group) return { transferGroup: 'Groups must be different' };
     const groupDetails = addressToGroup[transferGroup];

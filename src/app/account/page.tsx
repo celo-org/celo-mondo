@@ -22,6 +22,7 @@ import { RewardsTable } from 'src/features/staking/rewards/RewardsTable';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { ActiveStrategyTable } from 'src/features/staking/stCELO/ActiveStrategyTable';
 import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
+import { useWithdrawals } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { GroupToStake, StakeActionType, StakingBalances } from 'src/features/staking/types';
 import {
   useActivateStake,
@@ -40,6 +41,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { usePageInvariant } from 'src/utils/navigation';
 import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
+import { Address } from 'viem';
 import { useAccount } from 'wagmi';
 
 export default function Page() {
@@ -49,7 +51,7 @@ export default function Page() {
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
-  const { stCELOBalances } = useStCELOBalance(signingFor);
+  const { stCELOBalances } = useStCELOBalance(address);
   const { lockedBalances } = useLockedStatus(signingFor);
   const { delegations } = useDelegationBalances(signingFor);
   const { addressToDelegatee } = useDelegatees();
@@ -97,7 +99,7 @@ export default function Page() {
           totalDelegated={totalDelegated}
         />
       ) : (
-        <StCELOAccountStats stCELOBalances={stCELOBalances} />
+        <StCELOAccountStats stCELOBalances={stCELOBalances} address={address} />
       )}
       {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
       <TableTabs
@@ -118,38 +120,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
   const showTxModal = useTransactionModal();
 
   return useMemo(() => {
-    if (mode === 'CELO') {
-      return (
-        <div className={`space-x-2 ${className}`}>
-          <SolidButton
-            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
-          >
-            <div className="flex items-center space-x-1.5">
-              <Image src={LockIcon} width={12} height={12} alt="" />
-              <span>Lock</span>
-            </div>
-          </SolidButton>
-          <SolidButton
-            onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
-          >
-            <div className="flex items-center space-x-1.5">
-              <Image src={UnlockIcon} width={12} height={12} alt="" />
-              <span>Unlock</span>
-            </div>
-          </SolidButton>
-          <SolidButton
-            onClick={() =>
-              showTxModal(TransactionFlowType.Lock, { action: LockActionType.Withdraw })
-            }
-          >
-            <div className="flex items-center space-x-1.5">
-              <Image src={WithdrawIcon} width={12} height={12} alt="" />
-              <span>Withdraw</span>
-            </div>
-          </SolidButton>
-        </div>
-      );
-    } else {
+    if (mode === 'stCELO') {
       return (
         <div className={`space-x-2 ${className}`}>
           <SolidButton
@@ -175,6 +146,34 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
         </div>
       );
     }
+    return (
+      <div className={`space-x-2 ${className}`}>
+        <SolidButton
+          onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
+        >
+          <div className="flex items-center space-x-1.5">
+            <Image src={LockIcon} width={12} height={12} alt="" />
+            <span>Lock</span>
+          </div>
+        </SolidButton>
+        <SolidButton
+          onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
+        >
+          <div className="flex items-center space-x-1.5">
+            <Image src={UnlockIcon} width={12} height={12} alt="" />
+            <span>Unlock</span>
+          </div>
+        </SolidButton>
+        <SolidButton
+          onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Withdraw })}
+        >
+          <div className="flex items-center space-x-1.5">
+            <Image src={WithdrawIcon} width={12} height={12} alt="" />
+            <span>Withdraw</span>
+          </div>
+        </SolidButton>
+      </div>
+    );
   }, [className, mode, showTxModal]);
 }
 
@@ -218,13 +217,19 @@ function AccountStats({
 
 function StCELOAccountStats({
   stCELOBalances,
+  address,
 }: {
   stCELOBalances: ReturnType<typeof useStCELOBalance>['stCELOBalances'];
-  totalRewards?: bigint;
+  address: Address | undefined;
 }) {
   const { annualProjectedRate } = useAnnualProjectedRate();
+  const withdrawals = useWithdrawals(address);
+  const totalWithdrawals = useMemo(
+    () => withdrawals.pendingWithdrawals.reduce((agg, withdrawal) => agg + withdrawal.amount, 0n),
+    [withdrawals],
+  );
   return (
-    <div className="flex items-center justify-between">
+    <div className="items-top items-top flex justify-between">
       <AccountStat
         title="Total stCELO"
         valueWei={stCELOBalances.total}
@@ -232,7 +237,12 @@ function StCELOAccountStats({
         subtitle="Usable"
         subValueWei={stCELOBalances.usable}
       />
-      <AccountStat title="Total used in governance" valueWei={stCELOBalances.lockedVote} />
+      <AccountStat
+        tokenId={TokenId.stCELO}
+        title="Total used in governance"
+        valueWei={stCELOBalances.lockedVote}
+      />
+      <AccountStat tokenId={TokenId.stCELO} title="In Withdrawal" valueWei={totalWithdrawals} />
       <div>
         <h3 className="text-sm">{'Annual projected rate'}</h3>
         <span className="-my-0.5 flex items-baseline space-x-1 font-serif text-2xl text-green-600 md:text-3xl">

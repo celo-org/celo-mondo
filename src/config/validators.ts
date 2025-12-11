@@ -1,3 +1,4 @@
+import { ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinks } from 'src/config/types';
 
 type ValidatorInfo = {
@@ -7,6 +8,12 @@ type ValidatorInfo = {
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
+  [ZERO_ADDRESS]: {
+    logo: '/logos/stCELO.png',
+    links: {
+      website: 'https://docs.stcelo.xyz',
+    },
+  },
   '0x89d5bd54C43dDd10905A030DE6Ff02EbB6c51654': {
     logo: '/logos/validators/polychain.jpg',
     links: {
