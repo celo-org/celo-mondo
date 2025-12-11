@@ -10,6 +10,7 @@ import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
+import ENSProvider from 'src/utils/useAddressToLabel';
 import HistoryProvider from 'src/utils/useHistory';
 import StakingModeProvider from 'src/utils/useStakingMode';
 import 'src/vendor/inpage-metamask.js';
@@ -22,12 +23,15 @@ export function App({ children }: PropsWithChildren<any>) {
         <WagmiContext>
           <HistoryProvider>
             <StakingModeProvider>
-              <LegalRestrict>
-                <BodyLayout>{children}</BodyLayout>
-              </LegalRestrict>
-              <TransactionModal />
+              <ENSProvider>
+                <LegalRestrict>
+                  <BodyLayout>{children}</BodyLayout>
+                </LegalRestrict>
+                <TransactionModal />
+                <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
+                <ToastContainer transition={Zoom} position="bottom-right" />
+              </ENSProvider>
             </StakingModeProvider>
-            <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
           </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>

@@ -1,4 +1,4 @@
-import pkg from 'src/../package.json';
+import { default as pkg } from 'src/../package.json';
 import { assert } from 'src/utils/validation';
 import { celo, celoAlfajores, Chain } from 'viem/chains';
 const version = pkg.version;
@@ -78,3 +78,5 @@ if (['production', 'preview'].includes(process.env.VERCEL_ENV!)) {
     assert(config[key], `${key} must be set in production environments.`);
   }
 }
+
+export const STAGING_MOCK_PROPOSALS_START_ID = 1_000;

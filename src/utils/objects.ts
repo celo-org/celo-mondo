@@ -1,3 +1,11 @@
+// Custom replacer function to convert BigInt values to strings
+export function bigIntReplacer(_key: any, value: any) {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  return value;
+}
+
 export function isObject(item: any) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }

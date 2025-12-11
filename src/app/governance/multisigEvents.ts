@@ -1,10 +1,9 @@
 'use server';
 
-import { multiSigABI } from '@celo/abis';
 import { and, eq, SQL, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable } from 'src/db/schema';
-import { Address, encodeEventTopics } from 'viem';
+import { Address } from 'viem';
 
 type MultiSigEventName = 'Confirmation' | 'Revocation' | 'Execution';
 
@@ -23,12 +22,7 @@ export async function fetchMultiSigEvents(
   ];
 
   if (transactionId !== undefined) {
-    const topics = encodeEventTopics({
-      abi: multiSigABI,
-      eventName: event,
-      args: { transactionId },
-    });
-    filters.push(eq(sql`${eventsTable.topics}[2]`, topics[1]));
+    filters.push(eq(sql`(${eventsTable.args}->>'transactionId')::bigint`, transactionId));
   }
 
   const events = await database

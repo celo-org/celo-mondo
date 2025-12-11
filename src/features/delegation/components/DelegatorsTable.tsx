@@ -9,7 +9,7 @@ import { Delegatee } from 'src/features/delegation/types';
 import { normalizeAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { objKeys } from 'src/utils/objects';
-import useAddressToLabel from 'src/utils/useAddressToLabel';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 const NUM_TO_SHOW = 20;
 

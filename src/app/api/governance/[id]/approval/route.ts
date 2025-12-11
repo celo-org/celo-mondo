@@ -22,7 +22,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       ),
     )
     .limit(1);
-
   if (approvalEvent.length > 0) {
     const event = approvalEvent[0];
     return NextResponse.json({

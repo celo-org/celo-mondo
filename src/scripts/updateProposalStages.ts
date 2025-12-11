@@ -2,7 +2,8 @@ import 'dotenv/config';
 
 /* eslint no-console: 0 */
 import { governanceABI } from '@celo/abis';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, lt } from 'drizzle-orm';
+import { STAGING_MOCK_PROPOSALS_START_ID } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
@@ -31,6 +32,7 @@ async function updateProposalStages() {
       and(
         eq(proposalsTable.chainId, client.chain.id),
         inArray(proposalsTable.stage, [ProposalStage.Referendum, ProposalStage.Execution]),
+        lt(proposalsTable.id, STAGING_MOCK_PROPOSALS_START_ID),
       ),
     );
 
@@ -70,7 +72,7 @@ async function updateProposalStages() {
         if (votes) {
           const yesVotes = votes[VoteType.Yes] || 0n;
           const noVotes = votes[VoteType.No] || 0n;
-          if (noVotes >= yesVotes) {
+          if (noVotes > yesVotes) {
             onChainStage = ProposalStage.Rejected;
             console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
           }
@@ -81,6 +83,18 @@ async function updateProposalStages() {
       if (onChainStage !== proposal.stage) {
         // 4.1 Get events related to the proposal in order to calculate quorum
         const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
+
+        // 4.2
+        // Tempurature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
+        // So move them from Execution to Adopted when they leave Execution stage.
+        // Txcount 0 + Passed Quorum Flow === Referendum => Execution => Adopted (or Executed if someone bothers to approve and execute it)
+        if (
+          onChainStage !== ProposalStage.Executed &&
+          proposal.stage === ProposalStage.Execution &&
+          proposal.transactionCount === 0
+        ) {
+          onChainStage === ProposalStage.Adopted;
+        }
 
         updates.push({
           id: proposal.id,
