@@ -24,6 +24,8 @@ export enum TokenId {
   lockedCELO = 'LOCKEDCELO',
 }
 
+type TrueTokenIds = Exclude<TokenId, TokenId.lockedCELO>;
+
 export const NativeStableTokenIds = [TokenId.cUSD, TokenId.cEUR, TokenId.cREAL];
 
 export const CELO: Token = Object.freeze({
@@ -62,7 +64,7 @@ export const stCELO: Token = Object.freeze({
   decimals: 18,
 });
 
-export const Tokens: Record<TokenId, Token> = {
+export const Tokens: Record<Exclude<TokenId, TokenId.lockedCELO>, Token> = {
   CELO,
   cUSD,
   cEUR,
@@ -70,14 +72,14 @@ export const Tokens: Record<TokenId, Token> = {
   stCELO,
 };
 
-export const TokenAddresses: Record<number, Record<TokenId, Address>> = Object.freeze({
+export const TokenAddresses: Record<number, Record<TrueTokenIds, Address>> = Object.freeze({
   [ChainId.Celo]: {
     [TokenId.CELO]: '0x471EcE3750Da237f93B8E339c536989b8978a438',
     [TokenId.cUSD]: '0x765DE816845861e75A25fCA122bb6898B8B1282a',
     [TokenId.cEUR]: '0xD8763CBa276a3738E6DE85b4b3bF5FDed6D6cA73',
     [TokenId.cREAL]: '0xe8537a3d056DA446677B9E9d6c5dB704EaAb4787',
     [TokenId.stCELO]: StakedCeloABI.address,
-  } as Record<TokenId, Address>,
+  } as Record<TrueTokenIds, Address>,
 });
 
 export function isNativeToken(tokenId: string) {
@@ -89,10 +91,10 @@ export function isNativeStableToken(tokenId: string) {
 }
 
 export function getTokenById(id: string): Token | null {
-  return Tokens[id as TokenId] || null;
+  return Tokens[id as TrueTokenIds] || null;
 }
 
-export function getTokenAddress(id: TokenId, chainId: number): Address {
+export function getTokenAddress(id: TrueTokenIds, chainId: number): Address {
   const addr = TokenAddresses[chainId][id];
   if (!addr) throw new Error(`No address found for token ${id} on chain ${chainId}`);
   return addr;
@@ -105,7 +107,7 @@ export function getTokenByAddress(address: Address): Token {
   // This assumes no clashes btwn different tokens on diff chains
   for (const [id, tokenAddr] of idAddressTuples) {
     if (eqAddress(address, tokenAddr)) {
-      return Tokens[id as TokenId];
+      return Tokens[id as TrueTokenIds];
     }
   }
   throw new Error(`No token found for address ${address}`);

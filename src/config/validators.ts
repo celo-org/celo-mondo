@@ -1,5 +1,5 @@
-import { ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinks } from 'src/config/types';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
 
 type ValidatorInfo = {
   logo: string;
@@ -8,7 +8,7 @@ type ValidatorInfo = {
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
-  [ZERO_ADDRESS]: {
+  [DEFAULT_STRATEGY.address]: {
     logo: '/logos/stCELO.png',
     links: {
       website: 'https://docs.stcelo.xyz',
