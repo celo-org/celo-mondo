@@ -35,8 +35,8 @@ export function RewardsTable({
       .map((address) => {
         const reward = groupToReward[address];
         const percentage = total ? percent(reward, total) : 0;
-        const name = addressToLabel(address);
-        return { address, name, reward, percentage };
+        const { label, fallback } = addressToLabel(address);
+        return { address, name: label || fallback, reward, percentage };
       })
       .sort((a, b) => b.reward - a.reward);
 

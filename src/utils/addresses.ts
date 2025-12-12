@@ -34,12 +34,12 @@ export function shortenAddress(address: string, capitalize = true, keepStart = 6
   const start = normalizedAddress.substring(0, keepStart);
   const end = normalizedAddress.substring(address.length - keepEnd);
 
-  const shortened = `${start}…${end}`;
+  const shortened = `${start}…${end}` as Address;
   return capitalize ? capitalizeAddress(shortened) : shortened;
 }
 
-export function capitalizeAddress(address: string) {
-  return '0x' + address.substring(2).toUpperCase();
+export function capitalizeAddress(address: string): Address {
+  return `0x${address.substring(2).toUpperCase()}`;
 }
 
 export function eqAddress(a1: string, a2: string) {

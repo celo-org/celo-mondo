@@ -6,6 +6,7 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
 import { DropdownModal } from 'src/components/menus/Dropdown';
 import { Amount } from 'src/components/numbers/Amount';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { ShortAddress } from 'src/components/text/ShortAddress';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
@@ -21,8 +22,6 @@ export function WalletDropdown() {
   const { address, isConnected } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
-
-  const addressToLabel = useAddressToLabel((a) => shortenAddress(a, true));
 
   const onDisconnect = async () => {
     try {
@@ -41,7 +40,7 @@ export function WalletDropdown() {
           button={() => (
             <div className="flex items-center justify-center space-x-1">
               <Identicon address={address} size={26} />
-              <div className="text-sm">{addressToLabel(address)}</div>
+              <AddressLabel address={address} />
             </div>
           )}
           buttonClasses={`${OutlineButtonClassName} pl-1.5 pr-3 all:py-1`}
@@ -72,7 +71,8 @@ function DropdownContent({
   const { lockedBalance } = useLockedBalance(signingFor);
   const { groupToStake } = useStakingBalances(signingFor);
   const { totalRewards } = useStakingRewards(signingFor, groupToStake);
-  const addressToLabel = useAddressToLabel((a) => shortenAddress(a));
+  const shortAddress = shortenAddress(address, true, 10, 10);
+  const { label } = useAddressToLabel(() => shortAddress)(address);
 
   const totalBalance = (walletBalance || 0n) + (lockedBalance || 0n);
 
@@ -82,8 +82,9 @@ function DropdownContent({
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">
       <div className="flex flex-col items-center">
         <Identicon address={address} size={34} />
-        <button title="Click to copy" onClick={onClickCopy} className="text-sm">
-          {addressToLabel(address)}
+        <button title="Click to copy" onClick={onClickCopy} className="flex flex-col text-sm">
+          <AddressLabel address={address} hiddenIfNoLabel shortener={() => shortAddress} />
+          <span className={clsx('font-mono', !!label && 'text-taupe-600')}>{shortAddress}</span>
         </button>
       </div>
       {isVoteSigner ? (

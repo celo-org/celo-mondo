@@ -3,6 +3,7 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ChartDataItem, sortAndCombineChartData } from 'src/components/charts/chartData';
 import { Collapse } from 'src/components/menus/Collapse';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { CopyInline } from 'src/components/text/CopyInline';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
@@ -13,10 +14,8 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
-import { CELONAMES_SUFFIX, useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 const NUM_TO_SHOW = 20;
-const CELONAMES_TRIM_END = CELONAMES_SUFFIX.length;
 
 export function ProposalVotersTable({ propData }: { propData: MergedProposalData }) {
   const isMobile = useIsMobile();
@@ -42,7 +41,6 @@ function VoterTableContent({
   propData: MergedProposalData & { votersData: ReturnType<typeof useProposalVoters> };
 }) {
   const { isLoading, voters, totals } = propData.votersData;
-  const addressToLabel = useAddressToLabel();
 
   const tableData = useMemo(() => {
     if (!voters || !totals) return [];
@@ -60,7 +58,7 @@ function VoterTableContent({
         if (amount <= 0) continue;
         const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
         votesByType[type]?.push({
-          label: addressToLabel(account),
+          label: account,
           value: amount,
           percentage,
           address: normalizeAddress(account),
@@ -78,7 +76,7 @@ function VoterTableContent({
     // Sort by value and take the top NUM_VOTERS_TO_SHOW
     const sorted = combined.sort((a, b) => b.value - a.value);
     return sorted.slice(0, NUM_TO_SHOW);
-  }, [voters, totals, addressToLabel]);
+  }, [voters, totals]);
 
   if (isLoading) {
     return (
@@ -94,28 +92,22 @@ function VoterTableContent({
   return (
     <div className="grid grid-cols-6 gap-x-2 gap-y-4 pt-4">
       {tableData.map((row) => {
-        const hasLabel =
-          !row.label.startsWith('0x') ||
-          !row.address?.toUpperCase().startsWith(row.label.slice(0, 6).toUpperCase());
-        const isCeloName = row.label.endsWith('.celo.eth');
-
         return (
           <>
-            <div
-              className={`text-sm ${hasLabel ? 'font-sans' : 'font-mono'} col-span-3 text-taupe-600`}
-            >
-              <CopyInline
-                text={
-                  <span>
-                    {isCeloName ? row.label.slice(0, -CELONAMES_TRIM_END) : row.label}
-                    {isCeloName ? (
-                      <span className="font-semibold text-black">{CELONAMES_SUFFIX}</span>
-                    ) : null}
-                  </span>
-                }
-                textToCopy={row.address!}
-                className="text-ellipsis text-nowrap text-start"
-              />
+            <div className="col-span-3 font-mono text-sm text-taupe-600">
+              {row.label === 'Others' ? (
+                'Others'
+              ) : (
+                <CopyInline
+                  text={
+                    <AddressLabel
+                      address={row.address!}
+                      className="text-ellipsis text-nowrap text-start"
+                    />
+                  }
+                  textToCopy={row.address!}
+                />
+              )}
             </div>
             <div className="text-sm font-medium">{toTitleCase(row.type)}</div>
             <div className="col-span-2">

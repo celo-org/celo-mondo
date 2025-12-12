@@ -20,6 +20,7 @@ import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
 import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { Amount, formatNumberString } from 'src/components/numbers/Amount';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { CopyInline } from 'src/components/text/CopyInline';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { SocialLinkType } from 'src/config/types';
@@ -44,7 +45,6 @@ import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
-import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 import useTabs from 'src/utils/useTabs';
 
 export default function Page({ address }: { address: Address }) {
@@ -276,7 +276,6 @@ function Members({ group }: { group?: ValidatorGroup }) {
   const groupStats = getGroupStats(group);
 
   const { lockedBalance } = useLockedBalance(group?.address);
-  const addressToLabel = useAddressToLabel(isMobile ? shortenAddress : (x) => x);
 
   return (
     <>
@@ -306,9 +305,12 @@ function Members({ group }: { group?: ValidatorGroup }) {
           {Object.values(group?.members || {}).map((member) => (
             <tr key={member.address}>
               <td className={tableClasses.td}>
-                <div className="flex items-center">
+                <div className="flex items-center gap-x-2">
                   <Identicon address={member.address} size={24} />
-                  <span className="ml-2">{addressToLabel(member.address)}</span>
+                  <AddressLabel
+                    address={member.address}
+                    shortener={isMobile ? shortenAddress : (x) => x}
+                  />
                 </div>
               </td>
               <td className={tableClasses.td}>{`${(member.score * 100).toFixed(2)}%`}</td>
@@ -335,17 +337,16 @@ function Members({ group }: { group?: ValidatorGroup }) {
 
 function Stakers({ group }: { group?: ValidatorGroup }) {
   const { stakers, isLoading } = useValidatorStakers(group?.address);
-  const addressToLabel = useAddressToLabel();
 
   const chartData = useMemo(() => {
     if (isLoading) return null;
     if (!stakers.length) return [{ label: 'No Stakers', value: 1, color: Color.Grey }];
     const rawData = stakers.map(([address, amount]) => ({
-      label: addressToLabel(address),
+      label: address,
       value: amount,
     }));
     return sortAndCombineChartData(rawData);
-  }, [stakers, isLoading, addressToLabel]);
+  }, [stakers, isLoading]);
 
   if (isLoading || !chartData) {
     return (
@@ -369,12 +370,16 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
             {chartData.map((data) => (
               <tr key={data.label}>
                 <td className={tableClasses.td}>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex min-w-[150px] items-center gap-x-2">
                     <Circle fill={data.color} size={10} />
-                    <CopyInline
-                      text={data.label === 'Others' ? 'Other stakers' : data.label}
-                      textToCopy={data.address}
-                    />
+                    {data.label === 'Others' ? (
+                      'Other stakers'
+                    ) : (
+                      <CopyInline
+                        text={<AddressLabel address={data.label as Address} />}
+                        textToCopy={data.label}
+                      />
+                    )}
                   </div>
                 </td>
                 <td className={tableClasses.td}>

@@ -1,6 +1,7 @@
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { CopyInline } from 'src/components/text/CopyInline';
 import { ApprovalBadge } from 'src/features/governance/components/ApprovalBadge';
 import { useProposalApprovers } from 'src/features/governance/hooks/useProposalApprovers';
@@ -51,7 +52,7 @@ function ConfirmationsTable({
   isLoading: boolean;
   confirmations: Address[];
 }) {
-  const addressToLabel = useAddressToLabel(() => null);
+  const addressToLabel = useAddressToLabel((a) => shortenAddress(a, true, 10, 10));
 
   if (isLoading) {
     return (
@@ -64,7 +65,7 @@ function ConfirmationsTable({
   return (
     <div className="flex flex-col">
       {confirmations.map((approver) => {
-        const label = addressToLabel(approver) || 'nico.celo.eth';
+        const { label, fallback } = addressToLabel(approver);
         return (
           <CopyInline
             key={approver}
@@ -73,10 +74,10 @@ function ConfirmationsTable({
               <>
                 <Identicon address={approver} size={20} />
                 <div className="flex flex-grow flex-row items-start gap-x-4">
-                  <span className="font-mono text-sm">
-                    {shortenAddress(approver, true, 10, 10)}
-                  </span>
-                  <span className="text-sm">{label}</span>
+                  <span className="font-mono text-sm">{fallback}</span>
+                  {/* TODO */}
+
+                  <AddressLabel address={approver} hiddenIfNoLabel />
                 </div>
               </>
             }

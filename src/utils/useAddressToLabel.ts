@@ -1,11 +1,10 @@
-'use client';
-
+import { useQuery } from '@tanstack/react-query';
 import {
   createContext,
+  createElement,
   PropsWithChildren,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -14,17 +13,28 @@ import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanDelegateeName, cleanGroupName } from 'src/features/validators/utils';
 import { shortenAddress } from 'src/utils/addresses';
 import { useInterval } from 'src/utils/asyncHooks';
+import { objMap } from 'src/utils/objects';
+import { Address } from 'viem';
 import { usePublicClient } from 'wagmi';
 
+type Label = {
+  label: string | null;
+  fallback: string;
+  address: Address;
+  isCeloName: boolean;
+};
 type Fallback = (address: Address) => string;
 const defaultFallback: Fallback = (address: Address) => shortenAddress(address);
 
-// NOTE: this symbol is used to differenciate between not found and not searched yet
-const FETCH_ME_PLEASE = Symbol();
-const NAME_NOT_FOUND = Symbol();
+// NOTE: these symbols are used to differenciate between not found and not searched yet
+const FETCH_ME_PLEASE = Symbol('fetch_me_please');
+const NAME_NOT_FOUND = Symbol('name_not_found');
 
+const CACHE_KEY = 'celonames_cache';
 type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | typeof NAME_NOT_FOUND>;
-const singleton: ENSMap = {};
+
+// NOTE: hydrate from localstorage
+const singleton: ENSMap = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
 
 const GRAPHQL_QueryWithAddresses = `
 query QueryWithAddresses($addresses: [String!]) {
@@ -70,52 +80,59 @@ function useAddressToLabelInternal() {
     [debouncedMap],
   );
 
-  useEffect(() => {
-    // NOTE: only fetch if unknown have been added
-    if (newAddresses.length === 0 || !publicClient) {
-      return;
-    }
-
-    void (async () => {
+  useQuery({
+    enabled: newAddresses.length > 0 && !!publicClient,
+    queryKey: [newAddresses],
+    // gcTime: GCTime.Default,
+    // staleTime: StaleTime.Default,
+    queryFn: async () => {
       const endpoint = 'https://celo-indexer-reader.namespace.ninja/graphql';
-      try {
-        const { errors, data } = (await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            query: GRAPHQL_QueryWithAddresses,
-            variables: { addresses: newAddresses.map((x) => x.toLowerCase()) },
-          }),
-        }).then((x) => x.json())) as {
-          errors: { message: string }[] | undefined;
-          data: { names: { items: { label: string; owner: Address }[] } };
-        };
+      const { errors, data } = (await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          query: GRAPHQL_QueryWithAddresses,
+          variables: { addresses: newAddresses.map((x) => x.toLowerCase()) },
+        }),
+      }).then((x) => x.json())) as {
+        errors: { message: string }[] | undefined;
+        data: { names: { items: { label: string; owner: Address }[] } };
+      };
 
-        if (errors) {
-          throw errors;
-        }
+      if (errors) {
+        console.error('Failed to fetch celonames', errors);
+        return null;
+      }
 
-        for (const address of newAddresses) {
-          const entry = data.names.items.find((x) => x.owner === address);
-          singleton[address] = entry ? `${entry.label}${CELONAMES_SUFFIX}` : NAME_NOT_FOUND;
-        }
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('ens lookup failed', err);
-        // NOTE: prevent infinite lookups
-        for (const address of newAddresses) {
-          singleton[address] = NAME_NOT_FOUND;
+      for (const address of newAddresses) {
+        const entry = data.names.items.find((x) => x.owner === address);
+        singleton[address] = entry ? `${entry.label}${CELONAMES_SUFFIX}` : NAME_NOT_FOUND;
+
+        if (address === '0x21ecc6113bfa08c428ca11bae55ba038fca0e7da') {
+          singleton[address] = 'nico.celo.eth';
         }
       }
-    })();
-  }, [newAddresses, publicClient]);
+
+      // NOTE: persist without the special values
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify(
+          objMap(singleton, (_, label) =>
+            label === FETCH_ME_PLEASE || label === NAME_NOT_FOUND ? undefined : label,
+          ),
+        ),
+      );
+
+      return data;
+    },
+  });
 
   return useCallback(
     (fallbackFn: Fallback) =>
-      (address: Address): string => {
+      (address: Address): Label => {
         // NOTE: lowercase for easier graphql matching
         // because celonames lowercases addresses
         const lowercased = address.toLowerCase() as Address;
@@ -123,23 +140,34 @@ function useAddressToLabelInternal() {
         if (!debouncedMap[lowercased]) {
           singleton[lowercased] = FETCH_ME_PLEASE;
         }
+
         const ensName =
           typeof debouncedMap[lowercased] === 'symbol' ? null : debouncedMap[lowercased];
 
-        // NOTE: make sure to always display something
-        return ensName || localLookup(address) || fallbackFn(address);
+        return {
+          fallback: fallbackFn(address),
+          address,
+          label: ensName || localLookup(address) || null,
+          isCeloName: !!ensName,
+        };
       },
     [debouncedMap, localLookup],
   );
 }
 
 const ENSContext = createContext<ReturnType<typeof useAddressToLabelInternal>>(
-  () => defaultFallback,
+  () => (address: Address) => ({
+    fallback: defaultFallback(address),
+    address,
+    label: null,
+    isCeloName: false,
+  }),
 );
 
 function ENSProvider({ children }: PropsWithChildren) {
   const fn = useAddressToLabelInternal();
-  return <ENSContext.Provider value={fn}>{children}</ENSContext.Provider>;
+
+  return createElement(ENSContext.Provider, { value: fn }, children);
 }
 
 export { ENSProvider as default };
