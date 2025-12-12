@@ -56,11 +56,11 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
       <div className="flex items-center justify-between">
         <H1>Discover Validators</H1>
         <div className="flex flex-row gap-2">
-          <SolidButton className="bg-[#FCFF52] px-8" onClick={() => showStakeModal()}>
+          <SolidButton className="bg-yellow-500 px-8" onClick={() => showStakeModal()}>
             Stake
           </SolidButton>
           {featureFlag === 'stcelo' && (
-            <SolidButton onClick={() => showLiquidStakeModal()} className="bg-[#B490FF] px-8">
+            <SolidButton onClick={() => showLiquidStakeModal()} className="bg-purple-300 px-8">
               Liquid Stake
             </SolidButton>
           )}
