@@ -5,9 +5,6 @@ export function SolidButton({
   className,
   ...props
 }: PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>>) {
-  if (className && !className.includes('bg-')) {
-    className += ' bg-primary text-primary-content';
-  }
   return (
     <button
       className={`btn h-fit min-h-fit rounded-full border-taupe-300 px-5 py-2.5 font-semibold transition-all duration-500 disabled:bg-gray-300 disabled:text-gray-800 ${className}`}

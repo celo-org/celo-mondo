@@ -139,7 +139,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
         </div>
         <SolidButton
           onClick={onClickStake}
-          className="w-full sm:w-auto sm:px-7"
+          className="w-full bg-primary text-primary-content sm:w-auto sm:px-7"
           disabled={isActiveStrategy}
         >
           {isActiveStrategy ? 'Already staking' : ui.action}

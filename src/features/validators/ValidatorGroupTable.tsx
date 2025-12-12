@@ -342,7 +342,7 @@ function useTableColumns(totalVotes: bigint) {
                 { group: props.row.original.address },
               );
             }}
-            className="all:btn-neutral"
+            className="bg-primary text-primary-content all:btn-neutral"
           >
             {ui.action}
           </SolidButton>

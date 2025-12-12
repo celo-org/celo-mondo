@@ -124,6 +124,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
       return (
         <div className={`space-x-2 ${className}`}>
           <SolidButton
+            className="bg-primary text-primary-content"
             onClick={() =>
               showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Stake })
             }
@@ -134,6 +135,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
             </div>
           </SolidButton>
           <SolidButton
+            className="bg-primary text-primary-content"
             onClick={() =>
               showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Unstake })
             }
@@ -149,6 +151,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
     return (
       <div className={`space-x-2 ${className}`}>
         <SolidButton
+          className="bg-primary text-primary-content"
           onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Lock })}
         >
           <div className="flex items-center space-x-1.5">
@@ -157,6 +160,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
           </div>
         </SolidButton>
         <SolidButton
+          className="bg-primary text-primary-content"
           onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Unlock })}
         >
           <div className="flex items-center space-x-1.5">
@@ -165,6 +169,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
           </div>
         </SolidButton>
         <SolidButton
+          className="bg-primary text-primary-content"
           onClick={() => showTxModal(TransactionFlowType.Lock, { action: LockActionType.Withdraw })}
         >
           <div className="flex items-center space-x-1.5">
