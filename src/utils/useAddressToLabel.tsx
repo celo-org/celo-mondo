@@ -100,7 +100,7 @@ function useAddressToLabelInternal() {
 
         for (const address of newAddresses) {
           const entry = data.names.items.find((x) => x.owner === address);
-          singleton[address] = entry ? entry.label : NAME_NOT_FOUND;
+          singleton[address] = entry ? `${entry.label}${CELONAMES_SUFFIX}` : NAME_NOT_FOUND;
         }
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -142,6 +142,7 @@ function ENSProvider({ children }: PropsWithChildren) {
   return <ENSContext.Provider value={fn}>{children}</ENSContext.Provider>;
 }
 
-const useAddressToLabel = (fallbackFn = defaultFallback) => useContext(ENSContext)(fallbackFn);
-
-export { ENSProvider as default, useAddressToLabel };
+export { ENSProvider as default };
+export const useAddressToLabel = (fallbackFn = defaultFallback) =>
+  useContext(ENSContext)(fallbackFn);
+export const CELONAMES_SUFFIX = '.celo.eth';

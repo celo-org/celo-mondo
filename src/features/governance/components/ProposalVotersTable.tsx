@@ -13,9 +13,10 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
-import { useAddressToLabel } from 'src/utils/useAddressToLabel';
+import { CELONAMES_SUFFIX, useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 const NUM_TO_SHOW = 20;
+const CELONAMES_TRIM_END = CELONAMES_SUFFIX.length;
 
 export function ProposalVotersTable({ propData }: { propData: MergedProposalData }) {
   const isMobile = useIsMobile();
@@ -90,30 +91,43 @@ function VoterTableContent({
   if (!tableData.length) {
     return <div className="py-6 text-center text-sm text-gray-600">No voters found</div>;
   }
-
   return (
-    <table>
-      <tbody>
-        {tableData.map((row) => (
-          <tr key={row.label}>
-            <td
-              className={`py-2 text-sm ${row.label.startsWith('0x') ? 'font-mono' : ''} text-taupe-600`}
+    <div className="grid grid-cols-6 gap-x-2 gap-y-4 pt-4">
+      {tableData.map((row) => {
+        const hasLabel =
+          !row.label.startsWith('0x') ||
+          !row.address?.toUpperCase().startsWith(row.label.slice(0, 6).toUpperCase());
+        const isCeloName = row.label.endsWith('.celo.eth');
+
+        return (
+          <>
+            <div
+              className={`text-sm ${hasLabel ? 'font-sans' : 'font-mono'} col-span-3 text-taupe-600`}
             >
-              <CopyInline text={row.label} textToCopy={row.address!} />
-            </td>
-            <td className="px-4 py-2 text-sm font-medium">{toTitleCase(row.type)}</td>
-            <td>
+              <CopyInline
+                text={
+                  <span>
+                    {isCeloName ? row.label.slice(0, -CELONAMES_TRIM_END) : row.label}
+                    {isCeloName ? (
+                      <span className="font-semibold text-black">{CELONAMES_SUFFIX}</span>
+                    ) : null}
+                  </span>
+                }
+                textToCopy={row.address!}
+                className="text-ellipsis text-nowrap text-start"
+              />
+            </div>
+            <div className="text-sm font-medium">{toTitleCase(row.type)}</div>
+            <div className="col-span-2">
               <div className="flex w-fit items-center space-x-2 rounded-full bg-taupe-300 px-2">
                 <span className="text-sm">{`${row.percentage?.toFixed(1) || 0}%`}</span>
-                <span className="text-xs text-gray-500">{`(${formatNumberString(
-                  row.value,
-                )})`}</span>
+                <span className="text-[0.6rem] text-gray-500">{`(${formatNumberString(row.value)})`}</span>
               </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+            </div>
+          </>
+        );
+      })}
+    </div>
   );
 }
 

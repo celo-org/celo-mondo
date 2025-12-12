@@ -98,7 +98,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
   if (stage === ProposalStage.None) return null;
 
   return (
-    <div className="space-y-4 lg:min-w-[20rem]">
+    <div className="w-full space-y-4 lg:w-[26rem]">
       <div className="space-y-4 border-taupe-300 p-3 lg:border">
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}

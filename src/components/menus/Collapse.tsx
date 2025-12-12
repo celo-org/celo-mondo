@@ -1,4 +1,4 @@
-import { Disclosure, Transition } from '@headlessui/react';
+import { Disclosure, DisclosureButton, DisclosurePanel, Transition } from '@headlessui/react';
 import { PropsWithChildren, ReactNode } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 
@@ -20,14 +20,14 @@ export function Collapse({
     <Disclosure defaultOpen={defaultOpen}>
       {({ open }) => (
         <>
-          <Disclosure.Button className={buttonClasses} disabled={disabled}>
+          <DisclosureButton className={buttonClasses} disabled={disabled}>
             <div className="relative">
               {button}
               <div className="absolute right-2 top-1/2 -translate-y-1/2">
                 <ChevronIcon direction={open ? 'n' : 's'} width={15} height={10} />
               </div>
             </div>
-          </Disclosure.Button>
+          </DisclosureButton>
           <Transition
             enter="transition duration-100 ease-out"
             enterFrom="transform scale-95 opacity-0"
@@ -36,9 +36,9 @@ export function Collapse({
             leaveFrom="transform scale-100 opacity-100"
             leaveTo="transform scale-95 opacity-0"
           >
-            <Disclosure.Panel className="max-h-[400px] overflow-y-auto lg:max-h-max">
+            <DisclosurePanel className="max-h-[400px] min-h-[120px] overflow-y-auto lg:max-h-max">
               {children}
-            </Disclosure.Panel>
+            </DisclosurePanel>
           </Transition>
         </>
       )}

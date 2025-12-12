@@ -19,7 +19,7 @@
     "@celo/abis": "^14.0.1",
     "@celo/actions": "^0.2.0",
     "@celo/compliance": "^1.0.29",
-    "@headlessui/react": "^1.7.19",
+    "@headlessui/react": "^2.2.9",
     "@metamask/jazzicon": "^2.0.0",
     "@metamask/post-message-stream": "6.1.2",
     "@metamask/providers": "10.2.1",

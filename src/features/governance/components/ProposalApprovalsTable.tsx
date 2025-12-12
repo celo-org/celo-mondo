@@ -1,10 +1,12 @@
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
-import { ShortAddress } from 'src/components/text/ShortAddress';
+import { CopyInline } from 'src/components/text/CopyInline';
 import { ApprovalBadge } from 'src/features/governance/components/ApprovalBadge';
 import { useProposalApprovers } from 'src/features/governance/hooks/useProposalApprovers';
 import { ProposalStage } from 'src/features/governance/types';
+import { normalizeAddress, shortenAddress } from 'src/utils/addresses';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 import { Address } from 'viem';
 
 export function ProposalApprovalsTable({
@@ -47,8 +49,10 @@ function ConfirmationsTable({
   confirmations,
 }: {
   isLoading: boolean;
-  confirmations: readonly Address[];
+  confirmations: Address[];
 }) {
+  const addressToLabel = useAddressToLabel(() => null);
+
   if (isLoading) {
     return (
       <SpinnerWithLabel size="md" className="py-6">
@@ -56,20 +60,31 @@ function ConfirmationsTable({
       </SpinnerWithLabel>
     );
   }
+
   return (
-    <table>
-      <tbody>
-        {confirmations.map((approver) => (
-          <tr key={approver}>
-            <td className="py-2">
-              <Identicon address={approver} size={20} />
-            </td>
-            <td className="px-4 py-2 text-sm">
-              <ShortAddress address={approver} />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="flex flex-col">
+      {confirmations.map((approver) => {
+        const label = addressToLabel(approver) || 'nico.celo.eth';
+        return (
+          <CopyInline
+            key={approver}
+            className="align-center flex flex-row justify-center gap-x-2"
+            text={
+              <>
+                <Identicon address={approver} size={20} />
+                <div className="flex flex-grow flex-row items-start gap-x-4">
+                  <span className="font-mono text-sm">
+                    {shortenAddress(approver, true, 10, 10)}
+                  </span>
+                  <span className="text-sm">{label}</span>
+                </div>
+              </>
+            }
+            textToCopy={normalizeAddress(approver)}
+            title="Copy address"
+          />
+        );
+      })}
+    </div>
   );
 }
