@@ -3,8 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import { Delegatee } from 'src/features/delegation/types';
 import { queryCeloBlockscoutLogs } from 'src/features/explorers/blockscout';
 import { TransactionLog } from 'src/features/explorers/types';
+import { fetchStCELOStakers } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { logger } from 'src/utils/logger';
 import { Address, PublicClient, decodeEventLog, encodeEventTopics } from 'viem';
 import { usePublicClient } from 'wagmi';
@@ -12,18 +14,21 @@ import { usePublicClient } from 'wagmi';
 /**
  * Fetches all delegators for a given delegate address
  */
-export function useDelegators(delegateAddress?: Address) {
+export function useDelegators(delegatee?: Delegatee) {
+  const delegateAddress = delegatee?.address;
   const client = usePublicClient();
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useDelegators', delegateAddress, client],
+    queryKey: ['useDelegators', delegateAddress, client, delegatee?.stCELO],
     queryFn: () => {
       if (!delegateAddress || !client) {
         return null;
       }
 
       logger.debug(`Fetching delegators for delegatee ${delegateAddress}`);
-
+      if (delegatee.stCELO) {
+        return fetchStCELOStakers(client);
+      }
       return fetchDelegators(client, delegateAddress);
     },
     gcTime: GCTime.Default,

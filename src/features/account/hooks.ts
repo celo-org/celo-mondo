@@ -1,9 +1,11 @@
 import { accountsABI, lockedGoldABI, validatorsABI } from '@celo/abis';
+import { RefetchOptions } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { BALANCE_REFRESH_INTERVAL, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
+import StakedCeloABI from 'src/config/stcelo/StakedCeloABI';
 import { eqAddress } from 'src/utils/addresses';
-import { isNullish } from 'src/utils/typeof';
 import { ReadContractErrorType } from 'viem';
 import { useBalance as _useBalance, useReadContract } from 'wagmi';
 
@@ -14,14 +16,14 @@ export function useBalance(address?: Address) {
       enabled: !!address,
       refetchInterval: BALANCE_REFRESH_INTERVAL,
       staleTime: BALANCE_REFRESH_INTERVAL,
+      select: ({ value }) => value,
     },
   });
 
   useToastError(error, 'Error fetching account balance');
 
-  return { balance: data?.value, isError, isLoading, refetch };
+  return { balance: data ?? 0n, isError, isLoading, refetch };
 }
-
 export function useLockedBalance(address?: Address) {
   const { data, isError, isLoading, error, refetch } = useReadContract({
     address: Addresses.LockedGold,
@@ -38,13 +40,62 @@ export function useLockedBalance(address?: Address) {
   useToastError(error, 'Error fetching locked balance');
 
   return {
-    lockedBalance: !isNullish(data) ? BigInt(data) : undefined,
+    lockedBalance: data ?? 0n,
     isError,
     isLoading,
     refetch,
   };
 }
 
+export function useStCELOBalance(address?: Address) {
+  const stCELOResult = useReadContract({
+    ...StakedCeloABI,
+    functionName: 'balanceOf',
+    args: [address || ZERO_ADDRESS],
+    query: {
+      enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
+    },
+  });
+
+  const stCELOLockedVoteResult = useReadContract({
+    ...StakedCeloABI,
+    functionName: 'lockedVoteBalanceOf',
+    args: [address as Address],
+    query: {
+      enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
+    },
+  });
+
+  useToastError(
+    stCELOResult.error || stCELOLockedVoteResult.error,
+    'Error fetching stCELO balance',
+  );
+
+  const refetchStCELO = stCELOResult.refetch;
+  const refetchStCELOLockedVote = stCELOLockedVoteResult.refetch;
+
+  const refetch = useCallback(
+    async (options?: RefetchOptions) => {
+      await Promise.all([refetchStCELO(options), refetchStCELOLockedVote(options)]);
+    },
+    [refetchStCELO, refetchStCELOLockedVote],
+  );
+
+  return {
+    stCELOBalances: {
+      usable: stCELOResult.data ?? 0n,
+      total: (stCELOResult.data ?? 0n) + (stCELOLockedVoteResult.data ?? 0n),
+      lockedVote: stCELOLockedVoteResult.data ?? 0n,
+    },
+    isError: stCELOResult.isError || stCELOLockedVoteResult.isError,
+    isLoading: stCELOResult.isLoading || stCELOLockedVoteResult.isLoading,
+    refetch,
+  };
+}
 export function useGetVoteSignerFor(address?: Address) {
   return useReadContract({
     address: Addresses.Accounts,

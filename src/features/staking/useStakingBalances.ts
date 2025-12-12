@@ -90,9 +90,9 @@ async function fetchStakingBalances(publicClient: PublicClient, address: Address
     if (pending.status !== 'success') throw new Error('Pending votes call failed');
     if (active.status !== 'success') throw new Error('Active votes call failed');
     votes[groupAddr] = {
-      pending: pending.result as bigint,
-      active: active.result as bigint,
-      groupIndex: i,
+      pending: pending.result,
+      active: active.result,
+      groupIndex: BigInt(i),
     };
   }
 

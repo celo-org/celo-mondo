@@ -138,7 +138,7 @@ function OptionsDropdown({
 
   return (
     <DropdownMenu
-      buttonClasses="inline-flex btn btn-neutral min-h-0 h-6 border border-taupe-300 rounded-full items-center py-1"
+      buttonClasses="inline-flex btn bg-neutral text-neutral min-h-0 h-6 border border-taupe-300 rounded-full items-center py-1"
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[

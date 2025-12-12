@@ -170,7 +170,7 @@ export function DelegateRegistrationForm({
         validateOnBlur={false}
       >
         {({ errors }) => (
-          <Form className="mt-4 flex flex-1 flex-col justify-between lg:max-w-2xl">
+          <Form className="lg:max-w-(--breakpoint-lg) mt-4 flex flex-1 flex-col justify-between">
             <div className={'space-y-3'}>
               {delegatedPercent > 0 && (
                 <p className={'text-red-600'}>

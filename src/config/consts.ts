@@ -20,6 +20,7 @@ export enum CacheKeys {
 }
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ONE_ADDRESS = '0x0000000000000000000000000000000000000001';
 export const DEFAULT_DISPLAY_DECIMALS = 2;
 export const DEFAULT_TOKEN_DECIMALS = 18;
 export const AVG_BLOCK_TIMES_MS = 5 * SECOND; // 5 SECONDs
@@ -48,3 +49,7 @@ export const MAX_NUM_DELEGATEES = 10;
 
 // Wallets
 export const WALLET_CONNECT_CONNECTOR_ID = 'walletConnect';
+
+// stCELO
+export const ST_CELO_API_URL =
+  'https://us-central1-staked-celo-bot.cloudfunctions.net/mainnet-functions';

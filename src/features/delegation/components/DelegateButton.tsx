@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Amount } from 'src/components/numbers/Amount';
+import { TokenId } from 'src/config/tokens';
+import { useStCELOBalance } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { Delegatee } from 'src/features/delegation/types';
 import { VotingPower } from 'src/features/governance/components/VotingPower';
@@ -10,9 +12,14 @@ import { TransactionFlowType } from 'src/features/transactions/TransactionFlowTy
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { bigIntMax } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
+import { useStakingMode } from 'src/utils/useStakingMode';
+import { useAccount } from 'wagmi';
 
 export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
+  const { address } = useAccount();
+  const { mode, ui } = useStakingMode();
   const { proposalToVotes } = useDelegateeHistory(delegatee.address);
+  const { stCELOBalances } = useStCELOBalance(address);
   const showTxModal = useTransactionModal(TransactionFlowType.Delegate, {
     delegatee: delegatee.address,
   });
@@ -21,13 +28,20 @@ export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-8">
         <h2 className="font-serif text-2xl">Delegate</h2>
-        <VotingPower />
+        {delegatee.stCELO ? null : <VotingPower />}
       </div>
       <div>
-        <SolidButton
-          className="btn-neutral w-full"
-          onClick={() => showTxModal()}
-        >{`️🗳️ Delegate voting power`}</SolidButton>
+        {delegatee.stCELO ? null : (
+          <SolidButton
+            className="btn-neutral w-full"
+            disabled={mode !== 'CELO' || delegatee.stCELO}
+            onClick={() => showTxModal()}
+          >
+            {mode === 'CELO'
+              ? `️🗳️ Delegate voting power`
+              : `Can't delegate while ${ui.participle}`}
+          </SolidButton>
+        )}
         {delegatee.delegatedByPercent > 0 && (
           <p className={'text-md pt-1 text-red-600'}>
             Delegatee is currently delegating{' '}
@@ -40,10 +54,22 @@ export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
         <h3 className="text-sm">{`Delegate's current voting power`}</h3>
         <Amount valueWei={delegatee.votingPower} className="text-xl" />
       </div>
-      <div>
-        <h3 className="text-sm">{`Delegated`}</h3>
-        <Amount valueWei={delegatee.delegatedToBalance} className="text-xl" />
-      </div>
+      {delegatee.stCELO ? (
+        <div>
+          <h3 className="text-sm">{`Your participation`}</h3>
+          <Amount
+            valueWei={stCELOBalances.total}
+            className="text-xl"
+            tokenId={TokenId.stCELO}
+            showSymbol
+          />
+        </div>
+      ) : (
+        <div>
+          <h3 className="text-sm">{`Delegated`}</h3>
+          <Amount valueWei={delegatee.delegatedToBalance} className="text-xl" />
+        </div>
+      )}
       <div className="border-taupe-30 border-t pt-4">
         {proposalToVotes ? (
           <VoteStats proposalToVotes={proposalToVotes} />

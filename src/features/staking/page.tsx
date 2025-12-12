@@ -27,6 +27,7 @@ import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeuedProposalIds';
+import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
@@ -45,7 +46,10 @@ import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
+import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
+import { isAddressEqual } from 'viem';
+import { useAccount } from 'wagmi';
 
 export default function Page({ address }: { address: Address }) {
   const { addressToGroup } = useValidatorGroups();
@@ -54,7 +58,7 @@ export default function Page({ address }: { address: Address }) {
   usePageInvariant(!addressToGroup || group, '/', 'Validator group not found');
 
   return (
-    <Section containerClassName="space-y-8 mt-4 lg:max-w-screen-md">
+    <Section containerClassName="space-y-8 mt-4 lg:max-w-(--breakpoint-lg)">
       <HeaderSection group={group} />
       <StatSection group={group} />
       <DetailsSection group={group} />
@@ -63,6 +67,9 @@ export default function Page({ address }: { address: Address }) {
 }
 
 function HeaderSection({ group }: { group?: ValidatorGroup }) {
+  const account = useAccount();
+  const { ui, mode } = useStakingMode();
+  const { group: stCELOStakingGroup } = useStrategy(account.address);
   const address = group?.address || ZERO_ADDRESS;
   const isMobile = useIsMobile();
   const metadata = VALIDATOR_GROUPS[address];
@@ -79,8 +86,11 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
 
   const showTxModal = useTransactionModal();
   const onClickStake = () => {
-    showTxModal(TransactionFlowType.Stake, { group: address });
+    showTxModal(mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy, {
+      group: address,
+    });
   };
+  const isActiveStrategy = stCELOStakingGroup && isAddressEqual(stCELOStakingGroup, address);
 
   return (
     <div>
@@ -94,14 +104,14 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
             </h1>
             <div className="mt-2 flex items-center space-x-1.5 sm:space-x-3">
               <OutlineButton
-                className="all:py-1 all:font-normal"
+                className="text-sm all:py-1 all:font-normal"
                 onClick={onClickAddress}
                 title="Copy"
               >
                 {shortenAddress(address)}
               </OutlineButton>
               <OutlineButton
-                className="all:py-1 all:font-normal"
+                className="text-sm all:py-1 all:font-normal"
                 onClick={onClickSlash}
                 title="Last slashed"
               >
@@ -117,7 +127,7 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
               {metadata?.communityContributor ? (
                 <ContributionBadge
                   asButton
-                  className="text-black"
+                  className="text-sm all:py-1 all:font-normal"
                   title="CELO Community contributor"
                 />
               ) : null}
@@ -127,8 +137,12 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
             </div>
           </div>
         </div>
-        <SolidButton onClick={onClickStake} className="w-full sm:w-auto sm:px-7">
-          Stake
+        <SolidButton
+          onClick={onClickStake}
+          className="w-full bg-primary text-primary-content sm:w-auto sm:px-7"
+          disabled={isActiveStrategy}
+        >
+          {isActiveStrategy ? 'Already staking' : ui.action}
         </SolidButton>
       </div>
     </div>
@@ -158,7 +172,7 @@ function CapacityStatBox({ group }: { group?: ValidatorGroup }) {
     <StatBox header="Total staked" valueWei={group?.votes}>
       <div className="relative h-2 w-full border border-taupe-300 bg-taupe-100">
         <div
-          className="absolute bottom-0 left-0 top-0 bg-purple-500"
+          className="absolute bottom-0 left-0 top-0 bg-accent"
           style={{ width: `${capacityPercent}%` }}
         ></div>
       </div>
@@ -314,12 +328,12 @@ function Members({ group }: { group?: ValidatorGroup }) {
               <td className={tableClasses.td}>{`${(member.score * 100).toFixed(2)}%`}</td>
               <td className={tableClasses.td}>
                 {member.status === ValidatorStatus.Elected ? (
-                  <div className="badge badge-success gap-1 rounded-full bg-green-500 text-sm">
+                  <div className="badge badge-success gap-1 rounded-full bg-success text-sm">
                     <Checkmark width={14} height={14} />
                     Yes
                   </div>
                 ) : (
-                  <div className="badge badge-error gap-1 rounded-full bg-red-400 text-sm">
+                  <div className="badge badge-error gap-1 rounded-full bg-error text-sm">
                     <XIcon width={14} height={10} />
                     No
                   </div>
@@ -344,7 +358,8 @@ function Stakers({ group }: { group?: ValidatorGroup }) {
       label: addressToLabel(address),
       value: amount,
     }));
-    return sortAndCombineChartData(rawData);
+
+    return sortAndCombineChartData(rawData, 100);
   }, [stakers, isLoading, addressToLabel]);
 
   if (isLoading || !chartData) {

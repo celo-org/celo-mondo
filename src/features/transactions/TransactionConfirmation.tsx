@@ -43,6 +43,7 @@ export function TransactionConfirmation({
         </div>
       </div>
       <SolidButton
+        className="bg-primary text-primary-content"
         onClick={() => {
           // i give up. sometimes tan query will fetch new data but not use it unless we do a page refresh
           window.location.reload();

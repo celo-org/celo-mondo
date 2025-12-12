@@ -6,6 +6,7 @@ import { AmountField } from 'src/components/input/AmountField';
 import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
+import { TokenId } from 'src/config/tokens';
 import { useBalance } from 'src/features/account/hooks';
 import { useIsGovernanceVoting } from 'src/features/governance/hooks/useVotingStatus';
 import { getLockTxPlan } from 'src/features/locking/lockPlan';
@@ -173,7 +174,9 @@ function LockAmountField({
   disabled?: boolean;
 }) {
   const maxAmountWei = useMemo(
-    () => getMaxAmount(action, lockedBalances, walletBalance) - MIN_REMAINING_BALANCE,
+    () =>
+      getMaxAmount(action, lockedBalances, walletBalance) -
+      (action === LockActionType.Lock ? MIN_REMAINING_BALANCE : 0n),
     [action, lockedBalances, walletBalance],
   );
 
@@ -189,6 +192,7 @@ function LockAmountField({
     <AmountField
       maxValueWei={maxAmountWei}
       maxDescription="CELO available"
+      tokenId={action === LockActionType.Lock ? TokenId.CELO : TokenId.lockedCELO}
       disabled={disabled || isWithdraw}
     />
   );
@@ -202,8 +206,6 @@ function validateForm(
   isVoting: boolean,
 ): FormikErrors<LockFormValues> {
   const { action, amount } = values;
-
-  // TODO implement toWeiAdjusted() and use it here
   const amountWei = toWei(amount);
   if (!amountWei || amountWei <= 0n) return { amount: 'Invalid amount' };
 

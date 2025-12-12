@@ -14,7 +14,7 @@ interface Props {
 export default function ContributionBadge({ className, title = '', asButton }: Props) {
   const onClick = useCallback(() => {
     toast.info(
-      <>
+      <div className="flex flex-col gap-2">
         <p>
           By either reinvesting their earnings on chain or by created apps/tools for CELO, this
           group has meaningfully impacted celo by giving back to the community.
@@ -27,7 +27,7 @@ export default function ContributionBadge({ className, title = '', asButton }: P
             Are you worthy of the Community badge? Apply here
           </Link>
         </p>
-      </>,
+      </div>,
       {
         autoClose: false,
       },
@@ -50,7 +50,7 @@ export default function ContributionBadge({ className, title = '', asButton }: P
   }
 
   return (
-    <div className="highlighted group flex items-center space-x-1.5 transition-all">
+    <div className="highlighted group flex items-center">
       <span className="inset-ring inset-ring-gray-400/20 inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400">
         {title}
       </span>

@@ -78,7 +78,7 @@ function BridgeLink({ name, operator, href, logo, description }: Bridge) {
           <p className="text-sm">{description}</p>
         </div>
       </div>
-      <SolidButton className="all:p-0">
+      <SolidButton className="bg-primary text-primary-content all:p-0">
         <A_Blank className="flex items-center space-x-2 px-5 py-3.5" href={href}>
           <span>Bridge</span>
           <ChevronIcon direction="e" width={12} height={12} />

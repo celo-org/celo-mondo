@@ -2,7 +2,7 @@ import jazzicon from '@metamask/jazzicon';
 import Image from 'next/image';
 import { CSSProperties, PureComponent } from 'react';
 import { Circle } from 'src/components/icons/Circle';
-import { ZERO_ADDRESS } from 'src/config/consts';
+import { ONE_ADDRESS, ZERO_ADDRESS } from 'src/config/consts';
 import { isValidAddress, normalizeAddress } from 'src/utils/addresses';
 
 type Props = {
@@ -61,7 +61,7 @@ export function ImageOrIdenticon({
           alt=""
           className="rounded-full border border-taupe-300"
         />
-      ) : !address || address === ZERO_ADDRESS ? (
+      ) : !address || address === ZERO_ADDRESS || address === ONE_ADDRESS ? (
         <Circle size={size} className="bg-yellow-500" />
       ) : (
         <Identicon address={address} size={size} />

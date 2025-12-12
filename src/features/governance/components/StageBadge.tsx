@@ -14,7 +14,7 @@ export function StageBadge({ stage, className }: { stage: ProposalStage; classNa
   );
 }
 
-const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string }> = {
+const ProposalStageToBgClass: Record<ProposalStage, { color: string; label: string }> = {
   [ProposalStage.None]: { color: Color.Sky, label: 'Draft' },
   [ProposalStage.Queued]: { color: Color.Lavender, label: 'Upvoting' },
   [ProposalStage.Referendum]: { color: Color.Lavender, label: 'Voting' },
@@ -28,6 +28,11 @@ const ProposalStageToStyle: Record<ProposalStage, { color: string; label: string
   [ProposalStage.Rejected]: { color: Color.Red, label: 'Rejected' },
 };
 
-function getProposalStageStyle(stage: ProposalStage) {
-  return ProposalStageToStyle[stage];
+function getProposalStageStyle(stage: ProposalStage, isApproved?: boolean) {
+  const result = ProposalStageToBgClass[stage];
+  if (stage === ProposalStage.Execution && !isApproved) {
+    return { ...result, label: 'Approval Pending' };
+  } else {
+    return result;
+  }
 }

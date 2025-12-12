@@ -51,7 +51,9 @@ export function WalletDropdown() {
           modalClasses="p-4"
         />
       ) : (
-        <SolidButton onClick={openConnectModal}>Connect</SolidButton>
+        <SolidButton className="bg-primary" onClick={openConnectModal}>
+          Connect
+        </SolidButton>
       )}
     </div>
   );

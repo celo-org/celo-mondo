@@ -8,7 +8,7 @@ export function HeatmapLines({ data }: { data: any[] }) {
           key={index}
           className={clsx(
             'h-7 w-[4px] transition-all duration-1000',
-            value ? 'bg-green-500' : 'bg-gray-300',
+            value ? 'bg-success' : 'bg-gray-300',
           )}
         />
       ))}
@@ -24,7 +24,7 @@ export function HeatmapSquares({ data, className }: { data: any[]; className?: s
           key={index}
           className={clsx(
             'h-[9px] w-[9px] transition-all duration-1000',
-            value ? 'bg-green-500' : 'bg-gray-300',
+            value ? 'bg-success' : 'bg-gray-300',
           )}
         />
       ))}
