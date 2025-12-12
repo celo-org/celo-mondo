@@ -180,22 +180,22 @@
     "description": "Hey, I am a member of the Celo Guardians (formerly known as 'CGP Editors'). I help maintain the history of governance proposals and am an active contributor to the Celo community."
   },
   "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9": {
-    "name": "ReFiCol4🌎",
+    "name": "Celo Colombia Validator🇨🇴",
     "address": "0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9",
-    "logoUri": "/logos/validators/refi-col.jpg",
+    "logoUri": "/logos/validators/celo-colombia.png",
     "date": "2024-05-01",
     "links": {
-      "website": "https://linktr.ee/reficolombia",
-      "twitter": "https://twitter.com/reficolombia"
+      "website": "https://linktr.ee/celocolombia",
+      "twitter": "https://twitter.com/celo_col"
     },
     "interests": [
-      "ReFi",
+      "Regional HUBs",
       "Community",
       "Transparency",
       "Accountability",
-      "Good Vibes"
+      "ReFi"
     ],
-    "description": "Our mission is clear, we commit to allocating all of our validator gains towards empowering the ReFi movement in Colombia and supporting individuals in need. Our dedication goes beyond securing the network; we are determined to leverage all of our gains to support the ReFi movement in Colombia.🇨🇴"
+    "description": "Fostering a Thriving Celo Community in Colombia 🇨🇴 Powered by cCOP, we commit to allocating all of our validator gains towards empowering the Celo Colombia community and 20% of this directly to ReFi Colombia"
   },
   "0xFaa0b40645Ee5E8D9AE38393e8cDF8e5baA71d13": {
     "name": "Staking Fund",
@@ -399,7 +399,7 @@
     "description": "FranklinDAO is a student-run DAO composing of students at the University of Pennsylvania, and is one of the most active blockchain university orgs in the world. We have made major contributions throughout the years in Uniswap, Compound, Arbitrum, Aave through working groups and spearheading proposals. We’re excited to participate in Celo and help work on impactful initiatives."
   },
   "0x12BD1596d7cfbf7c18F08499B54A31C980989070": {
-    "name": "Celo Colombia",
+    "name": "Celo Colombia Delegate",
     "address": "0x12BD1596d7cfbf7c18F08499B54A31C980989070",
     "logoUri": "/logos/delegatees/0x12BD1596d7cfbf7c18F08499B54A31C980989070.png",
     "date": "2024-10-09",
@@ -1432,5 +1432,19 @@
       "Blockchain"
     ],
     "description": "Celo HT is a Haitian and Caribbean community dedicated to Web3 adoption and financial education through the Celo blockchain. We aim to build an inclusive ecosystem where everyone can learn, invest, and take part in Celo governance. As a delegate, Celo HT represents the voice of emerging communities, promoting transparency, sustainability, and digital economic growth across the region."
+  },
+  "0xCE104a1dd263D056bE9Bec4112E2b3Fde3Feaa92": {
+    "name": "Stakely ",
+    "address": "0xCE104a1dd263D056bE9Bec4112E2b3Fde3Feaa92",
+    "logoUri": "/logos/delegatees/0xCE104a1dd263D056bE9Bec4112E2b3Fde3Feaa92.png",
+    "date": "2025-12-04",
+    "links": {
+      "website": "http://stakely.io/en",
+      "twitter": "http://x.com/stakely_io"
+    },
+    "interests": [
+      "Blockchain"
+    ],
+    "description": "Stakely is a top Staking as a Service provider specialized in Proof of Stake blockchains | With over 40 supported networks we offer reliable and secure staking services for the best staking experience"
   }
 }
