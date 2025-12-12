@@ -40,7 +40,7 @@ const CACHE_KEY = 'celonames_cache';
 type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | typeof NAME_NOT_FOUND>;
 
 // NOTE: hydrate from localstorage
-const singleton: ENSMap = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+const singleton: ENSMap = JSON.parse(globalThis.localStorage.getItem(CACHE_KEY) || '{}');
 
 const GRAPHQL_QueryWithAddresses = `
 query QueryWithAddresses($addresses: [String!]) {
