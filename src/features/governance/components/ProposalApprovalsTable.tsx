@@ -65,7 +65,7 @@ function ConfirmationsTable({
   return (
     <div className="flex flex-col">
       {confirmations.map((approver) => {
-        const { label, fallback } = addressToLabel(approver);
+        const { fallback } = addressToLabel(approver);
         return (
           <CopyInline
             key={approver}
@@ -75,8 +75,6 @@ function ConfirmationsTable({
                 <Identicon address={approver} size={20} />
                 <div className="flex flex-grow flex-row items-start gap-x-4">
                   <span className="font-mono text-sm">{fallback}</span>
-                  {/* TODO */}
-
                   <AddressLabel address={approver} hiddenIfNoLabel />
                 </div>
               </>
