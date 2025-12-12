@@ -19,6 +19,7 @@ export function FormSubmitButton({ children, ...props }: Props) {
 
   // Automatically clear error state after a timeout
   const clearErrors = useCallback(async () => {
+    if (!Object.keys(errors).length) return;
     logger.info('Clearing form errors');
 
     setErrors({});

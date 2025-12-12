@@ -26,6 +26,7 @@ export function MultiTxFormSubmitButton({
           {`This action will require ${numTxs} transactions. ${tipText}`}
         </TipBox>
       )}
+      {isLoading && <TipBox color="purple">Open your Wallet to Sign</TipBox>}
       <FormSubmitButton
         isLoading={isLoading}
         loadingText={`${loadingText} ${txIndexString}`}
