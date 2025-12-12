@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
 import { objKeys } from 'src/utils/objects';
-import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 export function ProposalUpvotersTable({ propData }: { propData: MergedProposalData }) {
   return (
@@ -23,12 +23,11 @@ export function ProposalUpvotersTable({ propData }: { propData: MergedProposalDa
 
 function UpvoterTableContent({ propData }: { propData: MergedProposalData }) {
   const { isLoading, upvoters } = useProposalUpvoters(propData.id);
-  const addressToLabel = useAddressToLabel();
 
   const tableData = useMemo(() => {
     if (!upvoters) return [];
-    return objKeys(upvoters).map((address) => ({ label: addressToLabel(address), address }));
-  }, [upvoters, addressToLabel]);
+    return objKeys(upvoters);
+  }, [upvoters]);
 
   if (isLoading) {
     return (
@@ -45,12 +44,14 @@ function UpvoterTableContent({ propData }: { propData: MergedProposalData }) {
   return (
     <table>
       <tbody>
-        {tableData.map((row) => (
-          <tr key={row.address}>
+        {tableData.map((address) => (
+          <tr key={address}>
             <td className="py-2">
-              <Identicon address={row.address} size={20} />
+              <Identicon address={address} size={20} />
             </td>
-            <td className="px-4 py-2 text-sm">{row.label}</td>
+            <td className="px-4 py-2 text-sm">
+              <AddressLabel address={address} />
+            </td>
           </tr>
         ))}
       </tbody>

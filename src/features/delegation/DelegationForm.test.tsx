@@ -21,7 +21,12 @@ describe('<DelegationForm />', () => {
     } as any);
     vi.spyOn(wagmi, 'useReadContract').mockRejectedValue({ data: undefined });
     vi.spyOn(useWriteContractWithReceipt, 'useWriteContractWithReceipt').mockReturnValue({} as any);
-    vi.spyOn(useAddressToLabelModule, 'default').mockImplementation(() => () => 'test label');
+    vi.spyOn(useAddressToLabelModule, 'useAddressToLabel').mockImplementation(() => () => ({
+      label: 'test label',
+      address: '0x123456',
+      fallback: '0x123...456',
+      isCeloName: false,
+    }));
   });
 
   afterEach(() => {

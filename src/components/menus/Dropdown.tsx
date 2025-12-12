@@ -1,4 +1,12 @@
-import { Menu, Popover, Transition } from '@headlessui/react';
+import {
+  Menu,
+  MenuButton,
+  MenuItems,
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Transition,
+} from '@headlessui/react';
 import { Fragment, ReactElement, ReactNode } from 'react';
 
 interface MenuProps {
@@ -21,9 +29,9 @@ export function DropdownMenu({
 }: MenuProps) {
   return (
     <Menu as="div" className="relative">
-      <Menu.Button className={buttonClasses} disabled={disabled}>
+      <MenuButton className={buttonClasses} disabled={disabled}>
         {button}
-      </Menu.Button>
+      </MenuButton>
       <Transition
         as={Fragment}
         enter="transition ease-out duration-200"
@@ -33,14 +41,14 @@ export function DropdownMenu({
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items
+        <MenuItems
           className={`absolute z-40 mt-2.5 w-max origin-top-left bg-white ring-1 ring-black/5 drop-shadow-md focus:outline-none ${menuClasses}`}
         >
           {menuHeader}
           {menuItems.map((mi, i) => (
             <Menu.Item key={`menu-item-${i}`}>{mi}</Menu.Item>
           ))}
-        </Menu.Items>
+        </MenuItems>
       </Transition>
     </Menu>
   );
@@ -59,7 +67,7 @@ export function DropdownModal({ button, buttonClasses, modal, modalClasses }: Mo
     <Popover className="relative">
       {({ open }) => (
         <>
-          <Popover.Button className={buttonClasses}>{button({ open })}</Popover.Button>
+          <PopoverButton className={buttonClasses}>{button({ open })}</PopoverButton>
           <Transition
             as={Fragment}
             enter="transition ease-out duration-200"
@@ -69,11 +77,11 @@ export function DropdownModal({ button, buttonClasses, modal, modalClasses }: Mo
             leaveFrom="transform opacity-100 scale-100"
             leaveTo="transform opacity-0 scale-95"
           >
-            <Popover.Panel
+            <PopoverPanel
               className={`focus:outline-hidden absolute right-0 z-40 mt-2 w-max bg-white ring-1 ring-black/5 drop-shadow-md ${modalClasses}`}
             >
               {({ close }) => modal({ close })}
-            </Popover.Panel>
+            </PopoverPanel>
           </Transition>
         </>
       )}

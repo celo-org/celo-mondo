@@ -3,6 +3,7 @@ import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ChartDataItem, sortAndCombineChartData } from 'src/components/charts/chartData';
 import { Collapse } from 'src/components/menus/Collapse';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { CopyInline } from 'src/components/text/CopyInline';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
@@ -13,7 +14,6 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
-import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 const NUM_TO_SHOW = 20;
 
@@ -41,7 +41,6 @@ function VoterTableContent({
   propData: MergedProposalData & { votersData: ReturnType<typeof useProposalVoters> };
 }) {
   const { isLoading, voters, totals } = propData.votersData;
-  const addressToLabel = useAddressToLabel();
 
   const tableData = useMemo(() => {
     if (!voters || !totals) return [];
@@ -59,7 +58,7 @@ function VoterTableContent({
         if (amount <= 0) continue;
         const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
         votesByType[type]?.push({
-          label: addressToLabel(account),
+          label: account,
           value: amount,
           percentage,
           address: normalizeAddress(account),
@@ -77,7 +76,7 @@ function VoterTableContent({
     // Sort by value and take the top NUM_VOTERS_TO_SHOW
     const sorted = combined.sort((a, b) => b.value - a.value);
     return sorted.slice(0, NUM_TO_SHOW);
-  }, [voters, totals, addressToLabel]);
+  }, [voters, totals]);
 
   if (isLoading) {
     return (
@@ -90,30 +89,37 @@ function VoterTableContent({
   if (!tableData.length) {
     return <div className="py-6 text-center text-sm text-gray-600">No voters found</div>;
   }
-
   return (
-    <table>
-      <tbody>
-        {tableData.map((row) => (
-          <tr key={row.label}>
-            <td
-              className={`py-2 text-sm ${row.label.startsWith('0x') ? 'font-mono' : ''} text-taupe-600`}
-            >
-              <CopyInline text={row.label} textToCopy={row.address!} />
-            </td>
-            <td className="px-4 py-2 text-sm font-medium">{toTitleCase(row.type)}</td>
-            <td>
+    <div className="grid grid-cols-6 gap-x-2 gap-y-4 pt-4">
+      {tableData.map((row) => {
+        return (
+          <>
+            <div className="col-span-3 font-mono text-sm text-taupe-600">
+              {row.label === 'Others' ? (
+                'Others'
+              ) : (
+                <CopyInline
+                  text={
+                    <AddressLabel
+                      address={row.address!}
+                      className="text-ellipsis text-nowrap text-start"
+                    />
+                  }
+                  textToCopy={row.address!}
+                />
+              )}
+            </div>
+            <div className="text-sm font-medium">{toTitleCase(row.type)}</div>
+            <div className="col-span-2">
               <div className="flex w-fit items-center space-x-2 rounded-full bg-taupe-300 px-2">
                 <span className="text-sm">{`${row.percentage?.toFixed(1) || 0}%`}</span>
-                <span className="text-xs text-gray-500">{`(${formatNumberString(
-                  row.value,
-                )})`}</span>
+                <span className="text-[0.6rem] text-gray-500">{`(${formatNumberString(row.value)})`}</span>
               </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+            </div>
+          </>
+        );
+      })}
+    </div>
   );
 }
 

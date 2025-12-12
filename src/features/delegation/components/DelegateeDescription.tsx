@@ -19,7 +19,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
   const dateString = new Date(delegatee.date).toLocaleDateString();
 
   return (
-    <div className="max-w-full space-y-4 " style={{ maxWidth: 'min(96vw, 700px)' }}>
+    <div className="max-w-full space-y-4" style={{ maxWidth: 'min(96vw, 700px)' }}>
       <BackLink href="/delegate">Browse delegates</BackLink>
       <div className="mt-2 flex items-center gap-1">
         <DelegateeLogo address={delegatee.address} size={90} />
@@ -94,7 +94,7 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
 }
 export function DelegateeDetails({ delegatee }: { delegatee: Delegatee }) {
   return (
-    <div className="space-y-4 lg:w-[330px] lg:min-w-[20rem]">
+    <div className="w-full space-y-4 lg:w-[26rem]">
       <div className="border-taupe-300 p-3 lg:border">
         <DelegateButton delegatee={delegatee} />
       </div>
