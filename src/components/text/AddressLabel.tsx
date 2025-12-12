@@ -16,7 +16,6 @@ export default function AddressLabel({
   const fn = useAddressToLabel(shortener);
 
   if (!address) {
-    console.log('wtfffff', { address });
     return null;
   }
 
