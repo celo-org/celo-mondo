@@ -39,8 +39,8 @@ const NAME_NOT_FOUND = Symbol('name_not_found');
 const CACHE_KEY = 'celonames_cache';
 type ENSMap = Record<Address, string | typeof FETCH_ME_PLEASE | typeof NAME_NOT_FOUND>;
 
-// NOTE: hydrate from localstorage
-const singleton: ENSMap = JSON.parse(globalThis.localStorage.getItem(CACHE_KEY) || '{}');
+// NOTE: hydrate from localstorage -- note the file runs on server too
+const singleton: ENSMap = JSON.parse(globalThis.localStorage?.getItem(CACHE_KEY) || '{}');
 
 const GRAPHQL_QueryWithAddresses = `
 query QueryWithAddresses($addresses: [String!]) {
