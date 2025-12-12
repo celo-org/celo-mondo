@@ -103,6 +103,7 @@ function useAddressToLabelInternal() {
           singleton[address] = entry ? entry.label : NAME_NOT_FOUND;
         }
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('ens lookup failed', err);
         // NOTE: prevent infinite lookups
         for (const address of newAddresses) {
