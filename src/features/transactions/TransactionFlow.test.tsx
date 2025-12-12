@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, waitFor } from '@testing-library/react';
 import * as hooks from 'src/features/account/hooks';
 import { DelegationForm } from 'src/features/delegation/DelegationForm';
@@ -23,6 +24,20 @@ vi.mock('wagmi', async (importActual) => ({
   ...(await importActual()),
 }));
 
+// Helper to wrap components with QueryClientProvider
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  return ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
+
 describe('<TransactionFlow />', () => {
   beforeEach(async () => {
     vi.spyOn(wagmi, 'useAccount').mockReturnValue({
@@ -47,6 +62,7 @@ describe('<TransactionFlow />', () => {
           FormComponent={DelegationForm}
           closeModal={() => {}}
         />,
+        { wrapper: createWrapper() },
       );
 
       await waitFor(async () => expect(await flow.findByTestId('register-form')).toBeTruthy());
@@ -62,6 +78,7 @@ describe('<TransactionFlow />', () => {
             FormComponent={DelegationForm}
             closeModal={() => {}}
           />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => {
@@ -78,6 +95,7 @@ describe('<TransactionFlow />', () => {
             FormComponent={DelegationForm}
             closeModal={() => {}}
           />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('delegate-form')).toBeTruthy());
@@ -94,6 +112,7 @@ describe('<TransactionFlow />', () => {
             FormComponent={DelegationForm}
             closeModal={() => {}}
           />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('delegate-form')).toBeTruthy());
@@ -107,6 +126,7 @@ describe('<TransactionFlow />', () => {
 
       const flow = render(
         <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
+        { wrapper: createWrapper() },
       );
 
       await waitFor(async () => expect(await flow.findByTestId('register-form')).toBeTruthy());
@@ -118,6 +138,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => {
@@ -130,6 +151,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('vote-form')).toBeTruthy());
@@ -144,6 +166,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('vote-form')).toBeTruthy());
@@ -155,6 +178,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Test header" FormComponent={VoteForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('vote-form')).toBeTruthy());
@@ -169,6 +193,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Test header" FormComponent={StakeForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => {
@@ -181,6 +206,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Election" FormComponent={StakeForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('stake-form')).toBeTruthy());
@@ -197,6 +223,7 @@ describe('<TransactionFlow />', () => {
 
         const flow = render(
           <TransactionFlow header="Election" FormComponent={StakeForm} closeModal={() => {}} />,
+          { wrapper: createWrapper() },
         );
 
         await waitFor(async () => expect(await flow.findByTestId('stake-form')).toBeTruthy());
@@ -237,6 +264,13 @@ const setupHooks = (options?: SetupHooksOptions) => {
     votingPower: options?.votingPower ?? 0n,
     isError: false,
   });
+
+  vi.spyOn(votingHooks, 'useStCELOVoteRecord').mockReturnValue({
+    isLoading: false,
+    data: undefined,
+    isError: false,
+    refetch: vi.fn(),
+  } as any);
 
   vi.spyOn(hooks, 'useAccountDetails').mockReturnValue({
     isError: false,
