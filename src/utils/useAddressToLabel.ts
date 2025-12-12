@@ -110,10 +110,6 @@ function useAddressToLabelInternal() {
       for (const address of newAddresses) {
         const entry = data.names.items.find((x) => x.owner === address);
         singleton[address] = entry ? `${entry.label}${CELONAMES_SUFFIX}` : NAME_NOT_FOUND;
-
-        if (address === '0x21ecc6113bfa08c428ca11bae55ba038fca0e7da') {
-          singleton[address] = 'nico.celo.eth';
-        }
       }
 
       // NOTE: persist without the special values
