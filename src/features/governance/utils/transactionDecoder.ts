@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { governanceABI } from '@celo/abis';
 import { Addresses } from 'src/config/contracts';
 import { celoPublicClient } from 'src/utils/client';
@@ -59,6 +60,7 @@ export async function getProposalTransactions(
       index,
     }));
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(`Error fetching transactions for proposal ${proposalId}@${blockNumber}:`, error);
     return [];
   }
@@ -85,6 +87,7 @@ export async function decodeTransaction(
   try {
     return await decodeWithCommonSelectors(transaction);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error decoding transaction:', error);
     return {
       to: transaction.to,

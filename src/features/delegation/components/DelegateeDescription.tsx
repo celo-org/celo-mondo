@@ -19,9 +19,9 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
   const dateString = new Date(delegatee.date).toLocaleDateString();
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-full space-y-4 " style={{ maxWidth: 'min(96vw, 700px)' }}>
       <BackLink href="/delegate">Browse delegates</BackLink>
-      <div className="flex items-center gap-1">
+      <div className="mt-2 flex items-center gap-1">
         <DelegateeLogo address={delegatee.address} size={90} />
         <div className="ml-4 flex flex-col">
           <h1 className="font-serif text-2xl md:text-3xl">{delegatee.name}</h1>
@@ -33,7 +33,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
             <span className="text-sm text-taupe-600">•</span>
             <span className="text-sm text-taupe-600">{`Since ${dateString}`}</span>
           </div>
-          <div className="mt-1.5 flex items-center space-x-3">
+          <div className="mt-1.5 flex flex-wrap items-center space-x-3">
             {Object.entries(delegatee.links).map(([type, href], i) => (
               <SocialLogoLink key={i} type={type as SocialLinkType} href={href} />
             ))}
@@ -49,9 +49,7 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
         </div>
       </div>
       <h2 className="font-serif text-xl">Introduction</h2>
-      <p style={{ maxWidth: 'min(96vw, 700px)' }} className="overflow-auto leading-relaxed">
-        {delegatee.description}
-      </p>
+      <p className="overflow-auto leading-relaxed">{delegatee.description}</p>
       <GovernanceParticipation delegatee={delegatee} />
     </div>
   );

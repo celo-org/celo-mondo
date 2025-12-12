@@ -4,10 +4,8 @@ import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
-import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { cleanGroupName } from 'src/features/validators/utils';
-import { shortenAddress } from 'src/utils/addresses';
 import { objKeys } from 'src/utils/objects';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 export function ProposalUpvotersTable({ propData }: { propData: MergedProposalData }) {
   return (
@@ -25,16 +23,12 @@ export function ProposalUpvotersTable({ propData }: { propData: MergedProposalDa
 
 function UpvoterTableContent({ propData }: { propData: MergedProposalData }) {
   const { isLoading, upvoters } = useProposalUpvoters(propData.id);
-  const { addressToGroup } = useValidatorGroups();
+  const addressToLabel = useAddressToLabel();
 
   const tableData = useMemo(() => {
     if (!upvoters) return [];
-    return objKeys(upvoters).map((address) => {
-      const groupName = cleanGroupName(addressToGroup?.[address]?.name || '');
-      const label = groupName || shortenAddress(address);
-      return { label, address };
-    });
-  }, [upvoters, addressToGroup]);
+    return objKeys(upvoters).map((address) => ({ label: addressToLabel(address), address }));
+  }, [upvoters, addressToLabel]);
 
   if (isLoading) {
     return (

@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import { PropsWithChildren, useState } from 'react';
 import { objKeys } from 'src/utils/objects';
 import { isNullish } from 'src/utils/typeof';
-import useTabs from 'src/utils/useTabs';
 
 export function TabHeaderButton({
   isActive,
@@ -22,8 +21,8 @@ export function TabHeaderButton({
       {!isNullish(count) && (
         <div
           className={clsx(
-            'ml-2 min-w-[2rem] rounded-full border border-purple-500 text-xs font-light transition-colors',
-            (hover || isActive) && 'bg-purple-500 text-white',
+            'ml-2 min-w-8 rounded-full border border-accent text-xs font-light transition-colors',
+            (hover || isActive) && 'bg-accent text-white',
           )}
         >
           {count}
@@ -31,7 +30,7 @@ export function TabHeaderButton({
       )}
       <span
         className={clsx(
-          'absolute -bottom-[0.6rem] left-0 right-0 h-[2px] bg-purple-500 transition-all',
+          'absolute -bottom-[0.6rem] left-0 right-0 h-[2px] bg-accent transition-all',
           isActive ? 'w-full' : 'w-0',
         )}
       />
@@ -52,16 +51,14 @@ export function TabHeaderFilters<Filter extends string>({
   showCount?: boolean;
   className?: string;
 }) {
-  const { tab, onTabChange } = useTabs<Filter>(activeFilter);
   return (
     <div className={`grid grid-flow-row grid-cols-2 gap-x-7 gap-y-6 lg:grid-cols-4 ${className}`}>
       {objKeys<Filter>(counts).map((f) => (
         <TabHeaderButton
           key={f}
-          isActive={tab === f}
+          isActive={activeFilter === f}
           count={showCount ? counts[f] : undefined}
           onClick={() => {
-            onTabChange(f);
             setFilter(f);
           }}
         >

@@ -1,8 +1,9 @@
 import {
-  APPROVAL_STAGE_EXPIRY_TIME,
+  EXECUTION_STAGE_EXPIRY_TIME,
   QUEUED_STAGE_EXPIRY_TIME,
   REFERENDUM_STAGE_EXPIRY_TIME,
 } from 'src/config/consts';
+import { type ProposalWithHistory } from 'src/features/governance/getProposals';
 import { Proposal, ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 const ID_PARAM_REGEX = /^(cgp-)?(\d+)$/;
@@ -20,32 +21,70 @@ export function findProposal(proposals: MergedProposalData[] | undefined, id: st
     return undefined;
   }
 }
-export type MergedProposalData = { stage: ProposalStage; id?: number } & (
-  | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
-  | { proposal?: Proposal; metadata: ProposalMetadata; history?: undefined }
-  | {
-      proposal: Proposal;
-      metadata: ProposalMetadata;
-      history?: { id: number; stage: ProposalStage }[];
-    }
-);
+export type MergedProposalData = ProposalWithHistory &
+  (
+    | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
+    | { proposal?: Proposal; metadata: ProposalMetadata; history?: undefined }
+    | {
+        proposal: Proposal;
+        metadata: ProposalMetadata;
+        history?: { id: number; stage: ProposalStage }[];
+      }
+  );
 
-export function getExpiryTimestamp(stage: ProposalStage, timestamp: number) {
-  if (stage === ProposalStage.Queued) {
-    return timestamp + QUEUED_STAGE_EXPIRY_TIME;
-  } else if (stage === ProposalStage.Approval) {
-    return timestamp + APPROVAL_STAGE_EXPIRY_TIME;
-  } else if (stage === ProposalStage.Referendum || stage === ProposalStage.Expiration) {
-    return timestamp + REFERENDUM_STAGE_EXPIRY_TIME;
-  } else if (stage === ProposalStage.Execution) {
-    // NOTE: it seems once approved and passing (thus in Execution stage)
-    // they can't quite expire?
-    return undefined;
-  } else {
-    return undefined;
+/**
+ * Returns the timestamp when the current stage ends (not when proposal expires).
+ *
+ * IMPORTANT: The proposalTimestamp parameter is the proposal's base timestamp, which is:
+ * - For Queued stage: the time when proposal was queued
+ * - For dequeued stages (Referendum/Execution/Expiration): the time when proposal was dequeued
+ *
+ * This is NOT the start time of the current stage, but the reference point for calculating stage durations.
+ *
+ * Stage transitions (from Governance.sol contract):
+ * - Queued: 28 days → Expiration
+ * - Referendum: 7 days → Execution
+ * - Execution: 3 days more (10 days total from dequeue) → Expiration
+ *
+ * @param stage - Current proposal stage
+ * @param proposalTimestamp - Proposal's base timestamp in milliseconds (queue or dequeue time)
+ * @returns Timestamp in milliseconds when stage ends, or undefined if terminal/unknown
+ */
+export function getStageEndTimestamp(
+  stage: ProposalStage,
+  proposalTimestamp: number,
+): number | undefined {
+  switch (stage) {
+    case ProposalStage.Queued:
+      // Queue expires after 28 days from queue time
+      return proposalTimestamp + QUEUED_STAGE_EXPIRY_TIME;
+
+    case ProposalStage.Referendum:
+      // Voting ends after 7 days from dequeue time, then transitions to Execution
+      return proposalTimestamp + REFERENDUM_STAGE_EXPIRY_TIME;
+
+    case ProposalStage.Approval:
+    // DEPRECATED: Treat like Execution (awaiting execution after approval)
+    // Fall through to Execution case
+    case ProposalStage.Execution:
+      // Execution window ends after 10 days total from dequeue (7 referendum + 3 execution)
+      return proposalTimestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
+
+    case ProposalStage.Expiration:
+      // Already expired - show when it expired (10 days from dequeue)
+      return proposalTimestamp + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME;
+
+    case ProposalStage.Executed:
+    case ProposalStage.Withdrawn:
+    case ProposalStage.Rejected:
+    case ProposalStage.None:
+      // Terminal stages - no end time
+      return undefined;
+
+    default:
+      return undefined;
   }
-} // proposer, deposit, timestamp, numTransactions, url, networkWeight, isApproved
+}
 
-export type ProposalRaw = [Address, bigint, bigint, bigint, string, bigint, boolean];
-// Yes, no, abstain
-export type VoteTotalsRaw = [bigint, bigint, bigint];
+// Backwards compatibility alias
+export const getExpiryTimestamp = getStageEndTimestamp;

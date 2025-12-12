@@ -8,7 +8,8 @@ import {
   getProposalTransactions,
 } from 'src/features/governance/utils/transactionDecoder';
 
-export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const shouldDecodeTransaction = new URL(request.url).searchParams.get('decode') === 'true';
   const headers = new Headers();
   headers.append(
     'Cache-Control',
@@ -71,6 +72,10 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       earliestBlockNumber,
     );
 
+    if (!shouldDecodeTransaction) {
+      return NextResponse.json(transactions, { headers });
+    }
+
     // Decode each transaction
     const decodedTransactions = await Promise.all(
       transactions.map(async (transaction) => {
@@ -85,7 +90,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json(decodedTransactions, { headers });
   } catch (error) {
-    console.error('Error fetching proposal transactions:', error);
     return NextResponse.json({ error: 'Failed to fetch proposal transactions' }, { status: 500 });
   }
 }

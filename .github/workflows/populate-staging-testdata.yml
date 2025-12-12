@@ -1,0 +1,64 @@
+name: Populate Staging Test Data
+
+# This workflow populates the staging database with test proposal data
+# covering all possible proposal states (26 different scenarios).
+#
+# Schedule: Runs every Sunday at 2 AM UTC
+# Manual trigger: Actions tab -> "Populate Staging Test Data" -> "Run workflow"
+#
+# What it does:
+# - Cleans up existing test data (proposal IDs 1000-1099)
+# - Creates fresh test proposals with realistic blockchain data
+# - Includes events, votes, and multisig approvals
+# - Uses timestamps relative to current time for realistic data
+#
+# Safety:
+# - Only runs on staging database (POSTGRES_URL_STAGING secret)
+# - Won't affect production data
+# - Idempotent: Safe to run multiple times
+
+on:
+  schedule:
+    # Runs every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: yarn-install
+        run: |
+          yarn install --immutable
+
+  populate-test-data:
+    runs-on: ubuntu-latest
+    needs: [install]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: Populate staging database with test data
+        run: yarn populate-test-data
+        env:
+          STAGING_POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
+          CI: true
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Failed to populate staging test data"
+          echo "Check the logs above for details"

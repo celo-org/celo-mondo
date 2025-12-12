@@ -19,13 +19,17 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { Circle } from 'src/components/icons/Circle';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
+import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
+import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
 import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
+import { useStakingMode } from 'src/utils/useStakingMode';
+import useTabs from 'src/utils/useTabs';
 
 const NUM_COLLAPSED_GROUPS = 9;
 const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
@@ -43,7 +47,8 @@ export function ValidatorGroupTable({
   totalVotes: bigint;
   groups: ValidatorGroup[];
 }) {
-  const [filter, setFilter] = useState<Filter>(Filter.All);
+  const { tab: filter, onTabChange: setFilter } = useTabs<Filter>(Filter.All);
+
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
   const [columnVisibility, setColumnVisibility] = useState({});
@@ -108,7 +113,7 @@ export function ValidatorGroupTable({
           className="w-full text-sm md:w-64"
         />
       </div>
-      <table className="mt-2 w-full lg:min-w-[62rem] xl:min-w-[75rem]">
+      <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -145,8 +150,11 @@ export function ValidatorGroupTable({
               className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
             >
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className={classNames.td}>
-                  <Link href={`/staking/${row.original.address}`} className="flex px-4 py-4">
+                <td key={cell.id} className={clsx(classNames.td, '')}>
+                  <Link
+                    href={`/staking/${row.original.address}`}
+                    className="flex items-center gap-4 px-4 py-4"
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
                 </td>
@@ -197,12 +205,12 @@ function TopGroupsRow({
                 <ValidatorGroupLogo key={g.address} address={g.address} size={30} />
               </div>
             ))}
-            <div className="relative" style={{ left: -6 * 16 }}>
-              <Circle size={30} className="bg-purple-500">
-                <span className="text-sm text-white">+4</span>
+            <div className="relative" style={{ left: -5 * 16 }}>
+              <Circle size={30} className="bg-primary">
+                <span className="text-sm text-primary-content">+4</span>
               </Circle>
             </div>
-            <div className="relative" style={{ left: -5 * 16 }}>
+            <div className="relative" style={{ left: -4 * 16 }}>
               <ChevronIcon direction="s" width={12} height={12} />
             </div>
           </div>
@@ -225,7 +233,7 @@ function TopGroupsRow({
       </tr>
       <tr
         className={clsx(
-          'border-y border-taupe-300 bg-yellow-500 text-center text-sm',
+          'border-y border-taupe-300 bg-primary text-center text-sm text-primary-content',
           !isVisible && 'hidden',
         )}
       >
@@ -265,6 +273,7 @@ function CumulativeColumn({
 
 function useTableColumns(totalVotes: bigint) {
   const showTxModal = useTransactionModal();
+  const { mode, ui } = useStakingMode();
 
   return useMemo(() => {
     const columnHelper = createColumnHelper<ValidatorGroupRow>();
@@ -277,9 +286,16 @@ function useTableColumns(totalVotes: bigint) {
       columnHelper.accessor('name', {
         header: 'Group name',
         cell: (props) => (
-          <div className="flex items-center space-x-2">
-            <ValidatorGroupLogo address={props.row.original.address} size={30} />
-            <span>{cleanGroupName(props.getValue())}</span>
+          <div className="flex items-center gap-4 overflow-hidden">
+            <div className="flex shrink-0 items-center space-x-2">
+              <ValidatorGroupLogo address={props.row.original.address} size={30} />
+              <span>{cleanGroupName(props.getValue())}</span>
+            </div>
+            <div className="flex-shrink-1 flex items-center">
+              {props.row.original.isContributor ? (
+                <ContributionBadge className="text-black" title="Community contributor" />
+              ) : null}
+            </div>
           </div>
         ),
       }),
@@ -321,16 +337,19 @@ function useTableColumns(totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
-              showTxModal(TransactionFlowType.Stake, { group: props.row.original.address });
+              showTxModal(
+                mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
+                { group: props.row.original.address },
+              );
             }}
-            className="all:btn-neutral"
+            className="bg-primary text-primary-content all:btn-neutral"
           >
-            Stake
+            {ui.action}
           </SolidButton>
         ),
       }),
     ];
-  }, [totalVotes, showTxModal]);
+  }, [totalVotes, ui.action, showTxModal, mode]);
 }
 
 function useTableRows({
@@ -369,6 +388,7 @@ function useTableRows({
         ...g,
         ...getGroupStats(g),
         isHidden: collapseTopGroups && i < NUM_COLLAPSED_GROUPS,
+        isContributor: Boolean(VALIDATOR_GROUPS[g.address]?.communityContributor),
       }),
     );
     return groupRows;
@@ -400,7 +420,7 @@ function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3 first:min-w-[3rem] last:min-w-0 md:min-w-[8rem]',
+  th: 'border-y border-taupe-300 px-4 py-3 first:min-w-12 last:min-w-0 md:min-w-32',
   td: 'relative border-y border-taupe-300 text-nowrap',
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',

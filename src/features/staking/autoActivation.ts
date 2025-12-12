@@ -26,7 +26,7 @@ export async function submitStakeActivationRequest(request: StakeActivationReque
   } catch (error) {
     logger.error('Stake activation request error', error);
     toast.error(
-      'Unable to schedule automatic stake activation. You must activate your stake manually in 24 hours on the Dashboard page.',
+      'Unable to schedule automatic stake activation. You must activate your stake manually in 24 hours on the Account page.',
     );
   }
 }

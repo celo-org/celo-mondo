@@ -1,5 +1,6 @@
 import { accountsABI } from '@celo/abis';
 import Image from 'next/image';
+import { useState } from 'react';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
@@ -9,11 +10,16 @@ import CeloCube from 'src/images/logos/celo-cube.webp';
 export function AccountRegisterForm({
   refetchAccountDetails,
 }: {
-  refetchAccountDetails: () => any;
+  refetchAccountDetails: () => Promise<unknown>;
 }) {
+  const [isRefetching, setIsRefetching] = useState(false);
   const { writeContract, isLoading } = useWriteContractWithReceipt(
     'account registration',
-    () => refetchAccountDetails,
+    async () => {
+      setIsRefetching(true);
+      await refetchAccountDetails();
+      setIsRefetching(false);
+    },
   );
 
   const onClickCreate = () => {
@@ -39,7 +45,7 @@ export function AccountRegisterForm({
       </div>
       <SolidButtonWithSpinner
         onClick={onClickCreate}
-        isLoading={isLoading}
+        isLoading={isLoading || isRefetching}
         loadingText="Creating Account"
       >
         Create Account

@@ -1,12 +1,15 @@
 import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
+import { formatNumberString } from 'src/components/numbers/Amount';
 import { useVoteSignerToAccount } from 'src/features/account/hooks';
 import { ProposalFormDetails } from 'src/features/governance/components/ProposalFormDetails';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import {
   useGovernanceVoteRecord,
   useGovernanceVotingPower,
+  useStCELOVoteRecord,
+  useStCELOVotingPower,
 } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteFormValues, VoteType, VoteTypes } from 'src/features/governance/types';
 import { getVoteTxPlan } from 'src/features/governance/votePlan';
@@ -14,6 +17,7 @@ import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { isNullish } from 'src/utils/typeof';
+import { useStakingMode } from 'src/utils/useStakingMode';
 import { useAccount } from 'wagmi';
 
 const initialValues: VoteFormValues = {
@@ -29,6 +33,8 @@ export function VoteForm({
   onConfirmed: OnConfirmedFn;
 }) {
   const { address } = useAccount();
+  const { mode } = useStakingMode();
+  const { stCeloVotingPower } = useStCELOVotingPower(address);
   const { isLoading: isSignerForLoading, signingFor } = useVoteSignerToAccount(address);
   const votingAccount = !isSignerForLoading ? (signingFor ?? address) : undefined;
   const { votingPower } = useGovernanceVotingPower(votingAccount);
@@ -37,29 +43,43 @@ export function VoteForm({
     votingAccount,
     defaultFormValues?.proposalId,
   );
+  const { refetch: refetchStCELOVoteRecord } = useStCELOVoteRecord(
+    votingAccount,
+    defaultFormValues?.proposalId,
+  );
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
-    createTxPlan: (v) => getVoteTxPlan(v, dequeue || []),
-    onStepSuccess: () => refetchVoteRecord(),
-    onPlanSuccess: (v, r) =>
-      onConfirmed({
+    createTxPlan: (v) => getVoteTxPlan(v, dequeue || [], mode, stCeloVotingPower),
+    onStepSuccess: () => (mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord()),
+    onPlanSuccess: (v, r) => {
+      const properties = [
+        { label: 'Vote', value: v.vote },
+        { label: 'Proposal', value: `#${v.proposalId}` },
+      ];
+      if (mode === 'stCELO') {
+        properties.push({
+          label: 'Voting Power',
+          value: `${formatNumberString(stCeloVotingPower, 4, true)} CELO`,
+        });
+      }
+      return onConfirmed({
         message: 'Vote successful',
         receipt: r,
-        properties: [
-          { label: 'Vote', value: v.vote },
-          { label: 'Proposal', value: `#${v.proposalId}` },
-        ],
-      }),
+        properties,
+      });
+    },
   });
+
   const { writeContract, isLoading } = useWriteContractWithReceipt('vote', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
 
   const onSubmit = (values: VoteFormValues) => writeContract(getNextTx(values));
 
   const validate = (values: VoteFormValues) => {
-    if (!votingAccount || !dequeue || isNullish(votingPower))
+    const _votingPower = mode === 'CELO' ? votingPower : stCeloVotingPower;
+    if (!votingAccount || !dequeue || isNullish(_votingPower))
       return { amount: 'Form data not ready' };
-    return validateForm(values, dequeue, votingPower);
+    return validateForm(values, dequeue, _votingPower);
   };
 
   return (

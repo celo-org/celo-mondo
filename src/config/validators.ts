@@ -1,11 +1,19 @@
 import { SocialLinks } from 'src/config/types';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
 
 type ValidatorInfo = {
   logo: string;
   links: SocialLinks;
+  communityContributor?: boolean;
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
+  [DEFAULT_STRATEGY.address]: {
+    logo: '/logos/stCELO.png',
+    links: {
+      website: 'https://docs.stcelo.xyz',
+    },
+  },
   '0x89d5bd54C43dDd10905A030DE6Ff02EbB6c51654': {
     logo: '/logos/validators/polychain.jpg',
     links: {
@@ -40,6 +48,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://clabs.co',
       twitter: 'https://twitter.com/clabs',
     },
+    communityContributor: true,
   },
   '0xbf55dF76204f00AcF296F76cF4Aaf86A866a5eb0': {
     logo: '/logos/validators/manta.jpg',
@@ -460,6 +469,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://twitter.com/grassEcon',
       twitter: 'https://twitter.com/grassrootsnetwork',
     },
+    communityContributor: true,
   },
   '0x4D5A51039ea45063D4b665B21755db20A738DaDc': {
     logo: '/logos/validators/stakefish.jpg',
@@ -488,6 +498,7 @@ export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
       website: 'https://www.celopg.eco/',
       twitter: 'https://x.com/CeloPublicGoods',
     },
+    communityContributor: true,
   },
   '0xd42Bb7FE32cDf68045f49553c6f851fD2c58B6a9': {
     logo: '/logos/validators/celo-colombia.png',

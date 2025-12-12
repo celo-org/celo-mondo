@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { SearchField } from 'src/components/input/SearchField';
@@ -21,8 +22,11 @@ import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
-import { Delegatee } from 'src/features/delegation/types';
+import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
+import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { useStakingMode } from 'src/utils/useStakingMode';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
 
@@ -49,6 +53,11 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const showTxModal = useTransactionModal(TransactionFlowType.Delegate, {
+    customDelegatee: true,
+    action: DelegateActionType.Delegate,
+  });
+
   // Set up responsive column visibility
   const isMobile = useIsMobile();
   useEffect(() => {
@@ -58,21 +67,29 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
       DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
     }
   }, [isMobile, table]);
-
+  const mode = useStakingMode();
   return (
     <div>
       <div className="flex justify-between">
         <TabHeaderButton isActive={true} count={rows.length}>
           Delegates
         </TabHeaderButton>
-        <SearchField
-          value={searchQuery}
-          setValue={setSearchQuery}
-          placeholder="Search delegates"
-          className="w-full text-sm md:w-64"
-        />
+        <div className="flex flex-row gap-2">
+          {mode.mode === 'CELO' && (
+            <SolidButton
+              className="btn-neutral h-full text-xs"
+              onClick={() => showTxModal()}
+            >{`️🗳️ Delegate voting power`}</SolidButton>
+          )}
+          <SearchField
+            value={searchQuery}
+            setValue={setSearchQuery}
+            placeholder="Search delegates"
+            className="w-full text-sm md:w-64"
+          />
+        </div>
       </div>
-      <table className="mt-2 w-full lg:min-w-[62rem] xl:min-w-[75rem]">
+      <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
@@ -187,7 +204,7 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-[8rem] xs:max-w-[4rem]',
+  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-32 xs:max-w-16',
   td: 'relative border-y border-taupe-300 text-nowrap',
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',

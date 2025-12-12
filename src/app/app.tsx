@@ -4,25 +4,37 @@ import { PropsWithChildren } from 'react';
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
+import { ErrorBoundaryInline } from 'src/components/errors/ErrorBoundaryInline';
 import { Footer } from 'src/components/nav/Footer';
 import { Header } from 'src/components/nav/Header';
 import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
+import ENSProvider from 'src/utils/useAddressToLabel';
+import HistoryProvider from 'src/utils/useHistory';
+import StakingModeProvider from 'src/utils/useStakingMode';
 import 'src/vendor/inpage-metamask.js';
-import 'src/vendor/polyfill.js';
+import 'src/vendor/polyfill';
 
 export function App({ children }: PropsWithChildren<any>) {
   return (
     <ErrorBoundary>
       <SafeHydrate>
         <WagmiContext>
-          <LegalRestrict>
-            <BodyLayout>{children}</BodyLayout>
-          </LegalRestrict>
-          <TransactionModal />
-          <ToastContainer transition={Zoom} position="bottom-right" />
+          <HistoryProvider>
+            <StakingModeProvider>
+              <ENSProvider>
+                <LegalRestrict>
+                  <BodyLayout>{children}</BodyLayout>
+                </LegalRestrict>
+                <TransactionModal />
+                <ErrorBoundaryInline>
+                  <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
+                </ErrorBoundaryInline>
+              </ENSProvider>
+            </StakingModeProvider>
+          </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>
       <Analytics />

@@ -8,12 +8,7 @@
     "stage": 6,
     "id": 1,
     "timestamp": 1587945600000,
-    "timestampExecuted": 1588377600000,
-    "votes": {
-      "yes": "12639600494367763082000064",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1588377600000
   },
   {
     "cgp": 2,
@@ -24,12 +19,7 @@
     "stage": 6,
     "id": 2,
     "timestamp": 1589241600000,
-    "timestampExecuted": 1589760000000,
-    "votes": {
-      "yes": "47269167708371578826000184",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1589760000000
   },
   {
     "cgp": 3,
@@ -40,12 +30,7 @@
     "stage": 6,
     "id": 3,
     "timestamp": 1589241600000,
-    "timestampExecuted": 1589846400000,
-    "votes": {
-      "yes": "47289167708371578826000184",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1589846400000
   },
   {
     "cgp": 4,
@@ -56,12 +41,7 @@
     "stage": 6,
     "id": 4,
     "timestamp": 1591228800000,
-    "timestampExecuted": 1591747200000,
-    "votes": {
-      "yes": "40798431067491882546900421",
-      "no": "1180114487318868621657700",
-      "abstain": "207823044164995917841134"
-    }
+    "timestampExecuted": 1591747200000
   },
   {
     "cgp": 5,
@@ -71,12 +51,7 @@
     "author": "@MarkusBerlin, @rcroessmann, @aslawson",
     "stage": 5,
     "id": 5,
-    "timestamp": 1591833600000,
-    "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1591833600000
   },
   {
     "cgp": 6,
@@ -87,12 +62,7 @@
     "stage": 6,
     "id": 6,
     "timestamp": 1591833600000,
-    "timestampExecuted": 1592179200000,
-    "votes": {
-      "yes": "80060067096823183870206334",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1592179200000
   },
   {
     "cgp": 7,
@@ -103,12 +73,7 @@
     "stage": 6,
     "id": 7,
     "timestamp": 1592956800000,
-    "timestampExecuted": 1593388800000,
-    "votes": {
-      "yes": "54498587627928053362379838",
-      "no": "100287589138478055314",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1593388800000
   },
   {
     "cgp": 8,
@@ -119,12 +84,7 @@
     "stage": 6,
     "id": 8,
     "timestamp": 1594598400000,
-    "timestampExecuted": 1595030400000,
-    "votes": {
-      "yes": "75720173192940534191885033",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1595030400000
   },
   {
     "cgp": 9,
@@ -135,12 +95,7 @@
     "stage": 6,
     "id": 9,
     "timestamp": 1594684800000,
-    "timestampExecuted": 1595116800000,
-    "votes": {
-      "yes": "81129923143440074525361270",
-      "no": "0",
-      "abstain": "50568109559179342231748"
-    }
+    "timestampExecuted": 1595116800000
   },
   {
     "cgp": 10,
@@ -150,12 +105,7 @@
     "author": "@mcortesi @aslawson",
     "stage": 8,
     "id": 10,
-    "timestamp": 1595203200000,
-    "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1595203200000
   },
   {
     "cgp": 11,
@@ -165,12 +115,7 @@
     "author": "@nambrot",
     "stage": 8,
     "id": 11,
-    "timestamp": 1600819200000,
-    "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1600819200000
   },
   {
     "cgp": 12,
@@ -181,12 +126,7 @@
     "stage": 6,
     "id": 12,
     "timestamp": 1602633600000,
-    "timestampExecuted": 1603152000000,
-    "votes": {
-      "yes": "84998274338414390498723885",
-      "no": "10021535285303751245082",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1603152000000
   },
   {
     "cgp": 13,
@@ -197,12 +137,7 @@
     "stage": 6,
     "id": 13,
     "timestamp": 1602806400000,
-    "timestampExecuted": 1604966400000,
-    "votes": {
-      "yes": "76912041967793436515277287",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1604966400000
   },
   {
     "cgp": 14,
@@ -213,12 +148,7 @@
     "stage": 6,
     "id": 16,
     "timestamp": 1603584000000,
-    "timestampExecuted": 1609891200000,
-    "votes": {
-      "yes": "53330466523846686729146760",
-      "no": "0",
-      "abstain": "30556924338845441196936407"
-    }
+    "timestampExecuted": 1609891200000
   },
   {
     "cgp": 15,
@@ -229,12 +159,7 @@
     "stage": 6,
     "id": 15,
     "timestamp": 1605225600000,
-    "timestampExecuted": 1609891200000,
-    "votes": {
-      "yes": "103007036099608974790850579",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1609891200000
   },
   {
     "cgp": 16,
@@ -245,12 +170,7 @@
     "stage": 6,
     "id": 14,
     "timestamp": 1606780800000,
-    "timestampExecuted": 1609891200000,
-    "votes": {
-      "yes": "126507521007697108271914452",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1609891200000
   },
   {
     "cgp": 17,
@@ -261,12 +181,7 @@
     "stage": 6,
     "id": 18,
     "timestamp": 1606780800000,
-    "timestampExecuted": 1612224000000,
-    "votes": {
-      "yes": "57431263786465813968346911",
-      "no": "0",
-      "abstain": "82538057340350266079413"
-    }
+    "timestampExecuted": 1612224000000
   },
   {
     "cgp": 18,
@@ -277,12 +192,7 @@
     "stage": 6,
     "id": 17,
     "timestamp": 1606953600000,
-    "timestampExecuted": 1609977600000,
-    "votes": {
-      "yes": "69743253629092775034035913",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1609977600000
   },
   {
     "cgp": 19,
@@ -293,12 +203,7 @@
     "stage": 6,
     "id": 20,
     "timestamp": 1609804800000,
-    "timestampExecuted": 1613088000000,
-    "votes": {
-      "yes": "61088429998090062536220067",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1613088000000
   },
   {
     "cgp": 20,
@@ -309,12 +214,7 @@
     "stage": 6,
     "id": 25,
     "timestamp": 1611705600000,
-    "timestampExecuted": 1616803200000,
-    "votes": {
-      "yes": "58858301719481425594241600",
-      "no": "0",
-      "abstain": "135937213167593181417065"
-    }
+    "timestampExecuted": 1616803200000
   },
   {
     "cgp": 21,
@@ -325,12 +225,7 @@
     "stage": 6,
     "id": 19,
     "timestamp": 1611878400000,
-    "timestampExecuted": 1613088000000,
-    "votes": {
-      "yes": "53252017359174228444938688",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1613088000000
   },
   {
     "cgp": 22,
@@ -341,12 +236,7 @@
     "stage": 6,
     "id": 21,
     "timestamp": 1614556800000,
-    "timestampExecuted": 1616716800000,
-    "votes": {
-      "yes": "70300012545688464098690442",
-      "no": "0",
-      "abstain": "209390424080555902329"
-    }
+    "timestampExecuted": 1616716800000
   },
   {
     "cgp": 23,
@@ -357,12 +247,7 @@
     "stage": 6,
     "id": 22,
     "timestamp": 1614124800000,
-    "timestampExecuted": 1616716800000,
-    "votes": {
-      "yes": "82450248306837298224458625",
-      "no": "0",
-      "abstain": "3300000000000000000"
-    }
+    "timestampExecuted": 1616716800000
   },
   {
     "cgp": 24,
@@ -374,12 +259,7 @@
     "id": 26,
     "url": "https://forum.celo.org/t/ceur-celo-euro-goes-live/876",
     "timestamp": 1615420800000,
-    "timestampExecuted": 1619136000000,
-    "votes": {
-      "yes": "72728333352949908955049430",
-      "no": "0",
-      "abstain": "126330347645908190714"
-    }
+    "timestampExecuted": 1619136000000
   },
   {
     "cgp": 25,
@@ -390,12 +270,7 @@
     "stage": 6,
     "id": 23,
     "timestamp": 1614556800000,
-    "timestampExecuted": 1616716800000,
-    "votes": {
-      "yes": "81683908188869530914665961",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1616716800000
   },
   {
     "cgp": 26,
@@ -415,12 +290,7 @@
     "stage": 6,
     "id": 24,
     "timestamp": 1614556800000,
-    "timestampExecuted": 1616803200000,
-    "votes": {
-      "yes": "64609841044036279890131987",
-      "no": "0",
-      "abstain": "83555805795126038880305"
-    }
+    "timestampExecuted": 1616803200000
   },
   {
     "cgp": 28,
@@ -431,12 +301,7 @@
     "stage": 6,
     "id": 27,
     "timestamp": 1619395200000,
-    "timestampExecuted": 1621555200000,
-    "votes": {
-      "yes": "45633414758271036189687489",
-      "no": "10553792753199462843062",
-      "abstain": "545546399933816990245"
-    }
+    "timestampExecuted": 1621555200000
   },
   {
     "cgp": 29,
@@ -447,12 +312,7 @@
     "stage": 6,
     "id": 28,
     "timestamp": 1619395200000,
-    "timestampExecuted": 1626393600000,
-    "votes": {
-      "yes": "45363374048641058396195998",
-      "no": "0",
-      "abstain": "88113300123093505779"
-    }
+    "timestampExecuted": 1626393600000
   },
   {
     "cgp": 30,
@@ -463,12 +323,7 @@
     "stage": 6,
     "id": 31,
     "timestamp": 1623628800000,
-    "timestampExecuted": 1627171200000,
-    "votes": {
-      "yes": "66683629708768636071803141",
-      "no": "182213952849912195242328",
-      "abstain": "262037326073332989533"
-    }
+    "timestampExecuted": 1627171200000
   },
   {
     "cgp": 31,
@@ -478,12 +333,7 @@
     "author": "@tkporter, @albertclabs",
     "stage": 6,
     "id": 41,
-    "timestamp": 1592179200000,
-    "votes": {
-      "yes": "70967299928443625209593775",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1592179200000
   },
   {
     "cgp": 32,
@@ -494,12 +344,7 @@
     "stage": 6,
     "id": 29,
     "timestamp": 1622505600000,
-    "timestampExecuted": 1626393600000,
-    "votes": {
-      "yes": "51270912112806344153712281",
-      "no": "2854552519952610967",
-      "abstain": "57299747538580964745"
-    }
+    "timestampExecuted": 1626393600000
   },
   {
     "cgp": 33,
@@ -509,12 +354,7 @@
     "author": "@tobikuhlmann",
     "stage": 6,
     "id": 34,
-    "timestamp": 1624924800000,
-    "votes": {
-      "yes": "66384801162069247496893620",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1624924800000
   },
   {
     "cgp": 34,
@@ -524,12 +364,7 @@
     "author": "@tobikuhlmann",
     "stage": 6,
     "id": 35,
-    "timestamp": 1625097600000,
-    "votes": {
-      "yes": "61036087638687011363893970",
-      "no": "0",
-      "abstain": "7087934212776212659354"
-    }
+    "timestamp": 1625097600000
   },
   {
     "cgp": 35,
@@ -558,12 +393,7 @@
     "stage": 6,
     "id": 40,
     "url": "https://forum.celo.org/t/core-contracts-release-5/1263",
-    "timestamp": 1628726400000,
-    "votes": {
-      "yes": "56110410870524061731486676",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1628726400000
   },
   {
     "cgp": 38,
@@ -574,12 +404,7 @@
     "stage": 6,
     "id": 43,
     "url": "https://forum.celo.org/t/the-celo-ecosystem-treasury/1313",
-    "timestamp": 1630281600000,
-    "votes": {
-      "yes": "42587102469962151313157684",
-      "no": "55384138154729899797349",
-      "abstain": "308915220446328370382032"
-    }
+    "timestamp": 1630281600000
   },
   {
     "cgp": 39,
@@ -590,12 +415,7 @@
     "stage": 6,
     "id": 39,
     "url": "https://forum.celo.org/t/discussion-for-cgp-0039-incre/1333",
-    "timestamp": 1630886400000,
-    "votes": {
-      "yes": "75500934829653925858381678",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1630886400000
   },
   {
     "cgp": 40,
@@ -606,12 +426,7 @@
     "stage": 6,
     "id": 42,
     "url": "https://forum.celo.org/t/discussions-for-cgp-40-proposal-to-reduce-exchange-spreads/1619",
-    "timestamp": 1632960000000,
-    "votes": {
-      "yes": "38332821337600824796317378",
-      "no": "52153069002022884513",
-      "abstain": "10511536549181377133841"
-    }
+    "timestamp": 1632960000000
   },
   {
     "cgp": 42,
@@ -622,12 +437,7 @@
     "stage": 6,
     "id": 48,
     "url": "https://forum.celo.org/t/cbrl-stable-asset/1281",
-    "timestamp": 1633737600000,
-    "votes": {
-      "yes": "57263292140431187354710326",
-      "no": "0",
-      "abstain": "146040746568147364431762"
-    }
+    "timestamp": 1633737600000
   },
   {
     "cgp": 43,
@@ -648,12 +458,7 @@
     "stage": 8,
     "id": 45,
     "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
-    "timestamp": 1635379200000,
-    "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1635379200000
   },
   {
     "cgp": 45,
@@ -664,12 +469,7 @@
     "stage": 6,
     "id": 50,
     "url": "https://forum.celo.org/t/cbrl-stable-asset/1281",
-    "timestamp": 1634083200000,
-    "votes": {
-      "yes": "50710033423514639286959022",
-      "no": "0",
-      "abstain": "145901405568291985651533"
-    }
+    "timestamp": 1634083200000
   },
   {
     "cgp": 46,
@@ -680,12 +480,7 @@
     "stage": 6,
     "id": 49,
     "url": "https://forum.celo.org/t/cbrl-stable-asset/1281",
-    "timestamp": 1635724800000,
-    "votes": {
-      "yes": "50903720233223991859224157",
-      "no": "544360904616382680995",
-      "abstain": "145976023638923066199205"
-    }
+    "timestamp": 1635724800000
   },
   {
     "cgp": 47,
@@ -706,12 +501,7 @@
     "stage": 6,
     "id": 54,
     "url": "https://forum.celo.org/t/discussion-for-cgp-48-reserve-gift-policy/2771",
-    "timestamp": 1643673600000,
-    "votes": {
-      "yes": "58988778382908240253240786",
-      "no": "0",
-      "abstain": "75548715583139773115010"
-    }
+    "timestamp": 1643673600000
   },
   {
     "cgp": 49,
@@ -732,12 +522,7 @@
     "stage": 6,
     "id": 53,
     "url": "https://forum.celo.org/t/core-contracts-release-6/2936",
-    "timestamp": 1644796800000,
-    "votes": {
-      "yes": "59715585717221736210631025",
-      "no": "0",
-      "abstain": "359526753344999981048"
-    }
+    "timestamp": 1644796800000
   },
   {
     "cgp": 51,
@@ -748,12 +533,7 @@
     "stage": 6,
     "id": 55,
     "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
-    "timestamp": 1646611200000,
-    "votes": {
-      "yes": "57221052290761445296211634",
-      "no": "276379329980356359107",
-      "abstain": "75855429510460100287215"
-    }
+    "timestamp": 1646611200000
   },
   {
     "cgp": 52,
@@ -764,12 +544,7 @@
     "stage": 6,
     "id": 60,
     "url": "https://forum.celo.org/t/the-climate-collective-treasury/3157 / https://forum.celo.org/t/the-climate-collective-treasury-v2/3388",
-    "timestamp": 1647907200000,
-    "votes": {
-      "yes": "30935284987366547563656181",
-      "no": "725682802512600759393",
-      "abstain": "75746403979022166944992"
-    }
+    "timestamp": 1647907200000
   },
   {
     "cgp": 53,
@@ -781,12 +556,7 @@
     "id": 57,
     "url": "https://forum.celo.org/t/propose-to-increase-block-gas-limit-to-50m-gas-and-target-density-to-0-7/3519 (and https://forum.celo.org/t/propose-to-increase-block-gas-limit-to-35-000-000-gas/3267)",
     "timestamp": 1648944000000,
-    "timestampExecuted": 1655337600000,
-    "votes": {
-      "yes": "55987290592209324784163930",
-      "no": "0",
-      "abstain": "2806110189097605318077"
-    }
+    "timestampExecuted": 1655337600000
   },
   {
     "cgp": 54,
@@ -795,12 +565,7 @@
     "title": "Reopening of the Celo Community Fund",
     "author": "@Maya-R-B @ThePassiveTrust @aaronmboyd",
     "stage": 6,
-    "id": 61,
-    "votes": {
-      "yes": "51307645401546757244913913",
-      "no": "725682802512600759393",
-      "abstain": "3446233190230796658307"
-    }
+    "id": 61
   },
   {
     "cgp": 55,
@@ -811,12 +576,7 @@
     "stage": 6,
     "id": 63,
     "url": "https://forum.celo.org/t/core-contracts-release-7/3778",
-    "timestamp": 1654646400000,
-    "votes": {
-      "yes": "27985292778305984201838830",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1654646400000
   },
   {
     "cgp": 56,
@@ -827,12 +587,7 @@
     "stage": 6,
     "id": 62,
     "url": "https://forum.celo.org/t/reserve-mandate-1-1-stable-value-asset-basket/3663",
-    "timestamp": 1655164800000,
-    "votes": {
-      "yes": "35190262901086989771179107",
-      "no": "0",
-      "abstain": "725682802512600759393"
-    }
+    "timestamp": 1655164800000
   },
   {
     "cgp": 57,
@@ -844,12 +599,7 @@
     "id": 69,
     "url": "https://forum.celo.org/t/decentralized-oracles/3610",
     "timestamp": 1655164800000,
-    "timestampExecuted": 1662854400000,
-    "votes": {
-      "yes": "31429986697155303205733085",
-      "no": "0",
-      "abstain": "91295397096074802834234"
-    }
+    "timestampExecuted": 1662854400000
   },
   {
     "cgp": 58,
@@ -860,12 +610,7 @@
     "stage": 6,
     "id": 66,
     "url": "https://forum.celo.org/t/discussion-ggp-58-increase-creal-bucket-size/3867",
-    "timestamp": 1655856000000,
-    "votes": {
-      "yes": "41350049451807327809226044",
-      "no": "7334113863168256727575",
-      "abstain": "88266616630991218106"
-    }
+    "timestamp": 1655856000000
   },
   {
     "cgp": 59,
@@ -876,12 +621,7 @@
     "stage": 6,
     "id": 67,
     "url": "https://forum.celo.org/t/discussion-cgp-59-creal-fee-reduction/3929",
-    "timestamp": 1657238400000,
-    "votes": {
-      "yes": "39525692506829418057879823",
-      "no": "23459832027600817306717",
-      "abstain": "0"
-    }
+    "timestamp": 1657238400000
   },
   {
     "cgp": 60,
@@ -911,12 +651,7 @@
     "stage": 6,
     "id": 71,
     "url": "https://forum.celo.org/t/core-contracts-release-8/4050",
-    "timestamp": 1659657600000,
-    "votes": {
-      "yes": "38153769973467104619361438",
-      "no": "0",
-      "abstain": "276577887888032165393"
-    }
+    "timestamp": 1659657600000
   },
   {
     "cgp": 63,
@@ -947,12 +682,7 @@
     "stage": 7,
     "id": 79,
     "url": "https://forum.celo.org/t/discussion-cgp-61-on-chain-68-governance-owned-cusd-usdc-liquidity/4036/16",
-    "timestamp": 1669248000000,
-    "votes": {
-      "yes": "1343856663748733480738249",
-      "no": "6249479338999907781857",
-      "abstain": "0"
-    }
+    "timestamp": 1669248000000
   },
   {
     "cgp": 66,
@@ -963,12 +693,7 @@
     "stage": 6,
     "id": 56,
     "url": "https://forum.celo.org/t/upcoming-cgp-increase-target-level-of-stable-holdings-in-the-reserve/3380",
-    "timestamp": 1652400000000,
-    "votes": {
-      "yes": "43863575117002617919188820",
-      "no": "62566510522318008418598",
-      "abstain": "5324883450962081614345"
-    }
+    "timestamp": 1652400000000
   },
   {
     "cgp": 67,
@@ -979,12 +704,7 @@
     "stage": 6,
     "id": 77,
     "url": "https://forum.celo.org/t/decentralized-oracles/3610",
-    "timestamp": 1670198400000,
-    "votes": {
-      "yes": "37031421262361091420998501",
-      "no": "0",
-      "abstain": "67803267041424221467206"
-    }
+    "timestamp": 1670198400000
   },
   {
     "cgp": 68,
@@ -995,12 +715,7 @@
     "stage": 6,
     "id": 85,
     "url": "https://forum.celo.org/t/celo-africa-regional-dao-proposal/4054/50?u=aliu",
-    "timestamp": 1670457600000,
-    "votes": {
-      "yes": "65447194924102210757168488",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1670457600000
   },
   {
     "cgp": 69,
@@ -1011,12 +726,7 @@
     "stage": 6,
     "id": 80,
     "url": "https://forum.celo.org/t/discussion-cgp-61-on-chain-68-governance-owned-cusd-usdc-liquidity/4036/20",
-    "timestamp": 1669248000000,
-    "votes": {
-      "yes": "30313500331772080555707670",
-      "no": "0",
-      "abstain": "90000000000000000000"
-    }
+    "timestamp": 1669248000000
   },
   {
     "cgp": 70,
@@ -1027,12 +737,7 @@
     "stage": 6,
     "id": 101,
     "url": "https://forum.celo.org/t/proposal-celo-tribe-web3-social-club-for-universities/4861/7?u=hawwal",
-    "timestamp": 1670630400000,
-    "votes": {
-      "yes": "17114296615869622327463739",
-      "no": "33498762451417739715879",
-      "abstain": "261802007979288493295495"
-    }
+    "timestamp": 1670630400000
   },
   {
     "cgp": 71,
@@ -1073,12 +778,7 @@
     "stage": 6,
     "id": 91,
     "url": "https://forum.celo.org/t/proposal-mu01-phase1-multicollateral-mento/5245",
-    "timestamp": 1679443200000,
-    "votes": {
-      "yes": "64099740639316921291985641",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1679443200000
   },
   {
     "cgp": 75,
@@ -1112,12 +812,7 @@
     "id": 103,
     "url": "https://forum.celo.org/t/on-chain-offsets/5471",
     "timestamp": 1681344000000,
-    "timestampExecuted": 1680307200000,
-    "votes": {
-      "yes": "42906384448473561084001101",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1680307200000
   },
   {
     "cgp": 78,
@@ -1129,12 +824,7 @@
     "id": 107,
     "url": "https://forum.celo.org/t/core-contracts-release-9/4050](https://forum.celo.org/t/core-contracts-release-9/5707",
     "timestamp": 1681171200000,
-    "timestampExecuted": 1684108800000,
-    "votes": {
-      "yes": "25711431965295393119447668",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1684108800000
   },
   {
     "cgp": 79,
@@ -1145,12 +835,7 @@
     "stage": 6,
     "id": 102,
     "url": "https://forum.celo.org/t/mento-reserve-returning-celo/5236/36",
-    "timestamp": 1682035200000,
-    "votes": {
-      "yes": "33569686084724765590730045",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1682035200000
   },
   {
     "cgp": 80,
@@ -1161,12 +846,7 @@
     "stage": 6,
     "id": 105,
     "url": "https://forum.celo.org/t/climate-collective-1-year-anniversary-heres-to-many-more/5585",
-    "timestamp": 1682380800000,
-    "votes": {
-      "yes": "61319197551208724589415984",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1682380800000
   },
   {
     "cgp": 81,
@@ -1210,12 +890,7 @@
     "stage": 6,
     "id": 117,
     "url": "https://forum.celo.org/t/credit-collective-hello-world/5789",
-    "timestamp": 1688688000000,
-    "votes": {
-      "yes": "31085353663787484060504514",
-      "no": "47170090444806460195294",
-      "abstain": "45739145467092901031881"
-    }
+    "timestamp": 1688688000000
   },
   {
     "cgp": 85,
@@ -1236,12 +911,7 @@
     "stage": 6,
     "id": 119,
     "url": "https://forum.celo.org/t/mento-upgrade-1-deployment-timeline/5219/11",
-    "timestamp": 1689206400000,
-    "votes": {
-      "yes": "42676912676478021040157750",
-      "no": "68491158078010068880211",
-      "abstain": "0"
-    }
+    "timestamp": 1689206400000
   },
   {
     "cgp": 87,
@@ -1252,12 +922,7 @@
     "stage": 6,
     "id": 116,
     "url": "https://forum.celo.org/t/clabs-proposal-for-celo-to-transition-to-an-ethereum-l2/6109",
-    "timestamp": 1689897600000,
-    "votes": {
-      "yes": "56379426830837975461273849",
-      "no": "631815196523211126128",
-      "abstain": "1208349168052521966511"
-    }
+    "timestamp": 1689897600000
   },
   {
     "cgp": 88,
@@ -1268,12 +933,7 @@
     "stage": 6,
     "id": 120,
     "url": "https://forum.celo.org/t/celo-asia-dao-proposal/5957/14",
-    "timestamp": 1690070400000,
-    "votes": {
-      "yes": "39326915841257352258395359",
-      "no": "199724868923396539851168",
-      "abstain": "326446225974738950174491"
-    }
+    "timestamp": 1690070400000
   },
   {
     "cgp": 89,
@@ -1293,12 +953,7 @@
     "author": "Roman Croessmann <roman@mentolabs.xyz>",
     "stage": 6,
     "id": 121,
-    "timestamp": 1690934400000,
-    "votes": {
-      "yes": "30465515654372272025827980",
-      "no": "0",
-      "abstain": "34454406776205459854542"
-    }
+    "timestamp": 1690934400000
   },
   {
     "cgp": 91,
@@ -1309,12 +964,7 @@
     "stage": 8,
     "id": 128,
     "url": "https://forum.celo.org/t/proposal-web3-x-sdg-event-proposal-for-road-to-cop28/6225",
-    "timestamp": 1691539200000,
-    "votes": {
-      "yes": "5868677592519829030112781",
-      "no": "3981177506285977333215913",
-      "abstain": "12928081448219028458643353"
-    }
+    "timestamp": 1691539200000
   },
   {
     "cgp": 92,
@@ -1326,12 +976,7 @@
     "id": 123,
     "url": "https://forum.celo.org/t/proposal-for-60-000-funding-to-support-a-mobile-first-community-in-celo-ecosystem/6313",
     "timestamp": 1691452800000,
-    "timestampExecuted": 1693267200000,
-    "votes": {
-      "yes": "7269953581442468028056097",
-      "no": "2031955343939578305866879",
-      "abstain": "7089181822045726440880013"
-    }
+    "timestampExecuted": 1693267200000
   },
   {
     "cgp": 93,
@@ -1354,12 +999,7 @@
     "id": 127,
     "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261",
     "timestamp": 1692230400000,
-    "timestampExecuted": 1692921600000,
-    "votes": {
-      "yes": "42025709584766985646215114",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1692921600000
   },
   {
     "cgp": 95,
@@ -1371,12 +1011,7 @@
     "id": 130,
     "url": "https://forum.celo.org/t/centrifuge-deployment-on-celo/6405",
     "timestamp": 1692662400000,
-    "timestampExecuted": 1693872000000,
-    "votes": {
-      "yes": "28793309039170175595470594",
-      "no": "70730114863751422033247",
-      "abstain": "5947503845300733363513806"
-    }
+    "timestampExecuted": 1693872000000
   },
   {
     "cgp": 96,
@@ -1388,12 +1023,7 @@
     "id": 132,
     "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-32m-gas/6431",
     "timestamp": 1692835200000,
-    "timestampExecuted": 1694390400000,
-    "votes": {
-      "yes": "20710446923463444255580080",
-      "no": "0",
-      "abstain": "583378875745603636938815"
-    }
+    "timestampExecuted": 1694390400000
   },
   {
     "cgp": 97,
@@ -1405,12 +1035,7 @@
     "id": 133,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu03-enable-more-trading-pairs-and-continue-phasing-out-v1/6462",
     "timestamp": 1693440000000,
-    "timestampExecuted": 1694476800000,
-    "votes": {
-      "yes": "34230276888250510846954997",
-      "no": "0",
-      "abstain": "44296211694012768302221"
-    }
+    "timestampExecuted": 1694476800000
   },
   {
     "cgp": 98,
@@ -1422,12 +1047,7 @@
     "id": 134,
     "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261",
     "timestamp": 1694476800000,
-    "timestampExecuted": 1695081600000,
-    "votes": {
-      "yes": "22159710438470755103488231",
-      "no": "2402932129668",
-      "abstain": "1007900092742236793"
-    }
+    "timestampExecuted": 1695081600000
   },
   {
     "cgp": 99,
@@ -1439,12 +1059,7 @@
     "id": 135,
     "url": "https://forum.celo.org/t/contracts-release-10-proposal-on-chain/6563",
     "timestamp": 1694649600000,
-    "timestampExecuted": 1695340800000,
-    "votes": {
-      "yes": "42859415387690776131628163",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1695340800000
   },
   {
     "cgp": 100,
@@ -1456,12 +1071,7 @@
     "id": 136,
     "url": "https://forum.celo.org/t/contract-release-10-proposal-on-chain/6563",
     "timestamp": 1694736000000,
-    "timestampExecuted": 1695427200000,
-    "votes": {
-      "yes": "22062838572949541958208931",
-      "no": "1098541139263776927857",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1695427200000
   },
   {
     "cgp": 101,
@@ -1473,12 +1083,7 @@
     "id": 140,
     "url": "https://forum.celo.org/t/we-need-to-talk-about-governance/6409/4?u=tim",
     "timestamp": 1695686400000,
-    "timestampExecuted": 1697760000000,
-    "votes": {
-      "yes": "23681338095798088557121542",
-      "no": "0",
-      "abstain": "812300000000000054"
-    }
+    "timestampExecuted": 1697760000000
   },
   {
     "cgp": 102,
@@ -1489,12 +1094,7 @@
     "stage": 6,
     "id": 145,
     "timestamp": 1695859200000,
-    "timestampExecuted": 1703030400000,
-    "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1703030400000
   },
   {
     "cgp": 103,
@@ -1506,12 +1106,7 @@
     "id": 139,
     "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261/1",
     "timestamp": 1695945600000,
-    "timestampExecuted": 1697760000000,
-    "votes": {
-      "yes": "19577902831175322676273011",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1697760000000
   },
   {
     "cgp": 104,
@@ -1523,12 +1118,7 @@
     "id": 137,
     "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-50m-gas-coming-soon/6633",
     "timestamp": 1696204800000,
-    "timestampExecuted": 1696896000000,
-    "votes": {
-      "yes": "27426900149175988655344188",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1696896000000
   },
   {
     "cgp": 105,
@@ -1539,12 +1129,7 @@
     "stage": 8,
     "id": 141,
     "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work/6569",
-    "timestamp": 1697673600000,
-    "votes": {
-      "yes": "3064828185443169755437748",
-      "no": "0",
-      "abstain": "14813906063415175811408"
-    }
+    "timestamp": 1697673600000
   },
   {
     "cgp": 106,
@@ -1556,12 +1141,7 @@
     "id": 142,
     "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work/6569/19",
     "timestamp": 1698710400000,
-    "timestampExecuted": 1699747200000,
-    "votes": {
-      "yes": "16514230117506574997997841",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1699747200000
   },
   {
     "cgp": 107,
@@ -1572,12 +1152,7 @@
     "stage": 8,
     "id": 149,
     "url": "https://forum.celo.org/t/proposal-celo-dapps-over-apps/6743  ",
-    "timestamp": 1699315200000,
-    "votes": {
-      "yes": "0",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestamp": 1699315200000
   },
   {
     "cgp": 108,
@@ -1589,12 +1164,7 @@
     "id": 143,
     "url": "https://forum.celo.org/t/core-devs-call-on-cip-ultragreen-celo/5387",
     "timestamp": 1699315200000,
-    "timestampExecuted": 1702857600000,
-    "votes": {
-      "yes": "17577366744406636842983771",
-      "no": "0",
-      "abstain": "595429"
-    }
+    "timestampExecuted": 1702857600000
   },
   {
     "cgp": 109,
@@ -1606,12 +1176,7 @@
     "id": 144,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu04-phase-out-v1-fully-transition-to-v2-and-update-stabletoken/7034",
     "timestamp": 1701820800000,
-    "timestampExecuted": 1702944000000,
-    "votes": {
-      "yes": "12232619413616882032990872",
-      "no": "0",
-      "abstain": "595429"
-    }
+    "timestampExecuted": 1702944000000
   },
   {
     "cgp": 110,
@@ -1622,12 +1187,7 @@
     "stage": 8,
     "id": 146,
     "url": "https://forum.celo.org/t/mentors-collective-hello-world/6884/",
-    "timestamp": 1702252800000,
-    "votes": {
-      "yes": "627563961200135020572469",
-      "no": "637823624016922163423449",
-      "abstain": "645441880415723474772262"
-    }
+    "timestamp": 1702252800000
   },
   {
     "cgp": 111,
@@ -1639,12 +1199,7 @@
     "id": 147,
     "url": "https://forum.celo.org/t/strategic-grant-for-accelerating-celo-ecosystem-adoption-across-africa/6969",
     "timestamp": 1702339200000,
-    "timestampExecuted": 1703203200000,
-    "votes": {
-      "yes": "20092872810275359501536560",
-      "no": "168962630221108878742750",
-      "abstain": "192622881787119739101389"
-    }
+    "timestampExecuted": 1703203200000
   },
   {
     "cgp": 112,
@@ -1655,12 +1210,7 @@
     "stage": 8,
     "id": 156,
     "url": "https://forum.celo.org/t/proposal-celo-tribe-web3-social-club-for-universities/4861/22?u=hawwal",
-    "timestamp": 1702425600000,
-    "votes": {
-      "yes": "1142032530296003958299",
-      "no": "742969449415937668588727",
-      "abstain": "157528488416454814133171"
-    }
+    "timestamp": 1702425600000
   },
   {
     "cgp": 113,
@@ -1672,12 +1222,7 @@
     "id": 150,
     "url": "https://forum.celo.org/t/yield-rewards-on-reserve-collateral/6881",
     "timestamp": 1704758400000,
-    "timestampExecuted": 1705449600000,
-    "votes": {
-      "yes": "11373824497322679685390627",
-      "no": "0",
-      "abstain": "9523949799537262483874416"
-    }
+    "timestampExecuted": 1705449600000
   },
   {
     "cgp": 114,
@@ -1689,12 +1234,7 @@
     "id": 151,
     "url": "https://forum.celo.org/t/decentralized-oracles/3610",
     "timestamp": 1705017600000,
-    "timestampExecuted": 1706227200000,
-    "votes": {
-      "yes": "6726299202779345091956486",
-      "no": "5656869535319053206506",
-      "abstain": "44943347570292389380027"
-    }
+    "timestampExecuted": 1706227200000
   },
   {
     "cgp": 115,
@@ -1706,12 +1246,7 @@
     "id": 157,
     "url": "https://forum.celo.org/t/draft-celo-governance-guidelines-and-public-goods-funding-strategy-h1-2024/7200",
     "timestamp": 1707264000000,
-    "timestampExecuted": 1708041600000,
-    "votes": {
-      "yes": "8897838893054228916470163",
-      "no": "261165375571665767347710",
-      "abstain": "409882703529883880165591"
-    }
+    "timestampExecuted": 1708041600000
   },
   {
     "cgp": 116,
@@ -1722,12 +1257,7 @@
     "stage": 5,
     "id": 155,
     "url": "https://forum.celo.org/t/celo-ecosystem-liquidity-operation-guild-celo-guild-allocate-portion-of-celo-in-the-celo-community-fund-to-solve-liquidity-challenges-faced-by-celo-projects-and-accelerate-the-growth-of-the-celo-ecosystem/7243",
-    "timestamp": 1706745600000,
-    "votes": {
-      "yes": "1465259593739980890539168",
-      "no": "1591915530485972681158979",
-      "abstain": "188575726339874855387444"
-    }
+    "timestamp": 1706745600000
   },
   {
     "cgp": 117,
@@ -1739,12 +1269,7 @@
     "id": 159,
     "url": "https://forum.celo.org/t/core-contracts-release-11/",
     "timestamp": 1708560000000,
-    "timestampExecuted": 1709856000000,
-    "votes": {
-      "yes": "16494991113306971925386684",
-      "no": "6190813532940406996206",
-      "abstain": "2524391976942269727694"
-    }
+    "timestampExecuted": 1709856000000
   },
   {
     "cgp": 118,
@@ -1756,12 +1281,7 @@
     "id": 158,
     "url": "https://forum.celo.org/t/minting-10m-cusd-from-mento-reserve-in-six-tranches/7458/1",
     "timestamp": 1708646400000,
-    "timestampExecuted": 1709769600000,
-    "votes": {
-      "yes": "14171271613376179113716389",
-      "no": "0",
-      "abstain": "524678290526206162806"
-    }
+    "timestampExecuted": 1709769600000
   },
   {
     "cgp": 119,
@@ -1773,12 +1293,7 @@
     "id": 160,
     "url": "https://forum.celo.org/t/celo-camp-2024-grant-the-minipay-launchpad-and-startup-pathway-program-final/7210/1",
     "timestamp": 1708646400000,
-    "timestampExecuted": 1709769600000,
-    "votes": {
-      "yes": "4868477493955072361382684",
-      "no": "0",
-      "abstain": "25403172173324990591122"
-    }
+    "timestampExecuted": 1709769600000
   },
   {
     "cgp": 120,
@@ -1790,12 +1305,7 @@
     "id": 161,
     "url": "https://forum.celo.org/t/celo-europe-h1-2024-regional-dao-final/7450",
     "timestamp": 1708041600000,
-    "timestampExecuted": 1709769600000,
-    "votes": {
-      "yes": "3746380104100576142999953",
-      "no": "317878057251413628096662",
-      "abstain": "246722298524481809695486"
-    }
+    "timestampExecuted": 1709769600000
   },
   {
     "cgp": 121,
@@ -1807,12 +1317,7 @@
     "id": 162,
     "url": "https://forum.celo.org/t/final-prezenti-h1-2024-celo-grants",
     "timestamp": 1709596800000,
-    "timestampExecuted": 1710547200000,
-    "votes": {
-      "yes": "4778179052006970099487870",
-      "no": "0",
-      "abstain": "759078837434842414093"
-    }
+    "timestampExecuted": 1710547200000
   },
   {
     "cgp": 122,
@@ -1824,12 +1329,7 @@
     "id": 164,
     "url": "https://forum.celo.org/t/adding-usdt-and-eurt-to-the-mento-reserve/7490",
     "timestamp": 1709683200000,
-    "timestampExecuted": 1710547200000,
-    "votes": {
-      "yes": "7938743655619884228438005",
-      "no": "0",
-      "abstain": "1001089448307891111"
-    }
+    "timestampExecuted": 1710547200000
   },
   {
     "cgp": 123,
@@ -1841,12 +1341,7 @@
     "id": 163,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu05-native-usdc-integration/7545",
     "timestamp": 1709769600000,
-    "timestampExecuted": 1710547200000,
-    "votes": {
-      "yes": "7937039044917774523956878",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1710547200000
   },
   {
     "cgp": 124,
@@ -1858,12 +1353,7 @@
     "id": 165,
     "url": "https://forum.celo.org/t/celo-thailand-h1-2024-regional-dao-draft/7402",
     "timestamp": 1709856000000,
-    "timestampExecuted": 1710633600000,
-    "votes": {
-      "yes": "5666397360437098304697369",
-      "no": "64249674078632646829510",
-      "abstain": "61883316969554991520513"
-    }
+    "timestampExecuted": 1710633600000
   },
   {
     "cgp": 125,
@@ -1874,12 +1364,7 @@
     "stage": 8,
     "id": 166,
     "url": "https://forum.celo.org/t/proposal-for-community-development-in-india-indiadao-community-management",
-    "timestamp": 1709856000000,
-    "votes": {
-      "yes": "921231764617807186842207",
-      "no": "64249674078632646829511",
-      "abstain": "226392076721316438081032"
-    }
+    "timestamp": 1709856000000
   },
   {
     "cgp": 126,
@@ -1891,12 +1376,7 @@
     "id": 167,
     "url": "https://forum.celo.org/t/celo-africa-h1-2024-regional-dao-final/7497",
     "timestamp": 1708646400000,
-    "timestampExecuted": 1710633600000,
-    "votes": {
-      "yes": "7623118063758565471856454",
-      "no": "84309590816251390398718",
-      "abstain": "225181328662541909708169"
-    }
+    "timestampExecuted": 1710633600000
   },
   {
     "cgp": 127,
@@ -1908,12 +1388,7 @@
     "id": 168,
     "url": "https://forum.celo.org/t/path-towards-making-usdc-a-gas-currency/7385/2",
     "timestamp": 1715990400000,
-    "timestampExecuted": 1711411200000,
-    "votes": {
-      "yes": "12717106535247549899139657",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1711411200000
   },
   {
     "cgp": 128,
@@ -1925,12 +1400,7 @@
     "id": 169,
     "url": "https://forum.celo.org/t/draft-making-usdt-a-gas-fee-currency-on-celo/7686",
     "timestamp": 1711584000000,
-    "timestampExecuted": 1712275200000,
-    "votes": {
-      "yes": "20871591224847564431581415",
-      "no": "0",
-      "abstain": "93851135431871948739"
-    }
+    "timestampExecuted": 1712275200000
   },
   {
     "cgp": 129,
@@ -1942,12 +1412,7 @@
     "id": 170,
     "url": "https://forum.celo.org/t/draft-celo-public-goods-grant-request-update-rwa-focused-accelerator-with-outlier-ventures/",
     "timestamp": 1712102400000,
-    "timestampExecuted": 1712880000000,
-    "votes": {
-      "yes": "7693952097966476098050655",
-      "no": "45308413410112909141897",
-      "abstain": "75170045754774757793478"
-    }
+    "timestampExecuted": 1712880000000
   },
   {
     "cgp": 130,
@@ -1959,12 +1424,7 @@
     "id": 172,
     "url": "https://forum.celo.org/t/draft-celo-accelerator-program-x-red-beard-ventures",
     "timestamp": 1712188800000,
-    "timestampExecuted": 1712966400000,
-    "votes": {
-      "yes": "6338809842244723758210394",
-      "no": "45308413410112909141897",
-      "abstain": "96417447823484799668579"
-    }
+    "timestampExecuted": 1712966400000
   },
   {
     "cgp": 131,
@@ -1976,12 +1436,7 @@
     "id": 171,
     "url": "https://forum.celo.org/t/celo-protocol-upgrades-gingerbread-hard-fork-and-contracts-release-10/6612",
     "timestamp": 1710201600000,
-    "timestampExecuted": 1712880000000,
-    "votes": {
-      "yes": "14129961806047991002787728",
-      "no": "0",
-      "abstain": "25024958881721480658"
-    }
+    "timestampExecuted": 1712880000000
   },
   {
     "cgp": 132,
@@ -1993,12 +1448,7 @@
     "id": 176,
     "url": "https://forum.celo.org/t/final-proposal-for-funding-stabila-driving-stablecoin-adoption-on-celo/7810",
     "timestamp": 1714089600000,
-    "timestampExecuted": 1715904000000,
-    "votes": {
-      "yes": "13900081646743131204940936",
-      "no": "177123734397638981301695",
-      "abstain": "115470039848008913828587"
-    }
+    "timestampExecuted": 1715904000000
   },
   {
     "cgp": 133,
@@ -2010,12 +1460,7 @@
     "id": 174,
     "url": "https://forum.celo.org/t/clabs-proposes-migrating-celo-to-an-ethereum-l2-leveraging-the-op-stack/7902",
     "timestamp": 1714694400000,
-    "timestampExecuted": 1715385600000,
-    "votes": {
-      "yes": "14635284525328223075766231",
-      "no": "0",
-      "abstain": "20483577109080076360924"
-    }
+    "timestampExecuted": 1715385600000
   },
   {
     "cgp": 134,
@@ -2027,12 +1472,7 @@
     "id": 178,
     "url": "https://forum.celo.org/t/draft-validators-rewards-change-in-epoch-parameters/7702",
     "timestamp": 1714780800000,
-    "timestampExecuted": 1716422400000,
-    "votes": {
-      "yes": "16673407295919743146853538",
-      "no": "90657478041096101",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1716422400000
   },
   {
     "cgp": 135,
@@ -2044,12 +1484,7 @@
     "id": 175,
     "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin/7964",
     "timestamp": 1715126400000,
-    "timestampExecuted": 1715731200000,
-    "votes": {
-      "yes": "11422612948555883068019171",
-      "no": "125769437707",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1715731200000
   },
   {
     "cgp": 136,
@@ -2061,12 +1496,7 @@
     "id": 177,
     "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin/7964",
     "timestamp": 1715558400000,
-    "timestampExecuted": 1716249600000,
-    "votes": {
-      "yes": "8178148794427832545745502",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1716249600000
   },
   {
     "cgp": 138,
@@ -2078,12 +1508,7 @@
     "id": 179,
     "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu06-native-usdt-integration/",
     "timestamp": 1716422400000,
-    "timestampExecuted": 1717027200000,
-    "votes": {
-      "yes": "16740285818376325019199998",
-      "no": "0",
-      "abstain": "1543562661322890294632"
-    }
+    "timestampExecuted": 1717027200000
   },
   {
     "cgp": 139,
@@ -2095,12 +1520,7 @@
     "id": 180,
     "url": "https://forum.celo.org/t/mento-spin-off-and-launch-of-the-mento-token/7747",
     "timestamp": 1716422400000,
-    "timestampExecuted": 1717113600000,
-    "votes": {
-      "yes": "15637180923411949481583775",
-      "no": "803071079695202545884267",
-      "abstain": "158521938162827452501095"
-    }
+    "timestampExecuted": 1717113600000
   },
   {
     "cgp": 140,
@@ -2112,12 +1532,7 @@
     "id": 181,
     "url": "https://forum.celo.org/t/clabs-proposes-off-chain-data-availability-layer-powered-by-eigenlayer-and-eigenda/8236",
     "timestamp": 1719446400000,
-    "timestampExecuted": 1720483200000,
-    "votes": {
-      "yes": "24995728387484444499725236",
-      "no": "2526567736694",
-      "abstain": "25722869814645787237"
-    }
+    "timestampExecuted": 1720483200000
   },
   {
     "cgp": 141,
@@ -2129,12 +1544,7 @@
     "id": 182,
     "url": "https://forum.celo.org/t/celopg-h2-2024-budget/8231",
     "timestamp": 1719360000000,
-    "timestampExecuted": 1720828800000,
-    "votes": {
-      "yes": "17906941892797620833679016",
-      "no": "1555631167899194003374",
-      "abstain": "64556262437625045255704"
-    }
+    "timestampExecuted": 1720828800000
   },
   {
     "cgp": 142,
@@ -2146,12 +1556,7 @@
     "id": 183,
     "url": "https://forum.celo.org/t/draft-allocate-1m-of-mento-s-current-reserve-holdings-to-glo-dollar-to-fund-celo-public-goods-at-no-cost/7927",
     "timestamp": 1721779200000,
-    "timestampExecuted": 1723507200000,
-    "votes": {
-      "yes": "1567786487379131024615109",
-      "no": "1743973200273647673050",
-      "abstain": "12190351548863554617425621"
-    }
+    "timestampExecuted": 1723507200000
   },
   {
     "cgp": 143,
@@ -2162,12 +1567,7 @@
     "stage": 8,
     "id": 186,
     "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
-    "timestamp": 1722470400000,
-    "votes": {
-      "yes": "7311270592366178906424809",
-      "no": "1052875318387568208771036",
-      "abstain": "275503297679584786792311"
-    }
+    "timestamp": 1722470400000
   },
   {
     "cgp": 144,
@@ -2178,12 +1578,7 @@
     "stage": 8,
     "id": 184,
     "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
-    "timestamp": 1722902400000,
-    "votes": {
-      "yes": "423305894499211746439297",
-      "no": "984603262175208534886123",
-      "abstain": "473729958780760268232905"
-    }
+    "timestamp": 1722902400000
   },
   {
     "cgp": 145,
@@ -2195,12 +1590,7 @@
     "id": 205,
     "url": "https://forum.celo.org/t/increase-minimum-gas-price-threshold-to-25000000000-wei",
     "timestamp": 1722902400000,
-    "timestampExecuted": 1740096000000,
-    "votes": {
-      "yes": "30640070270430250403070919",
-      "no": "0",
-      "abstain": "14413668385090594673492"
-    }
+    "timestampExecuted": 1740096000000
   },
   {
     "cgp": 146,
@@ -2212,12 +1602,7 @@
     "id": 187,
     "url": "https://forum.celo.org/t/mu07-chainlink-price-feed-integration/8850",
     "timestamp": 1724630400000,
-    "timestampExecuted": 1725408000000,
-    "votes": {
-      "yes": "14038365258855133578012922",
-      "no": "30033914673902478388",
-      "abstain": "51708915618462140021"
-    }
+    "timestampExecuted": 1725408000000
   },
   {
     "cgp": 147,
@@ -2229,12 +1614,7 @@
     "id": 188,
     "url": "https://forum.celo.org/t/launch-of-puso-the-philippines-first-community-led-stablecoin/8786/10?u=philbow61",
     "timestamp": 1724889600000,
-    "timestampExecuted": 1725667200000,
-    "votes": {
-      "yes": "12791659812098214199612374",
-      "no": "0",
-      "abstain": "25313268947400803053860"
-    }
+    "timestampExecuted": 1725667200000
   },
   {
     "cgp": 148,
@@ -2246,12 +1626,7 @@
     "id": 189,
     "url": "https://forum.celo.org/t/proposal-for-stablecoin-dapp-public-goods-dashboard/8944",
     "timestamp": 1725926400000,
-    "timestampExecuted": 1728604800000,
-    "votes": {
-      "yes": "19196383765513294833228793",
-      "no": "29999999999999999998",
-      "abstain": "105921367286428986370083"
-    }
+    "timestampExecuted": 1728604800000
   },
   {
     "cgp": 149,
@@ -2263,12 +1638,7 @@
     "id": 198,
     "url": "https://forum.celo.org/t/decrease-constitution-parameter-for-goldtoken-increaseallowance/9002",
     "timestamp": 1725926400000,
-    "timestampExecuted": 1705190400000,
-    "votes": {
-      "yes": "9167068622696043033945178",
-      "no": "0",
-      "abstain": "30000000000000000000"
-    }
+    "timestampExecuted": 1705190400000
   },
   {
     "cgp": 150,
@@ -2280,12 +1650,7 @@
     "id": 190,
     "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin/9211",
     "timestamp": 1729123200000,
-    "timestampExecuted": 1730246400000,
-    "votes": {
-      "yes": "15965588950234979553095750",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1730246400000
   },
   {
     "cgp": 151,
@@ -2297,12 +1662,7 @@
     "id": 191,
     "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin/9211",
     "timestamp": 1729123200000,
-    "timestampExecuted": 1730332800000,
-    "votes": {
-      "yes": "8415239370544153759056444",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1730332800000
   },
   {
     "cgp": 152,
@@ -2314,12 +1674,7 @@
     "id": 195,
     "url": "https://forum.celo.org/t/creation-of-celo-governance-guild",
     "timestamp": 1729728000000,
-    "timestampExecuted": 1732924800000,
-    "votes": {
-      "yes": "7761781971226818472551031",
-      "no": "0",
-      "abstain": "4096176297343921659432"
-    }
+    "timestampExecuted": 1732924800000
   },
   {
     "cgp": 153,
@@ -2331,12 +1686,7 @@
     "id": 193,
     "url": "https://forum.celo.org/t/celocolombia-dao-funding-and-operations-proposal",
     "timestamp": 1729728000000,
-    "timestampExecuted": 1731456000000,
-    "votes": {
-      "yes": "7701549623695961942533035",
-      "no": "68265368874125165798841",
-      "abstain": "245222846296012194773627"
-    }
+    "timestampExecuted": 1731456000000
   },
   {
     "cgp": 154,
@@ -2348,12 +1698,7 @@
     "id": 194,
     "url": "https://forum.celo.org/t/follow-on-funding-proposal-funding-for-remaining-clabs-celo-l2-development/9354",
     "timestamp": 1698710400000,
-    "timestampExecuted": 1731801600000,
-    "votes": {
-      "yes": "7866567917887174163280483",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1731801600000
   },
   {
     "cgp": 155,
@@ -2365,12 +1710,7 @@
     "id": 213,
     "url": "https://forum.celo.org/t/add-celotoken-and-lockedcelo-to-the-registry",
     "timestamp": 1731974400000,
-    "timestampExecuted": 1741996800000,
-    "votes": {
-      "yes": "36909344373415082173243251",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1741996800000
   },
   {
     "cgp": 156,
@@ -2393,12 +1733,7 @@
     "id": 199,
     "url": "https://forum.celo.org/t/celo-ecosystem-security-services-program-enhancing-ecosystem-security-through-subsidized-services",
     "timestamp": 1733097600000,
-    "timestampExecuted": 1739145600000,
-    "votes": {
-      "yes": "42224055846184478327798012",
-      "no": "685976496550350400",
-      "abstain": "157214256283747629077"
-    }
+    "timestampExecuted": 1739145600000
   },
   {
     "cgp": 158,
@@ -2410,12 +1745,7 @@
     "id": 197,
     "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-ciclops",
     "timestamp": 1734566400000,
-    "timestampExecuted": 1736812800000,
-    "votes": {
-      "yes": "9698883143336395745256054",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1736812800000
   },
   {
     "cgp": 159,
@@ -2427,12 +1757,7 @@
     "id": 200,
     "url": "https://forum.celo.org/t/launch-of-a-ghanaian-cedi-stablecoin-cghs",
     "timestamp": 1738108800000,
-    "timestampExecuted": 1739491200000,
-    "votes": {
-      "yes": "25178984541609888813461064",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1739491200000
   },
   {
     "cgp": 160,
@@ -2444,12 +1769,7 @@
     "id": 201,
     "url": "https://forum.celo.org/t/celo-regional-council-h1-2025",
     "timestamp": 1738627200000,
-    "timestampExecuted": 1739577600000,
-    "votes": {
-      "yes": "23941670371487477416038700",
-      "no": "579757717622618013351770",
-      "abstain": "186088204565848353370730"
-    }
+    "timestampExecuted": 1739577600000
   },
   {
     "cgp": 161,
@@ -2461,12 +1781,7 @@
     "id": 202,
     "url": "https://forum.celo.org/t/budget-request-celopg-season-0-final",
     "timestamp": 1738627200000,
-    "timestampExecuted": 1739577600000,
-    "votes": {
-      "yes": "35562285233159974934576772",
-      "no": "352210004952424118704463",
-      "abstain": "164089964057776025576923"
-    }
+    "timestampExecuted": 1739577600000
   },
   {
     "cgp": 162,
@@ -2478,12 +1793,7 @@
     "id": 208,
     "url": "https://forum.celo.org/t/stabila-funding-request-aave-liquidity-incentives",
     "timestamp": 1738800000000,
-    "timestampExecuted": 1740700800000,
-    "votes": {
-      "yes": "13774076761294073909604824",
-      "no": "0",
-      "abstain": "24800589041018930548628"
-    }
+    "timestampExecuted": 1740700800000
   },
   {
     "cgp": 163,
@@ -2495,12 +1805,7 @@
     "id": 204,
     "url": "https://forum.celo.org/t/launch-of-a-ghanaian-cedi-stablecoin-cghs",
     "timestamp": 1738886400000,
-    "timestampExecuted": 1740096000000,
-    "votes": {
-      "yes": "37703785130351576271780159",
-      "no": "0",
-      "abstain": "52248860833279249339"
-    }
+    "timestampExecuted": 1740096000000
   },
   {
     "cgp": 164,
@@ -2512,12 +1817,7 @@
     "id": 209,
     "url": "https://forum.celo.org/t/the-great-celo-halvening-temperature-check",
     "timestamp": 1738368000000,
-    "timestampExecuted": 1740700800000,
-    "votes": {
-      "yes": "19261901285462570082451836",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1740700800000
   },
   {
     "cgp": 165,
@@ -2529,12 +1829,7 @@
     "id": 212,
     "url": "https://forum.celo.org/t/celo-communities-guild-proposal-2025-h1-budget",
     "timestamp": 1739491200000,
-    "timestampExecuted": 1741392000000,
-    "votes": {
-      "yes": "9193512902396468911545269",
-      "no": "0",
-      "abstain": "147050609427872937455904"
-    }
+    "timestampExecuted": 1741392000000
   },
   {
     "cgp": 166,
@@ -2546,12 +1841,7 @@
     "id": 214,
     "url": "https://forum.celo.org/t/contracts-release-12",
     "timestamp": 1739750400000,
-    "timestampExecuted": 1742256000000,
-    "votes": {
-      "yes": "24988224679516513377726807",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1742256000000
   },
   {
     "cgp": 167,
@@ -2563,12 +1853,7 @@
     "id": 216,
     "url": "https://forum.celo.org/t/set-parameters-for-l2-transition",
     "timestamp": 1739577600000,
-    "timestampExecuted": 1742515200000,
-    "votes": {
-      "yes": "37058817270974801437429047",
-      "no": "0",
-      "abstain": "54384120832857290644"
-    }
+    "timestampExecuted": 1742515200000
   },
   {
     "cgp": 168,
@@ -2580,12 +1865,7 @@
     "id": 211,
     "url": "https://forum.celo.org/t/budget-request-prezenti-grant-funding-season-0",
     "timestamp": 1740614400000,
-    "timestampExecuted": 1741392000000,
-    "votes": {
-      "yes": "7729441123735023784535065",
-      "no": "0",
-      "abstain": "48206050181210438018590"
-    }
+    "timestampExecuted": 1741392000000
   },
   {
     "cgp": 169,
@@ -2597,12 +1877,7 @@
     "id": 219,
     "url": "https://forum.celo.org/t/set-the-great-celo-halvening-parameters/10455",
     "timestamp": 1708992000000,
-    "timestampExecuted": 1743292800000,
-    "votes": {
-      "yes": "27639289849284758627715933",
-      "no": "4594033954353230102169",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1743292800000
   },
   {
     "cgp": 170,
@@ -2614,12 +1889,7 @@
     "id": 215,
     "url": "https://forum.celo.org/t/authorize-2nd-half-of-minipay-strategic-grant",
     "timestamp": 1741305600000,
-    "timestampExecuted": 1742515200000,
-    "votes": {
-      "yes": "31009973597124122019209739",
-      "no": "0",
-      "abstain": "155710461800186910510377"
-    }
+    "timestampExecuted": 1742515200000
   },
   {
     "cgp": 171,
@@ -2631,12 +1901,7 @@
     "id": 218,
     "url": "https://forum.celo.org/t/proposing-celo-l2s-security-council",
     "timestamp": 1742256000000,
-    "timestampExecuted": 1742947200000,
-    "votes": {
-      "yes": "8192621480629271467302943",
-      "no": "0",
-      "abstain": "271192696524128862321587"
-    }
+    "timestampExecuted": 1742947200000
   },
   {
     "cgp": 172,
@@ -2658,12 +1923,7 @@
     "id": 217,
     "url": "https://forum.celo.org/t/supply-liquidity-to-aave-via-mento-reserve",
     "timestamp": 1741824000000,
-    "timestampExecuted": 1743033600000,
-    "votes": {
-      "yes": "25393588028292003724656837",
-      "no": "62546721847759838095564",
-      "abstain": "176039055852493572582287"
-    }
+    "timestampExecuted": 1743033600000
   },
   {
     "cgp": 174,
@@ -2675,12 +1935,7 @@
     "id": 220,
     "url": "https://forum.celo.org/t/cghs-name-update",
     "timestamp": 1742169600000,
-    "timestampExecuted": 1743552000000,
-    "votes": {
-      "yes": "8183339005430613676278544",
-      "no": "0",
-      "abstain": "38374313878427851804165"
-    }
+    "timestampExecuted": 1743552000000
   },
   {
     "cgp": 175,
@@ -2692,12 +1947,7 @@
     "id": 221,
     "url": "https://forum.celo.org/t/proposing-celo-l2s-security-council",
     "timestamp": 1741737600000,
-    "timestampExecuted": 1743811200000,
-    "votes": {
-      "yes": "25110270156743902986552682",
-      "no": "0",
-      "abstain": "2409717599631249949505"
-    }
+    "timestampExecuted": 1743811200000
   },
   {
     "cgp": 176,
@@ -2709,12 +1959,7 @@
     "id": 228,
     "url": "https://forum.celo.org/t/celo-camp-2025-season-0-1-proposal",
     "timestamp": 1742428800000,
-    "timestampExecuted": 1746835200000,
-    "votes": {
-      "yes": "25364653767865659909191990",
-      "no": "54653693266706147666002",
-      "abstain": "607169625615751637006415"
-    }
+    "timestampExecuted": 1746835200000
   },
   {
     "cgp": 177,
@@ -2726,12 +1971,7 @@
     "id": 222,
     "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar",
     "timestamp": 1743033600000,
-    "timestampExecuted": 1744156800000,
-    "votes": {
-      "yes": "25727289879437264893361064",
-      "no": "0",
-      "abstain": "5092623495626493002"
-    }
+    "timestampExecuted": 1744156800000
   },
   {
     "cgp": 178,
@@ -2743,12 +1983,7 @@
     "id": 223,
     "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
     "timestamp": 1743120000000,
-    "timestampExecuted": 1744502400000,
-    "votes": {
-      "yes": "43095325054132116952555064",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1744502400000
   },
   {
     "cgp": 179,
@@ -2760,12 +1995,7 @@
     "id": 226,
     "url": "https://forum.celo.org/t/restore-remaining-celo-spend-allowance-to-stabila-multi-sig",
     "timestamp": 1744675200000,
-    "timestampExecuted": 1746144000000,
-    "votes": {
-      "yes": "14627860781069317986490947",
-      "no": "726326963531511588346827",
-      "abstain": "1505150096104222952411"
-    }
+    "timestampExecuted": 1746144000000
   },
   {
     "cgp": 180,
@@ -2777,12 +2007,7 @@
     "id": 225,
     "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar",
     "timestamp": 1744848000000,
-    "timestampExecuted": 1746057600000,
-    "votes": {
-      "yes": "21700928857884425186817432",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1746057600000
   },
   {
     "cgp": 181,
@@ -2794,12 +2019,7 @@
     "id": 229,
     "url": "https://forum.celo.org/t/proposal-for-extension-of-score-management-committee-and-additional-funding",
     "timestamp": 1744588800000,
-    "timestampExecuted": 1747353600000,
-    "votes": {
-      "yes": "7842342464576791214183104",
-      "no": "502408192077104079669945",
-      "abstain": "95612367767761776126021"
-    }
+    "timestampExecuted": 1747353600000
   },
   {
     "cgp": 182,
@@ -2811,12 +2031,7 @@
     "id": 227,
     "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
     "timestamp": 1745539200000,
-    "timestampExecuted": 1747008000000,
-    "votes": {
-      "yes": "20518971217633304948104246",
-      "no": "0",
-      "abstain": "1000000000000000000"
-    }
+    "timestampExecuted": 1747008000000
   },
   {
     "cgp": 183,
@@ -2827,12 +2042,7 @@
     "stage": 8,
     "id": 233,
     "url": "https://forum.celo.org/t/celo-kreiva-dao-season-0-1-2025-proposal",
-    "timestamp": 1744761600000,
-    "votes": {
-      "yes": "2150000000000000000000",
-      "no": "1801890135041264162896401",
-      "abstain": "6108409806095459400"
-    }
+    "timestamp": 1744761600000
   },
   {
     "cgp": 184,
@@ -2844,12 +2054,7 @@
     "id": 231,
     "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
     "timestamp": 1747094400000,
-    "timestampExecuted": 1748822400000,
-    "votes": {
-      "yes": "26714445152230204017189907",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1748822400000
   },
   {
     "cgp": 185,
@@ -2860,12 +2065,7 @@
     "stage": 8,
     "id": 230,
     "url": "https://forum.celo.org/t/celatam-venture-studio/11200",
-    "timestamp": 1747267200000,
-    "votes": {
-      "yes": "136476588213980291524624",
-      "no": "1941694076315750540766555",
-      "abstain": "38067692034912402402217"
-    }
+    "timestamp": 1747267200000
   },
   {
     "cgp": 186,
@@ -2877,12 +2077,7 @@
     "id": 232,
     "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
     "timestamp": 1747872000000,
-    "timestampExecuted": 1748822400000,
-    "votes": {
-      "yes": "21093533543754249418217927",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1748822400000
   },
   {
     "cgp": 187,
@@ -2894,12 +2089,7 @@
     "id": 234,
     "url": "https://forum.celo.org/t/streamlining-mento-reserve-pairs",
     "timestamp": 1749340800000,
-    "timestampExecuted": 1752192000000,
-    "votes": {
-      "yes": "26847669902525612813263398",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1752192000000
   },
   {
     "cgp": 188,
@@ -2911,12 +2101,7 @@
     "id": 247,
     "url": "https://forum.celo.org/t/celo-core-contracts-release-13",
     "timestamp": 1749772800000,
-    "timestampExecuted": 1755648000000,
-    "votes": {
-      "yes": "18171977201342686949675588",
-      "no": "1000000000000000000",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1755648000000
   },
   {
     "cgp": 189,
@@ -2928,12 +2113,7 @@
     "id": 236,
     "url": "https://forum.celo.org/t/celo-governance-season-1-intent",
     "timestamp": 1751846400000,
-    "timestampExecuted": 1753401600000,
-    "votes": {
-      "yes": "35200233716704826308499238",
-      "no": "0",
-      "abstain": "11053076958523535033435"
-    }
+    "timestampExecuted": 1753401600000
   },
   {
     "cgp": 190,
@@ -2955,12 +2135,7 @@
     "id": 237,
     "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote/11684/6",
     "timestamp": 1752451200000,
-    "timestampExecuted": 1753488000000,
-    "votes": {
-      "yes": "25235149885595291178210225",
-      "no": "0",
-      "abstain": "25058578020186605113238"
-    }
+    "timestampExecuted": 1753488000000
   },
   {
     "cgp": 192,
@@ -2971,12 +2146,7 @@
     "stage": 5,
     "id": 238,
     "url": "https://forum.celo.org/t/celo-ecosystem-security-services-program-enhancing-ecosystem-security-through-subsidized-services",
-    "timestamp": 1753142400000,
-    "votes": {
-      "yes": "1057137013936645015038407",
-      "no": "0",
-      "abstain": "25071324696177083403927"
-    }
+    "timestamp": 1753142400000
   },
   {
     "cgp": 193,
@@ -2988,12 +2158,7 @@
     "id": 240,
     "url": "https://forum.celo.org/t/stabila-season-1-funding-request-defi-flywheel-infrastructure-incentives/",
     "timestamp": 1753401600000,
-    "timestampExecuted": 1754611200000,
-    "votes": {
-      "yes": "18576347712095169027200473",
-      "no": "842499871283766051455768",
-      "abstain": "148254212048998667827869"
-    }
+    "timestampExecuted": 1754611200000
   },
   {
     "cgp": 194,
@@ -3005,12 +2170,7 @@
     "id": 241,
     "url": "https://forum.celo.org/t/celopg-season-1-funding-request",
     "timestamp": 1753142400000,
-    "timestampExecuted": 1754611200000,
-    "votes": {
-      "yes": "24639434689842498152840252",
-      "no": "1014923756835672072254036",
-      "abstain": "104257283133712661408424"
-    }
+    "timestampExecuted": 1754611200000
   },
   {
     "cgp": 195,
@@ -3022,12 +2182,7 @@
     "id": 243,
     "url": "https://forum.celo.org/t/celo-communities-guild-season-1-funding-request",
     "timestamp": 1753660800000,
-    "timestampExecuted": 1754870400000,
-    "votes": {
-      "yes": "36329528266792542101280543",
-      "no": "110705473199013571177229",
-      "abstain": "16291281818005073987494"
-    }
+    "timestampExecuted": 1754870400000
   },
   {
     "cgp": 196,
@@ -3038,12 +2193,7 @@
     "stage": 5,
     "id": 254,
     "url": "https://forum.celo.org/t/add-usdc-and-usdt-to-the-feehandler-contract/12048",
-    "timestamp": 1753833600000,
-    "votes": {
-      "yes": "11831506061043120099944170",
-      "no": "0",
-      "abstain": "25186447089982605793651"
-    }
+    "timestamp": 1753833600000
   },
   {
     "cgp": 197,
@@ -3055,12 +2205,7 @@
     "id": 244,
     "url": "https://forum.celo.org/t/prezenti-season-1-funding-request-direct-grants-revised",
     "timestamp": 1753660800000,
-    "timestampExecuted": 1754956800000,
-    "votes": {
-      "yes": "30221771245394816530239577",
-      "no": "0",
-      "abstain": "597101174686821816071537"
-    }
+    "timestampExecuted": 1754956800000
   },
   {
     "cgp": 198,
@@ -3071,12 +2216,7 @@
     "stage": 8,
     "id": 245,
     "url": "https://forum.celo.org/t/celo-regional-council-season-1-funding-request",
-    "timestamp": 1754006400000,
-    "votes": {
-      "yes": "1553274474201380934792658",
-      "no": "1524488661252223542394026",
-      "abstain": "67865743864703796530988"
-    }
+    "timestamp": 1754006400000
   },
   {
     "cgp": 199,
@@ -3088,12 +2228,7 @@
     "id": 246,
     "url": "https://forum.celo.org/t/creating-the-next-fx-market-a-strategy-to-attract-liquidity-to-celo",
     "timestamp": 1754352000000,
-    "timestampExecuted": 1755216000000,
-    "votes": {
-      "yes": "19306883092954167389413439",
-      "no": "894509684360023769500479",
-      "abstain": "128168187940429507817090"
-    }
+    "timestampExecuted": 1755216000000
   },
   {
     "cgp": 200,
@@ -3105,12 +2240,7 @@
     "id": 251,
     "url": "https://forum.celo.org/t/celo-foundation-season-1-funding-proposal",
     "timestamp": 1754265600000,
-    "timestampExecuted": 1757030400000,
-    "votes": {
-      "yes": "17680895247076668185702104",
-      "no": "0",
-      "abstain": "10000000000000000000"
-    }
+    "timestampExecuted": 1757030400000
   },
   {
     "cgp": 201,
@@ -3122,12 +2252,7 @@
     "id": 249,
     "url": "https://forum.celo.org/t/funding-proposal-accelerating-the-next-phase-of-celo-s-l2-development",
     "timestamp": 1754006400000,
-    "timestampExecuted": 1755820800000,
-    "votes": {
-      "yes": "30291685671274514493913363",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1755820800000
   },
   {
     "cgp": 202,
@@ -3139,12 +2264,7 @@
     "id": 250,
     "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-season-1-ciclops-2",
     "timestamp": 1755216000000,
-    "timestampExecuted": 1756252800000,
-    "votes": {
-      "yes": "35541458176450142547975850",
-      "no": "0",
-      "abstain": "0"
-    }
+    "timestampExecuted": 1756252800000
   },
   {
     "cgp": 203,
@@ -3152,9 +2272,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0203.md",
     "title": "Adding WETH as gas currency",
     "author": "Martín Volpe (@cLabs)",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/adding-weth-as-gas-currency/12047",
-    "timestamp": 1753747200000
+    "stage": 6,
+    "id": 256,
+    "url": "https://forum.celo.org/t/adding-weth-as-gas-currency",
+    "timestamp": 1753747200000,
+    "timestampExecuted": 1759622400000
   },
   {
     "cgp": 204,
@@ -3166,12 +2288,7 @@
     "id": 252,
     "url": "https://forum.celo.org/t/celo-regional-council-season-1-funding-request-v2",
     "timestamp": 1757376000000,
-    "timestampExecuted": 1758240000000,
-    "votes": {
-      "yes": "28402680029377727746260097",
-      "no": "11338703017848156745786",
-      "abstain": "1247846506779540604427970"
-    }
+    "timestampExecuted": 1758240000000
   },
   {
     "cgp": 205,
@@ -3182,12 +2299,7 @@
     "stage": 5,
     "id": 253,
     "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote/11684/6",
-    "timestamp": 1757548800000,
-    "votes": {
-      "yes": "1825620725117875157522685",
-      "no": "100000000000000000000",
-      "abstain": "100500000000000000000"
-    }
+    "timestamp": 1757548800000
   },
   {
     "cgp": 206,
@@ -3195,8 +2307,79 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0206.md",
     "title": "Proxy Vote for MGP-10 - Restructuring the Mento Reserve Yield on Mento Reserve & Mento Funding",
     "author": "@mentoLabs",
+    "stage": 6,
+    "id": 255,
+    "url": "https://forum.celo.org/t/mgp-10-restructuring-the-mento-reserve-yield-on-mento-reserve-mento-funding-community-fund-proxy-vote",
+    "timestamp": 1757635200000,
+    "timestampExecuted": 1758672000000
+  },
+  {
+    "cgp": 207,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0207.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0207.md",
+    "title": "Mento Reserve Rebalancing",
+    "author": "Celo Community",
     "stage": 0,
-    "url": "https://forum.celo.org/t/mgp-10-restructuring-the-mento-reserve-yield-on-mento-reserve-mento-funding-community-fund-proxy-vote/12324",
-    "timestamp": 1757635200000
+    "timestamp": 1759968000000
+  },
+  {
+    "cgp": 208,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0208.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0208.md",
+    "title": "Contracts Release 14",
+    "author": "cLabs Primitives Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/celo-core-contracts-release-14",
+    "timestamp": 1760054400000
+  },
+  {
+    "cgp": 209,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0209.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0209.md",
+    "title": "Transfer CELO from Governance Reserve to Governance Proxy",
+    "author": "Governance ops team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/proposal-to-transfer-celo-from-governance-reserve-to-governance-proxy/12472",
+    "timestamp": 1760054400000
+  },
+  {
+    "cgp": 210,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0210.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0210.md",
+    "title": "Score Management Committee - 6 Month Extension and Continued Funding",
+    "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/score-management-committee-6-month-extension-and-continued-funding/",
+    "timestamp": 1761004800000
+  },
+  {
+    "cgp": 211,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0211.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0211.md",
+    "title": "Setting WETH oracle for gas pricing",
+    "author": "Martín Volpe @martinvol",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/setting-weth-oracle-for-gas-pricing/12552",
+    "timestamp": 1761523200000
+  },
+  {
+    "cgp": 212,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0212.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0212.md",
+    "title": "Jello Hardfork Temperature Check - OP Succinct Lite and ZK Proofs for Celo Mainnet",
+    "author": "cLabs Team",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/introducing-the-jello-hardfork-op-succinct-lite-now-live-on-celo-sepolia/12603",
+    "timestamp": 1762300800000
+  },
+  {
+    "cgp": 213,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0213.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0213.md",
+    "title": "Score Management Committee - 6 Month Extension and Continued Funding",
+    "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/score-management-committee-6-month-extension-and-continued-funding/",
+    "timestamp": 1761004800000
   }
 ]

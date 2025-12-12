@@ -39,27 +39,33 @@ export const VoteToColor: Record<VoteType, string> = {
   [VoteType.None]: Color.Grey,
   [VoteType.Abstain]: Color.Sand,
   [VoteType.No]: Color.Red,
-  [VoteType.Yes]: Color.Mint,
+  [VoteType.Yes]: Color.Lilac,
 };
 
 // Using ints to align with solidity enum
 export enum ProposalStage {
   None = 0,
   Queued = 1,
+  // DEPRECATED: Approval stage exists in the on-chain Solidity enum but getProposalStage() never returns it.
+  // The approval process happens during Referendum/Execution stages and is tracked via proposal.approved boolean.
+  // We keep this enum value (2) to maintain alignment with the Solidity contract enum values.
+  // If somehow displayed in UI, treat it like Execution stage (awaiting execution after approval).
   Approval = 2,
   Referendum = 3,
   Execution = 4,
   Expiration = 5,
   // NOTE: solidity enum ends here
-  // Adding extra stages that may be used in the metadata
+  // Below are off-chain only stages (not in Solidity contract):
   Executed = 6,
   Withdrawn = 7,
   Rejected = 8,
+  // Used for Proposals that have zero transactions and therefore execution would only be symbolic.
+  // We still want to show that the proposal was successful.
+  Adopted = 9,
 }
 
 export const ACTIVE_PROPOSAL_STAGES = [
   ProposalStage.Queued,
-  ProposalStage.Approval,
   ProposalStage.Referendum,
   ProposalStage.Execution,
 ];
@@ -80,7 +86,7 @@ export interface Proposal {
   deposit: bigint;
   numTransactions: bigint;
   networkWeight: bigint;
-  isApproved: boolean;
+  isPassing: boolean;
   upvotes: bigint;
   votes: VoteAmounts;
 }
@@ -145,7 +151,6 @@ export interface ProposalMetadata {
   title: string;
   author: string;
   timestampExecuted?: number;
-  votes?: VoteAmounts;
 }
 
 /**

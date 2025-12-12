@@ -14,7 +14,6 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import 'react-toastify/dist/ReactToastify.css';
 import { config, infuraRpcUrl } from 'src/config/config';
-import { GCTime } from 'src/config/consts';
 import { Color } from 'src/styles/Color';
 import { celo, celoAlfajores } from 'viem/chains';
 import { WagmiProvider, createConfig, fallback, http } from 'wagmi';
@@ -49,14 +48,7 @@ export const wagmiConfig = createConfig({
   },
 });
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: GCTime.Default,
-      staleTime: GCTime.Default,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 export function WagmiContext({ children }: { children: React.ReactNode }) {
   return (

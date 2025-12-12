@@ -19,6 +19,7 @@ export async function decodeAndPrepareVoteEvent(
   chainId: number,
 ): Promise<(typeof votesTable)['$inferInsert'][]> {
   if (!assertEvent(ALLOWED_EVENTS, eventName)) {
+    // eslint-disable-next-line no-console
     console.info('Not a vote event');
     return [];
   }

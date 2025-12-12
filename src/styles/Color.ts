@@ -12,6 +12,7 @@ export enum Color {
   Sand = '#E7E3D4',
   Wood = '#655947',
   Lavender = '#B490FF',
+  Lilac = '#ccb8f7ff',
   Fig = '#1E002B',
   Mint = '#BEEAA9',
   Jade = '#56DF7C',

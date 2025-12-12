@@ -13,12 +13,13 @@ export function FormSubmitButton({ children, ...props }: Props) {
   const firstError = `${Object.values(errors)[0]}` || 'Unknown error';
 
   const className = hasError
-    ? 'all:bg-red-500 all:hover:bg-red-500 all:hover:opacity-100'
-    : undefined;
+    ? 'all:bg-error all:hover:bg-error all:hover:opacity-100'
+    : 'bg-primary text-primary-content';
   const content = hasError ? firstError : children;
 
   // Automatically clear error state after a timeout
   const clearErrors = useCallback(async () => {
+    if (!Object.keys(errors).length) return;
     logger.info('Clearing form errors');
 
     setErrors({});

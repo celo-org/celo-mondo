@@ -1,7 +1,7 @@
 /* eslint no-console: 0 */
 
-import { governanceABI } from '@celo/abis';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { governanceABI, lockedGoldABI } from '@celo/abis';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from 'viem';
@@ -12,7 +12,8 @@ import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
 
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';
-import '../../vendor/polyfill.js';
+import { unixTimestampToISOString } from 'src/utils/time';
+import '../../vendor/polyfill';
 
 // Note: for some reason when using SQL's `JSON_AGG` function, we're losing the bigint types
 type Event = typeof eventsTable.$inferSelect;
@@ -68,7 +69,6 @@ export default async function updateProposalsInDB(
       events,
       proposalsMetadata,
     });
-
     if (proposal) {
       rowsToInsert.push(proposal);
     }
@@ -81,6 +81,7 @@ export default async function updateProposalsInDB(
       set:
         intent === 'replay'
           ? {
+              // NOTE: make sure all values are here
               cgp: sql`excluded."cgp"`,
               author: sql`excluded."author"`,
               url: sql`excluded."url"`,
@@ -91,14 +92,29 @@ export default async function updateProposalsInDB(
               proposer: sql`excluded."proposer"`,
               deposit: sql`excluded."deposit"`,
               networkWeight: sql`excluded."networkWeight"`,
-              executedAt: sql`excluded."executedAt"`,
               transactionCount: sql`excluded."transactionCount"`,
               timestamp: sql`excluded."timestamp"`,
+              queuedAt: sql`excluded."queuedAt"`,
+              queuedAtBlockNumber: sql`excluded."queuedAtBlockNumber"`,
+              dequeuedAt: sql`excluded."dequeuedAt"`,
+              dequeuedAtBlockNumber: sql`excluded."dequeuedAtBlockNumber"`,
+              approvedAt: sql`excluded."approvedAt"`,
+              approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
+              executedAt: sql`excluded."executedAt"`,
+              executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
             }
           : {
               stage: sql`excluded."stage"`,
               networkWeight: sql`excluded."networkWeight"`,
               timestamp: sql`excluded."timestamp"`,
+              queuedAt: sql`excluded."queuedAt"`,
+              queuedAtBlockNumber: sql`excluded."queuedAtBlockNumber"`,
+              dequeuedAt: sql`excluded."dequeuedAt"`,
+              dequeuedAtBlockNumber: sql`excluded."dequeuedAtBlockNumber"`,
+              approvedAt: sql`excluded."approvedAt"`,
+              approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
+              executedAt: sql`excluded."executedAt"`,
+              executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
             },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
@@ -106,13 +122,17 @@ export default async function updateProposalsInDB(
   console.info(`Upserted ${count} proposals`);
 
   await relinkProposals();
-
+  if (process.env.NODE_ENV === 'test') {
+    console.info('not revalidating cache in test mode');
+    return;
+  } // Revalidate the cache
   if (process.env.CI === 'true') {
     const BASE_URL = process.env.IS_PRODUCTION_DATABASE
       ? 'https://mondo.celo.org'
       : 'https://preview-celo-mondo.vercel.app';
     await fetch(`${BASE_URL}/api/governance/proposals`, { method: 'DELETE' });
-  } else {
+  } else if (process.env.NEXT_RUNTIME) {
+    // Only revalidate if running in a Next.js runtime
     revalidateTag(CacheKeys.AllProposals);
   }
 }
@@ -137,23 +157,35 @@ async function mergeProposalDataIntoPGRow({
     };
   };
   const lastProposalEvent = events.at(-1)!;
-
   const proposalOnChainAtCreation = await getProposalOnChain(
     client,
     proposalId,
     BigInt(proposalQueuedEvent.blockNumber),
   );
-  const mostRecentProposalState = await getProposalOnChain(
-    client,
-    proposalId,
-    lastProposalEvent.eventName === 'ProposalExecuted'
-      ? // proposal is deleted from chain when executed
-        BigInt(lastProposalEvent.blockNumber) - 1n
-      : // latest block as the proposal is still on chain
-        undefined,
-  );
+  const { state: mostRecentProposalState, blockNumber: mostRecentProposalBlockNumber } =
+    await getMostRecentProposalStateAndBlockNumber(client, proposalId, lastProposalEvent);
 
   const stage = await getProposalStage(client, proposalId, lastProposalEvent.eventName);
+  let column: 'queuedAt' | 'dequeuedAt' | 'approvedAt' | 'executedAt' | 'expiredAt';
+  switch (lastProposalEvent.eventName) {
+    case 'ProposalExecuted':
+      column = 'executedAt';
+      break;
+    case 'ProposalApproved':
+      column = 'approvedAt';
+      break;
+    case 'ProposalExpired':
+      column = 'expiredAt';
+      break;
+    case 'ProposalDequeued':
+      column = 'dequeuedAt';
+      break;
+    case 'ProposalQueued':
+      column = 'queuedAt';
+      break;
+    default:
+      throw new Error(`Unhandled event: ${lastProposalEvent.eventName}`);
+  }
 
   let url = mostRecentProposalState[URL_INDEX];
   let cgpMatch = url.match(/cgp-(\d+)\.md/i);
@@ -185,18 +217,19 @@ async function mergeProposalDataIntoPGRow({
 
   // NOTE: use last block where the proposal was still on chain to know about network weight
   const networkWeightIndex = 5;
-  const networkWeight =
-    mostRecentProposalState[networkWeightIndex] ||
-    (await client
-      .readContract({
-        blockNumber: BigInt(lastProposalEvent.blockNumber!) - 1n,
-        abi: governanceABI,
-        address: Addresses.Governance,
-        functionName: 'getProposal',
-        args: [BigInt(proposalId)],
-      })
-      .then((x) => x[networkWeightIndex])
-      .catch((_) => 0n));
+  let networkWeight = mostRecentProposalState[networkWeightIndex];
+  if (networkWeight === 0n) {
+    console.log(
+      'network weight is 0, getting from locked celo amount at',
+      mostRecentProposalBlockNumber,
+    );
+    networkWeight = await getNetworkWeightFromLockedCeloAmount(
+      client,
+      mostRecentProposalBlockNumber,
+    );
+  } else {
+    console.log('network weight is not 0, using', networkWeight, 'at', mostRecentProposalState);
+  }
 
   // NOTE: use earliest possible block where the proposal was on chain to know about numTransactions
   // however they can be not present for really old blocks so infer from the event which can also be
@@ -206,7 +239,17 @@ async function mergeProposalDataIntoPGRow({
     BigInt(proposalQueuedEvent.args.transactionCount) ||
     0n;
 
+  const [[existingProposal], eventUnixTimestampInSeconds] = await Promise.all([
+    database.select().from(proposalsTable).where(eq(proposalsTable.id, proposalId)),
+    client
+      .getBlock({ blockNumber: BigInt(lastProposalEvent.blockNumber) })
+      .then(({ timestamp }) => Number(timestamp)),
+  ]);
+
   return {
+    // NOTE: we need to make sure the existing values (dequeuedAt, queuedAt, etc) are
+    // present in the object to not override them with NULL values
+    ...existingProposal,
     id: proposalId,
     chainId: client.chain.id,
     timestamp: parseInt(mostRecentProposalState[TIMESTAMP_INDEX].toString(), 10),
@@ -220,12 +263,13 @@ async function mergeProposalDataIntoPGRow({
     proposer: proposalQueuedEvent.args.proposer,
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
-    executedAt: metadata?.timestampExecuted ? metadata.timestampExecuted / 1000 : null,
     transactionCount: Number(numTransactions),
+    [column + 'BlockNumber']: lastProposalEvent.blockNumber,
+    [column]: unixTimestampToISOString(eventUnixTimestampInSeconds),
   };
 }
 
-async function getProposalOnChain(
+export async function getProposalOnChain(
   client: PublicClient<Transport, Chain>,
   proposalId: number,
   blockNumber?: bigint,
@@ -275,18 +319,24 @@ async function getProposalStage(
   proposalId: number,
   eventName: string | undefined,
 ): Promise<ProposalStage> {
-  let stage: ProposalStage;
+  let stage: ProposalStage | undefined;
   switch (eventName) {
     case 'ProposalExecuted':
       stage = ProposalStage.Executed;
       break;
 
-    case 'ProposalApproved':
-      stage = ProposalStage.Execution;
-      break;
-
     case 'ProposalExpired':
       stage = ProposalStage.Expiration;
+      break;
+
+    // NOTE: approval doesn't change stage, it's a boolean state
+    // but we still want to update the approvedAt column
+    // in this case setting stage to undefined will force
+    // the next if statement to fetch stage from the blockchain
+    // as it could be 'referendum' or 'execution' but no event is emitted
+    // for the transition from 'referendum' stage  to 'execution' stage
+    case 'ProposalApproved':
+      stage = undefined;
       break;
 
     case 'ProposalDequeued':
@@ -313,10 +363,11 @@ async function getProposalStage(
       functionName: 'getProposalStage',
       args: [BigInt(proposalId)],
     });
-    if (stageOnChain > stage) {
+    if (!stage || stageOnChain > stage) {
       stage = stageOnChain;
     }
   }
+
   return stage;
 }
 
@@ -342,4 +393,74 @@ async function relinkProposals() {
         .where(sql`${proposalsTable.id} = ${ids[0]}`);
     }
   }
+}
+
+async function getNetworkWeightFromLockedCeloAmount(
+  client: PublicClient<Transport, Chain>,
+  blockNumber: bigint,
+): Promise<bigint> {
+  try {
+    const lockedCeloAmount = await client.readContract({
+      blockNumber,
+      abi: lockedGoldABI,
+      address: Addresses.LockedGold,
+      functionName: 'getTotalLockedGold',
+      args: [],
+    });
+    return lockedCeloAmount;
+  } catch (err) {
+    console.error('Error getting network weight from locked celo amount at', blockNumber, err);
+    return 0n;
+  }
+}
+
+export async function getMostRecentProposalStateAndBlockNumber(
+  client: PublicClient<Transport, Chain>,
+  proposalId: number,
+  lastEvent: Event | JsonAggEvent,
+) {
+  let mostRecentProposalState = await getProposalOnChain(client, proposalId);
+  let mostRecentProposalBlockNumber = BigInt(lastEvent.blockNumber);
+  if (BigInt(mostRecentProposalState[0]) === 0n) {
+    // note ProposalVoted and ProposalVotedV2 have different arg data https://github.com/celo-org/celo-monorepo/blob/0a5c8c500559c291d14af236a15e621f74053c50/packages/protocol/contracts/governance/Governance.sol#L154
+    const lastVoteEvent = (
+      await database
+        .select()
+        .from(eventsTable)
+        .where(
+          and(
+            // older proposals might have a ProposalVoted event
+            inArray(eventsTable.eventName, ['ProposalVotedV2', 'ProposalVoted']),
+            eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, proposalId),
+          ),
+        )
+        .orderBy(desc(eventsTable.blockNumber))
+        .limit(1)
+    )[0];
+
+    // Determine the most recent block number to query
+    if (lastEvent.eventName === 'ProposalExecuted') {
+      // use the block before the execution as the most recent proposal state as execution removes from chain
+      mostRecentProposalBlockNumber = BigInt(lastEvent.blockNumber) - 1n;
+    } else if (
+      // if proposal is voted on but never executed/expired then we will only have the latest vote event to find the proposal by
+      lastVoteEvent?.blockNumber &&
+      lastVoteEvent.blockNumber > lastEvent.blockNumber
+    ) {
+      mostRecentProposalBlockNumber = lastVoteEvent.blockNumber;
+    }
+
+    // we can't rely on events as they don't all contain timestamps
+    // Why we need timestamps from them? timestamp only changes when queing and dequeuing which do contain timestamps
+    mostRecentProposalState = await getProposalOnChain(
+      client,
+      proposalId,
+      mostRecentProposalBlockNumber,
+    );
+  }
+
+  return {
+    state: mostRecentProposalState,
+    blockNumber: mostRecentProposalBlockNumber,
+  };
 }

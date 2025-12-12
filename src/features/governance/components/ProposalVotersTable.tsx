@@ -7,14 +7,13 @@ import { CopyInline } from 'src/components/text/CopyInline';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoters } from 'src/features/governance/hooks/useProposalVoters';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
-import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { cleanGroupName } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
-import { normalizeAddress, shortenAddress } from 'src/utils/addresses';
+import { normalizeAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
 import { objKeys, objMap } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 const NUM_TO_SHOW = 20;
 
@@ -42,7 +41,7 @@ function VoterTableContent({
   propData: MergedProposalData & { votersData: ReturnType<typeof useProposalVoters> };
 }) {
   const { isLoading, voters, totals } = propData.votersData;
-  const { addressToGroup } = useValidatorGroups();
+  const addressToLabel = useAddressToLabel();
 
   const tableData = useMemo(() => {
     if (!voters || !totals) return [];
@@ -55,14 +54,12 @@ function VoterTableContent({
       [VoteType.Abstain]: [],
     };
     for (const account of objKeys(voters)) {
-      const groupName = cleanGroupName(addressToGroup?.[account]?.name || '');
-      const label = groupName || shortenAddress(account);
       for (const type of objKeys(voters[account])) {
         const amount = fromWei(voters[account][type]);
         if (amount <= 0) continue;
         const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
         votesByType[type]?.push({
-          label,
+          label: addressToLabel(account),
           value: amount,
           percentage,
           address: normalizeAddress(account),
@@ -80,7 +77,7 @@ function VoterTableContent({
     // Sort by value and take the top NUM_VOTERS_TO_SHOW
     const sorted = combined.sort((a, b) => b.value - a.value);
     return sorted.slice(0, NUM_TO_SHOW);
-  }, [voters, totals, addressToGroup]);
+  }, [voters, totals, addressToLabel]);
 
   if (isLoading) {
     return (

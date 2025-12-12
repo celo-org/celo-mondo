@@ -22,6 +22,7 @@ import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { sortByIdThenCGP } from 'src/utils/proposals';
 import { isNullish } from 'src/utils/typeof';
+import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
 enum Filter {
@@ -40,14 +41,14 @@ const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
     Boolean(p.proposal) &&
     p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
   [Filter.Voting]: (p) => p.stage === ProposalStage.Referendum,
-  [Filter.Upcoming]: (p) => p.stage < ProposalStage.Referendum,
+  [Filter.Upcoming]: (p) => p.stage < ProposalStage.Approval,
   [Filter.History]: (p) => p.stage > ProposalStage.Execution,
 };
 
 export default function Page() {
   return (
     <>
-      <Section className="mt-4">
+      <Section className="mt-4" containerClassName="lg:max-w-screen-md">
         <ProposalList />
       </Section>
       <div className="fixed bottom-10 right-5 hidden md:block">
@@ -64,7 +65,7 @@ function ProposalList() {
   const { address } = useAccount();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [filter, setFilter] = useState<Filter>(Filter.Recent);
+  const { tab: filter, onTabChange: onFilterChange } = useTabs<Filter>(Filter.Recent);
 
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 
@@ -108,7 +109,7 @@ function ProposalList() {
         <Fade show>
           <TabHeaderFilters
             activeFilter={filter}
-            setFilter={setFilter}
+            setFilter={onFilterChange}
             counts={headerCounts}
             showCount={!isMobile}
             className="border-b border-taupe-300 pb-2 pt-1"

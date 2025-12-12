@@ -12,6 +12,7 @@ import { ValidatorGroup } from 'src/features/validators/types';
 import { tableClasses } from 'src/styles/common';
 import { percent, sum } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
+import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 
 export function RewardsTable({
   groupToReward,
@@ -21,6 +22,7 @@ export function RewardsTable({
   addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const addressToLabel = useAddressToLabel(() => 'Unknown Group');
 
   const { chartData, tableData } = useMemo(() => {
     if (!groupToReward || !addressToGroup || !objLength(groupToReward)) {
@@ -33,20 +35,20 @@ export function RewardsTable({
       .map((address) => {
         const reward = groupToReward[address];
         const percentage = total ? percent(reward, total) : 0;
-        const name = addressToGroup?.[address]?.name;
+        const name = addressToLabel(address);
         return { address, name, reward, percentage };
       })
       .sort((a, b) => b.reward - a.reward);
 
     const chartData = sortAndCombineChartData(
-      tableData.map(({ address, reward, percentage }) => ({
-        label: addressToGroup[address]?.name || 'Unknown Group',
+      tableData.map(({ reward, percentage, name }) => ({
+        label: name,
         value: reward,
         percentage,
       })),
     );
     return { chartData, tableData };
-  }, [groupToReward, addressToGroup]);
+  }, [groupToReward, addressToGroup, addressToLabel]);
 
   if (!groupToReward || !addressToGroup) {
     return <FullWidthSpinner>Loading staking data</FullWidthSpinner>;

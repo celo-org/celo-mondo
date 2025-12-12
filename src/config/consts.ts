@@ -20,6 +20,7 @@ export enum CacheKeys {
 }
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ONE_ADDRESS = '0x0000000000000000000000000000000000000001';
 export const DEFAULT_DISPLAY_DECIMALS = 2;
 export const DEFAULT_TOKEN_DECIMALS = 18;
 export const AVG_BLOCK_TIMES_MS = 5 * SECOND; // 5 SECONDs
@@ -30,7 +31,7 @@ export const BALANCE_REFRESH_INTERVAL = 5 * SECOND; // 5 seconds
 export const MIN_REMAINING_BALANCE = 10000000000000000n; // 0.01 CELO
 
 // Staking
-export const MIN_GROUP_SCORE_FOR_RANDOM = 90;
+export const MIN_GROUP_SCORE_FOR_RANDOM = 0.9;
 export const MIN_INCREMENTAL_VOTE_AMOUNT = 10000000000000000n; // 0.01 CELO
 export const MAX_NUM_ELECTABLE_VALIDATORS = 110;
 export const MAX_NUM_GROUPS_VOTED_FOR = 10;
@@ -48,3 +49,7 @@ export const MAX_NUM_DELEGATEES = 10;
 
 // Wallets
 export const WALLET_CONNECT_CONNECTOR_ID = 'walletConnect';
+
+// stCELO
+export const ST_CELO_API_URL =
+  'https://us-central1-staked-celo-bot.cloudfunctions.net/mainnet-functions';

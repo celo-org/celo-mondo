@@ -29,7 +29,7 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
         return [];
       }
 
-      const response = await fetch(`/governance/${proposalId}/api/transactions`);
+      const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=true`);
       if (!response.ok) {
         throw new Error(`Failed to fetch transactions: ${response.statusText}`);
       }
@@ -44,8 +44,8 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
           {isLoading ? (
             <FullWidthSpinner>Loading proposal onchain transactions</FullWidthSpinner>
           ) : error ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-red-800">Error loading transactions: {error.message}</p>
+            <div className="rounded-lg border border-red-200 bg-error p-4">
+              <p className="text-error-content">Error loading transactions: {error.message}</p>
             </div>
           ) : (
             transactions?.map((transaction, index) => (
@@ -69,12 +69,12 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
   const { decoded, error, to, value, data } = transaction;
   if (transaction.error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+      <div className="rounded-lg border border-red-200 bg-error p-4">
         <div className="flex items-center justify-between">
-          <h4 className="font-medium text-red-800">Transaction {index + 1}</h4>
-          <span className="text-sm text-red-600">Error</span>
+          <h4 className="font-medium text-error-content">Transaction {index + 1}</h4>
+          <span className="text-sm text-error-content">Error</span>
         </div>
-        <p className="mt-2 text-sm text-red-700">{error}</p>
+        <p className="mt-2 text-sm text-error-content">{error}</p>
       </div>
     );
   }
@@ -141,7 +141,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
           <div>
             <h5 className="text-sm font-medium text-gray-900">Raw Data</h5>
             <div className="mt-1">
-              <code className="block break-all rounded bg-gray-100 p-2 text-xs text-gray-800">
+              <code className="block break-all rounded-sm bg-gray-100 p-2 text-xs text-gray-800">
                 {data}
               </code>
             </div>

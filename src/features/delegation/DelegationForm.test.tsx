@@ -5,6 +5,7 @@ import * as useDelegatees from 'src/features/delegation/hooks/useDelegatees';
 import * as useDelegationBalances from 'src/features/delegation/hooks/useDelegationBalances';
 import * as useWriteContractWithReceipt from 'src/features/transactions/useWriteContractWithReceipt';
 import { TEST_ADDRESSES } from 'src/test/anvil/constants';
+import * as useAddressToLabelModule from 'src/utils/useAddressToLabel';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as wagmi from 'wagmi';
 
@@ -20,6 +21,7 @@ describe('<DelegationForm />', () => {
     } as any);
     vi.spyOn(wagmi, 'useReadContract').mockRejectedValue({ data: undefined });
     vi.spyOn(useWriteContractWithReceipt, 'useWriteContractWithReceipt').mockReturnValue({} as any);
+    vi.spyOn(useAddressToLabelModule, 'default').mockImplementation(() => () => 'test label');
   });
 
   afterEach(() => {
