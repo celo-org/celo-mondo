@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { Identicon } from 'src/components/icons/Identicon';
 import { Collapse } from 'src/components/menus/Collapse';
+import AddressLabel from 'src/components/text/AddressLabel';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalUpvoters } from 'src/features/governance/hooks/useProposalUpvoters';
 import { objKeys } from 'src/utils/objects';
@@ -48,7 +49,9 @@ function UpvoterTableContent({ propData }: { propData: MergedProposalData }) {
             <td className="py-2">
               <Identicon address={address} size={20} />
             </td>
-            <td className="px-4 py-2 text-sm">TODO: {address}</td>
+            <td className="px-4 py-2 text-sm">
+              <AddressLabel address={address} />
+            </td>
           </tr>
         ))}
       </tbody>
