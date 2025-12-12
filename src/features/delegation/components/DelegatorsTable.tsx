@@ -13,10 +13,11 @@ import { objKeys } from 'src/utils/objects';
 
 const NUM_TO_SHOW = 20;
 
+const name = (delegatee: Delegatee) => (delegatee.stCELO ? 'Stakers' : 'Delegators');
 export function DelegatorsTable({ delegatee }: { delegatee: Delegatee }) {
   return (
     <Collapse
-      button={<h2 className="text-left font-serif text-2xl">Delegators</h2>}
+      button={<h2 className="text-left font-serif text-2xl">{name(delegatee)}</h2>}
       buttonClasses="w-full"
     >
       <DelegatorsTableContent delegatee={delegatee} />
@@ -25,7 +26,7 @@ export function DelegatorsTable({ delegatee }: { delegatee: Delegatee }) {
 }
 
 function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
-  const { delegatorToAmount, isLoading } = useDelegators(delegatee.address);
+  const { delegatorToAmount, isLoading } = useDelegators(delegatee);
 
   const tableData = useMemo(() => {
     if (!delegatorToAmount) return [];
@@ -40,13 +41,13 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
   if (isLoading) {
     return (
       <SpinnerWithLabel size="md" className="py-6">
-        Loading delegators
+        Loading {name(delegatee)}
       </SpinnerWithLabel>
     );
   }
 
   if (!tableData.length) {
-    return <div className="py-6 text-center text-sm text-gray-600">No delegators found</div>;
+    return <div className="py-6 text-center text-sm text-gray-600">No {name(delegatee)} found</div>;
   }
 
   return (
@@ -64,7 +65,7 @@ function DelegatorsTableContent({ delegatee }: { delegatee: Delegatee }) {
                 />
               )}
             </td>
-            <td className="text-right text-sm">{`${formatNumberString(row.value)} CELO`}</td>
+            <td className="text-right text-sm">{`${formatNumberString(row.value)} ${delegatee.stCELO ? 'st' : ''}CELO`}</td>
           </tr>
         ))}
       </tbody>

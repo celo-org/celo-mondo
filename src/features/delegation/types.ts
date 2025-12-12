@@ -58,6 +58,7 @@ export const DelegateeMetadataSchema = z.object({
   links: SocialLinksSchema,
   interests: z.array(z.string().min(1)).min(1).max(5),
   description: z.string().min(1).max(1500),
+  stCELO: z.boolean().optional().or(z.literal(false)),
 });
 
 export const RegisterDelegateFormValuesSchema = DelegateeMetadataSchema.omit({

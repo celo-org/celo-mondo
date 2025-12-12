@@ -22,10 +22,19 @@ export enum LockActionType {
   Unlock = 'unlock',
   Withdraw = 'withdraw',
 }
+export enum LiquidStakeActionType {
+  Stake = 'stake',
+  Unstake = 'unstake',
+}
 
 export const LockActionValues = Object.values(LockActionType);
+export const StCeloActionValues = Object.values(LiquidStakeActionType);
 
 export interface LockFormValues {
   amount: number;
   action: LockActionType;
+}
+export interface LiquidStakeFormValues {
+  amount: number;
+  action: LiquidStakeActionType;
 }

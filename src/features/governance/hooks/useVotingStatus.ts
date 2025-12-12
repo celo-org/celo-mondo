@@ -1,9 +1,12 @@
 import { governanceABI, lockedGoldABI } from '@celo/abis';
+import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
+import { config } from 'src/config/config';
 import { StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
-import { useVoteSignerToAccount } from 'src/features/account/hooks';
+import { useStCELOBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { getStCeloProposalVotes } from 'src/features/governance/getStCELOProposalVotes';
 import { useProposalDequeue } from 'src/features/governance/hooks/useProposalQueue';
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { isNullish } from 'src/utils/typeof';
@@ -121,5 +124,32 @@ export function useGovernanceVotingPower(address?: Address) {
     votingPower: data,
     isError,
     isLoading,
+  };
+}
+
+export function useStCELOVotingPower(address?: Address) {
+  const { stCELOBalances, isLoading, isError } = useStCELOBalance(address);
+
+  return {
+    stCeloVotingPower: stCELOBalances.total,
+    isError,
+    isLoading,
+  };
+}
+
+export function useStCELOVoteRecord(address?: Address, proposalId?: number) {
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['getStCELOVoteRecord', address, proposalId],
+    queryFn: async () => {
+      return await getStCeloProposalVotes(config.chain.id, proposalId!, address!);
+    },
+    enabled: !!(address && proposalId),
+  });
+
+  return {
+    stCELOVotingRecord: data,
+    isError,
+    isLoading,
+    refetch,
   };
 }

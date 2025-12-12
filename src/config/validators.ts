@@ -1,4 +1,5 @@
 import { SocialLinks } from 'src/config/types';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
 
 type ValidatorInfo = {
   logo: string;
@@ -7,6 +8,12 @@ type ValidatorInfo = {
 };
 
 export const VALIDATOR_GROUPS: Record<string, ValidatorInfo> = {
+  [DEFAULT_STRATEGY.address]: {
+    logo: '/logos/stCELO.png',
+    links: {
+      website: 'https://docs.stcelo.xyz',
+    },
+  },
   '0x89d5bd54C43dDd10905A030DE6Ff02EbB6c51654': {
     logo: '/logos/validators/polychain.jpg',
     links: {

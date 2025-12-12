@@ -20,7 +20,9 @@ export function AccountConnectForm() {
           To make a transaction, you must first connect your wallet.
         </p>
       </div>
-      <SolidButton onClick={openConnectModal}>Connect Wallet</SolidButton>
+      <SolidButton className="bg-primary text-primary-content" onClick={openConnectModal}>
+        Connect Wallet
+      </SolidButton>
     </div>
   );
 }

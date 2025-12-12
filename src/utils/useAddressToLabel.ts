@@ -8,13 +8,14 @@ import {
   useMemo,
   useState,
 } from 'react';
+import AccountABI from 'src/config/stcelo/AccountABI';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { cleanDelegateeName, cleanGroupName } from 'src/features/validators/utils';
 import { shortenAddress } from 'src/utils/addresses';
 import { useInterval } from 'src/utils/asyncHooks';
 import { objMap } from 'src/utils/objects';
-import { Address } from 'viem';
+import { Address, checksumAddress } from 'viem';
 import { usePublicClient } from 'wagmi';
 
 type Label = {
@@ -23,6 +24,11 @@ type Label = {
   address: Address;
   isCeloName: boolean;
 };
+
+const ADDRESS_MAPPINGS = {
+  [AccountABI.address]: 'stCELO Contract',
+} as Record<Address, string>;
+
 type Fallback = (address: Address) => string;
 const defaultFallback: Fallback = (address: Address) => shortenAddress(address);
 
@@ -53,9 +59,11 @@ function useLocalLookup() {
 
   return useCallback(
     (address: Address): string => {
+      address = checksumAddress(address);
       const groupName = cleanGroupName(addressToGroup?.[address]?.name || '');
       const delegateeName = cleanDelegateeName(addressToDelegatee?.[address]?.name || '');
-      const label = groupName || delegateeName;
+      const staticMappingName = ADDRESS_MAPPINGS[address];
+      const label = staticMappingName || groupName || delegateeName;
 
       return label;
     },

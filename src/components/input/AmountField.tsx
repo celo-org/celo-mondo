@@ -4,22 +4,29 @@ import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { NumberField } from 'src/components/input/NumberField';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
+import { TokenId } from 'src/config/tokens';
 import { fromWei } from 'src/utils/amount';
 
 export function AmountField({
   maxValueWei,
   maxDescription,
   disabled,
+  tokenId,
 }: {
   maxValueWei: bigint;
   maxDescription: string;
   disabled?: boolean;
+  tokenId: TokenId;
 }) {
   const { setFieldValue } = useFormikContext();
 
   const maxValue = useMemo(
-    () => Math.max(0, fromWei(maxValueWei - MIN_REMAINING_BALANCE)),
-    [maxValueWei],
+    () =>
+      Math.max(
+        0,
+        fromWei(tokenId === TokenId.CELO ? maxValueWei - MIN_REMAINING_BALANCE : maxValueWei),
+      ),
+    [maxValueWei, tokenId],
   );
 
   const onClickMax = async () => {
@@ -36,7 +43,7 @@ export function AmountField({
           Amount
         </label>
         <span className="text-xs">
-          {maxValue <= 0
+          {maxValue <= 0 && tokenId === TokenId.CELO
             ? 'Not enough CELO to cover gas fees'
             : `${formatNumberString(maxValue, 5)} ${maxDescription}`}
         </span>
