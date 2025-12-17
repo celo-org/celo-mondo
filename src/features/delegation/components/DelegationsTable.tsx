@@ -122,13 +122,6 @@ function OptionsDropdown({ delegatee }: { delegatee: Address }) {
         >
           Undelegate
         </button>,
-        <button
-          className="underline-offset-2 hover:underline"
-          key={3}
-          onClick={() => onClickItem(DelegateActionType.Transfer)}
-        >
-          Transfer
-        </button>,
       ]}
     />
   );

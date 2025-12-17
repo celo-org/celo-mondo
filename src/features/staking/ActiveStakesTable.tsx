@@ -167,13 +167,6 @@ function OptionsDropdown({
         >
           Unstake
         </button>,
-        <button
-          className="underline-offset-2 hover:underline"
-          key={3}
-          onClick={() => onClickItem(StakeActionType.Transfer)}
-        >
-          Transfer
-        </button>,
       ]}
     />
   );

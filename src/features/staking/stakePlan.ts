@@ -18,7 +18,7 @@ export function getStakeTxPlan(
   groups: ValidatorGroup[],
   groupToStake: GroupToStake,
 ): TxPlan {
-  const { action, amount, group, transferGroup, delegate } = values;
+  const { action, amount, group, delegate } = values;
   const amountWei = toWeiSafe(amount);
 
   if (action === StakeActionType.Stake) {
@@ -36,11 +36,6 @@ export function getStakeTxPlan(
     return stakePlan;
   } else if (action === StakeActionType.Unstake) {
     return getUnstakeActionPlan(amountWei, group, groups, groupToStake);
-  } else if (action === StakeActionType.Transfer) {
-    return [
-      ...getUnstakeActionPlan(amountWei, group, groups, groupToStake),
-      ...getStakeActionPlan(amountWei, transferGroup, groups),
-    ];
   } else {
     logger.error(`Invalid stake action type: ${action}`);
     return [];

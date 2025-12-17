@@ -7,17 +7,12 @@ import { logger } from 'src/utils/logger';
 import { toFixidity } from 'src/utils/numbers';
 
 export function getDelegateTxPlan(values: DelegateFormValues): TxPlan {
-  const { action, delegatee, transferDelegatee, percent } = values;
+  const { action, delegatee, percent } = values;
 
   if (action === DelegateActionType.Delegate) {
     return getDelegateActionPlan(delegatee, percent);
   } else if (action === DelegateActionType.Undelegate) {
     return getUndelegateActionPlan(delegatee, percent);
-  } else if (action === DelegateActionType.Transfer) {
-    return [
-      ...getUndelegateActionPlan(delegatee, percent),
-      ...getDelegateActionPlan(transferDelegatee, percent),
-    ];
   } else {
     logger.error(`Invalid delegate action type: ${action}`);
     return [];
