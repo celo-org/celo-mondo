@@ -107,7 +107,7 @@ export function useGovernanceVoteRecord(address?: Address, proposalId?: number) 
 
 export function useGovernanceVotingPower(address?: Address) {
   const { signingFor, isFetched } = useVoteSignerToAccount(address);
-  const { data, isError, isLoading, error } = useReadContract({
+  const { data, isLoading, error } = useReadContract({
     address: Addresses.LockedGold,
     abi: lockedGoldABI,
     functionName: 'getAccountTotalGovernanceVotingPower',
@@ -120,10 +120,16 @@ export function useGovernanceVotingPower(address?: Address) {
 
   useToastError(error, 'Error fetching voting power');
 
+  if (isLoading) {
+    return {
+      isLoading: true as const,
+    };
+  }
+
   return {
-    votingPower: data,
-    isError,
-    isLoading,
+    votingPower: data ?? 0n,
+    error,
+    isLoading: false as const,
   };
 }
 

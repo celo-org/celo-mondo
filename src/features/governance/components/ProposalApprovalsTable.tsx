@@ -13,15 +13,18 @@ import { Address } from 'viem';
 export function ProposalApprovalsTable({
   proposalId,
   stage,
+  transactionCount,
 }: {
   proposalId: number;
+  transactionCount: number | null;
   stage: ProposalStage;
 }) {
-  const { isLoading, confirmedBy, requiredConfirmationsCount } = useProposalApprovers(proposalId);
+  const { isLoading, confirmations, requiredConfirmationsCount } = useProposalApprovers(proposalId);
   const fraction =
-    !isLoading && confirmedBy?.length
-      ? `${confirmedBy.length} / ${requiredConfirmationsCount}`
+    !isLoading && confirmations?.length
+      ? `${confirmations.length} / ${requiredConfirmationsCount}`
       : null;
+
   return (
     <div className="hidden md:block">
       <Collapse
@@ -35,10 +38,14 @@ export function ProposalApprovalsTable({
         defaultOpen={true}
       >
         <div className="flex content-center justify-center p-2 text-center">
-          <ApprovalBadge proposalId={proposalId} stage={stage} />
+          <ApprovalBadge
+            proposalId={proposalId}
+            stage={stage}
+            transactionCount={transactionCount}
+          />
         </div>
-        {confirmedBy?.length ? (
-          <ConfirmationsTable isLoading={isLoading} confirmations={confirmedBy} />
+        {confirmations?.length ? (
+          <ConfirmationsTable isLoading={isLoading} confirmations={confirmations} />
         ) : null}
       </Collapse>
     </div>

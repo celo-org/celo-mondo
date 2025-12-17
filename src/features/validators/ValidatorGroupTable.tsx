@@ -7,7 +7,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import BigNumber from 'bignumber.js';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
@@ -219,10 +218,11 @@ function TopGroupsRow({
           <Amount valueWei={staked} showSymbol={false} decimals={0} className="all:font-sans" />
         </td>
         <td className={classNames.tdTopGroups}>
-          <CumulativeColumn
+          <ShareColumn
             groups={topGroups}
             address={topGroups?.[NUM_COLLAPSED_GROUPS - 1]?.address}
             totalVotes={totalVotes}
+            cumulative
           />
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
@@ -245,16 +245,18 @@ function TopGroupsRow({
   );
 }
 
-function CumulativeColumn({
+function ShareColumn({
   groups,
   address,
   totalVotes,
+  cumulative = false,
 }: {
   groups?: Array<ValidatorGroupRow | ValidatorGroup>;
   address?: Address;
   totalVotes: bigint;
+  cumulative?: boolean;
 }) {
-  const sharePercentage = computeCumulativeShare(groups, address, totalVotes);
+  const sharePercentage = computeShare(groups, address, totalVotes, cumulative);
 
   const isMobile = useIsMobile();
   const maxChartWidth = isMobile ? 40 : 60;
@@ -312,10 +314,10 @@ function useTableColumns(totalVotes: bigint) {
         ),
       }),
       columnHelper.display({
-        id: 'cumulativeShare',
-        header: 'Cumulative Share',
+        id: 'share',
+        header: 'Share',
         cell: (props) => (
-          <CumulativeColumn
+          <ShareColumn
             groups={props.table.getSortedRowModel().rows.map((r) => r.original)}
             address={props.row.original.address}
             totalVotes={totalVotes}
@@ -395,22 +397,24 @@ function useTableRows({
   }, [groups, filter, searchQuery, collapseTopGroups]);
 }
 
-function computeCumulativeShare(
+function computeShare(
   groups?: Array<ValidatorGroupRow | ValidatorGroup>,
   address?: Address,
   totalVotes?: bigint,
+  cumulative?: boolean,
 ) {
   if (!groups?.length || !address || !totalVotes) return 0;
-  const index = groups.findIndex((g) => g.address === address);
-  const sum = groups.slice(0, index + 1).reduce((acc, group) => acc + group.votes, 0n);
+  let votes: bigint;
+  if (cumulative) {
+    const index = groups.findIndex((g) => g.address === address);
+    votes = groups.slice(0, index + 1).reduce((acc, group) => acc + group.votes, 0n);
+  } else {
+    const group = groups.find((g) => g.address === address);
+    if (!group) return 0;
+    votes = group.votes;
+  }
 
-  // NOTE: could remove BigNumber here
-  // Number(sum * 100_000n) / totalVotes)) / 1000
-  return BigNumber(sum.toString())
-    .dividedBy(totalVotes.toString())
-    .times(100)
-    .decimalPlaces(2)
-    .toNumber();
+  return Number((votes * 100_000n) / totalVotes) / 1000;
 }
 
 function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {

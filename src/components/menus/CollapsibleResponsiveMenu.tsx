@@ -2,11 +2,18 @@ import clsx from 'clsx';
 import { PropsWithChildren, useState } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 
-export function CollapsibleResponsiveMenu({ children }: PropsWithChildren<unknown>) {
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false);
+type Props = {
+  defaultCollapsed?: boolean;
+};
+
+export function CollapsibleResponsiveMenu({
+  children,
+  defaultCollapsed = false,
+}: PropsWithChildren<Props>) {
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(defaultCollapsed);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10 bg-white lg:static lg:bg-transparent">
+    <div className="fixed bottom-0 left-0 right-0 z-30 max-h-full bg-white md:z-10 lg:static lg:bg-transparent">
       <button
         onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
         className="flex-center w-full space-x-4 border-y border-taupe-300 py-2 lg:hidden"
