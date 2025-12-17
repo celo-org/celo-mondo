@@ -107,13 +107,19 @@ export function DelegationForm({
           className="mt-4 flex flex-1 flex-col justify-between space-y-3"
           data-testid="delegate-form"
         >
-          <div className="space-y-5">
+          <div
+            className={values.action === DelegateActionType.Transfer ? 'space-y-3' : 'space-y-5'}
+          >
             {isInputDisabled ? null : <ActionTypeField defaultAction={defaultFormValues?.action} />}
             <div className="space-y-1">
               <DelegateeField
                 fieldName="delegatee"
                 label={
-                  values.action === DelegateActionType.Delegate ? 'Delegate to' : 'Undelegate from'
+                  values.action === DelegateActionType.Transfer
+                    ? 'From delegatee'
+                    : values.action === DelegateActionType.Delegate
+                      ? 'Delegate to'
+                      : 'Undelegate from'
                 }
                 addressToDelegatee={addressToDelegatee}
                 defaultValue={defaultFormValues?.delegatee}
@@ -144,6 +150,14 @@ export function DelegationForm({
               )}
               <CurrentPercentField delegations={delegations} />
             </div>
+            {values.action === DelegateActionType.Transfer && (
+              <DelegateeField
+                fieldName="transferDelegatee"
+                label="To delegatee"
+                addressToDelegatee={addressToDelegatee}
+                disabled={isInputDisabled}
+              />
+            )}
             <PercentField delegations={delegations} />
           </div>
 
@@ -391,6 +405,15 @@ async function validateForm(
       return { delegatee: 'New delegation % must be more than current' };
   }
 
+  if (action === DelegateActionType.Transfer) {
+    if (!transferDelegatee || transferDelegatee === ZERO_ADDRESS)
+      return { transferDelegatee: 'Transfer group required' };
+    if (!isValidAddress(transferDelegatee))
+      return { transferDelegatee: 'Invalid transfer address' };
+    if (transferDelegatee === delegatee)
+      return { transferDelegatee: 'Delegatees must be different' };
+  }
+
   if (!percent || percent <= 0 || percent > 100) return { percent: 'Invalid percent' };
   const maxPercent = getMaxPercent(action, delegatee, delegations);
   if (percent > maxPercent) return { percent: `Percent exceeds max (${maxPercent}%)` };
@@ -406,7 +429,7 @@ function getMaxPercent(
   const currentPercent = delegations?.delegateeToAmount[delegatee]?.percent || 0;
   if (action === DelegateActionType.Delegate) {
     return 100 - (delegations?.totalPercent || 0) + currentPercent;
-  } else if (action === DelegateActionType.Undelegate) {
+  } else if (action === DelegateActionType.Undelegate || action === DelegateActionType.Transfer) {
     if (!delegatee || !currentPercent) return 0;
     return currentPercent;
   } else {
@@ -416,5 +439,10 @@ function getMaxPercent(
 
 const ActionToVerb: Partial<Record<DelegateActionType, string>> = {
   [DelegateActionType.Delegate]: 'Delegating',
+  [DelegateActionType.Transfer]: 'Transferring',
   [DelegateActionType.Undelegate]: 'Undelegating',
+};
+
+const ActionToTipText: Partial<Record<DelegateActionType, string>> = {
+  [DelegateActionType.Transfer]: 'Transfers require undelegating and then redelegating.',
 };

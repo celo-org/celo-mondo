@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
@@ -86,7 +87,10 @@ export function DelegationsTable({
               <td className={tableClasses.td}>{formatNumberString(amount, 2) + ' CELO'}</td>
               <td className={tableClasses.td}>{percentage + '%'}</td>
               <td className={tableClasses.td}>
-                <OptionsDropdown delegatee={address} />
+                <OptionsDropdown
+                  delegatee={address}
+                  isCustomDelegatee={!addressToDelegatee?.[address]}
+                />
               </td>
             </tr>
           ))}
@@ -96,7 +100,13 @@ export function DelegationsTable({
   );
 }
 
-function OptionsDropdown({ delegatee }: { delegatee: Address }) {
+function OptionsDropdown({
+  delegatee,
+  isCustomDelegatee,
+}: {
+  delegatee: Address;
+  isCustomDelegatee: boolean;
+}) {
   const showTxModal = useTransactionModal();
   const onClickItem = (action: DelegateActionType) => {
     showTxModal(TransactionFlowType.Delegate, { delegatee, action });
@@ -108,6 +118,15 @@ function OptionsDropdown({ delegatee }: { delegatee: Address }) {
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[
+        !isCustomDelegatee && (
+          <Link
+            className="underline-offset-2 hover:underline"
+            key={0}
+            href={`/delegate/${delegatee}`}
+          >
+            Details
+          </Link>
+        ),
         <button
           className="underline-offset-2 hover:underline"
           key={1}
@@ -122,7 +141,14 @@ function OptionsDropdown({ delegatee }: { delegatee: Address }) {
         >
           Undelegate
         </button>,
-      ]}
+        <button
+          className="underline-offset-2 hover:underline"
+          key={3}
+          onClick={() => onClickItem(DelegateActionType.Transfer)}
+        >
+          Transfer
+        </button>,
+      ].filter(Boolean)}
     />
   );
 }

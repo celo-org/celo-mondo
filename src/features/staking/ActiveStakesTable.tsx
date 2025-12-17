@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { SolidButton } from 'src/components/buttons/SolidButton';
@@ -142,11 +143,14 @@ function OptionsDropdown({
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[
+        <Link className="underline-offset-2 hover:underline" key={0} href={`/staking/${group}`}>
+          Details
+        </Link>,
         ...(isActivatable
           ? [
               <button
                 className="underline-offset-2 hover:underline"
-                key={0}
+                key={1}
                 onClick={() => activateStake(group)}
               >
                 Activate
@@ -155,14 +159,14 @@ function OptionsDropdown({
           : []),
         <button
           className="underline-offset-2 hover:underline"
-          key={1}
+          key={2}
           onClick={() => onClickItem(StakeActionType.Stake)}
         >
           Stake more
         </button>,
         <button
           className="underline-offset-2 hover:underline"
-          key={2}
+          key={3}
           onClick={() => onClickItem(StakeActionType.Unstake)}
         >
           Unstake
