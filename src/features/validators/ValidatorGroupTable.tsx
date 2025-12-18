@@ -168,7 +168,6 @@ export function ValidatorGroupTable({
 
 function TopGroupsRow({
   groups,
-  totalVotes,
   isVisible,
   expand,
 }: {
@@ -217,14 +216,6 @@ function TopGroupsRow({
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
           <Amount valueWei={staked} showSymbol={false} decimals={0} className="all:font-sans" />
         </td>
-        <td className={classNames.tdTopGroups}>
-          <ShareColumn
-            groups={topGroups}
-            address={topGroups?.[NUM_COLLAPSED_GROUPS - 1]?.address}
-            totalVotes={totalVotes}
-            cumulative
-          />
-        </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
           {(score * 100)?.toFixed(0) + '%'}
         </td>
@@ -242,34 +233,6 @@ function TopGroupsRow({
         </td>
       </tr>
     </>
-  );
-}
-
-function ShareColumn({
-  groups,
-  address,
-  totalVotes,
-  cumulative = false,
-}: {
-  groups?: Array<ValidatorGroupRow | ValidatorGroup>;
-  address?: Address;
-  totalVotes: bigint;
-  cumulative?: boolean;
-}) {
-  const sharePercentage = computeShare(groups, address, totalVotes, cumulative);
-
-  const isMobile = useIsMobile();
-  const maxChartWidth = isMobile ? 40 : 60;
-  const width = (sharePercentage / 100) * maxChartWidth;
-
-  return (
-    <div className="flex">
-      <div>{sharePercentage.toFixed(2) + '%'}</div>
-      <div
-        style={{ width: `${width}px` }}
-        className="absolute bottom-0 top-0 ml-20 border-x border-purple-200 bg-purple-200/20"
-      ></div>
-    </div>
   );
 }
 
@@ -310,17 +273,6 @@ function useTableColumns(totalVotes: bigint) {
             showSymbol={false}
             decimals={0}
             className="all:font-sans"
-          />
-        ),
-      }),
-      columnHelper.display({
-        id: 'share',
-        header: 'Share',
-        cell: (props) => (
-          <ShareColumn
-            groups={props.table.getSortedRowModel().rows.map((r) => r.original)}
-            address={props.row.original.address}
-            totalVotes={totalVotes}
           />
         ),
       }),
@@ -395,26 +347,6 @@ function useTableRows({
     );
     return groupRows;
   }, [groups, filter, searchQuery, collapseTopGroups]);
-}
-
-function computeShare(
-  groups?: Array<ValidatorGroupRow | ValidatorGroup>,
-  address?: Address,
-  totalVotes?: bigint,
-  cumulative?: boolean,
-) {
-  if (!groups?.length || !address || !totalVotes) return 0;
-  let votes: bigint;
-  if (cumulative) {
-    const index = groups.findIndex((g) => g.address === address);
-    votes = groups.slice(0, index + 1).reduce((acc, group) => acc + group.votes, 0n);
-  } else {
-    const group = groups.find((g) => g.address === address);
-    if (!group) return 0;
-    votes = group.votes;
-  }
-
-  return Number((votes * 100_000n) / totalVotes) / 1000;
 }
 
 function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {
