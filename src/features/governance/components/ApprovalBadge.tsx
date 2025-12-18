@@ -31,7 +31,7 @@ export function ApprovalBadge({
       <div className="text-jade-600 inline-flex items-center space-x-1 text-sm">
         <span>{transactionCount === 0 ? 'ℹ️' : '✅'}</span>
         <span>
-          {transactionCount === 0 ? 'Approval not needed (no transactions)' : 'Approval Attained'}
+          {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Attained'}
         </span>
       </div>
     );
@@ -40,7 +40,7 @@ export function ApprovalBadge({
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
         <span>{transactionCount === 0 ? 'ℹ️' : '⏳'}</span>
-        {transactionCount === 0 ? 'Approval not needed (no transactions)' : 'Approval Pending'}
+        {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Pending'}
       </div>
     );
   } else if (stage === ProposalStage.Expiration) {
