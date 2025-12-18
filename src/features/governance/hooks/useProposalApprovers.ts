@@ -47,9 +47,8 @@ export function useProposalApprovers(proposalId: number) {
     isLoading:
       isConfirmationsLoading || isApproversMultisigAddressLoading || isRequiredCountLoading,
     isError: isConfirmationsError || isApproversMultisigAddressError || isRequiredCountError,
-    confirmedBy: (confirmationsData?.approvals.map((a) => a.approver as Address) ||
+    confirmations: (confirmationsData?.approvals.map((a) => a.approver as Address) ||
       []) as Address[],
-    confirmations: confirmationsData?.approvals || [],
     requiredConfirmationsCount,
   };
 }

@@ -2,7 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import { StaleTime } from 'src/config/consts';
 import { ProposalStage } from 'src/features/governance/types';
 
-export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage: ProposalStage }) {
+export function ApprovalBadge({
+  proposalId,
+  stage,
+  transactionCount,
+}: {
+  proposalId: number;
+  stage: ProposalStage;
+  transactionCount: number | null;
+}) {
   const { data: approvalData } = useQuery({
     queryKey: ['proposalApproval', proposalId],
     queryFn: async () => {
@@ -21,16 +29,18 @@ export function ApprovalBadge({ proposalId, stage }: { proposalId: number; stage
   if (approvalData.approved) {
     return (
       <div className="text-jade-600 inline-flex items-center space-x-1 text-sm">
-        <span>✓</span>
-        <span>Approval Attained</span>
+        <span>{transactionCount === 0 ? 'ℹ️' : '✅'}</span>
+        <span>
+          {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Attained'}
+        </span>
       </div>
     );
   }
   if (stage === ProposalStage.Execution || stage === ProposalStage.Referendum) {
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
-        <span>⏳</span>
-        <span> Approval Pending</span>
+        <span>{transactionCount === 0 ? 'ℹ️' : '⏳'}</span>
+        {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Pending'}
       </div>
     );
   } else if (stage === ProposalStage.Expiration) {

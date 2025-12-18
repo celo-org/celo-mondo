@@ -5,7 +5,6 @@ import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmi
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { AmountField } from 'src/components/input/AmountField';
-import { RadioField } from 'src/components/input/RadioField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import {
   MAX_NUM_GROUPS_VOTED_FOR,
@@ -22,7 +21,6 @@ import { getStakeTxPlan } from 'src/features/staking/stakePlan';
 import {
   GroupToStake,
   StakeActionType,
-  StakeActionValues,
   StakeFormValues,
   StakingBalances,
 } from 'src/features/staking/types';
@@ -47,7 +45,6 @@ const initialValues: StakeFormValues = {
   action: StakeActionType.Stake,
   amount: 0,
   group: ONE_ADDRESS,
-  transferGroup: ONE_ADDRESS,
   delegate: false,
 };
 
@@ -120,22 +117,13 @@ export function StakeForm({
         <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="stake-form">
           {/* Reserve space for group menu */}
           <div className="min-h-86 space-y-4">
-            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <GroupField
               fieldName="group"
-              label={values.action === StakeActionType.Transfer ? 'From group' : 'Group'}
+              label="Group"
               addressToGroup={addressToGroup}
               defaultGroup={defaultFormValues?.group}
               disabled={isInputDisabled}
             />
-            {values.action === StakeActionType.Transfer && (
-              <GroupField
-                fieldName="transferGroup"
-                label="To group"
-                addressToGroup={addressToGroup}
-                disabled={isInputDisabled}
-              />
-            )}
             <StakeAmountField
               lockedBalances={lockedBalances}
               stakeBalances={stakeBalances}
@@ -158,23 +146,6 @@ export function StakeForm({
         </Form>
       )}
     </Formik>
-  );
-}
-
-function ActionTypeField({
-  defaultAction,
-  disabled,
-}: {
-  defaultAction?: StakeActionType;
-  disabled?: boolean;
-}) {
-  return (
-    <RadioField<StakeActionType>
-      name="action"
-      values={StakeActionValues}
-      defaultValue={defaultAction}
-      disabled={disabled}
-    />
   );
 }
 
@@ -213,7 +184,7 @@ function GroupField({
   defaultGroup,
   disabled,
 }: {
-  fieldName: 'group' | 'transferGroup';
+  fieldName: 'group';
   label: string;
   addressToGroup?: AddressTo<ValidatorGroup>;
   defaultGroup?: Address;
@@ -336,7 +307,7 @@ function validateForm(
   groupToStake: GroupToStake,
   addressToGroup: AddressTo<ValidatorGroup>,
 ): FormikErrors<StakeFormValues> {
-  const { action, amount, group, transferGroup } = values;
+  const { action, amount, group } = values;
 
   if (!group || group === ONE_ADDRESS) return { group: 'Validator group required' };
 
@@ -346,16 +317,6 @@ function validateForm(
     if (groupDetails.votes >= groupDetails.capacity) return { group: 'Group has max votes' };
     if (!groupToStake[group] && objLength(groupToStake) >= MAX_NUM_GROUPS_VOTED_FOR)
       return { group: `Max number of groups is ${MAX_NUM_GROUPS_VOTED_FOR}` };
-  }
-
-  if (action === StakeActionType.Transfer) {
-    if (!transferGroup || transferGroup === ONE_ADDRESS)
-      return { transferGroup: 'Transfer group required' };
-    if (transferGroup === group) return { transferGroup: 'Groups must be different' };
-    const groupDetails = addressToGroup[transferGroup];
-    if (!groupDetails) return { group: 'Transfer group not found' };
-    if (groupDetails.votes >= groupDetails.capacity)
-      return { group: 'Transfer group has max votes' };
   }
 
   const amountWei = toWei(amount);
@@ -376,7 +337,7 @@ function getMaxAmount(
 ) {
   if (action === StakeActionType.Stake) {
     return (lockedBalances?.locked || 0n) - (stakeBalances?.total || 0n);
-  } else if (action === StakeActionType.Unstake || action === StakeActionType.Transfer) {
+  } else if (action === StakeActionType.Unstake) {
     if (!groupAddress || !groupToStake?.[groupAddress]) return 0n;
     return groupToStake[groupAddress].active + groupToStake[groupAddress].pending;
   } else {
@@ -386,11 +347,9 @@ function getMaxAmount(
 
 const ActionToVerb: Partial<Record<StakeActionType, string>> = {
   [StakeActionType.Stake]: 'Staking',
-  [StakeActionType.Transfer]: 'Transferring',
   [StakeActionType.Unstake]: 'Unstaking',
 };
 
 const ActionToTipText: Partial<Record<StakeActionType, string>> = {
   [StakeActionType.Stake]: 'One to stake and another to delegate.',
-  [StakeActionType.Transfer]: 'Transfers require unstaking and then restaking.',
 };

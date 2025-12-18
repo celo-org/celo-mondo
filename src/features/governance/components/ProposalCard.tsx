@@ -96,7 +96,7 @@ export function ProposalBadgeRow({
   showProposer?: boolean;
   showExecutedTime?: boolean;
 }) {
-  const { stage, proposal, metadata, id, queuedAt, executedAt } = propData;
+  const { stage, proposal, metadata, id, queuedAt, executedAt, transactionCount } = propData;
 
   const { proposer } = proposal || {};
   const { cgp } = metadata || {};
@@ -123,7 +123,7 @@ export function ProposalBadgeRow({
       )}
       {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
       {showExecutedTime && !executedTimeValue && id && (
-        <ApprovalBadge proposalId={id} stage={stage} />
+        <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
       )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
       {showExecutedTime && executedTimeValue && !proposer && (

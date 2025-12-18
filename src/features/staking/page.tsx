@@ -29,6 +29,8 @@ import { useLockedBalance } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeuedProposalIds';
 import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
+import { StakeActionType } from 'src/features/staking/types';
+import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
@@ -52,21 +54,30 @@ import { isAddressEqual } from 'viem';
 import { useAccount } from 'wagmi';
 
 export default function Page({ address }: { address: Address }) {
+  const account = useAccount();
   const { addressToGroup } = useValidatorGroups();
   const group = addressToGroup?.[address];
+  const { groupToStake } = useStakingBalances(account.address);
+  const currentStakeInGroup = (group && groupToStake?.[group.address]?.active) ?? 0n;
 
   usePageInvariant(!addressToGroup || group, '/', 'Validator group not found');
 
   return (
     <Section containerClassName="space-y-8 mt-4 lg:max-w-(--breakpoint-lg)">
-      <HeaderSection group={group} />
-      <StatSection group={group} />
+      <HeaderSection group={group} currentStakeInGroup={currentStakeInGroup} />
+      <StatSection group={group} currentStakeInGroup={currentStakeInGroup} />
       <DetailsSection group={group} />
     </Section>
   );
 }
 
-function HeaderSection({ group }: { group?: ValidatorGroup }) {
+function HeaderSection({
+  group,
+  currentStakeInGroup,
+}: {
+  group?: ValidatorGroup;
+  currentStakeInGroup: bigint;
+}) {
   const account = useAccount();
   const { ui, mode } = useStakingMode();
   const { group: stCELOStakingGroup } = useStrategy(account.address);
@@ -85,11 +96,13 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
   };
 
   const showTxModal = useTransactionModal();
-  const onClickStake = () => {
+  const onClickStake = (action?: StakeActionType) => {
     showTxModal(mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy, {
       group: address,
+      action,
     });
   };
+
   const isActiveStrategy = stCELOStakingGroup && isAddressEqual(stCELOStakingGroup, address);
 
   return (
@@ -137,28 +150,50 @@ function HeaderSection({ group }: { group?: ValidatorGroup }) {
             </div>
           </div>
         </div>
-        <SolidButton
-          onClick={onClickStake}
-          className="w-full bg-primary text-primary-content sm:w-auto sm:px-7"
-          disabled={isActiveStrategy}
-        >
-          {isActiveStrategy ? 'Already staking' : ui.action}
-        </SolidButton>
+        <div className="flex flex-col gap-4 md:flex-row">
+          <SolidButton
+            onClick={() => onClickStake(mode === 'CELO' ? StakeActionType.Stake : undefined)}
+            className="w-full bg-primary text-primary-content sm:w-auto sm:px-7"
+            disabled={isActiveStrategy}
+          >
+            {isActiveStrategy ? 'Already staking' : ui.action}
+          </SolidButton>
+          {mode === 'CELO' && currentStakeInGroup > 0 && (
+            <SolidButton
+              onClick={() => onClickStake(StakeActionType.Unstake)}
+              className="w-full bg-primary text-primary-content sm:w-auto sm:px-7"
+            >
+              Unstake
+            </SolidButton>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function StatSection({ group }: { group?: ValidatorGroup }) {
+function StatSection({
+  group,
+  currentStakeInGroup,
+}: {
+  group?: ValidatorGroup;
+  currentStakeInGroup: bigint;
+}) {
   return (
     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-8">
-      <CapacityStatBox group={group} />
+      <CapacityStatBox group={group} currentStakeInGroup={currentStakeInGroup} />
       <GovernanceStatBox group={group} />
     </div>
   );
 }
 
-function CapacityStatBox({ group }: { group?: ValidatorGroup }) {
+function CapacityStatBox({
+  group,
+  currentStakeInGroup,
+}: {
+  group?: ValidatorGroup;
+  currentStakeInGroup: bigint;
+}) {
   const capacityPercent = Math.min(
     BigNumber(group?.votes?.toString() || 0)
       .div(group?.capacity?.toString() || 1)
@@ -176,9 +211,12 @@ function CapacityStatBox({ group }: { group?: ValidatorGroup }) {
           style={{ width: `${capacityPercent}%` }}
         ></div>
       </div>
-      <div className="text-xs text-taupe-600">{`Maximum: ${formatNumberString(
-        fromWei(group?.capacity),
-      )} CELO`}</div>
+      <div className="flex flex-row-reverse justify-between text-xs text-taupe-600">
+        <span>{`Maximum: ${formatNumberString(fromWei(group?.capacity))} CELO`}</span>
+        {currentStakeInGroup > 0 && (
+          <span>Your active stake: {formatNumberString(fromWei(currentStakeInGroup))} CELO</span>
+        )}
+      </div>
     </StatBox>
   );
 }

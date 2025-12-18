@@ -12,13 +12,10 @@ export type StakingBalances = { active: bigint; pending: bigint; total: bigint }
 export enum StakeActionType {
   Stake = 'stake',
   Unstake = 'unstake',
-  Transfer = 'transfer',
 }
 export enum StCeloActionType {
   ChangeStrategy = 'change Strategy',
 }
-
-export const StakeActionValues = Object.values(StakeActionType);
 
 export enum StakeEventType {
   Activate = 'activate',
@@ -39,8 +36,6 @@ export interface StakeFormValues {
   action: StakeActionType;
   amount: number;
   group: Address;
-  // Only used in transfer actions, the new target group
-  transferGroup: Address;
   delegate: boolean;
 }
 

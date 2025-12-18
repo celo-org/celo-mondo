@@ -261,6 +261,4 @@ const ActionToVerb: Partial<Record<StCeloActionType, string>> = {
   [StCeloActionType.ChangeStrategy]: 'Changing strategy',
 };
 
-const ActionToTipText: Partial<Record<StCeloActionType, string>> = {
-  [StCeloActionType.ChangeStrategy]: 'TODO: blah blah.',
-};
+const ActionToTipText: Partial<Record<StCeloActionType, string>> = {};

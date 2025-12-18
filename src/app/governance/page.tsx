@@ -16,12 +16,10 @@ import {
 } from 'src/features/governance/components/ctaCards';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
-import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { sortByIdThenCGP } from 'src/utils/proposals';
-import { isNullish } from 'src/utils/typeof';
 import useTabs from 'src/utils/useTabs';
 import { useAccount } from 'wagmi';
 
@@ -84,8 +82,6 @@ function ProposalList() {
     return lens;
   }, [proposals]);
 
-  const { votingPower } = useGovernanceVotingPower(address);
-
   return (
     <div className="w-full space-y-5 md:min-w-[38rem]">
       <div className="flex flex-col items-stretch gap-3 md:flex-row md:items-center md:justify-between">
@@ -104,7 +100,7 @@ function ProposalList() {
           className="w-full text-sm md:w-64"
         />
       </div>
-      {address && !isNullish(votingPower) && votingPower <= 0n && <NoFundsLockedCtaCard />}
+      <NoFundsLockedCtaCard address={address} />
       {!isLoading ? (
         <Fade show>
           <TabHeaderFilters

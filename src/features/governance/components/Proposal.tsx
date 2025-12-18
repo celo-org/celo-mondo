@@ -45,7 +45,7 @@ export function Proposal({ id }: { id: string }) {
     <>
       <ProposalContent propData={propData} id={id} />
       {propData.stage !== ProposalStage.None && (
-        <CollapsibleResponsiveMenu>
+        <CollapsibleResponsiveMenu defaultCollapsed={propData.stage !== ProposalStage.Referendum}>
           <ProposalChainData propData={propData} />
         </CollapsibleResponsiveMenu>
       )}
@@ -92,7 +92,15 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const { id: proposalId, stage, history, queuedAt, dequeuedAt, executedAt } = propData;
+  const {
+    id: proposalId,
+    stage,
+    history,
+    queuedAt,
+    dequeuedAt,
+    executedAt,
+    transactionCount,
+  } = propData;
   const { quorumMet } = useIsProposalPassingQuorum(propData);
 
   if (stage === ProposalStage.None) return null;
@@ -131,12 +139,16 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
       {stage >= ProposalStage.Referendum && proposalId && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
           <ErrorBoundaryInline>
-            <ProposalApprovalsTable proposalId={proposalId} stage={stage} />
+            <ProposalApprovalsTable
+              proposalId={proposalId}
+              stage={stage}
+              transactionCount={transactionCount}
+            />
           </ErrorBoundaryInline>
         </div>
       )}
       {history && history.length > 0 && (
-        <div className="space-y-4 border-taupe-300 p-3 lg:border">
+        <div className="hidden space-y-4 border-taupe-300 p-3 md:block lg:border">
           <h2 className="font-serif text-2xl">Past Onchain Results</h2>
           {history.map(({ id, stage }) => (
             <ErrorBoundaryInline key={id}>

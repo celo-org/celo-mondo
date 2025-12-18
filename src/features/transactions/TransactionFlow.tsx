@@ -7,12 +7,14 @@ import {
   useStCELOBalance,
   useVoteSignerToAccount,
 } from 'src/features/account/hooks';
+import { DelegateActionType } from 'src/features/delegation/types';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
 import { StakeStCeloForm } from 'src/features/staking/stCELO/StakeForm';
 import { TransactionConfirmation } from 'src/features/transactions/TransactionConfirmation';
 import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/types';
+import { capitalizeFirstLetter } from 'src/utils/strings';
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
@@ -27,7 +29,7 @@ export interface TransactionFlowProps<FormDefaults extends {} = {}> {
 // Since all the transactions flow follow similar logic around account
 // registration checks, this component defines a reusable flow.
 export function TransactionFlow<FormDefaults extends {}>({
-  header,
+  header: defaultHeader,
   FormComponent,
   requiresLockedFundsOrVoteSigner = true,
   requiresStCelo = false,
@@ -52,6 +54,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   const willVoteAndHasVotingPower = FormComponent.name === VoteForm.name && hasVotingPower;
 
   let Component: ReactNode;
+  let header = defaultHeader;
   if (
     !address ||
     isNullish(lockedBalance) ||
@@ -75,12 +78,22 @@ export function TransactionFlow<FormDefaults extends {}>({
     // shown without a stCELOBalance being positive in the first place
     Component = <StakeStCeloForm showTip={true} />;
   } else if (!confirmationDetails) {
+    const action = (defaultFormValues as any).action as string;
+    if (action) {
+      if (action === DelegateActionType.Transfer) {
+        header = 'Transfer delegation';
+      } else {
+        header = `${capitalizeFirstLetter(action)} CELO`;
+      }
+    }
+
     Component = <FormComponent defaultFormValues={defaultFormValues} onConfirmed={onConfirmed} />;
   } else {
     Component = (
       <TransactionConfirmation confirmation={confirmationDetails} closeModal={closeModal} />
     );
   }
+  ``;
 
   return (
     <>
