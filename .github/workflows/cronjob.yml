@@ -28,9 +28,18 @@ jobs:
             exit 1
           fi
 
-  fetch-historical-events:
+  # Production and staging backfill jobs run sequentially to avoid overwhelming
+  # the RPC provider with too many simultaneous requests
+  backfill-production:
     runs-on: ubuntu-latest
     needs: [install]
+    timeout-minutes: 50
+    env:
+      PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      IS_PRODUCTION_DATABASE: true
+      CI: true
+      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -40,18 +49,56 @@ jobs:
             .yarn/cache
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
-      - name: backfill-db
+      - name: backfill-db-production
+        id: backfill-db-prod
         run: yarn backfill-db
+        continue-on-error: true
+
+      - name: backfill-approval-confirmations-production
+        id: backfill-approvals-prod
+        run: yarn backfill-approvals
+        continue-on-error: true
+        if: always()
+
+      - name: notify-failures-production
+        if: failure() || steps.backfill-db-prod.outcome == 'failure' || steps.backfill-approvals-prod.outcome == 'failure'
+        run: yarn tsx src/scripts/notifyBackfillFailure.ts production "${{ steps.backfill-db-prod.outcome }}" "${{ steps.backfill-approvals-prod.outcome }}"
         env:
-          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-          IS_PRODUCTION_DATABASE: true
-          CI: true
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+
+  backfill-staging:
+    runs-on: ubuntu-latest
+    needs: [backfill-production]
+    if: always()
+    timeout-minutes: 50
+    env:
+      PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
+      IS_PRODUCTION_DATABASE: false
+      CI: true
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: backfill-db-staging
+        id: backfill-db-staging
         run: yarn backfill-db
+        continue-on-error: true
+
+      - name: backfill-approval-confirmations-staging
+        id: backfill-approvals-staging
+        run: yarn backfill-approvals
+        continue-on-error: true
+        if: always()
+
+      - name: notify-failures-staging
+        if: failure() || steps.backfill-db-staging.outcome == 'failure' || steps.backfill-approvals-staging.outcome == 'failure'
+        run: yarn tsx src/scripts/notifyBackfillFailure.ts staging "${{ steps.backfill-db-staging.outcome }}" "${{ steps.backfill-approvals-staging.outcome }}"
         env:
-          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
-          IS_PRODUCTION_DATABASE: false
-          CI: true
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
