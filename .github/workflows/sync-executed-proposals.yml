@@ -1,0 +1,30 @@
+name: Sync Executed Proposals to Governance Repo
+
+on:
+  schedule:
+    # Run once daily at 11 AM UTC
+    - cron: '0 11 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  sync-executed:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write  # Required to trigger workflows in other repos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Sync executed proposals (production)
+        run: npx tsx src/scripts/syncExecutedProposals.ts
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_PRODUCTION_DATABASE: true
+          CI: true
