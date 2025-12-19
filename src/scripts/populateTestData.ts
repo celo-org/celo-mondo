@@ -225,7 +225,7 @@ function createApproval(
  *
  * This script:
  * 1. Cleans up any existing test data (proposal IDs 1000-1099)
- * 2. Creates 26 test proposals with realistic blockchain data (events, votes, approvals)
+ * 2. Creates 28 test proposals with realistic blockchain data (events, votes, approvals)
  * 3. Uses deterministic IDs and timestamps relative to the current time
  *
  * ID Ranges:
@@ -1569,6 +1569,101 @@ async function main() {
   );
   votes.push(...createVotes(resubmittedProposalId, doubleQuorum, quorum, 0n));
 
+  // 27. Referendum - Past voting period (awaiting update)
+  const refPastVotingId = proposalId++;
+  const refPastVotingQueuedTime = now - 18 * DAY;
+  const refPastVotingDequeuedTime = now - 10 * DAY; // 10 days ago (past 7-day voting period)
+  const refPastVotingQueuedBlock = getBlockNumber(refPastVotingQueuedTime);
+  const refPastVotingDequeuedBlock = getBlockNumber(refPastVotingDequeuedTime);
+  events.push(
+    createEvent('ProposalQueued', refPastVotingId, Number(refPastVotingQueuedBlock), getTxHash(), {
+      proposalId: refPastVotingId.toString(),
+      proposer: '0x1234567890123456789012345678901234567890',
+      transactionCount: '3',
+      timestamp: refPastVotingQueuedTime.toString(),
+      deposit: '100000000000000000000',
+    }),
+  );
+  events.push(
+    createEvent(
+      'ProposalDequeued',
+      refPastVotingId,
+      Number(refPastVotingDequeuedBlock),
+      getTxHash(),
+      {
+        proposalId: refPastVotingId.toString(),
+        timestamp: refPastVotingDequeuedTime.toString(),
+      },
+    ),
+  );
+  proposals.push(
+    createProposal(
+      refPastVotingId,
+      cgp++,
+      ProposalStage.Referendum,
+      refPastVotingQueuedTime,
+      'Test Proposal 27: Referendum - Past Voting Period (Awaiting Update)',
+      {
+        queuedAt: toISOString(refPastVotingQueuedTime),
+        queuedAtBlockNumber: refPastVotingQueuedBlock,
+        dequeuedAt: toISOString(refPastVotingDequeuedTime),
+        dequeuedAtBlockNumber: refPastVotingDequeuedBlock,
+      },
+    ),
+  );
+  votes.push(...createVotes(refPastVotingId, doubleQuorum, quorum, 0n));
+
+  // 28. Execution - Past execution window (awaiting update)
+  const execPastWindowId = proposalId++;
+  const execPastWindowQueuedTime = now - 35 * DAY;
+  const execPastWindowDequeuedTime = now - 20 * DAY; // 20 days ago (past 10-day execution window)
+  const execPastWindowQueuedBlock = getBlockNumber(execPastWindowQueuedTime);
+  const execPastWindowDequeuedBlock = getBlockNumber(execPastWindowDequeuedTime);
+  events.push(
+    createEvent(
+      'ProposalQueued',
+      execPastWindowId,
+      Number(execPastWindowQueuedBlock),
+      getTxHash(),
+      {
+        proposalId: execPastWindowId.toString(),
+        proposer: '0x1234567890123456789012345678901234567890',
+        transactionCount: '3',
+        timestamp: execPastWindowQueuedTime.toString(),
+        deposit: '100000000000000000000',
+      },
+    ),
+  );
+  events.push(
+    createEvent(
+      'ProposalDequeued',
+      execPastWindowId,
+      Number(execPastWindowDequeuedBlock),
+      getTxHash(),
+      {
+        proposalId: execPastWindowId.toString(),
+        timestamp: execPastWindowDequeuedTime.toString(),
+      },
+    ),
+  );
+  proposals.push(
+    createProposal(
+      execPastWindowId,
+      cgp++,
+      ProposalStage.Execution,
+      execPastWindowQueuedTime,
+      'Test Proposal 28: Execution - Past Execution Window (Awaiting Update)',
+      {
+        queuedAt: toISOString(execPastWindowQueuedTime),
+        queuedAtBlockNumber: execPastWindowQueuedBlock,
+        dequeuedAt: toISOString(execPastWindowDequeuedTime),
+        dequeuedAtBlockNumber: execPastWindowDequeuedBlock,
+        quorumVotesRequired: quorum,
+      },
+    ),
+  );
+  votes.push(...createVotes(execPastWindowId, doubleQuorum, quorum / BigInt(2), 0n));
+
   console.log(
     `📊 Generated ${proposals.length} proposals, ${events.length} events, ${votes.length} vote records`,
   );
@@ -1641,7 +1736,7 @@ async function main() {
     `   - Multisig TX ID range: ${TEST_MULTISIG_TX_ID_START}-${TEST_MULTISIG_TX_ID_START + proposals.length - 1}`,
   );
   console.log('');
-  console.log('✨ All 26 proposal states have been created!');
+  console.log('✨ All 28 proposal states have been created!');
 
   process.exit(0);
 }

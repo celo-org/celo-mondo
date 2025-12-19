@@ -120,7 +120,8 @@ export function useGovernanceVotingPower(address?: Address) {
 
   useToastError(error, 'Error fetching voting power');
 
-  if (isLoading) {
+  // this is nessessary to fix a flash of content being render where loading is false and data is not yet populated
+  if (isLoading || (data === undefined && !error)) {
     return {
       isLoading: true as const,
     };

@@ -109,7 +109,6 @@ export function getHumanEndTime({
   if (!stage || !hasAnyTS) {
     return undefined;
   }
-
   switch (stage) {
     case ProposalStage.Queued: {
       const endDate = getStageEndTimestamp(stage, new Date(queuedAt!).getTime())!;
@@ -117,7 +116,11 @@ export function getHumanEndTime({
     }
     case ProposalStage.Referendum: {
       const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime())!;
-      return `Voting ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+      const pastEndTime = endDate - now < 0;
+
+      return pastEndTime
+        ? `Voting Ended on ${getFullDateHumanDateString(endDate)} (awaiting update)`
+        : `Voting ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
     case ProposalStage.Approval:
     // DEPRECATED: Treat like Execution (awaiting execution after approval)
@@ -125,7 +128,10 @@ export function getHumanEndTime({
     case ProposalStage.Execution: {
       const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime());
       if (endDate) {
-        return `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+        const pastEndTime = endDate - now < 0;
+        return pastEndTime
+          ? `Execution window closed on ${getFullDateHumanDateString(endDate)} (awaiting update)`
+          : `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
       }
       return 'Awaiting execution';
     }

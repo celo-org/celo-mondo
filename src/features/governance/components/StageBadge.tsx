@@ -28,11 +28,7 @@ const ProposalStageToBgClass: Record<ProposalStage, { color: string; label: stri
   [ProposalStage.Rejected]: { color: Color.Red, label: 'Rejected' },
 };
 
-function getProposalStageStyle(stage: ProposalStage, isApproved?: boolean) {
+function getProposalStageStyle(stage: ProposalStage, _isApproved?: boolean) {
   const result = ProposalStageToBgClass[stage];
-  if (stage === ProposalStage.Execution && !isApproved) {
-    return { ...result, label: 'Approval Pending' };
-  } else {
-    return result;
-  }
+  return result;
 }
