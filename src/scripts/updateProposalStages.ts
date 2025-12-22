@@ -93,7 +93,7 @@ async function updateProposalStages() {
           proposal.stage === ProposalStage.Execution &&
           proposal.transactionCount === 0
         ) {
-          onChainStage === ProposalStage.Adopted;
+          onChainStage = ProposalStage.Adopted;
         }
 
         updates.push({
