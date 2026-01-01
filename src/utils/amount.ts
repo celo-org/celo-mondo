@@ -5,7 +5,7 @@ import { formatUnits, parseUnits } from 'viem';
 /**
  * Convert the given Wei value to Ether value
  * @param value The value to convert.
- * @returns Converted value in string type.
+ * @returns Converted value in number type.
  */
 export function fromWei(
   value: BigNumber.Value | bigint | null | undefined,

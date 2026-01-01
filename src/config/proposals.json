@@ -2319,7 +2319,8 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0207.md",
     "title": "Mento Reserve Rebalancing",
     "author": "Celo Community",
-    "stage": 0,
+    "stage": 8,
+    "id": 258,
     "timestamp": 1759968000000
   },
   {
@@ -2328,9 +2329,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0208.md",
     "title": "Contracts Release 14",
     "author": "cLabs Primitives Team",
-    "stage": 0,
+    "stage": 6,
+    "id": 257,
     "url": "https://forum.celo.org/t/celo-core-contracts-release-14",
-    "timestamp": 1760054400000
+    "timestamp": 1760054400000,
+    "timestampExecuted": 1760918400000
   },
   {
     "cgp": 209,
@@ -2338,9 +2341,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0209.md",
     "title": "Transfer CELO from Governance Reserve to Governance Proxy",
     "author": "Governance ops team",
-    "stage": 0,
+    "stage": 6,
+    "id": 260,
     "url": "https://forum.celo.org/t/proposal-to-transfer-celo-from-governance-reserve-to-governance-proxy/12472",
-    "timestamp": 1760054400000
+    "timestamp": 1760054400000,
+    "timestampExecuted": 1762041600000
   },
   {
     "cgp": 210,
@@ -2348,7 +2353,8 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0210.md",
     "title": "Score Management Committee - 6 Month Extension and Continued Funding",
     "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
-    "stage": 0,
+    "stage": 5,
+    "id": 262,
     "url": "https://forum.celo.org/t/score-management-committee-6-month-extension-and-continued-funding/",
     "timestamp": 1761004800000
   },
@@ -2358,9 +2364,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0211.md",
     "title": "Setting WETH oracle for gas pricing",
     "author": "Martín Volpe @martinvol",
-    "stage": 0,
+    "stage": 6,
+    "id": 261,
     "url": "https://forum.celo.org/t/setting-weth-oracle-for-gas-pricing/12552",
-    "timestamp": 1761523200000
+    "timestamp": 1761523200000,
+    "timestampExecuted": 1762560000000
   },
   {
     "cgp": 212,
@@ -2368,8 +2376,9 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0212.md",
     "title": "Jello Hardfork Temperature Check - OP Succinct Lite and ZK Proofs for Celo Mainnet",
     "author": "cLabs Team",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/introducing-the-jello-hardfork-op-succinct-lite-now-live-on-celo-sepolia/12603",
+    "stage": 1,
+    "id": 265,
+    "url": "https://forum.celo.org/t/introducing-the-jello-hardfork-op-succinct-lite-now-live-on-celo-sepolia",
     "timestamp": 1762300800000
   },
   {
@@ -2378,8 +2387,60 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0213.md",
     "title": "Score Management Committee - 6 Month Extension and Continued Funding",
     "author": "Swiftstaking (@swiftstaking), Mohamed Sohail (@kamikazechaser)",
-    "stage": 0,
+    "stage": 8,
+    "id": 264,
     "url": "https://forum.celo.org/t/score-management-committee-6-month-extension-and-continued-funding/",
     "timestamp": 1761004800000
+  },
+  {
+    "cgp": 214,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0214.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0214.md",
+    "title": "Proxy Vote for MGP-12 - Mento Stablecoins Rebranding",
+    "author": "@mentoLabs",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/mento-stablecoin-rebranding-and-strategic-evolution/",
+    "timestamp": 1764892800000
+  },
+  {
+    "cgp": 215,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0215.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0215.md",
+    "title": "Celo SHIELD Part B - Strategic Conclusion and Bug Bounty Settlement",
+    "author": "Benjamin Speckien (benjamin.speckien@clabs.co), Nikolaos Frestis (nikolaos.frestis@clabs.co), Stefan Ioja (stefan.ioja@clabs.co)",
+    "stage": 1,
+    "id": 268,
+    "url": "https://forum.celo.org/t/celo-shield-part-b-strategic-conclusion-and-bug-bounty-settlement",
+    "timestamp": 1766016000000
+  },
+  {
+    "cgp": 216,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0216.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0216.md",
+    "title": "Validator Spending Reduction - Option #1 Reduce the set by half",
+    "author": "Alex Witt",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options/12817",
+    "timestamp": 1766707200000
+  },
+  {
+    "cgp": 217,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0217.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0217.md",
+    "title": "Validator Spending Reduction - Option #2 Reduce rewards by half",
+    "author": "Alex Witt",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options/12817",
+    "timestamp": 1766707200000
+  },
+  {
+    "cgp": 218,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0218.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0218.md",
+    "title": "Validator Spending Reduction - Option #3 Keep the current set, with rewards reduced to zero",
+    "author": "Alex Witt",
+    "stage": 0,
+    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options/12817",
+    "timestamp": 1766707200000
   }
 ]

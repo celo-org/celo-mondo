@@ -9,7 +9,7 @@ import {
 } from 'src/features/governance/utils/transactionDecoder';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const shouldDecodeTransaction = new URL(request.url).searchParams.get('decode') === 'true';
+  const shouldDecodeTransaction = new URL(request.url).searchParams.get('decoded') === 'true';
   const headers = new Headers();
   headers.append(
     'Cache-Control',

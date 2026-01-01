@@ -94,7 +94,7 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
 }
 export function DelegateeDetails({ delegatee }: { delegatee: Delegatee }) {
   return (
-    <div className="w-full space-y-4 lg:w-[26rem]">
+    <div className="w-full space-y-4 xl:w-[26rem]">
       <div className="border-taupe-300 p-3 lg:border">
         <DelegateButton delegatee={delegatee} />
       </div>
