@@ -59,7 +59,7 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
 }
 
 interface TransactionCardProps {
-  transaction: ProposalTransaction & { decoded: DecodedTransaction };
+  transaction: ProposalTransaction & { decoded?: DecodedTransaction };
   index: number;
 }
 
@@ -91,7 +91,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
           </div>
           <div>
             <h4 className="font-medium text-gray-900">
-              {decoded.functionName || 'Unknown Function'}
+              {decoded?.functionName || 'Unknown Function'}
             </h4>
           </div>
         </div>
@@ -103,11 +103,11 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
         </button>
       </div>
 
-      {decoded.description && <p className="mt-2 text-sm text-gray-700">{decoded.description}</p>}
+      {decoded?.description && <p className="mt-2 text-sm text-gray-700">{decoded.description}</p>}
 
       {hasValue && (
         <div className="mt-2 text-sm text-gray-600">
-          <span className="font-medium">Value:</span> {decoded.value || '0'} CELO
+          <span className="font-medium">Value:</span> {decoded?.value || '0'} CELO
         </div>
       )}
 
@@ -125,7 +125,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             </div>
           </div>
 
-          {decoded.args && Object.keys(decoded.args).length > 0 && (
+          {decoded?.args && Object.keys(decoded.args).length > 0 && (
             <div>
               <h5 className="text-sm font-medium text-gray-900">Function Arguments</h5>
               <div className="mt-1 font-mono text-sm text-gray-600">
@@ -151,7 +151,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             <div>
               <h5 className="text-sm font-medium text-gray-900">Value</h5>
               <div className="mt-1 text-sm text-gray-600">
-                <p>{decoded.value || '0'} CELO</p>
+                <p>{decoded?.value || '0'} CELO</p>
               </div>
             </div>
           )}

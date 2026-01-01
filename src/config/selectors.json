@@ -782,5 +782,9 @@
   "0x85897512": "getEquivalentToken(address)",
   "0x63d9a656": "medianRateWithoutEquivalentMapping(address)",
   "0x040bbd35": "setBreakerBox(address)",
-  "0x145d8d18": "setEquivalentToken(address,address)"
+  "0x145d8d18": "setEquivalentToken(address,address)",
+  "0xb631ce19": "slash(address,address,address[],address[],uint256[])",
+  "0xeb17c1fe": "deprecated_downtimeGracePeriod()",
+  "0xd7d794bf": "initialize(address,uint256,uint256,uint256,uint256,uint256,uint256,uint256,tuple)",
+  "0x602a9eee": "registerValidator(bytes)"
 }
