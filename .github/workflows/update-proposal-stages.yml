@@ -32,6 +32,8 @@ jobs:
   update-stages:
     runs-on: ubuntu-latest
     needs: [install]
+    permissions:
+      actions: write  # Required to trigger workflows in other repos
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -46,6 +48,7 @@ jobs:
         env:
           PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           IS_PRODUCTION_DATABASE: true
           CI: true
 

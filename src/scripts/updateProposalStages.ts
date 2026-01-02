@@ -8,6 +8,7 @@ import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
+import { triggerGovernanceRepoStatusUpdate } from 'src/features/governance/syncGovernanceRepoStatus';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { getOnChainQuorumRequired } from 'src/features/governance/utils/quorum';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
@@ -85,7 +86,7 @@ async function updateProposalStages() {
         const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
 
         // 4.2
-        // Tempurature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
+        // Temperature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
         // So move them from Execution to Adopted when they leave Execution stage.
         // Txcount 0 + Passed Quorum Flow === Referendum => Execution => Adopted (or Executed if someone bothers to approve and execute it)
         if (
@@ -122,6 +123,36 @@ async function updateProposalStages() {
         .where(and(eq(proposalsTable.chainId, update.chainId), eq(proposalsTable.id, update.id)));
     }
     console.log('✅ Stage updates complete');
+
+    // 6. Send updates to governance repo for REJECTED and EXPIRED proposals
+    // Only sync in production to avoid duplicate workflow triggers from staging
+    if (process.env.IS_PRODUCTION_DATABASE) {
+      console.log('\nSyncing status updates to governance repo...');
+
+      for (const update of updates) {
+        // Only sync REJECTED and EXPIRED stages
+        if (update.stage !== ProposalStage.Rejected && update.stage !== ProposalStage.Expiration) {
+          continue;
+        }
+
+        // Get the proposal details to fetch CGP number
+        const proposal = activeProposals.find((p) => p.id === update.id);
+        if (!proposal || !proposal.cgp) {
+          console.log(`⚠️  Skipping proposal ${update.id}: no CGP number found`);
+          continue;
+        }
+
+        const status = update.stage === ProposalStage.Rejected ? 'REJECTED' : 'EXPIRED';
+
+        await triggerGovernanceRepoStatusUpdate({
+          cgpNumber: Number(proposal.cgp),
+          onchainId: update.id,
+          status,
+        });
+      }
+    } else {
+      console.log('Not Production. Skipping governance repo sync.');
+    }
   } else {
     console.log('No stage changes detected');
   }
