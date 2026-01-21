@@ -111,6 +111,7 @@ function useAddressToLabelInternal() {
       };
 
       if (errors) {
+        // eslint-disable-next-line no-console
         console.error('Failed to fetch celonames', errors);
         return null;
       }
