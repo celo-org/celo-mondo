@@ -7,6 +7,7 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
 import { config } from 'src/config/config';
+import JumperLogo from 'src/images/logos/jumper-bridge.png';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
 import USDT0Logo from 'src/images/logos/usdt0.webp';
@@ -34,6 +35,14 @@ const BRIDGES: Bridge[] = [
     logo: SquidLogo,
     description:
       'Axelar based cross chain DEX. Good for moving stablecoins between chains, or swapping directly between assets.',
+  },
+  {
+    name: 'Jumper',
+    operator: 'Jumper',
+    href: 'https://jumper.exchange/',
+    logo: JumperLogo,
+    description:
+      'Cross-chain aggregator that compares routes across multiple bridges and DEXs to find optimal paths for swapping and bridging assets.',
   },
   {
     name: 'Portal Bridge',
@@ -75,7 +84,7 @@ function BridgeLink({ name, operator, href, logo, description }: Bridge) {
         <div className="flex flex-col gap-1">
           <h2 className="font-serif text-xl">{name}</h2>
           <h3 className="text-sm">{`By ${operator}`}</h3>
-          <p className="text-sm">{description}</p>
+          <p className="max-w-xs text-xs">{description}</p>
         </div>
       </div>
       <SolidButton className="bg-primary text-primary-content all:p-0">
