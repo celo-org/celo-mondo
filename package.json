@@ -19,6 +19,8 @@
     "@celo/abis": "^14.0.1",
     "@celo/actions": "^0.2.0",
     "@celo/compliance": "^1.0.29",
+    "@daimo/pay": "^1.19.10",
+    "@daimo/pay-common": "^1.19.10",
     "@headlessui/react": "^2.2.9",
     "@metamask/jazzicon": "^2.0.0",
     "@metamask/post-message-stream": "6.1.2",

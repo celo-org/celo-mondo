@@ -25,6 +25,8 @@ const CONNECT_SRC_HOSTS = [
   'https://app.safe.global',
   'https://pass.celopg.eco',
   'https://*.rainbow.me',
+  // Daimo Pay SDK
+  'https://*.daimo.xyz',
 ];
 const FRAME_SRC_HOSTS = [
   'https://*.walletconnect.com',

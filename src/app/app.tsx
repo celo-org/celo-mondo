@@ -8,6 +8,7 @@ import { ErrorBoundaryInline } from 'src/components/errors/ErrorBoundaryInline';
 import { Footer } from 'src/components/nav/Footer';
 import { Header } from 'src/components/nav/Header';
 import { LegalRestrict } from 'src/components/police';
+import { DaimoPayWrapper } from 'src/config/daimoPay';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsSsr } from 'src/utils/ssr';
@@ -22,19 +23,21 @@ export function App({ children }: PropsWithChildren<any>) {
     <ErrorBoundary>
       <SafeHydrate>
         <WagmiContext>
-          <HistoryProvider>
-            <StakingModeProvider>
-              <ENSProvider>
-                <LegalRestrict>
-                  <BodyLayout>{children}</BodyLayout>
-                </LegalRestrict>
-                <TransactionModal />
-                <ErrorBoundaryInline>
-                  <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
-                </ErrorBoundaryInline>
-              </ENSProvider>
-            </StakingModeProvider>
-          </HistoryProvider>
+          <DaimoPayWrapper>
+            <HistoryProvider>
+              <StakingModeProvider>
+                <ENSProvider>
+                  <LegalRestrict>
+                    <BodyLayout>{children}</BodyLayout>
+                  </LegalRestrict>
+                  <TransactionModal />
+                  <ErrorBoundaryInline>
+                    <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
+                  </ErrorBoundaryInline>
+                </ENSProvider>
+              </StakingModeProvider>
+            </HistoryProvider>
+          </DaimoPayWrapper>
         </WagmiContext>
       </SafeHydrate>
       <Analytics />
