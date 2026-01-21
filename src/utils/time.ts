@@ -112,7 +112,11 @@ export function getHumanEndTime({
   switch (stage) {
     case ProposalStage.Queued: {
       const endDate = getStageEndTimestamp(stage, new Date(queuedAt!).getTime())!;
-      return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+      const pastEndTime = endDate - now < 0;
+
+      return pastEndTime
+        ? `Expired on ${getFullDateHumanDateString(endDate)} (awaiting update)`
+        : `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
     case ProposalStage.Referendum: {
       const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime())!;

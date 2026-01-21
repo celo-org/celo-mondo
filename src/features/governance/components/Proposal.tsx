@@ -9,6 +9,7 @@ import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleRespo
 import { links } from 'src/config/links';
 import { ProposalApprovalsTable } from 'src/features/governance/components/ProposalApprovalsTable';
 import { ProposalBadgeRow, ProposalLinkRow } from 'src/features/governance/components/ProposalCard';
+import { ProposalStageTimeline } from 'src/features/governance/components/ProposalStageTimeline';
 import { ProposalUpvotersTable } from 'src/features/governance/components/ProposalUpvotersTable';
 import {
   ProposalUpvoteButton,
@@ -27,7 +28,6 @@ import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/usePro
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
-import { getHumanEndTime } from 'src/utils/time';
 import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
@@ -98,6 +98,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
     history,
     queuedAt,
     dequeuedAt,
+    approvedAt,
     executedAt,
     transactionCount,
   } = propData;
@@ -112,17 +113,14 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
         {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
-        <div className="max-w-[340px] space-y-2">
-          <div className="text-sm text-taupe-600">
-            {getHumanEndTime({
-              stage,
-              queuedAt,
-              dequeuedAt,
-              executedAt,
-              quorumMet,
-            })}
-          </div>
-        </div>
+        <ProposalStageTimeline
+          stage={stage}
+          queuedAt={queuedAt}
+          dequeuedAt={dequeuedAt}
+          approvedAt={approvedAt}
+          executedAt={executedAt}
+          quorumMet={quorumMet}
+        />
       </div>
       {stage === ProposalStage.Queued && (
         <div className="border-taupe-300 p-3 lg:block lg:border">
