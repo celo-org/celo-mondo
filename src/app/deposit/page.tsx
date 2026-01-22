@@ -1,6 +1,6 @@
 'use client';
 
-import { DaimoPayButton } from '@daimo/pay';
+import { DaimoPayButton, useDaimoPayUI } from '@daimo/pay';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import { useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
@@ -14,12 +14,12 @@ import { useAccount } from 'wagmi';
 
 const DAIMO_APP_ID = process.env.NEXT_PUBLIC_DAIMO_PAY_APP_ID || 'pay-demo';
 
-// Supported tokens on Celo with colors for visual distinction
+// Supported tokens on Celo - addresses from @daimo/pay-common
 const SUPPORTED_TOKENS = [
   {
     id: 'CELO',
     name: 'CELO',
-    address: '0x0000000000000000000000000000000000000000',
+    address: '0x471EcE3750Da237f93B8E339c536989b8978a438', // Wrapped CELO token
     description: 'Native Celo token',
     color: '#FCFF52',
     textColor: '#000',
@@ -43,7 +43,7 @@ const SUPPORTED_TOKENS = [
   {
     id: 'USDT',
     name: 'USDT',
-    address: '0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e',
+    address: '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e', // Correct checksum
     description: 'Tether USD',
     color: '#50AF95',
     textColor: '#fff',
@@ -132,7 +132,8 @@ export default function Page() {
           {isConnected && address ? (
             <>
               <p className="mb-3 text-sm text-taupe-600">
-                Depositing to: <span className="font-mono font-medium">{shortenAddress(address)}</span>
+                Depositing to:{' '}
+                <span className="font-mono font-medium">{shortenAddress(address)}</span>
               </p>
               <DepositButton token={token} toAddress={address} />
             </>
@@ -171,9 +172,19 @@ function DepositButton({
   token: (typeof SUPPORTED_TOKENS)[number];
   toAddress: `0x${string}`;
 }) {
+  const { resetPayment } = useDaimoPayUI();
+
+  // Call resetPayment when the button is clicked, not on every render
+  const handleClick = () => {
+    resetPayment({
+      toChain: celo.id,
+      toAddress: toAddress,
+      toToken: getAddress(token.address),
+    });
+  };
+
   return (
     <DaimoPayButton.Custom
-      key={`${token.address}-${toAddress}`}
       appId={DAIMO_APP_ID}
       toChain={celo.id}
       toAddress={toAddress}
@@ -182,7 +193,13 @@ function DepositButton({
       refundAddress={toAddress}
     >
       {({ show }) => (
-        <SolidButton className="bg-primary px-8 text-primary-content" onClick={show}>
+        <SolidButton
+          className="bg-primary px-8 text-primary-content"
+          onClick={() => {
+            handleClick();
+            show();
+          }}
+        >
           <span className="flex items-center space-x-2">
             <span>Deposit {token.name}</span>
             <ChevronIcon direction="e" width={12} height={12} />
