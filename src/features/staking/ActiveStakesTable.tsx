@@ -17,6 +17,7 @@ import { ValidatorGroup } from 'src/features/validators/types';
 import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
+import { analytics } from 'src/utils/analytics';
 import { percent } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
 
@@ -134,6 +135,7 @@ function OptionsDropdown({
 }) {
   const showTxModal = useTransactionModal();
   const onClickItem = (action: StakeActionType) => {
+    analytics.stakeMenuClicked({ action, groupAddress: group });
     showTxModal(TransactionFlowType.Stake, { group, action });
   };
 
@@ -143,7 +145,12 @@ function OptionsDropdown({
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[
-        <Link className="underline-offset-2 hover:underline" key={0} href={`/staking/${group}`}>
+        <Link
+          className="underline-offset-2 hover:underline"
+          key={0}
+          href={`/staking/${group}`}
+          onClick={() => analytics.validatorGroupViewed({ groupAddress: group })}
+        >
           Details
         </Link>,
         ...(isActivatable

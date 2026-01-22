@@ -26,6 +26,7 @@ import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { analytics } from 'src/utils/analytics';
 import { useStakingMode } from 'src/utils/useStakingMode';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
@@ -58,6 +59,11 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
     action: DelegateActionType.Delegate,
   });
 
+  const onDelegateButtonClick = () => {
+    analytics.delegateButtonClicked();
+    showTxModal();
+  };
+
   // Set up responsive column visibility
   const isMobile = useIsMobile();
   useEffect(() => {
@@ -78,7 +84,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
           {mode.mode === 'CELO' && (
             <SolidButton
               className="btn-neutral h-full text-xs"
-              onClick={() => showTxModal()}
+              onClick={onDelegateButtonClick}
             >{`️🗳️ Delegate voting power`}</SolidButton>
           )}
           <SearchField
@@ -118,7 +124,16 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
             <tr key={row.id} className={classNames.tr}>
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={classNames.td}>
-                  <Link href={`/delegate/${row.original.address}`} className="flex px-4 py-4">
+                  <Link
+                    href={`/delegate/${row.original.address}`}
+                    className="flex px-4 py-4"
+                    onClick={() =>
+                      analytics.delegateeViewed({
+                        delegateeAddress: row.original.address,
+                        delegateeName: row.original.name,
+                      })
+                    }
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
                 </td>

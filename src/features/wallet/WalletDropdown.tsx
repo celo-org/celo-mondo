@@ -12,6 +12,7 @@ import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotin
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { shortenAddress } from 'src/utils/addresses';
+import { analytics } from 'src/utils/analytics';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
@@ -25,12 +26,18 @@ export function WalletDropdown() {
 
   const onDisconnect = async () => {
     try {
+      analytics.walletDisconnected();
       await disconnectAsync();
     } catch (err) {
       logger.error('Error disconnecting wallet', err);
       // Sometimes a page reload helps handle disconnection issues
       window.location.reload();
     }
+  };
+
+  const onConnect = () => {
+    analytics.walletConnected();
+    openConnectModal?.();
   };
 
   return (
@@ -50,7 +57,7 @@ export function WalletDropdown() {
           modalClasses="p-4"
         />
       ) : (
-        <SolidButton className="bg-primary" onClick={openConnectModal}>
+        <SolidButton className="bg-primary" onClick={onConnect}>
           Connect
         </SolidButton>
       )}

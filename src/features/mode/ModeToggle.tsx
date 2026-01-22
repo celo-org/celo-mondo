@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { analytics } from 'src/utils/analytics';
 import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useStakingMode } from 'src/utils/useStakingMode';
 
@@ -17,7 +18,11 @@ export function ModeToggle() {
           id="modeToggle"
           className="peer sr-only"
           checked={mode === 'stCELO'}
-          onChange={toggleMode}
+          onChange={() => {
+            const newMode = mode === 'CELO' ? 'stCELO' : 'CELO';
+            analytics.modeToggled({ mode: newMode });
+            toggleMode();
+          }}
         />
         <label
           htmlFor="modeToggle"

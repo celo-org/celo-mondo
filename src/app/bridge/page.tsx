@@ -11,6 +11,7 @@ import JumperLogo from 'src/images/logos/jumper-bridge.png';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
 import USDT0Logo from 'src/images/logos/usdt0.webp';
+import { analytics } from 'src/utils/analytics';
 
 interface Bridge {
   name: string;
@@ -88,7 +89,11 @@ function BridgeLink({ name, operator, href, logo, description }: Bridge) {
         </div>
       </div>
       <SolidButton className="bg-primary text-primary-content all:p-0">
-        <A_Blank className="flex items-center space-x-2 px-5 py-3.5" href={href}>
+        <A_Blank
+          className="flex items-center space-x-2 px-5 py-3.5"
+          href={href}
+          onClick={() => analytics.bridgeLinkClicked({ bridgeName: name })}
+        >
           <span>Bridge</span>
           <ChevronIcon direction="e" width={12} height={12} />
         </A_Blank>

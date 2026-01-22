@@ -16,6 +16,7 @@ import { getVoteTxPlan } from 'src/features/governance/votePlan';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
+import { analytics } from 'src/utils/analytics';
 import { isNullish } from 'src/utils/typeof';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useAccount } from 'wagmi';
@@ -52,6 +53,10 @@ export function VoteForm({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || [], mode, stCeloVotingPower),
     onStepSuccess: () => (mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord()),
     onPlanSuccess: (v, r) => {
+      analytics.voteCompleted({
+        voteType: v.vote,
+        proposalId: v.proposalId,
+      });
       const properties = [
         { label: 'Vote', value: v.vote },
         { label: 'Proposal', value: `#${v.proposalId}` },

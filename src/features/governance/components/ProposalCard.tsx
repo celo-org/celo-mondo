@@ -14,6 +14,7 @@ import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposal
 import { VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
+import { analytics } from 'src/utils/analytics';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanEndTime } from 'src/utils/time';
@@ -54,8 +55,15 @@ export function ProposalCard({
       color: VoteToColor[vote as VoteType],
     }));
 
+  const onProposalClick = () => {
+    analytics.proposalViewed({
+      proposalId: String(id || cgp || metadata.cgp),
+      stage: String(stage),
+    });
+  };
+
   return (
-    <Link href={link} className={clsx('space-y-2.5', className)}>
+    <Link href={link} className={clsx('space-y-2.5', className)} onClick={onProposalClick}>
       <ProposalBadgeRow propData={propData} />
       {metadata.title && (
         <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
@@ -150,12 +158,17 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
       <A_Blank
         href={discussionUrl}
         className="flex grow items-center gap-2 border border-taupe-300 px-3 py-3"
+        onClick={() => analytics.externalLinkClicked({ url: discussionUrl, context: 'proposal' })}
       >
         <SocialLogo type={SocialLinkType.Website} size={18} />
         <span className="grow text-sm font-medium hover:underline">{`View discussion on ${discussionHost}`}</span>
       </A_Blank>
       {cgpUrl && (
-        <A_Blank href={cgpUrl} className="border border-taupe-300 px-3 py-3">
+        <A_Blank
+          href={cgpUrl}
+          className="border border-taupe-300 px-3 py-3"
+          onClick={() => analytics.externalLinkClicked({ url: cgpUrl, context: 'cgp' })}
+        >
           <SocialLogo type={SocialLinkType.Github} size={20} />
         </A_Blank>
       )}

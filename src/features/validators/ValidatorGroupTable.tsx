@@ -26,6 +26,7 @@ import ContributionBadge from 'src/features/validators/components/ContributionBa
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
 import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { analytics } from 'src/utils/analytics';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
@@ -47,6 +48,11 @@ export function ValidatorGroupTable({
   groups: ValidatorGroup[];
 }) {
   const { tab: filter, onTabChange: setFilter } = useTabs<Filter>(Filter.All);
+
+  const handleFilterChange = (newFilter: Filter) => {
+    analytics.validatorFilterChanged({ filter: newFilter });
+    setFilter(newFilter);
+  };
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
@@ -104,7 +110,11 @@ export function ValidatorGroupTable({
   return (
     <div>
       <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-end md:justify-between">
-        <TabHeaderFilters activeFilter={filter} setFilter={setFilter} counts={headerCounts} />
+        <TabHeaderFilters
+          activeFilter={filter}
+          setFilter={handleFilterChange}
+          counts={headerCounts}
+        />
         <SearchField
           value={searchQuery}
           setValue={setSearchQuery}
@@ -153,6 +163,12 @@ export function ValidatorGroupTable({
                   <Link
                     href={`/staking/${row.original.address}`}
                     className="flex items-center gap-4 px-4 py-4"
+                    onClick={() =>
+                      analytics.validatorGroupViewed({
+                        groupAddress: row.original.address,
+                        groupName: row.original.name,
+                      })
+                    }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
@@ -291,6 +307,7 @@ function useTableColumns(_totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
+              analytics.stakeButtonClicked({ groupAddress: props.row.original.address });
               showTxModal(
                 mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
                 { group: props.row.original.address },

@@ -28,6 +28,7 @@ import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { fromWei, fromWeiRounded, toWei } from 'src/utils/amount';
+import { analytics } from 'src/utils/analytics';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
@@ -59,7 +60,11 @@ export function LockForm({
         getLockTxPlan(v, pendingWithdrawals || [], stakeBalances || emptyStakeBalances),
       onStepSuccess: () => refetch(),
       onPlanSuccess: onConfirmed
-        ? (v, r) =>
+        ? (v, r) => {
+            analytics.lockCompleted({
+              action: v.action,
+              amount: v.amount,
+            });
             onConfirmed({
               message: `${v.action} successful`,
               amount: v.amount,
@@ -68,7 +73,8 @@ export function LockForm({
                 { label: 'Action', value: toTitleCase(v.action) },
                 { label: 'Amount', value: `${v.amount} CELO` },
               ],
-            })
+            });
+          }
         : undefined,
     });
   const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', onTxSuccess);

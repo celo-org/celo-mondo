@@ -11,6 +11,7 @@ import Delegate from 'src/images/icons/delegate.svg';
 import ENS from 'src/images/icons/ens.svg';
 import Governance from 'src/images/icons/governance.svg';
 import Staking from 'src/images/icons/staking.svg';
+import { analytics } from 'src/utils/analytics';
 import { useAccount } from 'wagmi';
 
 const LINKS = (isWalletConnected?: boolean) => [
@@ -40,7 +41,9 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
                   isSelected ? 'font-semibold opacity-100' : 'font-medium opacity-60',
                 )}
               >
-                <Link href={l.to}>{l.label}</Link>
+                <Link href={l.to} onClick={() => analytics.navClicked({ item: l.label })}>
+                  {l.label}
+                </Link>
               </li>
               {isSelected && (
                 <div
@@ -72,7 +75,12 @@ export function MobileNavDropdown({ className }: { className?: string }) {
         menuClasses="space-y-8 py-6 px-8"
         menuItems={LINKS(!!address).map((l) => {
           return (
-            <Link key={l.label} href={l.to} className="flex space-x-4 font-medium">
+            <Link
+              key={l.label}
+              href={l.to}
+              className="flex space-x-4 font-medium"
+              onClick={() => analytics.navClicked({ item: l.label })}
+            >
               <Image src={l.icon} height={20} width={20} alt="" />
               <span>{l.label}</span>
             </Link>

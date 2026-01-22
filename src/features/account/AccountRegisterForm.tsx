@@ -6,6 +6,7 @@ import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import CeloCube from 'src/images/logos/celo-cube.webp';
+import { analytics } from 'src/utils/analytics';
 
 export function AccountRegisterForm({
   refetchAccountDetails,
@@ -16,6 +17,7 @@ export function AccountRegisterForm({
   const { writeContract, isLoading } = useWriteContractWithReceipt(
     'account registration',
     async () => {
+      analytics.accountCreated();
       setIsRefetching(true);
       await refetchAccountDetails();
       setIsRefetching(false);

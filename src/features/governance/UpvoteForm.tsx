@@ -12,6 +12,7 @@ import { getUpvoteTxPlan } from 'src/features/governance/votePlan';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
+import { analytics } from 'src/utils/analytics';
 import { isNullish } from 'src/utils/typeof';
 import { useAccount } from 'wagmi';
 
@@ -35,12 +36,14 @@ export function UpvoteForm({
   const { getNextTx, onTxSuccess } = useTransactionPlan<UpvoteFormValues>({
     createTxPlan: (v) => getUpvoteTxPlan(v, queue || [], votingPower || 0n),
     onStepSuccess: () => refetchUpvoters(),
-    onPlanSuccess: (v, r) =>
+    onPlanSuccess: (v, r) => {
+      analytics.upvoteCompleted({ proposalId: v.proposalId });
       onConfirmed({
         message: 'Upvote successful',
         receipt: r,
         properties: [{ label: 'Proposal', value: `#${v.proposalId}` }],
-      }),
+      });
+    },
   });
   const { writeContract, isLoading } = useWriteContractWithReceipt('upvote', onTxSuccess);
 

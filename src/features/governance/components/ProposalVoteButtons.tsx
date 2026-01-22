@@ -10,6 +10,7 @@ import {
 import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
+import { analytics } from 'src/utils/analytics';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useAccount } from 'wagmi';
 
@@ -17,6 +18,13 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
   const { isDequeueReady } = useIsDequeueReady();
 
   const showTxModal = useTransactionModal(TransactionFlowType.Upvote, { proposalId });
+
+  const onUpvoteClick = () => {
+    if (proposalId) {
+      analytics.upvoteButtonClicked({ proposalId });
+    }
+    showTxModal();
+  };
 
   return (
     <>
@@ -26,7 +34,7 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
       </div>
       <SolidButton
         className="btn-neutral w-full"
-        onClick={() => showTxModal()}
+        onClick={onUpvoteClick}
         disabled={isDequeueReady}
       >{`➕ Upvote`}</SolidButton>
       {isDequeueReady && (
@@ -58,6 +66,9 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
 
   const showTxModal = useTransactionModal();
   const onClick = (vote: VoteType) => {
+    if (proposalId) {
+      analytics.voteButtonClicked({ proposalId, voteType: vote });
+    }
     showTxModal(TransactionFlowType.Vote, { proposalId, vote });
   };
 

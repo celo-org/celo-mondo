@@ -36,6 +36,7 @@ import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { toWei } from 'src/utils/amount';
+import { analytics } from 'src/utils/analytics';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
@@ -70,6 +71,11 @@ export function StakeForm({
         transactionHash: r.transactionHash,
       });
     }
+    analytics.stakeCompleted({
+      action: v.action,
+      amount: v.amount,
+      group: addressToGroup?.[v.group]?.name,
+    });
     onConfirmed({
       message: `${v.action} successful`,
       amount: v.amount,
