@@ -37,7 +37,7 @@ export function App({ children }: PropsWithChildren<any>) {
           </HistoryProvider>
         </WagmiContext>
       </SafeHydrate>
-      <Analytics debug={true} />
+      <Analytics />
     </ErrorBoundary>
   );
 }
