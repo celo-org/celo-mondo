@@ -38,6 +38,8 @@ const IMG_SRC_HOSTS = [
   'https://*.walletconnect.com',
   'https://app.safe.global',
   'https://pass.celopg.eco',
+  // Daimo Pay SDK
+  'https://pay.daimo.com',
 ];
 const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
 
