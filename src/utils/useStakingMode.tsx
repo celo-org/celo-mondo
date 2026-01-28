@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
-import { useStCELOBalance } from 'src/features/account/hooks';
+import { useLockedBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useSessionStorage } from 'src/utils/useSessionStorage';
 import { useAccount, useBalance } from 'wagmi';
@@ -12,8 +12,9 @@ function useStakingModeInternal() {
   const enabled = featureFlag === 'stcelo';
 
   const { address } = useAccount();
-  const { stCELOBalances, isLoading: stCELOLoading } = useStCELOBalance(address);
-  const { data: balance, isLoading: balanceLoading } = useBalance({ address });
+  const { stCELOBalances } = useStCELOBalance(address);
+  const { data: balance } = useBalance({ address });
+  const { lockedBalance } = useLockedBalance(address);
   const [mode, setMode] = useSessionStorage<StakingMode>(
     'mode',
     enabled && stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
@@ -31,11 +32,13 @@ function useStakingModeInternal() {
       ?.setAttribute('data-theme', mode === 'CELO' ? 'light' : 'light-liquid');
   }, [mode]);
 
+  const hasAtLeastTwoPositiveBalances =
+    [stCELOBalances.total, balance?.value ?? 0n, lockedBalance].filter((x) => x > 0).length > 2;
+
   return {
     mode,
     toggleMode,
-    shouldRender:
-      !stCELOLoading && !balanceLoading && stCELOBalances.total > 0 && (balance?.value ?? 0n) > 0,
+    shouldRender: hasAtLeastTwoPositiveBalances,
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',
