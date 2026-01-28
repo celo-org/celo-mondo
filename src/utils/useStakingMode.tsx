@@ -1,10 +1,10 @@
 'use client';
 
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
-import { useLockedBalance, useStCELOBalance } from 'src/features/account/hooks';
+import { useStCELOBalance } from 'src/features/account/hooks';
 import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useSessionStorage } from 'src/utils/useSessionStorage';
-import { useAccount } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
@@ -13,7 +13,7 @@ function useStakingModeInternal() {
 
   const { address } = useAccount();
   const { stCELOBalances, isLoading: stCELOLoading } = useStCELOBalance(address);
-  const { lockedBalance, isLoading: lockedLoading } = useLockedBalance(address);
+  const { data: balance, isLoading: balanceLoading } = useBalance({ address });
   const [mode, setMode] = useSessionStorage<StakingMode>(
     'mode',
     enabled && stCELOBalances.total > 0 ? 'stCELO' : 'CELO',
@@ -34,7 +34,8 @@ function useStakingModeInternal() {
   return {
     mode,
     toggleMode,
-    shouldRender: !stCELOLoading && !lockedLoading && stCELOBalances.total > 0 && lockedBalance > 0,
+    shouldRender:
+      !stCELOLoading && !balanceLoading && stCELOBalances.total > 0 && (balance?.value ?? 0n) > 0,
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',
