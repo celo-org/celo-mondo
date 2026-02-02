@@ -33,7 +33,7 @@ function useStakingModeInternal() {
   }, [mode]);
 
   const hasAtLeastTwoPositiveBalances =
-    [stCELOBalances.total, balance?.value ?? 0n, lockedBalance].filter((x) => x > 0).length > 2;
+    [stCELOBalances.total, balance?.value ?? 0n, lockedBalance].filter((x) => x > 0).length >= 2;
 
   return {
     mode,

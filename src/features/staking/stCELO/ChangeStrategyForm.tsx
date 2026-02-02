@@ -155,6 +155,7 @@ function GroupField({
   const sortedGroups = useMemo(() => {
     if (!addressToGroup) return [];
     return Object.values(addressToGroup)
+      .filter((g) => g.validStCeloGroup)
       .map((g) => ({
         ...g,
         score: getGroupStats(g).score,
@@ -245,6 +246,9 @@ function validateForm(
   const groupDetails = addressToGroup[transferGroup];
   if (!groupDetails) {
     return { group: 'Transfer group not found' };
+  }
+  if (!groupDetails.validStCeloGroup) {
+    return { group: 'Transfer group has is not healthy' };
   }
   if (groupDetails.votes >= groupDetails.capacity) {
     return { group: 'Transfer group has max votes' };
