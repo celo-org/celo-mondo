@@ -16,6 +16,7 @@ import { TransactionConfirmation } from 'src/features/transactions/TransactionCo
 import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/types';
 import { capitalizeFirstLetter } from 'src/utils/strings';
 import { isNullish } from 'src/utils/typeof';
+import { useStakingMode } from 'src/utils/useStakingMode';
 import { useAccount } from 'wagmi';
 
 export interface TransactionFlowProps<FormDefaults extends {} = {}> {
@@ -44,6 +45,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   const { stCELOBalances } = useStCELOBalance(address);
   const { confirmationDetails, onConfirmed } = useTransactionFlowConfirmation();
   const isVoteSigner = Boolean(signingForAccount && signingForAccount !== address);
+  const { mode } = useStakingMode();
 
   const votingPower = useGovernanceVotingPower(address);
 
@@ -63,7 +65,7 @@ export function TransactionFlow<FormDefaults extends {}>({
     votingPower.isLoading
   ) {
     Component = <SpinnerWithLabel className="py-20">Loading account data...</SpinnerWithLabel>;
-  } else if (!isRegistered && !isVoteSigner && !requiresStCelo) {
+  } else if (!isRegistered && !isVoteSigner && !requiresStCelo && mode === 'CELO') {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
   } else if (
     lockedBalance <= 0n &&

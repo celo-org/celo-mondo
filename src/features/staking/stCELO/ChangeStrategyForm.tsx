@@ -248,7 +248,7 @@ function validateForm(
     return { group: 'Transfer group not found' };
   }
   if (!groupDetails.validStCeloGroup) {
-    return { group: 'Transfer group has is not healthy' };
+    return { group: 'Transfer group is not healthy' };
   }
   if (groupDetails.votes >= groupDetails.capacity) {
     return { group: 'Transfer group has max votes' };
