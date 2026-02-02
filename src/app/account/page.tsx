@@ -137,7 +137,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
           <SolidButton
             className="bg-primary text-primary-content"
             onClick={() =>
-              showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Unstake })
+              showTxModal(TransactionFlowType.UnstakeStCELO, { action: StakeActionType.Unstake })
             }
           >
             <div className="flex items-center space-x-1.5">

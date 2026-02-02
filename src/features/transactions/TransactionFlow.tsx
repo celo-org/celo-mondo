@@ -11,6 +11,7 @@ import { DelegateActionType } from 'src/features/delegation/types';
 import { useGovernanceVotingPower } from 'src/features/governance/hooks/useVotingStatus';
 import { VoteForm } from 'src/features/governance/VoteForm';
 import { LockForm } from 'src/features/locking/LockForm';
+import { LockActionType } from 'src/features/locking/types';
 import { StakeStCeloForm } from 'src/features/staking/stCELO/StakeForm';
 import { TransactionConfirmation } from 'src/features/transactions/TransactionConfirmation';
 import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/types';
@@ -81,7 +82,11 @@ export function TransactionFlow<FormDefaults extends {}>({
     if (action) {
       if (action === DelegateActionType.Transfer) {
         header = 'Transfer delegation';
-      } else {
+      } else if (
+        [LockActionType.Lock, LockActionType.Unlock, LockActionType.Withdraw].includes(
+          action as LockActionType,
+        )
+      ) {
         header = `${capitalizeFirstLetter(action)} CELO`;
       }
     }
@@ -92,7 +97,6 @@ export function TransactionFlow<FormDefaults extends {}>({
       <TransactionConfirmation confirmation={confirmationDetails} closeModal={closeModal} />
     );
   }
-  ``;
 
   return (
     <>
