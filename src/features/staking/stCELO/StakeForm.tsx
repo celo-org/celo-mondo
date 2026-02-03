@@ -10,6 +10,7 @@ import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
+import { useAPI } from 'src/features/staking/stCELO/hooks/useAPI';
 import { useExchangeRates } from 'src/features/staking/stCELO/hooks/useExchangeRates';
 import { getStakeTxPlan } from 'src/features/staking/stCELO/stakeTxPlan';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
@@ -37,6 +38,7 @@ export function StakeStCeloForm({
   onConfirmed?: OnConfirmedFn;
 }) {
   const { address } = useAccount();
+  const api = useAPI();
   const { balance: walletBalance } = useBalance(address);
   const { unlockingPeriod } = useLockedStatus(address);
   const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);
@@ -46,18 +48,30 @@ export function StakeStCeloForm({
     useTransactionPlan<LiquidStakeFormValues>({
       createTxPlan: (v) => getStakeTxPlan(v),
       onStepSuccess: () => refetch(),
-      onPlanSuccess: onConfirmed
-        ? (v, r) =>
-            onConfirmed({
-              message: `${v.action} successful`,
-              amount: v.amount,
-              receipt: r,
-              properties: [
-                { label: 'Action', value: toTitleCase(v.action) },
-                { label: 'Amount', value: `${v.amount} CELO` },
-              ],
-            })
-        : undefined,
+      onPlanSuccess: async (v, r) => {
+        try {
+          if (v.action === LiquidStakeActionType.Stake) {
+            await api.afterDeposit();
+          } else {
+            await api.withdraw(address!);
+          }
+        } catch (e) {
+          console.error(`${v.action} error`, e);
+        }
+
+        return (
+          onConfirmed &&
+          onConfirmed({
+            message: `${v.action} successful`,
+            amount: v.amount,
+            receipt: r,
+            properties: [
+              { label: 'Action', value: toTitleCase(v.action) },
+              { label: 'Amount', value: `${v.amount} CELO` },
+            ],
+          })
+        );
+      },
     });
   const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
