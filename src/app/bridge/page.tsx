@@ -30,7 +30,7 @@ const BRIDGES: Bridge[] = [
   {
     name: 'Squid Router',
     operator: 'Squid',
-    href: 'https://app.squidrouter.com/?chains=42220%2C1&tokens=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE%2C0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    href: 'https://app.squidrouter.com/?chains=42220%2C1&tokens=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
     logo: SquidLogo,
     description:
       'Axelar based cross chain DEX. Good for moving stablecoins between chains, or swapping directly between assets.',
