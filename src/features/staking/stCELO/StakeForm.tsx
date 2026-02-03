@@ -152,7 +152,7 @@ function LockAmountField({
       <div className="flex items-center justify-between pt-4">
         <label className="pl-0.5 text-xs font-medium">Receive</label>
         <strong className="text-xs">
-          {rate != null ? formatNumberString(values.amount / rate, 5) : 'Loading exchange rate…'}{' '}
+          {rate != null ? formatNumberString(values.amount * rate, 5) : 'Loading exchange rate…'}{' '}
           {action === LiquidStakeActionType.Unstake ? '' : 'st'}CELO
         </strong>
       </div>

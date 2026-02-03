@@ -12,4 +12,5 @@ export const DEFAULT_STRATEGY: ValidatorGroup = {
   score: 1,
   // @ts-expect-error -- filled in later
   members: [],
+  validStCeloGroup: true,
 };
