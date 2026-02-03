@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react';
 import AccountABI from 'src/config/stcelo/AccountABI';
 import { useAPI } from 'src/features/staking/stCELO/hooks/useAPI';
 import useDefaultGroups from 'src/features/staking/stCELO/hooks/useDefaultGroups';
+import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import type { Address } from 'viem';
 import { useConfig, usePublicClient, useReadContract } from 'wagmi';
 
@@ -14,6 +15,9 @@ export interface PendingWithdrawal {
 const botActionInterval = 180 * 1000;
 
 export const useWithdrawalBot = (address?: Address) => {
+  const featureFlag = useFeatureFlag();
+  const enabled = featureFlag === 'stcelo';
+
   const api = useAPI();
   const config = useConfig();
   const { activeGroups: groups } = useDefaultGroups();
@@ -34,15 +38,20 @@ export const useWithdrawalBot = (address?: Address) => {
   }, [address, groups, api, config]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     void finalizeWithdrawal();
     const intervalId = setInterval(finalizeWithdrawal, botActionInterval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [finalizeWithdrawal]);
+  }, [enabled, finalizeWithdrawal]);
 };
 
 export const useClaimingBot = (address?: Address) => {
+  const featureFlag = useFeatureFlag();
+  const enabled = featureFlag === 'stcelo';
+
   const api = useAPI();
   const publicClient = usePublicClient();
   const { refetch: loadPendingWithdrawals } = useReadContract({
@@ -67,12 +76,14 @@ export const useClaimingBot = (address?: Address) => {
   }, [address, loadPendingWithdrawals, publicClient, api]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     void claim();
     const intervalId = setInterval(claim, botActionInterval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [claim]);
+  }, [enabled, claim]);
 };
 
 /**
