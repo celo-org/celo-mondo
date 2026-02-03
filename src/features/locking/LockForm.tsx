@@ -3,19 +3,13 @@ import { useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { AmountField } from 'src/components/input/AmountField';
-import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { TokenId } from 'src/config/tokens';
 import { useBalance } from 'src/features/account/hooks';
 import { useIsGovernanceVoting } from 'src/features/governance/hooks/useVotingStatus';
 import { getLockTxPlan } from 'src/features/locking/lockPlan';
-import {
-  LockActionType,
-  LockActionValues,
-  LockFormValues,
-  LockedBalances,
-} from 'src/features/locking/types';
+import { LockActionType, LockFormValues, LockedBalances } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import {
   getTotalNonvotingLocked,
@@ -123,7 +117,6 @@ export function LockForm({
                 )}
               </TipBox>
             )}
-            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <LockAmountField
               lockedBalances={lockedBalances}
               walletBalance={walletBalance}
@@ -143,22 +136,6 @@ export function LockForm({
         </Form>
       )}
     </Formik>
-  );
-}
-function ActionTypeField({
-  defaultAction,
-  disabled,
-}: {
-  defaultAction?: LockActionType;
-  disabled?: boolean;
-}) {
-  return (
-    <RadioField<LockActionType>
-      name="action"
-      values={LockActionValues}
-      defaultValue={defaultAction}
-      disabled={disabled}
-    />
   );
 }
 

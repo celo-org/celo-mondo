@@ -3,17 +3,12 @@ import { useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { AmountField } from 'src/components/input/AmountField';
-import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
-import {
-  LiquidStakeActionType,
-  LiquidStakeFormValues,
-  StCeloActionValues,
-} from 'src/features/locking/types';
+import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { useExchangeRates } from 'src/features/staking/stCELO/hooks/useExchangeRates';
 import { getStakeTxPlan } from 'src/features/staking/stCELO/stakeTxPlan';
@@ -102,7 +97,6 @@ export function StakeStCeloForm({
             {values.action === LiquidStakeActionType.Unstake && (
               <TipBox color="purple">Unstaking takes {unlockingPeriodReadable}. </TipBox>
             )}
-            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <LockAmountField
               stCELOBalances={stCELOBalances}
               walletBalance={walletBalance}
@@ -122,22 +116,6 @@ export function StakeStCeloForm({
         </Form>
       )}
     </Formik>
-  );
-}
-function ActionTypeField({
-  defaultAction,
-  disabled,
-}: {
-  defaultAction?: LiquidStakeActionType;
-  disabled?: boolean;
-}) {
-  return (
-    <RadioField<LiquidStakeActionType>
-      name="action"
-      values={StCeloActionValues}
-      defaultValue={defaultAction}
-      disabled={disabled}
-    />
   );
 }
 
