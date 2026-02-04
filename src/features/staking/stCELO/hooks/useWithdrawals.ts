@@ -1,8 +1,8 @@
 import { readContract } from '@wagmi/core';
 import { useCallback, useEffect } from 'react';
 import AccountABI from 'src/config/stcelo/AccountABI';
-import { useAPI } from 'src/features/staking/stCELO/hooks/useAPI';
 import useDefaultGroups from 'src/features/staking/stCELO/hooks/useDefaultGroups';
+import { claim, withdraw } from 'src/utils/stCELOAPI';
 import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import type { Address } from 'viem';
 import { useConfig, usePublicClient, useReadContract } from 'wagmi';
@@ -18,7 +18,6 @@ export const useWithdrawalBot = (address?: Address) => {
   const featureFlag = useFeatureFlag();
   const enabled = featureFlag === 'stcelo';
 
-  const api = useAPI();
   const config = useConfig();
   const { activeGroups: groups } = useDefaultGroups();
 
@@ -33,9 +32,9 @@ export const useWithdrawalBot = (address?: Address) => {
         args: [group, address],
       });
 
-      if (scheduledWithdrawals > 0) return api.withdraw(address);
+      if (scheduledWithdrawals > 0) return withdraw(address);
     }
-  }, [address, groups, api, config]);
+  }, [address, groups, config]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -52,7 +51,6 @@ export const useClaimingBot = (address?: Address) => {
   const featureFlag = useFeatureFlag();
   const enabled = featureFlag === 'stcelo';
 
-  const api = useAPI();
   const publicClient = usePublicClient();
   const { refetch: loadPendingWithdrawals } = useReadContract({
     ...AccountABI,
@@ -61,7 +59,7 @@ export const useClaimingBot = (address?: Address) => {
     query: { enabled: !!address },
   });
 
-  const claim = useCallback(async () => {
+  const finalizeClaim = useCallback(async () => {
     if (!address) return;
 
     const [{ timestamp: currentBlockTimestamp }, { data: valuesAndTimestamps }] = await Promise.all(
@@ -72,18 +70,18 @@ export const useClaimingBot = (address?: Address) => {
       (withdrawalTimestamp) => withdrawalTimestamp < currentBlockTimestamp,
     );
 
-    if (availableToClaim) await api.claim(address);
-  }, [address, loadPendingWithdrawals, publicClient, api]);
+    if (availableToClaim) await claim(address);
+  }, [address, loadPendingWithdrawals, publicClient]);
 
   useEffect(() => {
     if (!enabled) return;
 
-    void claim();
-    const intervalId = setInterval(claim, botActionInterval);
+    void finalizeClaim();
+    const intervalId = setInterval(finalizeClaim, botActionInterval);
     return () => {
       clearInterval(intervalId);
     };
-  }, [enabled, claim]);
+  }, [enabled, finalizeClaim]);
 };
 
 /**

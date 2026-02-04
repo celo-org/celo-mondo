@@ -10,7 +10,6 @@ import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
-import { useAPI } from 'src/features/staking/stCELO/hooks/useAPI';
 import { useExchangeRates } from 'src/features/staking/stCELO/hooks/useExchangeRates';
 import { getStakeTxPlan } from 'src/features/staking/stCELO/stakeTxPlan';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
@@ -18,6 +17,7 @@ import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { fromWei, toWei } from 'src/utils/amount';
+import { afterDeposit, withdraw } from 'src/utils/stCELOAPI';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
@@ -38,7 +38,6 @@ export function StakeStCeloForm({
   onConfirmed?: OnConfirmedFn;
 }) {
   const { address } = useAccount();
-  const api = useAPI();
   const { balance: walletBalance } = useBalance(address);
   const { unlockingPeriod } = useLockedStatus(address);
   const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);
@@ -52,9 +51,9 @@ export function StakeStCeloForm({
         void (async function callstCeloApi() {
           try {
             if (v.action === LiquidStakeActionType.Stake) {
-              await api.afterDeposit();
+              await afterDeposit();
             } else {
-              await api.withdraw(address!);
+              await withdraw(address!);
             }
           } catch (e) {
             console.error(`${v.action} error`, e);
