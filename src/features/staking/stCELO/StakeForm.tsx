@@ -49,15 +49,17 @@ export function StakeStCeloForm({
       createTxPlan: (v) => getStakeTxPlan(v),
       onStepSuccess: () => refetch(),
       onPlanSuccess: async (v, r) => {
-        try {
-          if (v.action === LiquidStakeActionType.Stake) {
-            await api.afterDeposit();
-          } else {
-            await api.withdraw(address!);
+        void (async function callstCeloApi() {
+          try {
+            if (v.action === LiquidStakeActionType.Stake) {
+              await api.afterDeposit();
+            } else {
+              await api.withdraw(address!);
+            }
+          } catch (e) {
+            console.error(`${v.action} error`, e);
           }
-        } catch (e) {
-          console.error(`${v.action} error`, e);
-        }
+        })();
 
         return (
           onConfirmed &&
