@@ -1,14 +1,14 @@
+import { ST_CELO_API_URL } from 'src/config/consts';
+
 type ActionType =
   | 'activate'
   | 'withdraw'
   | 'claim'
   | ['rebalanceDefault', 'rebalance', 'revoke', 'activate']; // must be this order
 
-const MAINNET_API_URL = 'https://us-central1-staked-celo-bot.cloudfunctions.net/mainnet-functions';
-
 export const useAPI = () => {
   const sendRequest = async (action: ActionType, address?: string) => {
-    await fetch(MAINNET_API_URL, {
+    await fetch(ST_CELO_API_URL, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',

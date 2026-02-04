@@ -25,6 +25,7 @@ const CONNECT_SRC_HOSTS = [
   'https://app.safe.global',
   'https://pass.celopg.eco',
   'https://*.rainbow.me',
+  'https://us-central1-staked-celo-bot.cloudfunctions.net',
 ];
 const FRAME_SRC_HOSTS = [
   'https://*.walletconnect.com',
