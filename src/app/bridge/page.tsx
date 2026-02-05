@@ -28,7 +28,7 @@ export default function Page() {
 
 function BridgeLink({ id, name, operator, href, logo, description }: Bridge) {
   const trackEvent = useTrackEvent();
-  
+
   const handleBridgeClick = () => {
     trackEvent('bridge_clicked', { bridgeId: id });
   };
@@ -44,8 +44,8 @@ function BridgeLink({ id, name, operator, href, logo, description }: Bridge) {
         </div>
       </div>
       <SolidButton className="bg-primary text-primary-content all:p-0">
-        <A_Blank 
-          className="flex items-center space-x-2 px-5 py-3.5" 
+        <A_Blank
+          className="flex items-center space-x-2 px-5 py-3.5"
           href={href}
           onClick={handleBridgeClick}
           data-testid={id}

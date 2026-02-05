@@ -22,12 +22,11 @@ describe('Bridge Page', () => {
     vi.clearAllMocks();
     mockUseTrackEvent.mockReturnValue(mockTrackEvent);
   });
-  
+
   test('should render all bridge options', () => {
     render(<Page />);
 
-    for (const bridge of BRIDGES)
-    {
+    for (const bridge of BRIDGES) {
       expect(screen.getByText(bridge.name)).toBeInTheDocument();
     }
   });
