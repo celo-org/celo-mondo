@@ -40,7 +40,7 @@ function BridgeLink({ id, name, operator, href, logo, description }: Bridge) {
         <div className="flex flex-col gap-1">
           <h2 className="font-serif text-xl">{name}</h2>
           <h3 className="text-sm">{`By ${operator}`}</h3>
-          <p className="text-sm">{description}</p>
+          <p className="max-w-xs text-xs">{description}</p>
         </div>
       </div>
       <SolidButton className="bg-primary text-primary-content all:p-0">
