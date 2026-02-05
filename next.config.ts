@@ -40,6 +40,8 @@ const IMG_SRC_HOSTS = [
   'https://pass.celopg.eco',
   // Daimo Pay SDK
   'https://pay.daimo.com',
+  // Token logos from CoinGecko
+  'https://assets.coingecko.com',
 ];
 const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
 
