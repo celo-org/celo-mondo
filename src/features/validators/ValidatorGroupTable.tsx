@@ -236,7 +236,7 @@ function TopGroupsRow({
   );
 }
 
-function useTableColumns(totalVotes: bigint) {
+function useTableColumns(_totalVotes: bigint) {
   const showTxModal = useTransactionModal();
   const { mode, ui } = useStakingMode();
 
@@ -303,7 +303,7 @@ function useTableColumns(totalVotes: bigint) {
         ),
       }),
     ];
-  }, [totalVotes, ui.action, showTxModal, mode]);
+  }, [ui.action, showTxModal, mode]);
 }
 
 function useTableRows({
