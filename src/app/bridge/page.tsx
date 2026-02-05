@@ -1,11 +1,13 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
+import DaimoLogo from 'src/images/logos/daimo.svg';
 import JumperLogo from 'src/images/logos/jumper-bridge.png';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
@@ -17,6 +19,7 @@ interface Bridge {
   href: string;
   logo: any;
   description: string;
+  internal?: boolean;
 }
 
 const BRIDGES: Bridge[] = [
@@ -57,6 +60,15 @@ const BRIDGES: Bridge[] = [
     logo: USDT0Logo,
     description: '1:1 transfers of native USDT powered by the Layer Zero OFT. Best for moving USDT',
   },
+  {
+    name: 'Daimo Pay',
+    operator: 'Daimo',
+    href: '/deposit',
+    logo: DaimoLogo,
+    description:
+      'Easiest way to get tokens from centralized exchanges. Deposit from any chain and get your selected token on Celo.',
+    internal: true,
+  },
 ];
 
 export default function Page() {
@@ -75,7 +87,14 @@ export default function Page() {
   );
 }
 
-function BridgeLink({ name, operator, href, logo, description }: Bridge) {
+function BridgeLink({ name, operator, href, logo, description, internal }: Bridge) {
+  const ButtonContent = (
+    <>
+      <span>Bridge</span>
+      <ChevronIcon direction="e" width={12} height={12} />
+    </>
+  );
+
   return (
     <div className="flex max-w-xl items-center justify-between self-center border border-taupe-300 bg-white p-4 sm:p-5">
       <div className="flex items-center space-x-4">
@@ -87,10 +106,15 @@ function BridgeLink({ name, operator, href, logo, description }: Bridge) {
         </div>
       </div>
       <SolidButton className="bg-primary text-primary-content all:p-0">
-        <A_Blank className="flex items-center space-x-2 px-5 py-3.5" href={href}>
-          <span>Bridge</span>
-          <ChevronIcon direction="e" width={12} height={12} />
-        </A_Blank>
+        {internal ? (
+          <Link className="flex items-center space-x-2 px-5 py-3.5" href={href}>
+            {ButtonContent}
+          </Link>
+        ) : (
+          <A_Blank className="flex items-center space-x-2 px-5 py-3.5" href={href}>
+            {ButtonContent}
+          </A_Blank>
+        )}
       </SolidButton>
     </div>
   );

@@ -2,11 +2,17 @@
 
 import { DaimoPayButton, useDaimoPayUI } from '@daimo/pay';
 import { useConnectModal } from '@rainbow-me/rainbowkit';
+import Image from 'next/image';
 import { useState } from 'react';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
+import axlUSDCIcon from 'src/images/tokens/axlUSDC.svg';
+import CELOIcon from 'src/images/tokens/CELO.svg';
+import USDCIcon from 'src/images/tokens/USDC.svg';
+import USDmIcon from 'src/images/tokens/USDm.svg';
+import USDTIcon from 'src/images/tokens/USDT.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { getAddress } from 'viem';
 import { celo } from 'viem/chains';
@@ -21,40 +27,35 @@ const SUPPORTED_TOKENS = [
     name: 'CELO',
     address: '0x471EcE3750Da237f93B8E339c536989b8978a438', // Wrapped CELO token
     description: 'Native Celo token',
-    color: '#FCFF52',
-    textColor: '#000',
+    icon: CELOIcon,
   },
   {
-    id: 'cUSD',
-    name: 'cUSD',
+    id: 'USDm',
+    name: 'USDm',
     address: '0x765DE816845861e75A25fCA122bb6898B8B1282a',
-    description: 'Celo Dollar stablecoin',
-    color: '#45CD85',
-    textColor: '#fff',
+    description: 'Mento USD stablecoin',
+    icon: USDmIcon,
   },
   {
     id: 'USDC',
     name: 'USDC',
     address: '0xcebA9300f2b948710d2653dD7B07f33A8B32118C',
     description: 'Native USDC on Celo',
-    color: '#2775CA',
-    textColor: '#fff',
+    icon: USDCIcon,
   },
   {
     id: 'USDT',
     name: 'USDT',
-    address: '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e', // Correct checksum
+    address: '0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e',
     description: 'Tether USD',
-    color: '#50AF95',
-    textColor: '#fff',
+    icon: USDTIcon,
   },
   {
     id: 'axlUSDC',
     name: 'axlUSDC',
     address: '0xEB466342C4d449BC9f53A865D5Cb90586f405215',
     description: 'Axelar bridged USDC',
-    color: '#000',
-    textColor: '#fff',
+    icon: axlUSDCIcon,
   },
 ] as const;
 
@@ -114,12 +115,13 @@ export default function Page() {
                     : 'border-taupe-300 bg-white hover:border-taupe-400'
                 }`}
               >
-                <div
-                  className="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                  style={{ backgroundColor: t.color, color: t.textColor }}
-                >
-                  {t.id === 'axlUSDC' ? 'axl' : t.name.slice(0, 2)}
-                </div>
+                <Image
+                  src={t.icon}
+                  alt={t.name}
+                  width={32}
+                  height={32}
+                  className="mb-1.5 rounded-full"
+                />
                 <span className="text-xs font-medium">{t.name}</span>
               </button>
             ))}
