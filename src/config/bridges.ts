@@ -4,7 +4,7 @@ import SquidLogo from 'src/images/logos/squid-router.jpg';
 import USDT0Logo from 'src/images/logos/usdt0.webp';
 import { Bridge } from 'src/types/bridge';
 
-const BRIDGES: Bridge[] = [
+export const BRIDGES: Bridge[] = [
   {
     id: 'superbridge',
     name: 'Superbridge',
