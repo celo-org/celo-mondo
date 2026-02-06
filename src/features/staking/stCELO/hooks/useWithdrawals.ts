@@ -32,7 +32,10 @@ export const useWithdrawalBot = (address?: Address) => {
         args: [group, address],
       });
 
-      if (scheduledWithdrawals > 0) return withdraw(address);
+      if (scheduledWithdrawals > 0) {
+        await withdraw(address);
+        return;
+      }
     }
   }, [address, groups, config]);
 
