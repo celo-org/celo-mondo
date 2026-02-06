@@ -14,7 +14,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, MAX_NUM_ELECTABLE_VALIDATORS, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses, resolveAddress } from 'src/config/contracts';
 import GroupHealthABI from 'src/config/stcelo/GroupHealthABI';
-import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/descriptors';
 import useDefaultGroups, {
   useStCeloInDefaultGroups,
 } from 'src/features/staking/stCELO/hooks/useDefaultGroups';

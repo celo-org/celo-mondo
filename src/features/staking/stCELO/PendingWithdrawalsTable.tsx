@@ -1,36 +1,89 @@
-import { Spinner } from 'src/components/animation/Spinner';
+import { useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
+import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { Amount } from 'src/components/numbers/Amount';
-import { MINUTE } from 'src/config/consts';
-import { PendingStCELOWithdrawal } from 'src/features/staking/stCELO/hooks/useWithdrawals';
-import { getHumanReadableDuration } from 'src/utils/time';
+import {
+  PendingStCELOWithdrawal,
+  useWithdrawals,
+} from 'src/features/staking/stCELO/hooks/useWithdrawals';
+import { claim } from 'src/utils/stCELOAPI';
+import { getFullDateHumanDateString, getHumanReadableDuration } from 'src/utils/time';
+import { useAccount } from 'wagmi';
 
 interface PendingWithdrawalsProps {
   pendingWithdrawals: PendingStCELOWithdrawal[];
 }
 
-export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawalsProps) => (
-  <div className="w-full">
-    {pendingWithdrawals.map(({ amount, timestamp }) => (
-      <PendingWithdrawal key={timestamp} amount={amount} timestamp={timestamp} />
-    ))}
-  </div>
-);
+export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawalsProps) => {
+  const { address } = useAccount();
+  const { loadPendingWithdrawals } = useWithdrawals();
+  const { isLoading, refetch } = useQuery({
+    queryKey: [address],
+    queryFn: () => claim(address!),
+    enabled: false,
+  });
 
-export const PendingWithdrawal = ({ amount, timestamp }: PendingStCELOWithdrawal) => {
+  const _claim = useCallback(async () => {
+    await refetch();
+    await loadPendingWithdrawals();
+  }, [loadPendingWithdrawals, refetch]);
+
+  if (pendingWithdrawals.length === 0) {
+    return (
+      <HeaderAndSubheader
+        header="No withdrawals available"
+        subHeader={`You are not currently untaking any stCELO. Once you unstake, the withdrawals will show here.`}
+        className="my-10"
+      ></HeaderAndSubheader>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      {pendingWithdrawals.map(({ amount, timestamp }) => (
+        <PendingWithdrawal
+          key={timestamp}
+          amount={amount}
+          timestamp={timestamp}
+          claim={_claim}
+          isLoading={isLoading}
+        />
+      ))}
+    </div>
+  );
+};
+
+export const PendingWithdrawal = ({
+  amount,
+  timestamp,
+  isLoading,
+  claim,
+}: PendingStCELOWithdrawal & { claim: () => void; isLoading: boolean }) => {
   const now = Date.now();
   const date = parseInt(timestamp, 10) * 1000;
   const isClaiming = now > date;
-  const isPastClaimingDate = now - 5 * MINUTE > date;
 
   return (
-    <div className="flex w-full flex-row items-center gap-10 border-b border-taupe-300 px-2 py-3 text-center">
+    <div
+      className="tooltip-neutral tooltip tooltip-left flex w-full flex-row items-center gap-10 border-b border-taupe-300 px-2 py-3 text-center"
+      data-tip={getFullDateHumanDateString(date)}
+    >
       <Amount valueWei={amount} className="text-lg" />
-      <div className="text-[14px] text-taupe-600">
+      <div className="flex w-full flex-row items-center justify-between gap-4 text-[14px] text-taupe-600">
         {isClaiming ? (
-          <div className="flex gap-4">
-            {isPastClaimingDate ? 'Still claiming…' : 'Claiming…'}
-            {isClaiming && <Spinner size="sm" />}
-          </div>
+          <>
+            <span>Available to claim</span>
+            <SolidButtonWithSpinner
+              isLoading={isLoading}
+              onClick={claim}
+              loadingText="Claiming…"
+              disabled={!isClaiming || isLoading}
+              className="self-end py-2 text-xs"
+            >
+              Claim
+            </SolidButtonWithSpinner>
+          </>
         ) : (
           `Available in ${getHumanReadableDuration(date - now)}`
         )}
