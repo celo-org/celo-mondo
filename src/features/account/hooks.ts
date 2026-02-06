@@ -47,7 +47,18 @@ export function useLockedBalance(address?: Address) {
   };
 }
 
-export function useStCELOBalance(address?: Address) {
+export type StCELOBalance = {
+  stCELOBalances: {
+    usable: bigint;
+    total: bigint;
+    lockedVote: bigint;
+  };
+  isError: boolean;
+  isLoading: boolean;
+  refetch: () => Promise<void>;
+};
+
+export function useStCELOBalance(address?: Address): StCELOBalance {
   const stCELOResult = useReadContract({
     ...StakedCeloABI,
     functionName: 'balanceOf',

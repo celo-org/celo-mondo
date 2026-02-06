@@ -7,7 +7,7 @@ import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import type { Address } from 'viem';
 import { useConfig, usePublicClient, useReadContract } from 'wagmi';
 
-export interface PendingWithdrawal {
+export interface PendingStCELOWithdrawal {
   amount: bigint;
   timestamp: string;
 }
@@ -88,9 +88,13 @@ export const useClaimingBot = (address?: Address) => {
  * Groups pending withdrawals that are within 5 minutes time span
  */
 const groupingTimeSpan = 5n * 60n;
-const formatPendingWithdrawals = (values: bigint[], timestamps: bigint[]): PendingWithdrawal[] => {
+const formatPendingWithdrawals = (
+  values: bigint[],
+  timestamps: bigint[],
+): PendingStCELOWithdrawal[] => {
+  console.log({ values });
   const sortedTimestamps = [...timestamps].sort();
-  const pendingWithdrawals: PendingWithdrawal[] = [];
+  const pendingWithdrawals: PendingStCELOWithdrawal[] = [];
 
   let referenceTimestamp = 0n;
   for (let index = 0; index < sortedTimestamps.length; index++) {
