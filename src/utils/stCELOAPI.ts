@@ -6,8 +6,8 @@ type ActionType =
   | 'claim'
   | ['rebalanceDefault', 'rebalance', 'revoke', 'activate']; // must be this order
 
-async function sendRequest(action: ActionType, address?: string) {
-  await fetch(ST_CELO_API_URL, {
+function sendRequest(action: ActionType, address?: string) {
+  return fetch(ST_CELO_API_URL, {
     method: 'post',
     headers: {
       'Content-Type': 'application/json',

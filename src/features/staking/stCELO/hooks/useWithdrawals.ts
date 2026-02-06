@@ -92,7 +92,6 @@ const formatPendingWithdrawals = (
   values: bigint[],
   timestamps: bigint[],
 ): PendingStCELOWithdrawal[] => {
-  console.log({ values });
   const sortedTimestamps = [...timestamps].sort();
   const pendingWithdrawals: PendingStCELOWithdrawal[] = [];
 
