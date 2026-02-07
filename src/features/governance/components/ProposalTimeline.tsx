@@ -311,17 +311,9 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                 {/* Event timestamp */}
                 {step.isEvent && step.timestamp && <TimelineTime timestamp={step.timestamp} />}
 
-                {/* Phase timestamps */}
-                {!step.isEvent && (step.startTime || step.endTime) && (
-                  <div>
-                    {step.startTime && <TimelineTime timestamp={step.startTime} />}
-                    {step.status === 'completed' && step.endTime && (
-                      <>
-                        {step.startTime && <span className="text-xs text-taupe-400">{' — '}</span>}
-                        <TimelineTime timestamp={step.endTime} />
-                      </>
-                    )}
-                  </div>
+                {/* Phase start time */}
+                {!step.isEvent && step.startTime && (
+                  <TimelineTime timestamp={step.startTime} />
                 )}
 
                 {/* Active countdown */}
