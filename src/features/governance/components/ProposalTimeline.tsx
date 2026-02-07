@@ -218,6 +218,14 @@ function buildTimelineSteps(
     });
   }
 
+  // Sort by effective timestamp to ensure chronological order.
+  // Use startTime for phases, timestamp for events.
+  steps.sort((a, b) => {
+    const timeA = a.timestamp ?? a.startTime ?? 0;
+    const timeB = b.timestamp ?? b.startTime ?? 0;
+    return timeA - timeB;
+  });
+
   return steps;
 }
 
@@ -264,14 +272,22 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
         {steps.map((step, i) => {
           const isLast = i === steps.length - 1;
           return (
-            <li key={`${step.label}-${i}`} className={clsx('flex', !isLast && 'pb-4')}>
+            <li
+              key={`${step.label}-${i}`}
+              className={clsx('flex', !isLast && (step.isEvent ? 'pb-2' : 'pb-4'))}
+            >
               {/* Dot + line column */}
-              <div className="relative mr-3 flex flex-col items-center">
+              <div
+                className={clsx(
+                  'relative flex flex-col items-center',
+                  step.isEvent ? 'ml-1 mr-2' : 'mr-3',
+                )}
+              >
                 {/* Dot */}
                 <div
                   className={clsx(
-                    'mt-0.5 flex-shrink-0 rounded-full',
-                    step.isEvent ? 'h-2 w-2' : 'h-3 w-3',
+                    'mt-1 flex-shrink-0 rounded-full',
+                    step.isEvent ? 'h-1.5 w-1.5' : 'h-3 w-3',
                     step.status === 'completed' && 'bg-green-500',
                     step.status === 'failed' && 'bg-red-500',
                     step.status === 'active' &&
@@ -298,7 +314,7 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
               <div className="min-w-0 flex-1 pb-1">
                 <div
                   className={clsx(
-                    'text-sm font-medium',
+                    step.isEvent ? 'text-xs italic' : 'text-sm font-medium',
                     step.status === 'active' && 'text-purple-500',
                     step.status === 'completed' && 'text-green-700',
                     step.status === 'failed' && 'text-red-500',
@@ -306,15 +322,17 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                   )}
                 >
                   {step.label}
+                  {/* Inline timestamp for events */}
+                  {step.isEvent && step.timestamp && (
+                    <>
+                      {' — '}
+                      <TimelineTime timestamp={step.timestamp} />
+                    </>
+                  )}
                 </div>
 
-                {/* Event timestamp */}
-                {step.isEvent && step.timestamp && <TimelineTime timestamp={step.timestamp} />}
-
                 {/* Phase start time */}
-                {!step.isEvent && step.startTime && (
-                  <TimelineTime timestamp={step.startTime} />
-                )}
+                {!step.isEvent && step.startTime && <TimelineTime timestamp={step.startTime} />}
 
                 {/* Active countdown */}
                 {step.status === 'active' && step.endTime && (
