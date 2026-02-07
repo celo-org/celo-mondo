@@ -92,12 +92,25 @@ function buildTimelineSteps(
   const skipPostVoting = isRejected || isWithdrawn;
 
   // Step 2.5: Approval
+  // If the proposal reached Execution/Executed/Adopted, approval must have happened
+  // even if approvedAt is missing from the DB (older proposals)
+  const approvalImplied =
+    !approvedMs &&
+    (stage === ProposalStage.Execution ||
+      stage === ProposalStage.Executed ||
+      stage === ProposalStage.Adopted);
   if (!skipPostVoting) {
     if (approvedMs) {
       steps.push({
         label: 'Approved',
         status: 'completed',
         timestamp: approvedMs,
+        isEvent: true,
+      });
+    } else if (approvalImplied) {
+      steps.push({
+        label: 'Approved',
+        status: 'completed',
         isEvent: true,
       });
     } else if (approvalMissed) {
