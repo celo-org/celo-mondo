@@ -6,9 +6,8 @@ import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { CollapsibleSection } from 'src/components/layout/CollapsibleSection';
 import {
   getThresholdLabel,
-  useThresholds,
+  useConstitutionThreshold,
 } from 'src/features/governance/hooks/useProposalQuorum';
-import { Proposal } from 'src/features/governance/types';
 import {
   DecodedTransaction,
   getContractName,
@@ -18,7 +17,7 @@ import {
 interface ProposalTransactionsProps {
   proposalId: string;
   numTransactions: bigint | undefined;
-  proposal?: Proposal;
+  onchainProposalId?: number;
 }
 
 type TransactionResponse = (ProposalTransaction & { decoded: DecodedTransaction })[];
@@ -26,7 +25,7 @@ type TransactionResponse = (ProposalTransaction & { decoded: DecodedTransaction 
 export function ProposalTransactions({
   proposalId,
   numTransactions,
-  proposal,
+  onchainProposalId,
 }: ProposalTransactionsProps) {
   const {
     data: transactions,
@@ -46,7 +45,7 @@ export function ProposalTransactions({
       return (await response.json()) as TransactionResponse;
     },
   });
-  const { data: thresholds } = useThresholds(proposal);
+  const { data: thresholds } = useConstitutionThreshold(onchainProposalId);
 
   return (
     <CollapsibleSection title={`Onchain Transactions (${numTransactions})`}>

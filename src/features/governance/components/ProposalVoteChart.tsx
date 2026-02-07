@@ -6,8 +6,8 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import {
   getMaxThresholdInfo,
+  useConstitutionThreshold,
   useIsProposalPassingQuorum,
-  useThresholds,
 } from 'src/features/governance/hooks/useProposalQuorum';
 import {
   useHistoricalProposalVoteTotals,
@@ -122,7 +122,7 @@ function ViewVotes({
 export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
   const { votes } = useProposalVoteTotals(propData);
   const { isLoading, quorumMet, quorumVotesRequired } = useIsProposalPassingQuorum(propData);
-  const { data: thresholds } = useThresholds(propData.proposal);
+  const { data: thresholds } = useConstitutionThreshold(propData.proposal?.id);
   const thresholdInfo = thresholds ? getMaxThresholdInfo(thresholds) : null;
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
