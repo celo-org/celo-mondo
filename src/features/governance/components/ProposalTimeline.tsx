@@ -185,20 +185,22 @@ function TimelineTime({ timestamp }: { timestamp: number }) {
   );
 }
 
-function ActiveCountdown({ endTime }: { endTime: number }) {
+function ActiveCountdown({ endTime, label }: { endTime: number; label: string }) {
   const now = Date.now();
   const remaining = endTime - now;
   const isPast = remaining < 0;
 
+  if (isPast) {
+    return (
+      <div className="text-xs text-taupe-600">
+        {label === 'Upvoting' ? 'Expired' : 'Ended'} <TimelineTime timestamp={endTime} />
+      </div>
+    );
+  }
+
   return (
     <div className="text-xs text-purple-300">
-      {isPast ? (
-        <>
-          Ended <TimelineTime timestamp={endTime} /> (awaiting update)
-        </>
-      ) : (
-        <>Ends in {getHumanReadableDuration(remaining)}</>
-      )}
+      {label === 'Upvoting' ? 'Expires' : 'Ends'} in {getHumanReadableDuration(remaining)}
     </div>
   );
 }
@@ -267,7 +269,7 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
 
                 {/* Active countdown */}
                 {step.status === 'active' && step.endTime && (
-                  <ActiveCountdown endTime={step.endTime} />
+                  <ActiveCountdown endTime={step.endTime} label={step.label} />
                 )}
               </div>
             </li>
