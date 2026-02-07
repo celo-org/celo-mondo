@@ -177,12 +177,51 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         height="h-6"
         className="bg-white"
       />
-      {thresholdInfo && (
-        <div className="text-sm text-taupe-600">
-          Constitution threshold:{' '}
-          <span className="font-medium">{thresholdInfo.percentage}</span> approval required
-        </div>
-      )}
+    </div>
+  );
+}
+
+export function ProposalConstitutionChart({ propData }: { propData: MergedProposalData }) {
+  const { votes } = useProposalVoteTotals(propData);
+  const { data: thresholds } = useConstitutionThreshold(propData.proposal?.id);
+  const thresholdInfo = thresholds ? getMaxThresholdInfo(thresholds) : null;
+
+  const yesVotes = votes?.[VoteType.Yes] || 0n;
+  const noVotes = votes?.[VoteType.No] || 0n;
+  const totalYesNo = yesVotes + noVotes;
+  const yesPct = totalYesNo > 0n ? percent(yesVotes, totalYesNo) : 0;
+  const thresholdPct = thresholdInfo ? thresholdInfo.maxThreshold * 100 : 50;
+  const isPassing = yesPct >= thresholdPct;
+  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
+
+  const barChartData = useMemo(
+    () => [
+      {
+        label: 'Yes',
+        value: yesPct,
+        percentage: thresholdPct > 0 ? (yesPct / thresholdPct) * 100 : 0,
+        color: isPassing ? Color.Mint : Color.Lilac,
+      },
+    ],
+    [yesPct, thresholdPct, isPassing],
+  );
+
+  if (!thresholdInfo) return null;
+
+  return (
+    <div className="space-y-2 border-t border-taupe-300 pt-2">
+      <h2 className="font-serif text-2xl">
+        Constitution
+        <em>
+          {isPassing
+            ? ` — Pass${tense(isPastVotingStage)}`
+            : ` — Fail${tense(isPastVotingStage)}`}
+        </em>
+      </h2>
+      <span className="py-2 text-sm text-taupe-600">
+        {yesPct.toFixed(0)}% Yes <em>of</em>&nbsp;&nbsp;{thresholdInfo.percentage}&nbsp; Required
+      </span>
+      <StackedBarChart data={barChartData} showBorder={true} height="h-6" className="bg-white" />
     </div>
   );
 }
