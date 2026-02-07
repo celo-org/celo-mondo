@@ -87,7 +87,7 @@ function buildTimelineSteps(
   // Skip Approved + Execution for proposals that never reached those phases
   const skipPostVoting = isRejected || isWithdrawn;
 
-  // Step 2.5: Approved / Approval Missed
+  // Step 2.5: Approval
   if (!skipPostVoting) {
     if (approvedMs) {
       steps.push({
@@ -100,6 +100,13 @@ function buildTimelineSteps(
       steps.push({
         label: 'Approval Missed',
         status: 'failed',
+        isEvent: true,
+      });
+    } else {
+      // Show pending approval for active proposals
+      steps.push({
+        label: 'Approval',
+        status: 'future',
         isEvent: true,
       });
     }
