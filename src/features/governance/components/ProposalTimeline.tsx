@@ -39,7 +39,14 @@ function buildTimelineSteps(
   if (!queuedMs && !dequeuedMs) return steps;
 
   // Step 1: Upvoting
-  const upvotingEnd = queuedMs ? queuedMs + QUEUED_STAGE_EXPIRY_TIME : undefined;
+  // For completed proposals, use dequeuedMs as the actual end (when it left the queue)
+  // For active/future, use the 28-day max expiry
+  const upvotingEnd =
+    stage === ProposalStage.Queued
+      ? queuedMs
+        ? queuedMs + QUEUED_STAGE_EXPIRY_TIME
+        : undefined
+      : dequeuedMs || (queuedMs ? queuedMs + QUEUED_STAGE_EXPIRY_TIME : undefined);
   const upvotingStatus: TimelineStepStatus =
     stage === ProposalStage.Queued
       ? 'active'
@@ -136,18 +143,20 @@ function buildTimelineSteps(
   if (!skipExecution) {
     const isActiveExecution = stage === ProposalStage.Execution || stage === ProposalStage.Approval;
     const isCompletedExecution =
-      (approvedMs || !dequeuedMs) &&
+      (approvedMs || approvalImplied) &&
       (stage === ProposalStage.Executed || stage === ProposalStage.Expiration);
     const executionStatus: TimelineStepStatus = isActiveExecution
       ? 'active'
       : isCompletedExecution
         ? 'completed'
         : 'future';
+    // Use votingEnd as start, but if missing and executed, use executedMs as end
+    const execEndTime = executionEnd || (isCompletedExecution ? executedMs : undefined);
     steps.push({
       label: 'Execution',
       status: executionStatus,
       startTime: votingEnd,
-      endTime: executionEnd,
+      endTime: execEndTime,
     });
   }
 
@@ -290,12 +299,12 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                 {step.isEvent && step.timestamp && <TimelineTime timestamp={step.timestamp} />}
 
                 {/* Phase timestamps */}
-                {!step.isEvent && step.startTime && (
+                {!step.isEvent && (step.startTime || step.endTime) && (
                   <div>
-                    <TimelineTime timestamp={step.startTime} />
+                    {step.startTime && <TimelineTime timestamp={step.startTime} />}
                     {step.status === 'completed' && step.endTime && (
                       <>
-                        <span className="text-xs text-taupe-400">{' — '}</span>
+                        {step.startTime && <span className="text-xs text-taupe-400">{' — '}</span>}
                         <TimelineTime timestamp={step.endTime} />
                       </>
                     )}
