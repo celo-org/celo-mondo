@@ -29,19 +29,15 @@ function buildTimelineSteps(
   quorumMet: boolean | null,
 ): TimelineStep[] {
   const { stage, queuedAt, dequeuedAt, approvedAt, executedAt, transactionCount } = propData;
-  const steps: TimelineStep[] = [];
 
   const queuedMs = queuedAt ? new Date(queuedAt).getTime() : undefined;
   const dequeuedMs = dequeuedAt ? new Date(dequeuedAt).getTime() : undefined;
   const approvedMs = approvedAt ? new Date(approvedAt).getTime() : undefined;
   const executedMs = executedAt ? new Date(executedAt).getTime() : undefined;
 
-  if (!queuedMs && !dequeuedMs) return steps;
+  if (!queuedMs && !dequeuedMs) return [];
 
   // Fallback: back-calculate dequeuedAt from executedAt or approvedAt when missing.
-  // executedAt falls within execution window (dequeuedAt+7d to dequeuedAt+10d),
-  // approvedAt falls within approval window (dequeuedAt+7d to dequeuedAt+8d).
-  // We use the latest known timestamp and subtract the referendum duration.
   const inferredDequeuedMs =
     dequeuedMs ||
     (executedMs
@@ -50,183 +46,136 @@ function buildTimelineSteps(
         ? approvedMs - REFERENDUM_STAGE_EXPIRY_TIME
         : undefined);
 
-  // Step 1: Upvoting
-  // For completed proposals, use dequeuedMs as the actual end (when it left the queue)
-  // For active/future, use the 28-day max expiry
+  const votingEnd = inferredDequeuedMs
+    ? inferredDequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME
+    : undefined;
+  const executionEnd = inferredDequeuedMs
+    ? inferredDequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
+    : undefined;
+
+  const isRejected = stage === ProposalStage.Rejected;
+  const isWithdrawn = stage === ProposalStage.Withdrawn;
+  const isAdopted = stage === ProposalStage.Adopted;
+  const pastReferendum = stage > ProposalStage.Referendum;
+  const approvalImplied =
+    !approvedMs &&
+    (stage === ProposalStage.Execution ||
+      stage === ProposalStage.Executed ||
+      stage === ProposalStage.Adopted);
+  const approvalMissed =
+    !approvedMs &&
+    stage === ProposalStage.Expiration &&
+    transactionCount != null &&
+    transactionCount > 0;
+  const skipPostVoting = isRejected || isWithdrawn;
+  const skipExecution = skipPostVoting || approvalMissed || isAdopted;
+
+  // Build phases in fixed lifecycle order
+  const phases: TimelineStep[] = [];
+
+  // 1. Upvoting
   const upvotingEnd =
     stage === ProposalStage.Queued
       ? queuedMs
         ? queuedMs + QUEUED_STAGE_EXPIRY_TIME
         : undefined
       : inferredDequeuedMs || (queuedMs ? queuedMs + QUEUED_STAGE_EXPIRY_TIME : undefined);
-  const upvotingStatus: TimelineStepStatus =
-    stage === ProposalStage.Queued
-      ? 'active'
-      : stage > ProposalStage.Queued
-        ? 'completed'
-        : 'future';
-  steps.push({
+  phases.push({
     label: 'Upvoting',
-    status: upvotingStatus,
+    status:
+      stage === ProposalStage.Queued
+        ? 'active'
+        : stage > ProposalStage.Queued
+          ? 'completed'
+          : 'future',
     startTime: queuedMs,
     endTime: upvotingEnd,
   });
 
-  // Step 2: Voting
-  const votingStart = inferredDequeuedMs;
-  const votingEnd = inferredDequeuedMs
-    ? inferredDequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME
-    : undefined;
-  // If we don't have dequeuedAt but the proposal progressed past Referendum, it's completed
-  const pastReferendum = stage > ProposalStage.Referendum;
-  const votingStatus: TimelineStepStatus = dequeuedMs
-    ? stage === ProposalStage.Referendum
-      ? 'active'
+  // 2. Voting
+  phases.push({
+    label: 'Voting',
+    status: dequeuedMs
+      ? stage === ProposalStage.Referendum
+        ? 'active'
+        : pastReferendum
+          ? 'completed'
+          : 'future'
       : pastReferendum
         ? 'completed'
-        : 'future'
-    : pastReferendum
-      ? 'completed'
-      : 'future';
-  steps.push({
-    label: 'Voting',
-    status: votingStatus,
-    startTime: votingStart,
+        : 'future',
+    startTime: inferredDequeuedMs,
     endTime: votingEnd,
   });
 
-  const executionEnd = inferredDequeuedMs
-    ? inferredDequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
-    : undefined;
+  // 3. Execution (skip for rejected/withdrawn/approval-missed/adopted)
+  if (!skipExecution) {
+    const isActiveExecution = stage === ProposalStage.Execution || stage === ProposalStage.Approval;
+    const isCompletedExecution =
+      (approvedMs || approvalImplied) &&
+      (stage === ProposalStage.Executed || stage === ProposalStage.Expiration);
+    phases.push({
+      label: 'Execution',
+      status: isActiveExecution ? 'active' : isCompletedExecution ? 'completed' : 'future',
+      startTime: votingEnd,
+      endTime: executionEnd,
+    });
+  }
 
-  // Determine which post-voting phases to show based on how the proposal ended.
-  // Rejected = quorum not met, so it never reached approval/execution.
-  // Expired without approval (and has txns) = approval was missed, execution unreachable.
-  // Withdrawn = could happen at any point, skip approval/execution.
-  const isRejected = stage === ProposalStage.Rejected;
-  const isWithdrawn = stage === ProposalStage.Withdrawn;
-  const approvalMissed =
-    !approvedMs &&
-    stage === ProposalStage.Expiration &&
-    transactionCount != null &&
-    transactionCount > 0;
-  // Skip Approved + Execution for proposals that never reached those phases
-  const skipPostVoting = isRejected || isWithdrawn;
+  // 4. Terminal
+  if (stage === ProposalStage.Executed) {
+    phases.push({ label: 'Executed', status: 'completed', timestamp: executedMs, isEvent: true });
+  } else if (isAdopted) {
+    phases.push({ label: 'Adopted', status: 'completed', timestamp: executedMs, isEvent: true });
+  } else if (isRejected) {
+    phases.push({ label: 'Rejected', status: 'failed', timestamp: votingEnd, isEvent: true });
+  } else if (isWithdrawn) {
+    phases.push({ label: 'Withdrawn', status: 'failed', isEvent: true });
+  } else if (stage === ProposalStage.Expiration) {
+    const expiredAt = quorumMet ? executionEnd : votingEnd;
+    phases.push({ label: 'Expired', status: 'failed', timestamp: expiredAt, isEvent: true });
+  } else {
+    phases.push({ label: 'Expiration', status: 'future', endTime: executionEnd });
+  }
 
-  // Step 2.5: Approval
-  // If the proposal reached Execution/Executed/Adopted, approval must have happened
-  // even if approvedAt is missing from the DB (older proposals)
-  const approvalImplied =
-    !approvedMs &&
-    (stage === ProposalStage.Execution ||
-      stage === ProposalStage.Executed ||
-      stage === ProposalStage.Adopted);
+  // Build events list — approval events get inserted chronologically among phases
+  // but only if they happened (have a timestamp) or failed. Future approval is not shown
+  // as a separate step.
   if (!skipPostVoting) {
     if (approvedMs) {
-      steps.push({
+      // Insert Approved at its chronological position
+      const insertIdx = phases.findIndex(
+        (p) => (p.startTime ?? p.timestamp ?? Infinity) > approvedMs,
+      );
+      phases.splice(insertIdx === -1 ? phases.length : insertIdx, 0, {
         label: 'Approved',
         status: 'completed',
         timestamp: approvedMs,
         isEvent: true,
       });
     } else if (approvalImplied) {
-      steps.push({
-        label: 'Approved',
-        status: 'completed',
-        isEvent: true,
-      });
+      // No timestamp but must have happened — insert before Execution
+      const execIdx = phases.findIndex((p) => p.label === 'Execution');
+      if (execIdx !== -1) {
+        phases.splice(execIdx, 0, {
+          label: 'Approved',
+          status: 'completed',
+          isEvent: true,
+        });
+      }
     } else if (approvalMissed) {
-      steps.push({
+      // Insert after Voting
+      const votingIdx = phases.findIndex((p) => p.label === 'Voting');
+      phases.splice(votingIdx + 1, 0, {
         label: 'Approval Missed',
         status: 'failed',
         isEvent: true,
       });
-    } else {
-      // Show pending approval for active proposals
-      steps.push({
-        label: 'Approval',
-        status: 'future',
-        isEvent: true,
-      });
     }
+    // If none of the above: approval is pending/future — don't add a step
   }
 
-  // Step 3: Execution
-  // Skip if: rejected, withdrawn, approval missed, or adopted (0 txns = no execution needed)
-  const isAdopted = stage === ProposalStage.Adopted;
-  const skipExecution = skipPostVoting || approvalMissed || isAdopted;
-  if (!skipExecution) {
-    const isActiveExecution = stage === ProposalStage.Execution || stage === ProposalStage.Approval;
-    const isCompletedExecution =
-      (approvedMs || approvalImplied) &&
-      (stage === ProposalStage.Executed || stage === ProposalStage.Expiration);
-    const executionStatus: TimelineStepStatus = isActiveExecution
-      ? 'active'
-      : isCompletedExecution
-        ? 'completed'
-        : 'future';
-    steps.push({
-      label: 'Execution',
-      status: executionStatus,
-      startTime: votingEnd,
-      endTime: executionEnd,
-    });
-  }
-
-  // Step 4: Terminal state
-  if (stage === ProposalStage.Executed) {
-    steps.push({
-      label: 'Executed',
-      status: 'completed',
-      timestamp: executedMs,
-      isEvent: true,
-    });
-  } else if (isAdopted) {
-    steps.push({
-      label: 'Adopted',
-      status: 'completed',
-      timestamp: executedMs,
-      isEvent: true,
-    });
-  } else if (isRejected) {
-    steps.push({
-      label: 'Rejected',
-      status: 'failed',
-      timestamp: votingEnd,
-      isEvent: true,
-    });
-  } else if (isWithdrawn) {
-    steps.push({
-      label: 'Withdrawn',
-      status: 'failed',
-      isEvent: true,
-    });
-  } else if (stage === ProposalStage.Expiration) {
-    const expiredAt = quorumMet ? executionEnd : votingEnd;
-    steps.push({
-      label: 'Expired',
-      status: 'failed',
-      timestamp: expiredAt,
-      isEvent: true,
-    });
-  } else {
-    // Still in progress — show future Expiration
-    steps.push({
-      label: 'Expiration',
-      status: 'future',
-      endTime: executionEnd,
-    });
-  }
-
-  // Sort by effective timestamp to ensure chronological order.
-  // Use startTime for phases, timestamp for events.
-  steps.sort((a, b) => {
-    const timeA = a.timestamp ?? a.startTime ?? 0;
-    const timeB = b.timestamp ?? b.startTime ?? 0;
-    return timeA - timeB;
-  });
-
-  return steps;
+  return phases;
 }
 
 function TimelineTime({ timestamp }: { timestamp: number }) {
