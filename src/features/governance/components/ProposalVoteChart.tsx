@@ -181,7 +181,7 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
 }
 
 const CONSTITUTION_HELP_TEXT =
-  'The constitution defines the minimum approval percentage (yes/yes+no) required for a proposal to pass. Different contract operations require different thresholds based on their risk level.';
+  'The constitution defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. For example, if a proposal requires 60% and has 80 Yes and 20 No votes, it passes with 80%. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
 
 export function ProposalConstitutionChart({ propData }: { propData: MergedProposalData }) {
   const [isExpanded, setIsExpanded] = useState(false);
