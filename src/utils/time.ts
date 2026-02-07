@@ -79,6 +79,20 @@ export function getFullDateHumanDateString(timestamp: number) {
   return formatter.format(timestamp);
 }
 
+export function getUTCDateString(timestamp: number) {
+  const formatter = Intl.DateTimeFormat(undefined, {
+    minute: 'numeric',
+    hour: 'numeric',
+    day: '2-digit',
+    weekday: 'short',
+    month: 'short',
+    hour12: false,
+    timeZone: 'UTC',
+    timeZoneName: 'short',
+  });
+  return formatter.format(timestamp);
+}
+
 export function getDateTimeString(timestamp: number) {
   const date = new Date(timestamp);
   return `${date.toLocaleTimeString()} ${getFullDateHumanDateString(timestamp)}`;
