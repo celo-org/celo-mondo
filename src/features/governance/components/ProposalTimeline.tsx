@@ -13,7 +13,7 @@ import {
   getUTCDateString,
 } from 'src/utils/time';
 
-type TimelineStepStatus = 'completed' | 'active' | 'future';
+type TimelineStepStatus = 'completed' | 'active' | 'future' | 'failed';
 
 interface TimelineStep {
   label: string;
@@ -69,7 +69,14 @@ function buildTimelineSteps(
     endTime: votingEnd,
   });
 
-  // Step 2.5: Approved (event) — only if approval timestamp exists
+  // Determine if approval was missed: expired without approval on a proposal that has transactions
+  const approvalMissed =
+    !approvedMs &&
+    stage === ProposalStage.Expiration &&
+    transactionCount != null &&
+    transactionCount > 0;
+
+  // Step 2.5: Approved / Approval Missed
   if (approvedMs) {
     steps.push({
       label: 'Approved',
@@ -77,26 +84,34 @@ function buildTimelineSteps(
       timestamp: approvedMs,
       isEvent: true,
     });
+  } else if (approvalMissed) {
+    steps.push({
+      label: 'Approval Missed',
+      status: 'failed',
+      isEvent: true,
+    });
   }
 
-  // Step 3: Execution
+  // Step 3: Execution — skip entirely if approval was missed (execution was unreachable)
   const executionStart = votingEnd;
   const executionEnd = dequeuedMs
     ? dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
     : undefined;
-  const executionStatus: TimelineStepStatus = dequeuedMs
-    ? stage === ProposalStage.Execution || stage === ProposalStage.Approval
-      ? 'active'
-      : stage > ProposalStage.Execution
-        ? 'completed'
-        : 'future'
-    : 'future';
-  steps.push({
-    label: 'Execution',
-    status: executionStatus,
-    startTime: executionStart,
-    endTime: executionEnd,
-  });
+  if (!approvalMissed) {
+    const executionStatus: TimelineStepStatus = dequeuedMs
+      ? stage === ProposalStage.Execution || stage === ProposalStage.Approval
+        ? 'active'
+        : stage > ProposalStage.Execution
+          ? 'completed'
+          : 'future'
+      : 'future';
+    steps.push({
+      label: 'Execution',
+      status: executionStatus,
+      startTime: executionStart,
+      endTime: executionEnd,
+    });
+  }
 
   // Step 4: Terminal state
   if (stage === ProposalStage.Executed) {
@@ -203,6 +218,7 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                     'mt-0.5 flex-shrink-0 rounded-full',
                     step.isEvent ? 'h-2 w-2' : 'h-3 w-3',
                     step.status === 'completed' && 'bg-green-500',
+                    step.status === 'failed' && 'bg-red-500',
                     step.status === 'active' &&
                       'animate-pulse bg-purple-300 ring-2 ring-purple-200',
                     step.status === 'future' && 'bg-taupe-300',
@@ -213,7 +229,11 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                   <div
                     className={clsx(
                       'mt-1 w-0 flex-1 border-l-2',
-                      step.status === 'completed' ? 'border-green-500' : 'border-taupe-300',
+                      step.status === 'completed'
+                        ? 'border-green-500'
+                        : step.status === 'failed'
+                          ? 'border-red-500'
+                          : 'border-taupe-300',
                     )}
                   />
                 )}
@@ -226,6 +246,7 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                     'text-sm font-medium',
                     step.status === 'active' && 'text-purple-500',
                     step.status === 'completed' && 'text-green-700',
+                    step.status === 'failed' && 'text-red-500',
                     step.status === 'future' && 'text-taupe-400',
                   )}
                 >
