@@ -69,46 +69,59 @@ function buildTimelineSteps(
     endTime: votingEnd,
   });
 
-  // Determine if approval was missed: expired without approval on a proposal that has transactions
+  const executionEnd = dequeuedMs
+    ? dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
+    : undefined;
+
+  // Determine which post-voting phases to show based on how the proposal ended.
+  // Rejected = quorum not met, so it never reached approval/execution.
+  // Expired without approval (and has txns) = approval was missed, execution unreachable.
+  // Withdrawn = could happen at any point, skip approval/execution.
+  const isRejected = stage === ProposalStage.Rejected;
+  const isWithdrawn = stage === ProposalStage.Withdrawn;
   const approvalMissed =
     !approvedMs &&
     stage === ProposalStage.Expiration &&
     transactionCount != null &&
     transactionCount > 0;
+  // Skip Approved + Execution for proposals that never reached those phases
+  const skipPostVoting = isRejected || isWithdrawn;
 
   // Step 2.5: Approved / Approval Missed
-  if (approvedMs) {
-    steps.push({
-      label: 'Approved',
-      status: 'completed',
-      timestamp: approvedMs,
-      isEvent: true,
-    });
-  } else if (approvalMissed) {
-    steps.push({
-      label: 'Approval Missed',
-      status: 'failed',
-      isEvent: true,
-    });
+  if (!skipPostVoting) {
+    if (approvedMs) {
+      steps.push({
+        label: 'Approved',
+        status: 'completed',
+        timestamp: approvedMs,
+        isEvent: true,
+      });
+    } else if (approvalMissed) {
+      steps.push({
+        label: 'Approval Missed',
+        status: 'failed',
+        isEvent: true,
+      });
+    }
   }
 
-  // Step 3: Execution — skip entirely if approval was missed (execution was unreachable)
-  const executionStart = votingEnd;
-  const executionEnd = dequeuedMs
-    ? dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
-    : undefined;
-  if (!approvalMissed) {
+  // Step 3: Execution
+  // Skip if: rejected, withdrawn, approval missed, or adopted (0 txns = no execution needed)
+  const isAdopted = stage === ProposalStage.Adopted;
+  const skipExecution = skipPostVoting || approvalMissed || isAdopted;
+  if (!skipExecution) {
     const executionStatus: TimelineStepStatus = dequeuedMs
       ? stage === ProposalStage.Execution || stage === ProposalStage.Approval
         ? 'active'
-        : stage > ProposalStage.Execution
+        : // Only mark completed if actually approved (reached execution phase)
+          approvedMs && (stage === ProposalStage.Executed || stage === ProposalStage.Expiration)
           ? 'completed'
           : 'future'
       : 'future';
     steps.push({
       label: 'Execution',
       status: executionStatus,
-      startTime: executionStart,
+      startTime: votingEnd,
       endTime: executionEnd,
     });
   }
@@ -121,39 +134,32 @@ function buildTimelineSteps(
       timestamp: executedMs,
       isEvent: true,
     });
-  } else if (stage === ProposalStage.Adopted) {
+  } else if (isAdopted) {
     steps.push({
       label: 'Adopted',
       status: 'completed',
       timestamp: executedMs,
       isEvent: true,
     });
-  } else if (stage === ProposalStage.Rejected) {
+  } else if (isRejected) {
     steps.push({
       label: 'Rejected',
-      status: 'completed',
+      status: 'failed',
       timestamp: votingEnd,
       isEvent: true,
     });
-  } else if (stage === ProposalStage.Withdrawn) {
+  } else if (isWithdrawn) {
     steps.push({
       label: 'Withdrawn',
-      status: 'completed',
+      status: 'failed',
       isEvent: true,
     });
   } else if (stage === ProposalStage.Expiration) {
     const expiredAt = quorumMet ? executionEnd : votingEnd;
     steps.push({
       label: 'Expired',
-      status: 'completed',
+      status: 'failed',
       timestamp: expiredAt,
-      isEvent: true,
-    });
-  } else if (transactionCount === 0 && stage > ProposalStage.Execution) {
-    // Zero-transaction proposal that completed
-    steps.push({
-      label: 'Adopted',
-      status: 'completed',
       isEvent: true,
     });
   } else {
