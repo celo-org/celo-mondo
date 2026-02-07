@@ -38,6 +38,18 @@ function buildTimelineSteps(
 
   if (!queuedMs && !dequeuedMs) return steps;
 
+  // Fallback: back-calculate dequeuedAt from executedAt or approvedAt when missing.
+  // executedAt falls within execution window (dequeuedAt+7d to dequeuedAt+10d),
+  // approvedAt falls within approval window (dequeuedAt+7d to dequeuedAt+8d).
+  // We use the latest known timestamp and subtract the referendum duration.
+  const inferredDequeuedMs =
+    dequeuedMs ||
+    (executedMs
+      ? executedMs - REFERENDUM_STAGE_EXPIRY_TIME - EXECUTION_STAGE_EXPIRY_TIME
+      : approvedMs
+        ? approvedMs - REFERENDUM_STAGE_EXPIRY_TIME
+        : undefined);
+
   // Step 1: Upvoting
   // For completed proposals, use dequeuedMs as the actual end (when it left the queue)
   // For active/future, use the 28-day max expiry
@@ -46,7 +58,7 @@ function buildTimelineSteps(
       ? queuedMs
         ? queuedMs + QUEUED_STAGE_EXPIRY_TIME
         : undefined
-      : dequeuedMs || (queuedMs ? queuedMs + QUEUED_STAGE_EXPIRY_TIME : undefined);
+      : inferredDequeuedMs || (queuedMs ? queuedMs + QUEUED_STAGE_EXPIRY_TIME : undefined);
   const upvotingStatus: TimelineStepStatus =
     stage === ProposalStage.Queued
       ? 'active'
@@ -61,7 +73,10 @@ function buildTimelineSteps(
   });
 
   // Step 2: Voting
-  const votingEnd = dequeuedMs ? dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME : undefined;
+  const votingStart = inferredDequeuedMs;
+  const votingEnd = inferredDequeuedMs
+    ? inferredDequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME
+    : undefined;
   // If we don't have dequeuedAt but the proposal progressed past Referendum, it's completed
   const pastReferendum = stage > ProposalStage.Referendum;
   const votingStatus: TimelineStepStatus = dequeuedMs
@@ -76,12 +91,12 @@ function buildTimelineSteps(
   steps.push({
     label: 'Voting',
     status: votingStatus,
-    startTime: dequeuedMs,
+    startTime: votingStart,
     endTime: votingEnd,
   });
 
-  const executionEnd = dequeuedMs
-    ? dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
+  const executionEnd = inferredDequeuedMs
+    ? inferredDequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME
     : undefined;
 
   // Determine which post-voting phases to show based on how the proposal ended.
@@ -150,13 +165,11 @@ function buildTimelineSteps(
       : isCompletedExecution
         ? 'completed'
         : 'future';
-    // Use votingEnd as start, but if missing and executed, use executedMs as end
-    const execEndTime = executionEnd || (isCompletedExecution ? executedMs : undefined);
     steps.push({
       label: 'Execution',
       status: executionStatus,
       startTime: votingEnd,
-      endTime: execEndTime,
+      endTime: executionEnd,
     });
   }
 
