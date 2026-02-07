@@ -5,6 +5,11 @@ import { useState } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { CollapsibleSection } from 'src/components/layout/CollapsibleSection';
 import {
+  getThresholdLabel,
+  useThresholds,
+} from 'src/features/governance/hooks/useProposalQuorum';
+import { Proposal } from 'src/features/governance/types';
+import {
   DecodedTransaction,
   getContractName,
   ProposalTransaction,
@@ -13,11 +18,16 @@ import {
 interface ProposalTransactionsProps {
   proposalId: string;
   numTransactions: bigint | undefined;
+  proposal?: Proposal;
 }
 
 type TransactionResponse = (ProposalTransaction & { decoded: DecodedTransaction })[];
 
-export function ProposalTransactions({ proposalId, numTransactions }: ProposalTransactionsProps) {
+export function ProposalTransactions({
+  proposalId,
+  numTransactions,
+  proposal,
+}: ProposalTransactionsProps) {
   const {
     data: transactions,
     isLoading,
@@ -36,6 +46,7 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
       return (await response.json()) as TransactionResponse;
     },
   });
+  const { data: thresholds } = useThresholds(proposal);
 
   return (
     <CollapsibleSection title={`Onchain Transactions (${numTransactions})`}>
@@ -49,7 +60,12 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
             </div>
           ) : (
             transactions?.map((transaction, index) => (
-              <TransactionCard key={index} transaction={transaction} index={index} />
+              <TransactionCard
+                key={index}
+                transaction={transaction}
+                index={index}
+                threshold={thresholds?.[index]}
+              />
             ))
           )}
         </div>
@@ -61,9 +77,10 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
 interface TransactionCardProps {
   transaction: ProposalTransaction & { decoded?: DecodedTransaction };
   index: number;
+  threshold?: number;
 }
 
-function TransactionCard({ transaction, index }: TransactionCardProps) {
+function TransactionCard({ transaction, index, threshold }: TransactionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { decoded, error, to, value, data } = transaction;
@@ -81,6 +98,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
 
   const contractName = getContractName(to);
   const hasValue = value > 0n;
+  const thresholdLabel = threshold !== undefined ? getThresholdLabel(threshold) : null;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
@@ -94,6 +112,11 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
               {decoded?.functionName || 'Unknown Function'}
             </h4>
           </div>
+          {thresholdLabel && (
+            <span className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-xs font-light text-taupe-600">
+              {thresholdLabel.percentage} threshold
+            </span>
+          )}
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}

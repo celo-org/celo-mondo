@@ -4,7 +4,11 @@ import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/Sta
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
+import {
+  getMaxThresholdInfo,
+  useIsProposalPassingQuorum,
+  useThresholds,
+} from 'src/features/governance/hooks/useProposalQuorum';
 import {
   useHistoricalProposalVoteTotals,
   useProposalVoteTotals,
@@ -118,6 +122,8 @@ function ViewVotes({
 export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
   const { votes } = useProposalVoteTotals(propData);
   const { isLoading, quorumMet, quorumVotesRequired } = useIsProposalPassingQuorum(propData);
+  const { data: thresholds } = useThresholds(propData.proposal);
+  const thresholdInfo = thresholds ? getMaxThresholdInfo(thresholds) : null;
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
@@ -171,6 +177,12 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         height="h-6"
         className="bg-white"
       />
+      {thresholdInfo && (
+        <div className="text-sm text-taupe-600">
+          Constitution threshold:{' '}
+          <span className="font-medium">{thresholdInfo.percentage}</span> approval required
+        </div>
+      )}
     </div>
   );
 }

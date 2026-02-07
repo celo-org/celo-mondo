@@ -248,3 +248,28 @@ export function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
   const data = fromHex(input, { to: 'bytes' });
   return toHex(data.subarray(0, 4));
 }
+
+/**
+ * Returns a human-readable label for a constitution threshold value.
+ * @param threshold - Decimal value (e.g., 0.6, 0.7, 0.8, 0.9)
+ */
+export function getThresholdLabel(threshold: number): { percentage: string; risk: string } {
+  const percentage = `${Math.round(threshold * 100)}%`;
+  if (threshold >= 0.9) return { percentage, risk: 'Critical' };
+  if (threshold >= 0.8) return { percentage, risk: 'High' };
+  if (threshold >= 0.7) return { percentage, risk: 'Medium' };
+  return { percentage, risk: 'Low' };
+}
+
+/**
+ * Returns the maximum threshold from an array and its label.
+ */
+export function getMaxThresholdInfo(thresholds: number[]): {
+  maxThreshold: number;
+  percentage: string;
+  risk: string;
+} {
+  const maxThreshold = Math.max(...thresholds);
+  const { percentage, risk } = getThresholdLabel(maxThreshold);
+  return { maxThreshold, percentage, risk };
+}

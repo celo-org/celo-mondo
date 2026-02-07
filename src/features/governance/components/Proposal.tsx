@@ -83,7 +83,11 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 
       <div className={`flex flex-col gap-4 pb-4 ${styles.proposal}`}>
         <ErrorBoundaryInline>
-          <ProposalTransactions proposalId={id} numTransactions={proposal?.numTransactions} />
+          <ProposalTransactions
+            proposalId={id}
+            numTransactions={proposal?.numTransactions}
+            proposal={proposal}
+          />
         </ErrorBoundaryInline>
         {content && <div dangerouslySetInnerHTML={{ __html: content }} className="space-y-4"></div>}
       </div>
