@@ -138,12 +138,10 @@ function buildTimelineSteps(
     phases.push({ label: 'Expiration', status: 'future', endTime: executionEnd });
   }
 
-  // Build events list — approval events get inserted chronologically among phases
-  // but only if they happened (have a timestamp) or failed. Future approval is not shown
-  // as a separate step.
+  // Insert approval event into the timeline
   if (!skipPostVoting) {
     if (approvedMs) {
-      // Insert Approved at its chronological position
+      // Approved with timestamp — insert at chronological position
       const insertIdx = phases.findIndex(
         (p) => (p.startTime ?? p.timestamp ?? Infinity) > approvedMs,
       );
@@ -171,8 +169,27 @@ function buildTimelineSteps(
         status: 'failed',
         isEvent: true,
       });
+    } else if (stage === ProposalStage.Execution || stage === ProposalStage.Approval) {
+      // In execution phase but not yet approved — show after Execution
+      const execIdx = phases.findIndex((p) => p.label === 'Execution');
+      if (execIdx !== -1) {
+        phases.splice(execIdx + 1, 0, {
+          label: 'Approval',
+          status: 'future',
+          isEvent: true,
+        });
+      }
+    } else {
+      // Voting or earlier — show pending approval before Execution
+      const execIdx = phases.findIndex((p) => p.label === 'Execution');
+      if (execIdx !== -1) {
+        phases.splice(execIdx, 0, {
+          label: 'Approval',
+          status: 'future',
+          isEvent: true,
+        });
+      }
     }
-    // If none of the above: approval is pending/future — don't add a step
   }
 
   return phases;
