@@ -55,13 +55,17 @@ function buildTimelineSteps(
 
   // Step 2: Voting
   const votingEnd = dequeuedMs ? dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME : undefined;
+  // If we don't have dequeuedAt but the proposal progressed past Referendum, it's completed
+  const pastReferendum = stage > ProposalStage.Referendum;
   const votingStatus: TimelineStepStatus = dequeuedMs
     ? stage === ProposalStage.Referendum
       ? 'active'
-      : stage > ProposalStage.Referendum
+      : pastReferendum
         ? 'completed'
         : 'future'
-    : 'future';
+    : pastReferendum
+      ? 'completed'
+      : 'future';
   steps.push({
     label: 'Voting',
     status: votingStatus,
@@ -117,14 +121,15 @@ function buildTimelineSteps(
   const isAdopted = stage === ProposalStage.Adopted;
   const skipExecution = skipPostVoting || approvalMissed || isAdopted;
   if (!skipExecution) {
-    const executionStatus: TimelineStepStatus = dequeuedMs
-      ? stage === ProposalStage.Execution || stage === ProposalStage.Approval
-        ? 'active'
-        : // Only mark completed if actually approved (reached execution phase)
-          approvedMs && (stage === ProposalStage.Executed || stage === ProposalStage.Expiration)
-          ? 'completed'
-          : 'future'
-      : 'future';
+    const isActiveExecution = stage === ProposalStage.Execution || stage === ProposalStage.Approval;
+    const isCompletedExecution =
+      (approvedMs || !dequeuedMs) &&
+      (stage === ProposalStage.Executed || stage === ProposalStage.Expiration);
+    const executionStatus: TimelineStepStatus = isActiveExecution
+      ? 'active'
+      : isCompletedExecution
+        ? 'completed'
+        : 'future';
     steps.push({
       label: 'Execution',
       status: executionStatus,
