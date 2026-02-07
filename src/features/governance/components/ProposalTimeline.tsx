@@ -289,8 +289,18 @@ export function ProposalTimeline({ propData }: { propData: MergedProposalData })
                 {/* Event timestamp */}
                 {step.isEvent && step.timestamp && <TimelineTime timestamp={step.timestamp} />}
 
-                {/* Phase time range */}
-                {!step.isEvent && step.startTime && <TimelineTime timestamp={step.startTime} />}
+                {/* Phase timestamps */}
+                {!step.isEvent && step.startTime && (
+                  <div>
+                    <TimelineTime timestamp={step.startTime} />
+                    {step.status === 'completed' && step.endTime && (
+                      <>
+                        <span className="text-xs text-taupe-400">{' — '}</span>
+                        <TimelineTime timestamp={step.endTime} />
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {/* Active countdown */}
                 {step.status === 'active' && step.endTime && (
