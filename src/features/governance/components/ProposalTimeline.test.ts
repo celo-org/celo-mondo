@@ -406,6 +406,20 @@ describe('buildTimelineSteps', () => {
     });
   });
 
+  describe('Future Expiration has date', () => {
+    test('Expiration step shows executionEnd as startTime', () => {
+      const data = makePropData({
+        stage: ProposalStage.Execution,
+        dequeuedAt: DEQUEUED_AT,
+      });
+      const steps = buildTimelineSteps(data, null);
+      const expiration = steps.find((s) => s.label === 'Expiration')!;
+
+      expect(expiration.startTime).toBe(EXECUTION_END);
+      expect(expiration.status).toBe('future');
+    });
+  });
+
   describe('Phase start/end time consistency', () => {
     test('Execution start equals voting end', () => {
       const data = makePropData({

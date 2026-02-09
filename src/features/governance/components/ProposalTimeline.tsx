@@ -135,7 +135,7 @@ export function buildTimelineSteps(
     const expiredAt = quorumMet ? executionEnd : votingEnd;
     phases.push({ label: 'Expired', status: 'failed', timestamp: expiredAt, isEvent: true });
   } else {
-    phases.push({ label: 'Expiration', status: 'future', endTime: executionEnd });
+    phases.push({ label: 'Expiration', status: 'future', startTime: executionEnd });
   }
 
   // Insert approval event into the timeline
