@@ -13,6 +13,7 @@ import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { isNullish } from 'src/utils/typeof';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 const initialValues: UpvoteFormValues = {
@@ -31,16 +32,19 @@ export function UpvoteForm({
   const { isUpvoting } = useIsGovernanceUpVoting(address);
   const { votingPower } = useGovernanceVotingPower(address);
   const { refetch: refetchUpvoters } = useProposalUpvoters();
+  const trackEvent = useTrackEvent();
 
   const { getNextTx, onTxSuccess } = useTransactionPlan<UpvoteFormValues>({
     createTxPlan: (v) => getUpvoteTxPlan(v, queue || [], votingPower || 0n),
     onStepSuccess: () => refetchUpvoters(),
-    onPlanSuccess: (v, r) =>
+    onPlanSuccess: (v, r) => {
+      trackEvent('upvote_completed', { proposalId: v.proposalId });
       onConfirmed({
         message: 'Upvote successful',
         receipt: r,
         properties: [{ label: 'Proposal', value: `#${v.proposalId}` }],
-      }),
+      });
+    },
   });
   const { writeContract, isLoading } = useWriteContractWithReceipt('upvote', onTxSuccess);
 

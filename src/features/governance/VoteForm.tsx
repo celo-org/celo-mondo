@@ -18,6 +18,7 @@ import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { isNullish } from 'src/utils/typeof';
 import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 const initialValues: VoteFormValues = {
@@ -47,11 +48,16 @@ export function VoteForm({
     votingAccount,
     defaultFormValues?.proposalId,
   );
+  const trackEvent = useTrackEvent();
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || [], mode, stCeloVotingPower),
     onStepSuccess: () => (mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord()),
     onPlanSuccess: (v, r) => {
+      trackEvent('vote_completed', {
+        voteType: v.vote,
+        proposalId: v.proposalId,
+      });
       const properties = [
         { label: 'Vote', value: v.vote },
         { label: 'Proposal', value: `#${v.proposalId}` },

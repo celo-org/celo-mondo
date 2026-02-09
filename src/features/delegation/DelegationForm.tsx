@@ -31,6 +31,7 @@ import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { ensure0x, isValidAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 const initialValues: DelegateFormValues = {
@@ -55,12 +56,17 @@ export function DelegationForm({
   const { delegations, refetch } = useDelegationBalances(address, signingFor);
   const { isValidator: isVoteSignerForValidator, isValidatorGroup: isVoteSignerForValidatorGroup } =
     useAccountDetails(signingFor);
+  const trackEvent = useTrackEvent();
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<DelegateFormValues>({
       createTxPlan: (v) => getDelegateTxPlan(v),
       onStepSuccess: () => refetch(),
-      onPlanSuccess: (v, r) =>
+      onPlanSuccess: (v, r) => {
+        trackEvent('delegate_completed', {
+          action: v.action,
+          percent: v.percent,
+        });
         onConfirmed({
           message: `${v.action} successful`,
           receipt: r,
@@ -72,7 +78,8 @@ export function DelegationForm({
             },
             { label: 'Percent', value: `${v.percent} %` },
           ],
-        }),
+        });
+      },
     });
 
   const { writeContract, isLoading } = useWriteContractWithReceipt('delegation', onTxSuccess);

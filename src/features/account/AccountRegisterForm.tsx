@@ -1,11 +1,12 @@
 import { accountsABI } from '@celo/abis';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { config } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import CeloCube from 'src/images/logos/celo-cube.webp';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export function AccountRegisterForm({
   refetchAccountDetails,
@@ -13,23 +14,25 @@ export function AccountRegisterForm({
   refetchAccountDetails: () => Promise<unknown>;
 }) {
   const [isRefetching, setIsRefetching] = useState(false);
+  const trackEvent = useTrackEvent();
   const { writeContract, isLoading } = useWriteContractWithReceipt(
     'account registration',
     async () => {
+      trackEvent('account_created', {});
       setIsRefetching(true);
       await refetchAccountDetails();
       setIsRefetching(false);
     },
   );
 
-  const onClickCreate = () => {
+  const onClickCreate = useCallback(() => {
     writeContract({
       address: Addresses.Accounts,
       abi: accountsABI,
       functionName: 'createAccount',
       chainId: config.chain.id,
     });
-  };
+  }, [writeContract]);
 
   return (
     <div className="flex flex-1 flex-col justify-between" data-testid="register-form">
