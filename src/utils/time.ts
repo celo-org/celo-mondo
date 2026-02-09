@@ -45,7 +45,7 @@ export function getHumanReadableTimeString(timestamp: number) {
 }
 
 export function getHumanReadableDuration(ms: number, minSec?: number) {
-  let seconds = Math.round(ms / 1000);
+  let seconds = Math.max(0, Math.round(ms / 1000));
 
   if (minSec) {
     seconds = Math.max(seconds, minSec);
@@ -126,7 +126,10 @@ export function getHumanEndTime({
   switch (stage) {
     case ProposalStage.Queued: {
       const endDate = getStageEndTimestamp(stage, new Date(queuedAt!).getTime())!;
-      return `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
+      const pastEndTime = endDate - now < 0;
+      return pastEndTime
+        ? `Expired on ${getFullDateHumanDateString(endDate)} (awaiting update)`
+        : `Expires in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`;
     }
     case ProposalStage.Referendum: {
       const endDate = getStageEndTimestamp(stage, new Date(dequeuedAt!).getTime())!;

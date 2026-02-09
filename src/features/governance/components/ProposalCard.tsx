@@ -16,7 +16,7 @@ import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
-import { getHumanEndTime } from 'src/utils/time';
+import { getHumanEndTime, getUTCDateString } from 'src/utils/time';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -101,8 +101,12 @@ export function ProposalBadgeRow({
   const { proposer } = proposal || {};
   const { cgp } = metadata || {};
 
-  const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
-  const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
+  const queuedMs = queuedAt ? new Date(queuedAt).getTime() : undefined;
+  const executedMs = executedAt ? new Date(executedAt).getTime() : undefined;
+  const proposedTimeValue = queuedMs ? new Date(queuedMs).toLocaleDateString() : undefined;
+  const proposedUtc = queuedMs ? getUTCDateString(queuedMs) : undefined;
+  const executedTimeValue = executedMs ? new Date(executedMs).toLocaleDateString() : undefined;
+  const executedUtc = executedMs ? getUTCDateString(executedMs) : undefined;
 
   return (
     <div className="flex items-center space-x-2">
@@ -110,7 +114,10 @@ export function ProposalBadgeRow({
       <IdBadge id={id} />
       <StageBadge stage={stage} />
       {proposedTimeValue && (
-        <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
+        <div
+          className="tooltip text-sm text-taupe-600"
+          data-tip={proposedUtc}
+        >{`Proposed ${proposedTimeValue}`}</div>
       )}
       {showProposer && proposer && (
         <>
@@ -129,7 +136,10 @@ export function ProposalBadgeRow({
       {showExecutedTime && executedTimeValue && !proposer && (
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
-          <div className="hidden text-sm text-taupe-600 sm:block">{`Executed ${executedTimeValue}`}</div>
+          <div
+            className="tooltip hidden text-sm text-taupe-600 sm:block"
+            data-tip={executedUtc}
+          >{`Executed ${executedTimeValue}`}</div>
         </>
       )}
     </div>
