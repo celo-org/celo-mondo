@@ -2,7 +2,7 @@
 
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
 import { useLockedBalance, useStCELOBalance } from 'src/features/account/hooks';
-import { useClaimingBot, useWithdrawalBot } from 'src/features/staking/stCELO/hooks/useWithdrawals';
+import { useWithdrawalBot } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useSessionStorage } from 'src/utils/useSessionStorage';
 import { useAccount, useBalance } from 'wagmi';
@@ -22,7 +22,7 @@ function useStakingModeInternal() {
   );
 
   useWithdrawalBot(address);
-  useClaimingBot(address);
+  // useClaimingBot(address);
 
   const toggleMode = useCallback(
     () => setMode((mode) => (mode === 'CELO' ? 'stCELO' : 'CELO')),

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
+import { toast } from 'react-toastify';
 import { SolidButtonWithSpinner } from 'src/components/buttons/SolidButtonWithSpinner';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { Amount } from 'src/components/numbers/Amount';
@@ -26,6 +27,7 @@ export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawa
 
   const _claim = useCallback(async () => {
     await refetch();
+    toast.success('All available stCELO withdrawn', { autoClose: 1200 });
     await loadPendingWithdrawals();
   }, [loadPendingWithdrawals, refetch]);
 
