@@ -24,7 +24,7 @@ interface TimelineStep {
   isEvent?: boolean;
 }
 
-function buildTimelineSteps(
+export function buildTimelineSteps(
   propData: MergedProposalData,
   quorumMet: boolean | null,
 ): TimelineStep[] {
