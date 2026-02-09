@@ -27,9 +27,11 @@ export async function trackEvent<T extends AnalyticsEventName>(
 
     if (!response.ok) {
       const error = await response.json();
+      // eslint-disable-next-line no-console
       console.error('Failed to track analytics event:', error);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Analytics tracking error:', error);
     // Don't throw - analytics failures shouldn't break the app
   }

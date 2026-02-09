@@ -16,6 +16,7 @@ export function useTrackEvent() {
       const stored = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
       storedSessionId = stored || '';
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.warn('Error reading sessionStorage:', error);
     }
 
@@ -27,6 +28,7 @@ export function useTrackEvent() {
         window.sessionStorage.setItem(SESSION_STORAGE_KEY, newSessionId);
         setSessionId(newSessionId);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.warn('Error setting sessionStorage:', error);
         setSessionId(newSessionId);
       }

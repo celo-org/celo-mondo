@@ -59,6 +59,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 201 },
     );
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Analytics event tracking error:', error);
     return NextResponse.json({ error: 'Failed to track analytics event' }, { status: 500 });
   }
