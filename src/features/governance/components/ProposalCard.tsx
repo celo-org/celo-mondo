@@ -152,10 +152,6 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
   const cgpUrl = metadata?.cgpUrl;
   const trackEvent = useTrackEvent();
 
-  if (!discussionUrl) return null;
-
-  const discussionHost = new URL(discussionUrl).hostname;
-
   const handleDiscussionClick = useCallback(() => {
     trackEvent('external_link_clicked', { url: discussionUrl, context: 'proposal' });
   }, [trackEvent, discussionUrl]);
@@ -165,6 +161,10 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
       trackEvent('external_link_clicked', { url: cgpUrl, context: 'cgp' });
     }
   }, [trackEvent, cgpUrl]);
+
+  if (!discussionUrl) return null;
+
+  const discussionHost = new URL(discussionUrl).hostname;
 
   return (
     <div className="flex items-center gap-4 pt-2">
