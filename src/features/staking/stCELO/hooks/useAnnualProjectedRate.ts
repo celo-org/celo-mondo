@@ -1,41 +1,35 @@
-import { epochRewardsABI } from '@celo/abis';
-import { useContractAddress } from 'src/config/contracts';
-import { fromFixidity } from 'src/utils/numbers';
-import { useReadContract } from 'wagmi';
+import { useQuery } from '@tanstack/react-query';
+
+interface APYResponse {
+  annualProjectedRate: number;
+  percentage: string;
+  details: {
+    targetVotingYield: number;
+    rewardsMultiplier: number;
+    unadjustedAPR: number;
+    adjustedAPR: number;
+  };
+}
 
 export const useAnnualProjectedRate = (): {
   annualProjectedRate: number | undefined;
   isLoading: boolean;
 } => {
-  const epochRewardsAddress = useContractAddress('EpochRewards');
-  const { data: rewardsMultiplierFraction, isLoading: multiplierLoading } = useReadContract({
-    abi: epochRewardsABI,
-    address: epochRewardsAddress,
-    functionName: 'getRewardsMultiplier',
+  const { data, isLoading } = useQuery({
+    queryKey: ['stCelo', 'apy'],
+    queryFn: async () => {
+      const response = await fetch('/api/stCelo/apy');
+      if (!response.ok) {
+        throw new Error('Failed to fetch annual projected rate');
+      }
+      return response.json() as Promise<APYResponse>;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
   });
-  const { data: targetVotingYieldParameters, isLoading: yieldParamsLoading } = useReadContract({
-    abi: epochRewardsABI,
-    address: epochRewardsAddress,
-    functionName: 'getTargetVotingYieldParameters',
-  });
-
-  if (multiplierLoading || yieldParamsLoading || !epochRewardsAddress) {
-    return {
-      annualProjectedRate: undefined,
-      isLoading: true,
-    };
-  }
-
-  const targetVotingYield = fromFixidity(targetVotingYieldParameters![0]);
-  const rewardsMultiplier = fromFixidity(rewardsMultiplierFraction!);
-
-  // Target voting yield is for a single day only, so we have to calculate this for entire year
-  const unadjustedAPR = targetVotingYield * 365;
-  // According to the protocol it has to be adjusted by rewards multiplier
-  const adjustedAPR = unadjustedAPR * rewardsMultiplier;
 
   return {
-    annualProjectedRate: adjustedAPR * 100,
-    isLoading: false,
+    annualProjectedRate: data?.annualProjectedRate,
+    isLoading,
   };
 };
