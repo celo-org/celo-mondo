@@ -35,7 +35,7 @@ export function ProposalCard({
   const { votes } = useProposalVoteTotals(propData);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp || metadata.cgp}`;
-  const endTimeValue = getHumanEndTime({
+  const endTimeResult = getHumanEndTime({
     quorumMet,
     executedAt,
     dequeuedAt,
@@ -77,10 +77,10 @@ export function ProposalCard({
           </div>
         </div>
       )}
-      {!isCompact && endTimeValue && (
-        <div className="flex items-center space-x-2">
+      {!isCompact && endTimeResult && (
+        <div className="tooltip flex items-center space-x-2" data-tip={endTimeResult.utc}>
           <Image src={ClockIcon} alt="" width={16} height={16} />
-          <div className="text-sm font-medium">{`${endTimeValue}`}</div>
+          <div className="text-sm font-medium">{endTimeResult.text}</div>
         </div>
       )}
     </Link>
