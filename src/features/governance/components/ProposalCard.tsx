@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCallback } from 'react';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { SocialLogo } from 'src/components/logos/SocialLogo';
@@ -18,7 +19,6 @@ import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanEndTime } from 'src/utils/time';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useCallback } from 'react';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 

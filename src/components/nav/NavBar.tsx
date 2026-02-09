@@ -29,9 +29,12 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
 
-  const handleNavClick = useCallback((item: string) => {
-    trackEvent('nav_clicked', { item });
-  }, [trackEvent]);
+  const handleNavClick = useCallback(
+    (item: string) => {
+      trackEvent('nav_clicked', { item });
+    },
+    [trackEvent],
+  );
 
   return (
     <nav>
@@ -47,7 +50,9 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
                   isSelected ? 'font-semibold opacity-100' : 'font-medium opacity-60',
                 )}
               >
-                <Link href={l.to} onClick={() => handleNavClick(l.label)}>{l.label}</Link>
+                <Link href={l.to} onClick={() => handleNavClick(l.label)}>
+                  {l.label}
+                </Link>
               </li>
               {isSelected && (
                 <div
@@ -68,9 +73,12 @@ export function MobileNavDropdown({ className }: { className?: string }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
 
-  const handleNavClick = useCallback((item: string) => {
-    trackEvent('nav_clicked', { item });
-  }, [trackEvent]);
+  const handleNavClick = useCallback(
+    (item: string) => {
+      trackEvent('nav_clicked', { item });
+    },
+    [trackEvent],
+  );
 
   return (
     <nav className={className}>

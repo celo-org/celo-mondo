@@ -28,8 +28,8 @@ import { cleanGroupName, getGroupStats, isElected } from 'src/features/validator
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 import { useStakingMode } from 'src/utils/useStakingMode';
-import { useTrackEvent } from 'src/utils/useTrackEvent';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const NUM_COLLAPSED_GROUPS = 9;
 const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
@@ -50,10 +50,13 @@ export function ValidatorGroupTable({
   const { tab: filter, onTabChange: setFilter } = useTabs<Filter>(Filter.All);
   const trackEvent = useTrackEvent();
 
-  const handleFilterChange = useCallback((newFilter: Filter) => {
-    trackEvent('validator_filter_changed', { filter: newFilter });
-    setFilter(newFilter);
-  }, [trackEvent, setFilter]);
+  const handleFilterChange = useCallback(
+    (newFilter: Filter) => {
+      trackEvent('validator_filter_changed', { filter: newFilter });
+      setFilter(newFilter);
+    },
+    [trackEvent, setFilter],
+  );
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);

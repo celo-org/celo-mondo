@@ -20,8 +20,8 @@ import { ProposalStage } from 'src/features/governance/types';
 import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { sortByIdThenCGP } from 'src/utils/proposals';
-import { useTrackEvent } from 'src/utils/useTrackEvent';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 enum Filter {
@@ -67,10 +67,13 @@ function ProposalList() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const { tab: filter, onTabChange: onFilterChange } = useTabs<Filter>(Filter.Recent);
 
-  const handleFilterChange = useCallback((newFilter: Filter) => {
-    trackEvent('proposal_filter_changed', { filter: newFilter });
-    onFilterChange(newFilter);
-  }, [trackEvent, onFilterChange]);
+  const handleFilterChange = useCallback(
+    (newFilter: Filter) => {
+      trackEvent('proposal_filter_changed', { filter: newFilter });
+      onFilterChange(newFilter);
+    },
+    [trackEvent, onFilterChange],
+  );
 
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 

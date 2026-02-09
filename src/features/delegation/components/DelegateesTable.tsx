@@ -65,12 +65,15 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
     showTxModal();
   }, [trackEvent, showTxModal]);
 
-  const handleDelegateeClick = useCallback((delegateeAddress: string, delegateeName?: string) => {
-    trackEvent('delegatee_viewed', {
-      delegateeAddress,
-      delegateeName,
-    });
-  }, [trackEvent]);
+  const handleDelegateeClick = useCallback(
+    (delegateeAddress: string, delegateeName?: string) => {
+      trackEvent('delegatee_viewed', {
+        delegateeAddress,
+        delegateeName,
+      });
+    },
+    [trackEvent],
+  );
 
   // Set up responsive column visibility
   const isMobile = useIsMobile();
