@@ -33,12 +33,12 @@ The timeline has two types of steps:
 
 ### Step Statuses
 
-| Status | Dot Color | Text Color | Meaning |
-|---|---|---|---|
-| `completed` | green-500 | green-700 | Phase/event has completed successfully |
-| `active` | purple-300 (pulsing) | purple-500 | Currently in this phase |
-| `future` | taupe-300 | taupe-400 | Not yet reached |
-| `failed` | red-500 | red-500 | Failed outcome (Rejected, Expired, Approval Missed) |
+| Status      | Dot Color            | Text Color | Meaning                                             |
+| ----------- | -------------------- | ---------- | --------------------------------------------------- |
+| `completed` | green-500            | green-700  | Phase/event has completed successfully              |
+| `active`    | purple-300 (pulsing) | purple-500 | Currently in this phase                             |
+| `future`    | taupe-300            | taupe-400  | Not yet reached                                     |
+| `failed`    | red-500              | red-500    | Failed outcome (Rejected, Expired, Approval Missed) |
 
 ## Lifecycle Order
 
@@ -53,25 +53,25 @@ Phases are always built in this fixed order:
 
 The **Approval** event is then inserted into this list based on context:
 
-| Scenario | Approval Position | Status |
-|---|---|---|
-| Has `approvedAt` timestamp | Chronological position among phases | `completed` |
-| Implied (Execution/Executed/Adopted stage, no timestamp) | Before Execution | `completed` |
-| Missed (Expired + no approval + has transactions) | After Voting | `failed` |
-| Pending, proposal in Voting or Queued | Before Execution | `future` |
-| Pending, proposal in Execution phase | After Execution | `future` |
-| Rejected or Withdrawn | Not shown | — |
+| Scenario                                                 | Approval Position                   | Status      |
+| -------------------------------------------------------- | ----------------------------------- | ----------- |
+| Has `approvedAt` timestamp                               | Chronological position among phases | `completed` |
+| Implied (Execution/Executed/Adopted stage, no timestamp) | Before Execution                    | `completed` |
+| Missed (Expired + no approval + has transactions)        | After Voting                        | `failed`    |
+| Pending, proposal in Voting or Queued                    | Before Execution                    | `future`    |
+| Pending, proposal in Execution phase                     | After Execution                     | `future`    |
+| Rejected or Withdrawn                                    | Not shown                           | —           |
 
 ## Phase Skipping Rules
 
 Not all phases appear for every proposal:
 
-| Condition | Phases Skipped |
-|---|---|
-| Rejected (quorum not met) | Approval, Execution |
-| Withdrawn | Approval, Execution |
-| Approval Missed (expired without approval) | Execution |
-| Adopted (0 transactions) | Execution |
+| Condition                                  | Phases Skipped      |
+| ------------------------------------------ | ------------------- |
+| Rejected (quorum not met)                  | Approval, Execution |
+| Withdrawn                                  | Approval, Execution |
+| Approval Missed (expired without approval) | Execution           |
+| Adopted (0 transactions)                   | Execution           |
 
 ## Timestamp Fallbacks
 
@@ -92,6 +92,7 @@ This allows all phase boundaries to be computed even from partial data.
 ### Active Countdown
 
 For the currently active phase, a countdown is shown:
+
 - **Upvoting:** "Expires in X days" / "Expired <date>"
 - **Voting/Execution:** "Ends in X days" / "Ended <date>"
 
@@ -102,6 +103,7 @@ All timestamps display in local timezone via `getFullDateHumanDateString()`. Hov
 ## Example Timelines
 
 ### Active Voting Proposal
+
 ```
 ● Upvoting              (completed, green)
   Mon, Jan 06, 12:00 GMT
@@ -114,6 +116,7 @@ All timestamps display in local timezone via `getFullDateHumanDateString()`. Hov
 ```
 
 ### Successfully Executed
+
 ```
 ● Upvoting              (completed, green)
   Sat, Nov 22, 07:06 GMT
@@ -126,6 +129,7 @@ All timestamps display in local timezone via `getFullDateHumanDateString()`. Hov
 ```
 
 ### Rejected (Quorum Not Met)
+
 ```
 ● Upvoting              (completed, green)
 ● Voting                (completed, green)
@@ -133,6 +137,7 @@ All timestamps display in local timezone via `getFullDateHumanDateString()`. Hov
 ```
 
 ### Expired (Approval Missed)
+
 ```
 ● Upvoting              (completed, green)
 ● Voting                (completed, green)
@@ -141,6 +146,7 @@ All timestamps display in local timezone via `getFullDateHumanDateString()`. Hov
 ```
 
 ### Queued (Upvoting Active, Expired)
+
 ```
 ● Upvoting              (active, purple, pulsing)
   Wed, Dec 17, 07:06 GMT
