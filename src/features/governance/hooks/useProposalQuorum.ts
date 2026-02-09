@@ -9,6 +9,7 @@ import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { Proposal, VoteAmounts, VoteType } from 'src/features/governance/types';
 import type { ProposalTransaction } from 'src/features/governance/utils/transactionDecoder';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
@@ -247,4 +248,48 @@ export function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
   if (!input.startsWith('0x')) input = `0x${input}`;
   const data = fromHex(input, { to: 'bytes' });
   return toHex(data.subarray(0, 4));
+}
+
+/**
+ * Fetches constitution thresholds using celoPublicClient directly,
+ * so it works regardless of wallet connection state.
+ */
+export function useConstitutionThreshold(proposalId: number | undefined): {
+  isLoading: boolean;
+  data?: number[];
+} {
+  const { isLoading, data } = useQuery({
+    queryKey: ['useConstitutionThreshold', proposalId],
+    queryFn: () => fetchThresholds(celoPublicClient, proposalId!),
+    enabled: Boolean(proposalId),
+    gcTime: GCTime.Default,
+    staleTime: StaleTime.Default,
+  });
+
+  return { isLoading, data };
+}
+
+/**
+ * Returns a human-readable label for a constitution threshold value.
+ * @param threshold - Decimal value (e.g., 0.6, 0.7, 0.8, 0.9)
+ */
+export function getThresholdLabel(threshold: number): { percentage: string; risk: string } {
+  const percentage = `${Math.round(threshold * 100)}%`;
+  if (threshold >= 0.9) return { percentage, risk: 'Critical' };
+  if (threshold >= 0.8) return { percentage, risk: 'High' };
+  if (threshold >= 0.7) return { percentage, risk: 'Medium' };
+  return { percentage, risk: 'Low' };
+}
+
+/**
+ * Returns the maximum threshold from an array and its label.
+ */
+export function getMaxThresholdInfo(thresholds: number[]): {
+  maxThreshold: number;
+  percentage: string;
+  risk: string;
+} {
+  const maxThreshold = Math.max(...thresholds);
+  const { percentage, risk } = getThresholdLabel(maxThreshold);
+  return { maxThreshold, percentage, risk };
 }
