@@ -46,7 +46,7 @@ const BRIDGES: Bridge[] = [
   {
     name: 'Portal Bridge',
     operator: 'Wormhole',
-    href: 'https://portalbridge.com/?fromChain=Ethereum&toChain=Celo&fromToken=ETH&toToken=WETH',
+    href: 'https://portalbridge.com/?fromChain=Ethereum&toChain=Celo&fromToken=ETH&toToken=0x66803FB87aBd4aaC3cbB3fAd7C3aa01f6F3FB207',
     logo: PortalLogo,
     description: 'Wormhole based bridge. Good for wormhole assets on Celo.',
   },
