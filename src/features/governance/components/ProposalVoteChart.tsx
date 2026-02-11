@@ -1,10 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
+import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
+import {
+  getMaxThresholdInfo,
+  useConstitutionThreshold,
+  useIsProposalPassingQuorum,
+} from 'src/features/governance/hooks/useProposalQuorum';
 import {
   useHistoricalProposalVoteTotals,
   useProposalVoteTotals,
@@ -171,6 +176,80 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
         height="h-6"
         className="bg-white"
       />
+    </div>
+  );
+}
+
+const CONSTITUTION_HELP_TEXT =
+  'The constitution defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. For example, if a proposal requires 60% and has 80 Yes and 20 No votes, it passes with 80%. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
+
+export function ProposalConstitutionChart({ propData }: { propData: MergedProposalData }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { votes } = useProposalVoteTotals(propData);
+  const { data: thresholds } = useConstitutionThreshold(propData.proposal?.id);
+  const thresholdInfo = thresholds ? getMaxThresholdInfo(thresholds) : null;
+
+  const yesVotes = votes?.[VoteType.Yes] || 0n;
+  const noVotes = votes?.[VoteType.No] || 0n;
+  const totalYesNo = yesVotes + noVotes;
+  const yesPct = totalYesNo > 0n ? percent(yesVotes, totalYesNo) : 0;
+  const thresholdPct = thresholdInfo ? thresholdInfo.maxThreshold * 100 : 50;
+  const isPassing = yesPct >= thresholdPct;
+  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
+
+  const barChartData = useMemo(
+    () => [
+      {
+        label: 'Yes',
+        value: yesPct,
+        percentage: thresholdPct > 0 ? (yesPct / thresholdPct) * 100 : 0,
+        color: isPassing ? Color.Mint : Color.Lilac,
+      },
+    ],
+    [yesPct, thresholdPct, isPassing],
+  );
+
+  if (!thresholdInfo) return null;
+
+  return (
+    <div className="border-t border-taupe-300 pt-2">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex w-full items-center justify-between"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-taupe-600">
+            Constitution{' '}
+            <em>
+              {isPassing
+                ? `— Pass${tense(isPastVotingStage)}`
+                : `— Fail${tense(isPastVotingStage)}`}
+            </em>
+          </span>
+          <span
+            className="inline-block h-2.5 w-2.5 rounded-full"
+            style={{ backgroundColor: isPassing ? Color.Mint : Color.Red }}
+          />
+        </div>
+        <span className="text-xs text-taupe-600">{isExpanded ? '-' : '+'}</span>
+      </button>
+      {isExpanded && (
+        <div className="mt-2 space-y-2">
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-taupe-600">
+              {yesPct.toFixed(0)}% Yes <em>of</em>&nbsp;&nbsp;{thresholdInfo.percentage}&nbsp;
+              Required
+            </span>
+            <HelpIcon text={CONSTITUTION_HELP_TEXT} size={14} />
+          </div>
+          <StackedBarChart
+            data={barChartData}
+            showBorder={true}
+            height="h-6"
+            className="bg-white"
+          />
+        </div>
+      )}
     </div>
   );
 }

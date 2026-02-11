@@ -6,7 +6,6 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
-import { config } from 'src/config/config';
 import JumperLogo from 'src/images/logos/jumper-bridge.png';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
@@ -24,14 +23,14 @@ const BRIDGES: Bridge[] = [
   {
     name: 'Superbridge',
     operator: 'Superbridge',
-    href: `https://superbridge.app/celo${config.chain.testnet ? '-testnet' : ''}`,
+    href: 'https://superbridge.app/?fromChainId=1&toChainId=42220',
     logo: '/logos/superbridge.jpg',
     description: 'Native Celo L2 bridge. Good for moving CELO and ETH between Ethereum and Celo.',
   },
   {
     name: 'Squid Router',
     operator: 'Squid',
-    href: 'https://v2.app.squidrouter.com',
+    href: 'https://app.squidrouter.com/?chains=1%2C42220&tokens=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE%2C0xd221812de1bd094f35587ee8e174b07b6167d9af',
     logo: SquidLogo,
     description:
       'Axelar based cross chain DEX. Good for moving stablecoins between chains, or swapping directly between assets.',
@@ -39,7 +38,7 @@ const BRIDGES: Bridge[] = [
   {
     name: 'Jumper',
     operator: 'Jumper',
-    href: 'https://jumper.exchange/',
+    href: 'https://jumper.exchange/?fromChain=1&fromToken=0x0000000000000000000000000000000000000000&toChain=42220&toToken=0x471EcE3750Da237f93B8E339c536989b8978a438',
     logo: JumperLogo,
     description:
       'Cross-chain aggregator that compares routes across multiple bridges and DEXs to find optimal paths for swapping and bridging assets.',
@@ -47,14 +46,14 @@ const BRIDGES: Bridge[] = [
   {
     name: 'Portal Bridge',
     operator: 'Wormhole',
-    href: 'https://portalbridge.com',
+    href: 'https://portalbridge.com/?fromChain=Ethereum&toChain=Celo&fromToken=ETH&toToken=0x66803FB87aBd4aaC3cbB3fAd7C3aa01f6F3FB207',
     logo: PortalLogo,
     description: 'Wormhole based bridge. Good for wormhole assets on Celo.',
   },
   {
     name: 'USDT0',
     operator: 'USDT0',
-    href: 'https://usdt0.to/transfer',
+    href: 'https://usdt0.to/transfer?source=ethereum&destination=celo&token=usdt0',
     logo: USDT0Logo,
     description: '1:1 transfers of native USDT powered by the Layer Zero OFT. Best for moving USDT',
   },
