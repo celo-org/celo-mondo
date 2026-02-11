@@ -312,6 +312,7 @@ function useTableColumns(_totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               trackEvent('stake_button_clicked', { groupAddress: props.row.original.address });
               showTxModal(
                 mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
