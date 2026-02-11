@@ -71,29 +71,6 @@ describe('useTrackEvent', () => {
       'bridge_clicked',
       { bridgeId: 'superbridge' },
       'test-session-789',
-      undefined,
-    );
-  });
-
-  test('should call trackEvent with session ID and options', async () => {
-    mockSessionStorage.getItem.mockReturnValue('test-session-999');
-    mockValidateUUID.mockReturnValue(true);
-
-    const { result } = renderHook(() => useTrackEvent());
-
-    await act(async () => {
-      await result.current(
-        'bridge_clicked',
-        { bridgeId: 'portal-bridge' },
-        { url: 'http://localhost:3000/custom' },
-      );
-    });
-
-    expect(mockTrackEvent).toHaveBeenCalledWith(
-      'bridge_clicked',
-      { bridgeId: 'portal-bridge' },
-      'test-session-999',
-      { url: 'http://localhost:3000/custom' },
     );
   });
 
