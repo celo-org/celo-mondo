@@ -2,8 +2,6 @@ CREATE TABLE "analyticsEvents" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"eventName" text NOT NULL,
-	"domain" text NOT NULL,
-	"url" text,
 	"properties" jsonb DEFAULT '{}' NOT NULL,
 	"sessionId" uuid
 );

@@ -1,34 +1,22 @@
-import { AnalyticsEventMap, AnalyticsEventName, AnalyticsEventPayload } from 'src/types/analytics';
+import { trackAnalyticsEvent } from 'src/app/actions';
+import { AnalyticsEventMap, AnalyticsEventName } from 'src/types/analytics';
 
 // Type-safe analytics tracking helper
 export async function trackEvent<T extends AnalyticsEventName>(
   eventName: T,
   properties: AnalyticsEventMap[T],
   sessionId: string,
-  options?: {
-    url?: string;
-  },
 ): Promise<void> {
   try {
-    const payload: AnalyticsEventPayload<T> = {
+    const result = await trackAnalyticsEvent({
       eventName,
       properties,
-      url: options?.url || window.location.href,
       sessionId,
-    };
-
-    const response = await fetch('/api/analytics/events', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (!result.success) {
       // eslint-disable-next-line no-console
-      console.error('Failed to track analytics event:', error);
+      console.error('Failed to track analytics event:', result.error);
     }
   } catch (error) {
     // eslint-disable-next-line no-console

@@ -160,8 +160,6 @@ export const analyticsEventsTable = pgTable(
       .notNull()
       .default(sql`now()`),
     eventName: text().notNull(),
-    domain: text().notNull(),
-    url: text(),
     properties: jsonb().notNull().default('{}'),
     sessionId: uuid(),
   },

@@ -28,18 +28,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "domain": {
-          "name": "domain",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "properties": {
           "name": "properties",
           "type": "jsonb",

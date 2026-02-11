@@ -152,7 +152,6 @@ export type AnalyticsEventName = keyof AnalyticsEventMap;
 export interface AnalyticsEventPayload<T extends AnalyticsEventName = AnalyticsEventName> {
   eventName: T;
   properties: AnalyticsEventMap[T];
-  url?: string;
   sessionId?: string;
 }
 
