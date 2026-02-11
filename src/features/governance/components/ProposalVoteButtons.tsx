@@ -37,6 +37,7 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
         className="btn-neutral w-full"
         onClick={onUpvoteClick}
         disabled={isDequeueReady}
+        data-testid="upvote-button"
       >{`➕ Upvote`}</SolidButton>
       {isDequeueReady && (
         <p className="max-w-[20rem] text-xs text-gray-600">
@@ -84,14 +85,17 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
         <SolidButton
           className={clsx('btn-neutral grow', isVoting(VoteType.Yes) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.Yes)}
+          data-testid="vote-yes-button"
         >{`👍 Yes`}</SolidButton>
         <SolidButton
           className={clsx('btn-neutral grow', isVoting(VoteType.No) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.No)}
+          data-testid="vote-no-button"
         >{`👎 No`}</SolidButton>
         <SolidButton
           className={clsx('btn-neutral grow', isVoting(VoteType.Abstain) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.Abstain)}
+          data-testid="vote-abstain-button"
         >{`⚪ Abstain`}</SolidButton>
       </div>
     </>

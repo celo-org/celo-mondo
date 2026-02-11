@@ -3,9 +3,11 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 // Mock the database and headers
 vi.mock('src/config/database', () => ({
   default: {
-    insert: vi.fn().mockReturnThis(),
-    values: vi.fn().mockReturnThis(),
-    returning: vi.fn(),
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({
+        returning: vi.fn(),
+      }),
+    }),
   },
 }));
 
@@ -26,7 +28,10 @@ describe('trackAnalyticsEvent', () => {
   });
 
   test('should successfully track a valid analytics event', async () => {
-    mockDatabase.returning.mockResolvedValueOnce([{ id: 123 }]);
+    const mockReturning = vi.fn().mockResolvedValueOnce([{ id: 123 }]);
+    const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
+    const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
+    mockDatabase.insert = mockInsert;
 
     const result = await trackAnalyticsEvent({
       eventName: 'bridge_clicked',
@@ -39,7 +44,7 @@ describe('trackAnalyticsEvent', () => {
     });
 
     expect(mockDatabase.insert).toHaveBeenCalled();
-    expect(mockDatabase.values).toHaveBeenCalledWith({
+    expect(mockValues).toHaveBeenCalledWith({
       eventName: 'bridge_clicked',
       properties: { bridgeId: 'mock-bridge' },
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
@@ -93,7 +98,10 @@ describe('trackAnalyticsEvent', () => {
 
   test('should handle database errors gracefully', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    mockDatabase.returning.mockRejectedValueOnce(new Error('Database error'));
+    const mockReturning = vi.fn().mockRejectedValueOnce(new Error('Database error'));
+    const mockValues = vi.fn().mockReturnValue({ returning: mockReturning });
+    const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
+    mockDatabase.insert = mockInsert;
 
     const result = await trackAnalyticsEvent({
       eventName: 'bridge_clicked',
