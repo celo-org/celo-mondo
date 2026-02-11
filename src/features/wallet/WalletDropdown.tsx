@@ -1,6 +1,7 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import clsx from 'clsx';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { OutlineButton, OutlineButtonClassName } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
@@ -20,10 +21,20 @@ import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
 export function WalletDropdown() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
   const trackEvent = useTrackEvent();
+  const previousIsConnected = useRef(isConnected);
+
+  useEffect(() => {
+    if (isConnected && !previousIsConnected.current && address) {
+      trackEvent('wallet_connected', {
+        walletType: connector?.name,
+      });
+    }
+    previousIsConnected.current = isConnected;
+  }, [isConnected, trackEvent, address, connector]);
 
   const onDisconnect = async () => {
     try {
@@ -37,7 +48,6 @@ export function WalletDropdown() {
   };
 
   const onConnect = () => {
-    trackEvent('wallet_connected', {});
     openConnectModal?.();
   };
 
