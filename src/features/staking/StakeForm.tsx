@@ -4,7 +4,7 @@ import { IconButton } from 'src/components/buttons/IconButton';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
-import { AmountField } from 'src/components/input/AmountField';
+import { AmountField, ZeroMaxValueReason } from 'src/components/input/AmountField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import {
   MAX_NUM_GROUPS_VOTED_FOR,
@@ -31,7 +31,7 @@ import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteC
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
+import { cleanGroupName, getGroupStats, getRemainingCapacity } from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { shortenAddress } from 'src/utils/addresses';
@@ -128,6 +128,7 @@ export function StakeForm({
               lockedBalances={lockedBalances}
               stakeBalances={stakeBalances}
               groupToStake={groupToStake}
+              addressToGroup={addressToGroup}
               disabled={isInputDisabled}
             />
             {values.action === StakeActionType.Stake && delegations?.totalPercent === 0 && (
@@ -154,24 +155,43 @@ function StakeAmountField({
   stakeBalances,
   groupToStake,
   disabled,
+  addressToGroup,
 }: {
   lockedBalances?: LockedBalances;
   stakeBalances?: StakingBalances;
   groupToStake?: GroupToStake;
   disabled?: boolean;
+  addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
   const { values } = useFormikContext<StakeFormValues>();
   const { action, group } = values;
-  const maxAmountWei = useMemo(
+
+  let maxDescription = 'CELO available';
+  let zeroMaxValueReason: ZeroMaxValueReason = ZeroMaxValueReason.DEFAULT;
+  const validatorGroup = addressToGroup?.[group];
+  const maxAmountToStakeByUser = useMemo(
     () => getMaxAmount(action, group, lockedBalances, stakeBalances, groupToStake),
     [action, group, lockedBalances, stakeBalances, groupToStake],
   );
+
+  const remainingGroupCapacity = getRemainingCapacity(validatorGroup);
+  if (remainingGroupCapacity <= 0n) {
+    zeroMaxValueReason = ZeroMaxValueReason.GROUP_AT_CAPACITY;
+  }
+
+
+  let maxAmountWei = maxAmountToStakeByUser;
+  if (maxAmountToStakeByUser > remainingGroupCapacity) {
+    maxAmountWei = remainingGroupCapacity;
+    maxDescription = 'available group capacity';
+  }
 
   return (
     <AmountField
       tokenId={TokenId.CELO}
       maxValueWei={maxAmountWei}
-      maxDescription="CELO available"
+      maxDescription={maxDescription}
+      zeroMaxValueReason={zeroMaxValueReason}
       disabled={disabled}
     />
   );

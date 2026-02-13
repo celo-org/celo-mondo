@@ -31,7 +31,7 @@ import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 
 const NUM_COLLAPSED_GROUPS = 9;
-const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
+const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'capacity', 'cta'];
 enum Filter {
   All = 'All Eligible',
   Elected = 'Elected',
@@ -220,6 +220,7 @@ function TopGroupsRow({
           {(score * 100)?.toFixed(0) + '%'}
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
+        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>-</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
       </tr>
       <tr
@@ -228,7 +229,7 @@ function TopGroupsRow({
           !isVisible && 'hidden',
         )}
       >
-        <td colSpan={7}>
+        <td colSpan={8}>
           Improve decentralization and network health by staking with a group below ↓
         </td>
       </tr>
@@ -283,6 +284,27 @@ function useTableColumns(_totalVotes: bigint) {
       columnHelper.accessor('numElected', {
         header: 'Elected',
         cell: (props) => <div>{`${props.getValue()} / ${props.row.original.numMembers}`}</div>,
+      }),
+      columnHelper.accessor('capacity', {
+        header: 'Capacity',
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const capacityA = rowA.original.capacity;
+          const votesA = rowA.original.votes;
+          const utilizationA = Number((votesA * 100n) / capacityA);
+
+          const capacityB = rowB.original.capacity;
+          const votesB = rowB.original.votes;
+          const utilizationB = Number((votesB * 100n) / capacityB);
+
+          return utilizationA - utilizationB;
+        },
+        cell: (props) => {
+          const capacity = props.getValue();
+          const votes = props.row.original.votes;
+          const utilizationPercent = Math.min(Number((votes * 100n) / capacity), 100);
+          return <div>{`${utilizationPercent.toFixed(0)}%`}</div>;
+        },
       }),
       columnHelper.display({
         id: 'cta',

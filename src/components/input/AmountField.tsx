@@ -7,16 +7,23 @@ import { MIN_REMAINING_BALANCE } from 'src/config/consts';
 import { TokenId } from 'src/config/tokens';
 import { fromWei } from 'src/utils/amount';
 
+export enum ZeroMaxValueReason {
+  DEFAULT = 'DEFEAULT',
+  GROUP_AT_CAPACITY = 'GROUP_AT_CAPACITY',
+}
+
 export function AmountField({
   maxValueWei,
   maxDescription,
   disabled,
   tokenId,
+  zeroMaxValueReason,
 }: {
   maxValueWei: bigint;
   maxDescription: string;
   disabled?: boolean;
   tokenId: TokenId;
+  zeroMaxValueReason?: ZeroMaxValueReason;
 }) {
   const { setFieldValue } = useFormikContext();
 
@@ -44,7 +51,7 @@ export function AmountField({
         </label>
         <span className="text-xs">
           {maxValue <= 0 && tokenId === TokenId.CELO
-            ? 'Not enough CELO to cover gas fees'
+            ? getZeroValueReasonDescription(zeroMaxValueReason)
             : `${formatNumberString(maxValue, 5)} ${maxDescription}`}
         </span>
       </div>
@@ -64,3 +71,15 @@ export function AmountField({
     </div>
   );
 }
+
+const getZeroValueReasonDescription = (zeroMaxValueReason?: ZeroMaxValueReason): string => {
+  if (zeroMaxValueReason) {
+    switch (zeroMaxValueReason) {
+      case ZeroMaxValueReason.GROUP_AT_CAPACITY:
+        return 'Group is at capacity';
+    }
+  }
+
+  // ZeroMaxValueReason.DEFEAULT and undefined both end here
+  return 'Not enough CELO to cover gas fees';
+};
