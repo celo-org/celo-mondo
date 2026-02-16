@@ -179,7 +179,6 @@ function StakeAmountField({
     zeroMaxValueReason = ZeroMaxValueReason.GROUP_AT_CAPACITY;
   }
 
-
   let maxAmountWei = maxAmountToStakeByUser;
   if (maxAmountToStakeByUser > remainingGroupCapacity) {
     maxAmountWei = remainingGroupCapacity;
