@@ -7,6 +7,8 @@ import { publicArchiveClient, renderHook } from '../../../test/anvil/utils';
 import {
   extractFunctionSignature,
   fetchThresholds,
+  getMaxThresholdInfo,
+  getThresholdLabel,
   useParticipationParameters,
   useProposalQuorum,
 } from './useProposalQuorum';
@@ -31,6 +33,44 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.clearAllMocks();
+});
+
+describe('getThresholdLabel', () => {
+  it('returns Low for thresholds below 70%', () => {
+    expect(getThresholdLabel(0.5)).toEqual({ percentage: '50%', risk: 'Low' });
+    expect(getThresholdLabel(0.6)).toEqual({ percentage: '60%', risk: 'Low' });
+  });
+
+  it('returns Medium for 70% threshold', () => {
+    expect(getThresholdLabel(0.7)).toEqual({ percentage: '70%', risk: 'Medium' });
+  });
+
+  it('returns High for 80% threshold', () => {
+    expect(getThresholdLabel(0.8)).toEqual({ percentage: '80%', risk: 'High' });
+  });
+
+  it('returns Critical for 90%+ threshold', () => {
+    expect(getThresholdLabel(0.9)).toEqual({ percentage: '90%', risk: 'Critical' });
+    expect(getThresholdLabel(1.0)).toEqual({ percentage: '100%', risk: 'Critical' });
+  });
+});
+
+describe('getMaxThresholdInfo', () => {
+  it('finds the max threshold and returns its label', () => {
+    expect(getMaxThresholdInfo([0.5, 0.9, 0.7])).toEqual({
+      maxThreshold: 0.9,
+      percentage: '90%',
+      risk: 'Critical',
+    });
+  });
+
+  it('handles a single threshold', () => {
+    expect(getMaxThresholdInfo([0.6])).toEqual({
+      maxThreshold: 0.6,
+      percentage: '60%',
+      risk: 'Low',
+    });
+  });
 });
 
 describe('extractFunctionSignature', () => {

@@ -16,6 +16,7 @@ import {
 } from 'src/features/governance/components/ProposalVoteButtons';
 import {
   PastProposalVoteChart,
+  ProposalConstitutionChart,
   ProposalQuorumChart,
   ProposalVoteChart,
 } from 'src/features/governance/components/ProposalVoteChart';
@@ -83,7 +84,11 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 
       <div className={`flex flex-col gap-4 pb-4 ${styles.proposal}`}>
         <ErrorBoundaryInline>
-          <ProposalTransactions proposalId={id} numTransactions={proposal?.numTransactions} />
+          <ProposalTransactions
+            proposalId={id}
+            numTransactions={proposal?.numTransactions}
+            onchainProposalId={proposal?.id}
+          />
         </ErrorBoundaryInline>
         {content && <div dangerouslySetInnerHTML={{ __html: content }} className="space-y-4"></div>}
       </div>
@@ -112,6 +117,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
         {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
+        {stage >= ProposalStage.Approval && <ProposalConstitutionChart propData={propData} />}
         <div className="max-w-[340px] space-y-2">
           <div className="text-sm text-taupe-600">
             {getHumanEndTime({
