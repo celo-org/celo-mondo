@@ -24,10 +24,23 @@ interface TimelineStep {
   isEvent?: boolean;
 }
 
-export function buildTimelineSteps(
-  propData: MergedProposalData,
-  quorumMet: boolean | null,
-): TimelineStep[] {
+interface TimelineContext {
+  stage: ProposalStage;
+  queuedMs: number | undefined;
+  dequeuedMs: number | undefined;
+  approvedMs: number | undefined;
+  executedMs: number | undefined;
+  inferredDequeuedMs: number | undefined;
+  votingEnd: number | undefined;
+  executionEnd: number | undefined;
+  pastReferendum: boolean;
+  approvalImplied: boolean;
+  approvalMissed: boolean;
+  skipPostVoting: boolean;
+  skipExecution: boolean;
+}
+
+function computeTimelineContext(propData: MergedProposalData): TimelineContext | null {
   const { stage, queuedAt, dequeuedAt, approvedAt, executedAt, transactionCount } = propData;
 
   const queuedMs = queuedAt ? new Date(queuedAt).getTime() : undefined;
@@ -35,7 +48,7 @@ export function buildTimelineSteps(
   const approvedMs = approvedAt ? new Date(approvedAt).getTime() : undefined;
   const executedMs = executedAt ? new Date(executedAt).getTime() : undefined;
 
-  if (!queuedMs && !dequeuedMs) return [];
+  if (!queuedMs && !dequeuedMs) return null;
 
   // Fallback: back-calculate dequeuedAt from executedAt or approvedAt when missing.
   const inferredDequeuedMs =
@@ -70,7 +83,25 @@ export function buildTimelineSteps(
   const skipPostVoting = isRejected || isWithdrawn;
   const skipExecution = skipPostVoting || approvalMissed || isAdopted;
 
-  // Build phases in fixed lifecycle order
+  return {
+    stage,
+    queuedMs,
+    dequeuedMs,
+    approvedMs,
+    executedMs,
+    inferredDequeuedMs,
+    votingEnd,
+    executionEnd,
+    pastReferendum,
+    approvalImplied,
+    approvalMissed,
+    skipPostVoting,
+    skipExecution,
+  };
+}
+
+function buildLifecyclePhases(ctx: TimelineContext): TimelineStep[] {
+  const { stage, queuedMs, dequeuedMs, inferredDequeuedMs, votingEnd, executionEnd } = ctx;
   const phases: TimelineStep[] = [];
 
   // 1. Upvoting
@@ -98,10 +129,10 @@ export function buildTimelineSteps(
     status: dequeuedMs
       ? stage === ProposalStage.Referendum
         ? 'active'
-        : pastReferendum
+        : ctx.pastReferendum
           ? 'completed'
           : 'future'
-      : pastReferendum
+      : ctx.pastReferendum
         ? 'completed'
         : 'future',
     startTime: inferredDequeuedMs,
@@ -109,10 +140,10 @@ export function buildTimelineSteps(
   });
 
   // 3. Execution (skip for rejected/withdrawn/approval-missed/adopted)
-  if (!skipExecution) {
+  if (!ctx.skipExecution) {
     const isActiveExecution = stage === ProposalStage.Execution || stage === ProposalStage.Approval;
     const isCompletedExecution =
-      (approvedMs || approvalImplied) &&
+      (ctx.approvedMs || ctx.approvalImplied) &&
       (stage === ProposalStage.Executed || stage === ProposalStage.Expiration);
     phases.push({
       label: 'Execution',
@@ -122,75 +153,96 @@ export function buildTimelineSteps(
     });
   }
 
-  // 4. Terminal
-  if (stage === ProposalStage.Executed) {
-    phases.push({ label: 'Executed', status: 'completed', timestamp: executedMs, isEvent: true });
-  } else if (isAdopted) {
-    phases.push({ label: 'Adopted', status: 'completed', timestamp: executedMs, isEvent: true });
-  } else if (isRejected) {
-    phases.push({ label: 'Rejected', status: 'failed', timestamp: votingEnd, isEvent: true });
-  } else if (isWithdrawn) {
-    phases.push({ label: 'Withdrawn', status: 'failed', isEvent: true });
-  } else if (stage === ProposalStage.Expiration) {
-    const expiredAt = quorumMet ? executionEnd : votingEnd;
-    phases.push({ label: 'Expired', status: 'failed', timestamp: expiredAt, isEvent: true });
-  } else {
-    phases.push({ label: 'Expiration', status: 'future', startTime: executionEnd });
-  }
+  return phases;
+}
 
-  // Insert approval event into the timeline
-  if (!skipPostVoting) {
-    if (approvedMs) {
-      // Approved with timestamp — insert at chronological position
-      const insertIdx = phases.findIndex(
-        (p) => (p.startTime ?? p.timestamp ?? Infinity) > approvedMs,
-      );
-      phases.splice(insertIdx === -1 ? phases.length : insertIdx, 0, {
+function buildTerminalStep(
+  ctx: TimelineContext,
+  quorumMet: boolean | null,
+): TimelineStep {
+  switch (ctx.stage) {
+    case ProposalStage.Executed:
+      return { label: 'Executed', status: 'completed', timestamp: ctx.executedMs, isEvent: true };
+    case ProposalStage.Adopted:
+      return { label: 'Adopted', status: 'completed', timestamp: ctx.executedMs, isEvent: true };
+    case ProposalStage.Rejected:
+      return { label: 'Rejected', status: 'failed', timestamp: ctx.votingEnd, isEvent: true };
+    case ProposalStage.Withdrawn:
+      return { label: 'Withdrawn', status: 'failed', isEvent: true };
+    case ProposalStage.Expiration: {
+      const expiredAt = quorumMet ? ctx.executionEnd : ctx.votingEnd;
+      return { label: 'Expired', status: 'failed', timestamp: expiredAt, isEvent: true };
+    }
+    default:
+      return { label: 'Expiration', status: 'future', startTime: ctx.executionEnd };
+  }
+}
+
+function insertApprovalEvent(phases: TimelineStep[], ctx: TimelineContext): void {
+  if (ctx.skipPostVoting) return;
+
+  if (ctx.approvedMs) {
+    // Approved with timestamp — insert at chronological position
+    const insertIdx = phases.findIndex(
+      (p) => (p.startTime ?? p.timestamp ?? Infinity) > ctx.approvedMs!,
+    );
+    phases.splice(insertIdx === -1 ? phases.length : insertIdx, 0, {
+      label: 'Approved',
+      status: 'completed',
+      timestamp: ctx.approvedMs,
+      isEvent: true,
+    });
+  } else if (ctx.approvalImplied) {
+    // No timestamp but must have happened — insert before Execution
+    const execIdx = phases.findIndex((p) => p.label === 'Execution');
+    if (execIdx !== -1) {
+      phases.splice(execIdx, 0, {
         label: 'Approved',
         status: 'completed',
-        timestamp: approvedMs,
         isEvent: true,
       });
-    } else if (approvalImplied) {
-      // No timestamp but must have happened — insert before Execution
-      const execIdx = phases.findIndex((p) => p.label === 'Execution');
-      if (execIdx !== -1) {
-        phases.splice(execIdx, 0, {
-          label: 'Approved',
-          status: 'completed',
-          isEvent: true,
-        });
-      }
-    } else if (approvalMissed) {
-      // Insert after Voting
-      const votingIdx = phases.findIndex((p) => p.label === 'Voting');
-      phases.splice(votingIdx + 1, 0, {
-        label: 'Approval Missed',
-        status: 'failed',
+    }
+  } else if (ctx.approvalMissed) {
+    // Insert after Voting
+    const votingIdx = phases.findIndex((p) => p.label === 'Voting');
+    phases.splice(votingIdx + 1, 0, {
+      label: 'Approval Missed',
+      status: 'failed',
+      isEvent: true,
+    });
+  } else if (ctx.stage === ProposalStage.Execution || ctx.stage === ProposalStage.Approval) {
+    // In execution phase but not yet approved — show after Execution
+    const execIdx = phases.findIndex((p) => p.label === 'Execution');
+    if (execIdx !== -1) {
+      phases.splice(execIdx + 1, 0, {
+        label: 'Approval',
+        status: 'future',
         isEvent: true,
       });
-    } else if (stage === ProposalStage.Execution || stage === ProposalStage.Approval) {
-      // In execution phase but not yet approved — show after Execution
-      const execIdx = phases.findIndex((p) => p.label === 'Execution');
-      if (execIdx !== -1) {
-        phases.splice(execIdx + 1, 0, {
-          label: 'Approval',
-          status: 'future',
-          isEvent: true,
-        });
-      }
-    } else {
-      // Voting or earlier — show pending approval before Execution
-      const execIdx = phases.findIndex((p) => p.label === 'Execution');
-      if (execIdx !== -1) {
-        phases.splice(execIdx, 0, {
-          label: 'Approval',
-          status: 'future',
-          isEvent: true,
-        });
-      }
+    }
+  } else {
+    // Voting or earlier — show pending approval before Execution
+    const execIdx = phases.findIndex((p) => p.label === 'Execution');
+    if (execIdx !== -1) {
+      phases.splice(execIdx, 0, {
+        label: 'Approval',
+        status: 'future',
+        isEvent: true,
+      });
     }
   }
+}
+
+export function buildTimelineSteps(
+  propData: MergedProposalData,
+  quorumMet: boolean | null,
+): TimelineStep[] {
+  const ctx = computeTimelineContext(propData);
+  if (!ctx) return [];
+
+  const phases = buildLifecyclePhases(ctx);
+  phases.push(buildTerminalStep(ctx, quorumMet));
+  insertApprovalEvent(phases, ctx);
 
   return phases;
 }

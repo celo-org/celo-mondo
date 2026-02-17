@@ -51,6 +51,11 @@ Phases are always built in this fixed order:
 4. Terminal     (Executed/Adopted/Rejected/Withdrawn/Expired/Expiration)
 ```
 
+> **Note:** The durations above reflect the on-chain governance parameters on Celo mainnet:
+> `queueExpiry` (28 days), `stageDurations.referendum` (7 days), `stageDurations.execution`
+> (3 days). These are configurable via governance proposals and could change. See
+> `Governance.getProposalDequeuedStage()` for the authoritative stage transition logic.
+
 The **Approval** event is then inserted into this list based on context:
 
 | Scenario                                                 | Approval Position                   | Status      |
@@ -59,8 +64,13 @@ The **Approval** event is then inserted into this list based on context:
 | Implied (Execution/Executed/Adopted stage, no timestamp) | Before Execution                    | `completed` |
 | Missed (Expired + no approval + has transactions)        | After Voting                        | `failed`    |
 | Pending, proposal in Voting or Queued                    | Before Execution                    | `future`    |
-| Pending, proposal in Execution phase                     | After Execution                     | `future`    |
+| Pending, proposal in Execution phase                     | Within Execution                    | `future`    |
 | Rejected or Withdrawn                                    | Not shown                           | —           |
+
+> **Note:** On-chain, there is no separate Approval stage. The `approve()` function can be
+> called by the approver during **either** the Referendum (Voting) or Execution stages
+> (`Governance.sol:471-473`). Approval is a prerequisite for calling `execute()`, so it
+> must happen *within* the Execution window at the latest — not after it.
 
 ## Phase Skipping Rules
 
@@ -83,6 +93,11 @@ inferredDequeuedMs = executedAt - 7 days - 3 days    (if executedAt exists)
 ```
 
 This allows all phase boundaries to be computed even from partial data.
+
+> **Caveat:** The `approvedAt` fallback assumes approval happened at the end of the
+> Referendum stage. In practice, the contract allows approval during both Referendum and
+> Execution stages, so `approvedAt` could be anywhere from 0 to 10 days after dequeue.
+> This makes the `approvedAt`-based inference a rough approximation.
 
 ### Upvoting End Time
 
@@ -109,7 +124,7 @@ All timestamps display in local timezone via `getFullDateHumanDateString()`. Hov
   Mon, Jan 06, 12:00 GMT
 ● Voting                (active, purple, pulsing)
   Thu, Feb 05, 16:47 GMT
-  Ends in 5 days
+  Ends in 3 days
 · Approval              (future, grey, italic)
 ● Execution             (future, grey)
 ● Expiration            (future, grey)
