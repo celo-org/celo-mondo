@@ -12,14 +12,16 @@ The `ProposalTimeline` component displays a vertical timeline on the proposal de
 
 ### Data Flow
 
-```
-MergedProposalData (queuedAt, dequeuedAt, approvedAt, executedAt, stage, transactionCount)
-        |
-        v
-buildTimelineSteps() — pure function, computes steps from proposal data + quorumMet
-        |
-        v
-TimelineStep[] — rendered as a vertical stepper
+```mermaid
+flowchart TD
+    A[MergedProposalData] --> B[computeTimelineContext]
+    B --> C[buildLifecyclePhases]
+    B --> D[buildTerminalStep]
+    B --> E[insertApprovalEvent]
+    C --> F["TimelineStep[]"]
+    D --> F
+    E --> F
+    F --> G["<ProposalTimeline /> vertical stepper"]
 ```
 
 ## Concepts
@@ -51,6 +53,25 @@ Phases are always built in this fixed order:
 4. Terminal     (Executed/Adopted/Rejected/Withdrawn/Expired/Expiration)
 ```
 
+```mermaid
+stateDiagram-v2
+    [*] --> Queued: Proposal created
+    Queued --> Referendum: Dequeued (upvoted)
+    Queued --> Withdrawn: Proposer withdraws
+
+    Referendum --> Execution: Voting ends
+    Referendum --> Rejected: Quorum not met
+    Referendum --> Withdrawn: Proposer withdraws
+
+    Execution --> Executed: execute() called
+    Execution --> Adopted: 0 transactions
+    Execution --> Expiration: Window expires
+
+    note right of Queued: 28 days max
+    note right of Referendum: 7 days
+    note right of Execution: 3 days
+```
+
 > **Note:** The durations above reflect the on-chain governance parameters on Celo mainnet:
 > `queueExpiry` (28 days), `stageDurations.referendum` (7 days), `stageDurations.execution`
 > (3 days). These are configurable via governance proposals and could change. See
@@ -66,6 +87,25 @@ The **Approval** event is then inserted into this list based on context:
 | Pending, proposal in Voting or Queued                    | Before Execution                    | `future`    |
 | Pending, proposal in Execution phase                     | Within Execution                    | `future`    |
 | Rejected or Withdrawn                                    | Not shown                           | —           |
+
+```mermaid
+flowchart TD
+    Start{skipPostVoting?}
+    Start -->|Yes| None[Not shown]
+    Start -->|No| HasTs{approvedMs?}
+
+    HasTs -->|Yes| Chrono["Approved (completed)<br/>at chronological position"]
+    HasTs -->|No| Implied{approvalImplied?}
+
+    Implied -->|Yes| BeforeExec["Approved (completed)<br/>before Execution"]
+    Implied -->|No| Missed{approvalMissed?}
+
+    Missed -->|Yes| AfterVoting["Approval Missed (failed)<br/>after Voting"]
+    Missed -->|No| InExec{stage = Execution?}
+
+    InExec -->|Yes| WithinExec["Approval (future)<br/>after Execution"]
+    InExec -->|No| Pending["Approval (future)<br/>before Execution"]
+```
 
 > **Note:** On-chain, there is no separate Approval stage. The `approve()` function can be
 > called by the approver during **either** the Referendum (Voting) or Execution stages
