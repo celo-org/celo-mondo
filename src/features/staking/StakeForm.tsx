@@ -1,5 +1,6 @@
 import { Field, Form, Formik, FormikErrors, useField, useFormikContext } from 'formik';
 import { SyntheticEvent, useCallback, useEffect, useMemo } from 'react';
+import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { IconButton } from 'src/components/buttons/IconButton';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
@@ -58,8 +59,13 @@ export function StakeForm({
   const { address } = useAccount();
   const { groups, addressToGroup } = useValidatorGroups();
   const { signingFor } = useVoteSignerToAccount(address);
-  const { lockedBalances } = useLockedStatus(signingFor);
-  const { stakeBalances, groupToStake, refetch } = useStakingBalances(signingFor);
+  const { lockedBalances, isLoading: isLockedStatusLoading } = useLockedStatus(signingFor);
+  const {
+    stakeBalances,
+    groupToStake,
+    refetch,
+    isLoading: isBalancesLoading,
+  } = useStakingBalances(signingFor);
   const { delegations } = useDelegationBalances(address, signingFor);
 
   const onPlanSuccess = (v: StakeFormValues, r: TransactionReceipt) => {
@@ -101,6 +107,10 @@ export function StakeForm({
     if (txPlanIndex > 0) return {};
     return validateForm(values, lockedBalances, stakeBalances, groupToStake, addressToGroup);
   };
+
+  if (isLockedStatusLoading || isBalancesLoading || !lockedBalances) {
+    return <SpinnerWithLabel className="py-20">Loading staking data...</SpinnerWithLabel>;
+  }
 
   return (
     <Formik<StakeFormValues>
@@ -173,6 +183,7 @@ function StakeAmountField({
       maxValueWei={maxAmountWei}
       maxDescription="CELO available"
       disabled={disabled}
+      reserveForGas={false}
     />
   );
 }

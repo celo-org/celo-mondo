@@ -255,8 +255,21 @@ const setupHooks = (options?: SetupHooksOptions) => {
   } as any);
   vi.spyOn(useDelegatees, 'useDelegatees').mockReturnValue({} as any);
   vi.spyOn(useDelegationBalances, 'useDelegationBalances').mockReturnValue({} as any);
-  vi.spyOn(useLockedStatus, 'useLockedStatus').mockReturnValue({} as any);
-  vi.spyOn(useStakingBalances, 'useStakingBalances').mockReturnValue({} as any);
+  vi.spyOn(useLockedStatus, 'useLockedStatus').mockReturnValue({
+    isLoading: false,
+    isError: false,
+    lockedBalances: { locked: 0n, pendingBlocked: 0n, pendingFree: 0n },
+    pendingWithdrawals: [],
+    unlockingPeriod: 259200n,
+    refetch: vi.fn(),
+  } as any);
+  vi.spyOn(useStakingBalances, 'useStakingBalances').mockReturnValue({
+    isLoading: false,
+    isError: false,
+    stakeBalances: { active: 0n, pending: 0n, total: 0n },
+    groupToStake: {},
+    refetch: vi.fn(),
+  } as any);
   vi.spyOn(useGovernanceProposals, 'useGovernanceProposals').mockReturnValue({} as any);
   vi.spyOn(useGovernanceProposals, 'useGovernanceProposal').mockReturnValue({} as any);
   vi.spyOn(useValidatorGroups, 'useValidatorGroups').mockReturnValue({} as any);

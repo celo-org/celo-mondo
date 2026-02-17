@@ -17,6 +17,14 @@ import type { WriteContractMutate } from 'wagmi/query';
 // Special case handling for this common error to provide a more specific error message
 const CHAIN_MISMATCH_ERROR = 'does not match the target chain';
 
+// Fee buffer percentage applied to maxFeePerGas/gasPrice to prevent stuck transactions.
+// 20n = 20% buffer. Adjust this value to increase/decrease the fee margin.
+const FEE_BUFFER_PERCENT = 20n;
+
+function applyFeeBuffer(fee: bigint): bigint {
+  return fee + (fee * FEE_BUFFER_PERCENT) / 100n;
+}
+
 export function useWriteContractWithReceipt(
   description: string,
   onSuccess?: (receipt: TransactionReceipt) => any,
@@ -52,14 +60,37 @@ export function useWriteContractWithReceipt(
           account: account.address,
         });
         logger.debug('Transaction request prepared, triggering write');
+        const feeParams =
+          request.maxFeePerGas != null
+            ? {
+                maxFeePerGas: applyFeeBuffer(request.maxFeePerGas),
+                maxPriorityFeePerGas: request.maxPriorityFeePerGas,
+              }
+            : request.gasPrice != null
+              ? { gasPrice: applyFeeBuffer(request.gasPrice) }
+              : {};
         writeContract({
           ...args,
           gas: request.gas,
-          gasPrice: request.gasPrice,
+          ...feeParams,
         } as any);
       } else {
-        logger.debug('Trigger transaction write');
-        writeContract(args);
+        logger.debug('Trigger transaction write with fee buffer');
+        try {
+          if (!publicClient) {
+            writeContract(args);
+            return;
+          }
+          const fees = await publicClient.estimateFeesPerGas();
+          writeContract({
+            ...args,
+            maxFeePerGas: applyFeeBuffer(fees.maxFeePerGas),
+            maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
+          } as any);
+        } catch (err) {
+          logger.warn('Fee estimation failed, falling back to wallet defaults', err);
+          writeContract(args);
+        }
       }
     },
     [writeContract, publicClient, account],

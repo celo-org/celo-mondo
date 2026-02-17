@@ -12,11 +12,13 @@ export function AmountField({
   maxDescription,
   disabled,
   tokenId,
+  reserveForGas = true,
 }: {
   maxValueWei: bigint;
   maxDescription: string;
   disabled?: boolean;
   tokenId: TokenId;
+  reserveForGas?: boolean;
 }) {
   const { setFieldValue } = useFormikContext();
 
@@ -24,9 +26,13 @@ export function AmountField({
     () =>
       Math.max(
         0,
-        fromWei(tokenId === TokenId.CELO ? maxValueWei - MIN_REMAINING_BALANCE : maxValueWei),
+        fromWei(
+          tokenId === TokenId.CELO && reserveForGas
+            ? maxValueWei - MIN_REMAINING_BALANCE
+            : maxValueWei,
+        ),
       ),
-    [maxValueWei, tokenId],
+    [maxValueWei, tokenId, reserveForGas],
   );
 
   const onClickMax = async () => {
@@ -43,7 +49,7 @@ export function AmountField({
           Amount
         </label>
         <span className="text-xs">
-          {maxValue <= 0 && tokenId === TokenId.CELO
+          {maxValue <= 0 && tokenId === TokenId.CELO && reserveForGas
             ? 'Not enough CELO to cover gas fees'
             : `${formatNumberString(maxValue, 5)} ${maxDescription}`}
         </span>

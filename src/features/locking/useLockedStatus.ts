@@ -15,12 +15,12 @@ export function useLockedStatus(address?: Address) {
   const { isRegistered } = useAccountDetails(address);
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useLockedStatus', publicClient, address, isRegistered],
+    queryKey: ['useLockedStatus', publicClient, address],
     queryFn: async () => {
-      if (!address || !isRegistered || !publicClient) return null;
       logger.debug('Fetching locked status balance and withdrawals');
-      return fetchLockedStatus(publicClient, address);
+      return fetchLockedStatus(publicClient!, address!);
     },
+    enabled: !!address && !!isRegistered && !!publicClient,
     gcTime: GCTime.Short,
     staleTime: StaleTime.Short,
   });
