@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCallback } from 'react';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { SocialLogo } from 'src/components/logos/SocialLogo';
@@ -17,6 +18,7 @@ import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanEndTime } from 'src/utils/time';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -31,8 +33,16 @@ export function ProposalCard({
 }) {
   const { id, cgp, dequeuedAt, executedAt, queuedAt, stage, metadata } = propData;
   const { quorumMet } = useIsProposalPassingQuorum(propData);
+  const trackEvent = useTrackEvent();
 
   const { votes } = useProposalVoteTotals(propData);
+
+  const onProposalClick = useCallback(() => {
+    trackEvent('proposal_viewed', {
+      proposalId: String(id || cgp || metadata.cgp),
+      stage: String(stage),
+    });
+  }, [trackEvent, id, cgp, metadata.cgp, stage]);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp || metadata.cgp}`;
   const endTimeValue = getHumanEndTime({
@@ -55,7 +65,7 @@ export function ProposalCard({
     }));
 
   return (
-    <Link href={link} className={clsx('space-y-2.5', className)}>
+    <Link href={link} className={clsx('space-y-2.5', className)} onClick={onProposalClick}>
       <ProposalBadgeRow propData={propData} />
       {metadata.title && (
         <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
@@ -140,6 +150,17 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
   const { proposal, metadata } = propData;
   const discussionUrl = metadata?.url || proposal?.url;
   const cgpUrl = metadata?.cgpUrl;
+  const trackEvent = useTrackEvent();
+
+  const handleDiscussionClick = useCallback(() => {
+    trackEvent('external_link_clicked', { url: discussionUrl, context: 'proposal' });
+  }, [trackEvent, discussionUrl]);
+
+  const handleCgpClick = useCallback(() => {
+    if (cgpUrl) {
+      trackEvent('external_link_clicked', { url: cgpUrl, context: 'cgp' });
+    }
+  }, [trackEvent, cgpUrl]);
 
   if (!discussionUrl) return null;
 
@@ -150,12 +171,17 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
       <A_Blank
         href={discussionUrl}
         className="flex grow items-center gap-2 border border-taupe-300 px-3 py-3"
+        onClick={handleDiscussionClick}
       >
         <SocialLogo type={SocialLinkType.Website} size={18} />
         <span className="grow text-sm font-medium hover:underline">{`View discussion on ${discussionHost}`}</span>
       </A_Blank>
       {cgpUrl && (
-        <A_Blank href={cgpUrl} className="border border-taupe-300 px-3 py-3">
+        <A_Blank
+          href={cgpUrl}
+          className="border border-taupe-300 px-3 py-3"
+          onClick={handleCgpClick}
+        >
           <SocialLogo type={SocialLinkType.Github} size={20} />
         </A_Blank>
       )}
