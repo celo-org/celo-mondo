@@ -36,13 +36,10 @@ function useStakingModeInternal() {
       ?.setAttribute('data-theme', mode === 'CELO' ? 'light' : 'light-liquid');
   }, [mode]);
 
-  const hasAtLeastTwoPositiveBalances =
-    [stCELOBalances.total, balance?.value ?? 0n, lockedBalance].filter((x) => x > 0).length >= 2;
-
   return {
     mode,
     toggleMode,
-    shouldRender: hasAtLeastTwoPositiveBalances,
+    shouldRender: enabled,
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
       participle: (mode === 'stCELO' ? 'Liquid ' : '') + 'Staking',
