@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCallback } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
@@ -11,6 +12,7 @@ import Delegate from 'src/images/icons/delegate.svg';
 import ENS from 'src/images/icons/ens.svg';
 import Governance from 'src/images/icons/governance.svg';
 import Staking from 'src/images/icons/staking.svg';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 const LINKS = (isWalletConnected?: boolean) => [
@@ -25,6 +27,14 @@ const LINKS = (isWalletConnected?: boolean) => [
 export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const pathname = usePathname();
   const { address } = useAccount();
+  const trackEvent = useTrackEvent();
+
+  const handleNavClick = useCallback(
+    (item: string) => {
+      trackEvent('nav_clicked', { item });
+    },
+    [trackEvent],
+  );
 
   return (
     <nav>
@@ -40,7 +50,9 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
                   isSelected ? 'font-semibold opacity-100' : 'font-medium opacity-60',
                 )}
               >
-                <Link href={l.to}>{l.label}</Link>
+                <Link href={l.to} onClick={() => handleNavClick(l.label)}>
+                  {l.label}
+                </Link>
               </li>
               {isSelected && (
                 <div
@@ -59,6 +71,14 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
 
 export function MobileNavDropdown({ className }: { className?: string }) {
   const { address } = useAccount();
+  const trackEvent = useTrackEvent();
+
+  const handleNavClick = useCallback(
+    (item: string) => {
+      trackEvent('nav_clicked', { item });
+    },
+    [trackEvent],
+  );
 
   return (
     <nav className={className}>
@@ -72,7 +92,12 @@ export function MobileNavDropdown({ className }: { className?: string }) {
         menuClasses="space-y-8 py-6 px-8"
         menuItems={LINKS(!!address).map((l) => {
           return (
-            <Link key={l.label} href={l.to} className="flex space-x-4 font-medium">
+            <Link
+              key={l.label}
+              href={l.to}
+              className="flex space-x-4 font-medium"
+              onClick={() => handleNavClick(l.label)}
+            >
               <Image src={l.icon} height={20} width={20} alt="" />
               <span>{l.label}</span>
             </Link>

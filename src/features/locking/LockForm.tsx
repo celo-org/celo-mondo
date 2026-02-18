@@ -31,6 +31,7 @@ import { fromWei, fromWeiRounded, toWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 const initialValues: LockFormValues = {
@@ -52,6 +53,7 @@ export function LockForm({
   const { lockedBalances, pendingWithdrawals, refetch, unlockingPeriod } = useLockedStatus(address);
   const { stakeBalances } = useStakingBalances(address);
   const { isVoting } = useIsGovernanceVoting(address);
+  const trackEvent = useTrackEvent();
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<LockFormValues>({
@@ -59,7 +61,11 @@ export function LockForm({
         getLockTxPlan(v, pendingWithdrawals || [], stakeBalances || emptyStakeBalances),
       onStepSuccess: () => refetch(),
       onPlanSuccess: onConfirmed
-        ? (v, r) =>
+        ? (v, r) => {
+            trackEvent('lock_completed', {
+              action: v.action,
+              amount: v.amount,
+            });
             onConfirmed({
               message: `${v.action} successful`,
               amount: v.amount,
@@ -68,7 +74,8 @@ export function LockForm({
                 { label: 'Action', value: toTitleCase(v.action) },
                 { label: 'Amount', value: `${v.amount} CELO` },
               ],
-            })
+            });
+          }
         : undefined,
     });
   const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', onTxSuccess);
