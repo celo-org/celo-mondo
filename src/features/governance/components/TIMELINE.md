@@ -110,7 +110,7 @@ flowchart TD
 > **Note:** On-chain, there is no separate Approval stage. The `approve()` function can be
 > called by the approver during **either** the Referendum (Voting) or Execution stages
 > (`Governance.sol:471-473`). Approval is a prerequisite for calling `execute()`, so it
-> must happen *within* the Execution window at the latest — not after it.
+> must happen _within_ the Execution window at the latest — not after it.
 
 ## Phase Skipping Rules
 

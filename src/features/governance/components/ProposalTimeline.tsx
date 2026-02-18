@@ -156,10 +156,7 @@ function buildLifecyclePhases(ctx: TimelineContext): TimelineStep[] {
   return phases;
 }
 
-function buildTerminalStep(
-  ctx: TimelineContext,
-  quorumMet: boolean | null,
-): TimelineStep {
+function buildTerminalStep(ctx: TimelineContext, quorumMet: boolean | null): TimelineStep {
   switch (ctx.stage) {
     case ProposalStage.Executed:
       return { label: 'Executed', status: 'completed', timestamp: ctx.executedMs, isEvent: true };
