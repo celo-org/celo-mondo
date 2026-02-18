@@ -539,4 +539,58 @@ describe('Analytics Event Validation', () => {
       expect(result.success).toBe(false);
     });
   });
+
+  describe('extra properties rejection', () => {
+    it('should reject bridge_clicked with extra properties', () => {
+      const result = validateAnalyticsEvent('bridge_clicked', {
+        bridgeId: 'superbridge',
+        extraProp: 'value',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject wallet_connected with extra properties', () => {
+      const result = validateAnalyticsEvent('wallet_connected', {
+        walletType: 'MetaMask',
+        extraProp: 'value',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject stake_completed with extra properties', () => {
+      const result = validateAnalyticsEvent('stake_completed', {
+        action: StakeActionType.Stake,
+        amount: 100,
+        extraProp: 'value',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject vote_completed with extra properties', () => {
+      const result = validateAnalyticsEvent('vote_completed', {
+        voteType: VoteType.Yes,
+        proposalId: 42,
+        extraProp: 'value',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject delegate_completed with extra properties', () => {
+      const result = validateAnalyticsEvent('delegate_completed', {
+        action: DelegateActionType.Delegate,
+        percent: 50,
+        extraProp: 'value',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject external_link_clicked with extra properties', () => {
+      const result = validateAnalyticsEvent('external_link_clicked', {
+        url: 'https://example.com',
+        context: 'proposal',
+        extraProp: 'value',
+      });
+      expect(result.success).toBe(false);
+    });
+  });
 });

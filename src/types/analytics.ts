@@ -302,108 +302,148 @@ export function isValidAnalyticsEvent<T extends AnalyticsEventName>(
 const VALID_BRIDGE_IDS = BRIDGES.map((bridge) => bridge.id);
 
 // Zod schemas for server-side validation with precise constraints from codebase
-export const BridgeClickedPropertiesSchema = z.object({
-  bridgeId: z.enum(VALID_BRIDGE_IDS as [string, ...string[]]),
-});
+export const BridgeClickedPropertiesSchema = z
+  .object({
+    bridgeId: z.enum(VALID_BRIDGE_IDS as [string, ...string[]]),
+  })
+  .strict();
 
-export const WalletConnectedPropertiesSchema = z.object({
-  walletType: z.string().min(1).max(50).optional(),
-});
+export const WalletConnectedPropertiesSchema = z
+  .object({
+    walletType: z.string().min(1).max(50).optional(),
+  })
+  .strict();
 
-export const WalletDisconnectedPropertiesSchema = z.object({});
+export const WalletDisconnectedPropertiesSchema = z.object({}).strict();
 
-export const StakeCompletedPropertiesSchema = z.object({
-  action: z.nativeEnum(StakeActionType),
-  amount: z.number().min(0).finite(),
-  group: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
-    .optional(),
-});
+export const StakeCompletedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(StakeActionType),
+    amount: z.number().min(0).finite(),
+    group: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
+      .optional(),
+  })
+  .strict();
 
-export const LockCompletedPropertiesSchema = z.object({
-  action: z.nativeEnum(LockActionType),
-  amount: z.number().min(0).finite(),
-});
+export const LockCompletedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(LockActionType),
+    amount: z.number().min(0).finite(),
+  })
+  .strict();
 
-export const VoteCompletedPropertiesSchema = z.object({
-  voteType: z.nativeEnum(VoteType),
-  proposalId: z.number().int().min(0),
-});
+export const VoteCompletedPropertiesSchema = z
+  .object({
+    voteType: z.nativeEnum(VoteType),
+    proposalId: z.number().int().min(0),
+  })
+  .strict();
 
-export const UpvoteCompletedPropertiesSchema = z.object({
-  proposalId: z.number().int().min(0),
-});
+export const UpvoteCompletedPropertiesSchema = z
+  .object({
+    proposalId: z.number().int().min(0),
+  })
+  .strict();
 
-export const DelegateCompletedPropertiesSchema = z.object({
-  action: z.nativeEnum(DelegateActionType),
-  percent: z.number().min(0).max(100).finite(),
-});
+export const DelegateCompletedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(DelegateActionType),
+    percent: z.number().min(0).max(100).finite(),
+  })
+  .strict();
 
-export const AccountCreatedPropertiesSchema = z.object({});
+export const AccountCreatedPropertiesSchema = z.object({}).strict();
 
-export const NavClickedPropertiesSchema = z.object({
-  item: z.string().min(1).max(100),
-});
+export const NavClickedPropertiesSchema = z
+  .object({
+    item: z.string().min(1).max(100),
+  })
+  .strict();
 
-export const ModeToggledPropertiesSchema = z.object({
-  mode: z.enum(['CELO', 'stCELO']),
-});
+export const ModeToggledPropertiesSchema = z
+  .object({
+    mode: z.enum(['CELO', 'stCELO']),
+  })
+  .strict();
 
-export const ProposalViewedPropertiesSchema = z.object({
-  proposalId: z.string().min(1).max(100),
-  stage: z.string().min(1).max(50).optional(),
-});
+export const ProposalViewedPropertiesSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    stage: z.string().min(1).max(50).optional(),
+  })
+  .strict();
 
-export const ProposalFilterChangedPropertiesSchema = z.object({
-  filter: z.string().min(1).max(100),
-});
+export const ProposalFilterChangedPropertiesSchema = z
+  .object({
+    filter: z.string().min(1).max(100),
+  })
+  .strict();
 
-export const VoteButtonClickedPropertiesSchema = z.object({
-  proposalId: z.number().int().min(0),
-  voteType: z.nativeEnum(VoteType),
-});
+export const VoteButtonClickedPropertiesSchema = z
+  .object({
+    proposalId: z.number().int().min(0),
+    voteType: z.nativeEnum(VoteType),
+  })
+  .strict();
 
-export const UpvoteButtonClickedPropertiesSchema = z.object({
-  proposalId: z.number().int().min(0),
-});
+export const UpvoteButtonClickedPropertiesSchema = z
+  .object({
+    proposalId: z.number().int().min(0),
+  })
+  .strict();
 
-export const ValidatorGroupViewedPropertiesSchema = z.object({
-  groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
-  groupName: z.string().min(1).max(200).optional(),
-});
+export const ValidatorGroupViewedPropertiesSchema = z
+  .object({
+    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+    groupName: z.string().min(1).max(200).optional(),
+  })
+  .strict();
 
-export const ValidatorFilterChangedPropertiesSchema = z.object({
-  filter: z.string().min(1).max(100),
-});
+export const ValidatorFilterChangedPropertiesSchema = z
+  .object({
+    filter: z.string().min(1).max(100),
+  })
+  .strict();
 
-export const StakeButtonClickedPropertiesSchema = z.object({
-  groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
-});
+export const StakeButtonClickedPropertiesSchema = z
+  .object({
+    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+  })
+  .strict();
 
-export const StakeMenuClickedPropertiesSchema = z.object({
-  action: z.nativeEnum(StakeActionType),
-  groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
-});
+export const StakeMenuClickedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(StakeActionType),
+    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+  })
+  .strict();
 
-export const DelegateeViewedPropertiesSchema = z.object({
-  delegateeAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
-  delegateeName: z.string().min(1).max(200).optional(),
-});
+export const DelegateeViewedPropertiesSchema = z
+  .object({
+    delegateeAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+    delegateeName: z.string().min(1).max(200).optional(),
+  })
+  .strict();
 
-export const DelegateButtonClickedPropertiesSchema = z.object({
-  delegateeAddress: z
-    .string()
-    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
-    .optional(),
-});
+export const DelegateButtonClickedPropertiesSchema = z
+  .object({
+    delegateeAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
+      .optional(),
+  })
+  .strict();
 
-export const RegisterDelegateeClickedPropertiesSchema = z.object({});
+export const RegisterDelegateeClickedPropertiesSchema = z.object({}).strict();
 
-export const ExternalLinkClickedPropertiesSchema = z.object({
-  url: z.string().url().max(2000),
-  context: z.enum(['proposal', 'cgp']).optional(),
-});
+export const ExternalLinkClickedPropertiesSchema = z
+  .object({
+    url: z.string().url().max(2000),
+    context: z.enum(['proposal', 'cgp']).optional(),
+  })
+  .strict();
 
 // Map of event names to their Zod schemas
 export const AnalyticsEventSchemaMap = {
