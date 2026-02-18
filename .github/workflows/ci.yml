@@ -55,6 +55,28 @@ jobs:
         env:
           NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
 
+  validate-delegates:
+    runs-on: ubuntu-latest
+    needs: [install]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: validate delegates metadata
+        run: |
+          yarn build:delegatees-json
+          CHANGES=$(git diff --name-only src/config/delegates.json)
+          if [[ ! -z $CHANGES ]]; then
+            echo "delegates.json is out of date. Run 'yarn build:delegatees-json' and commit the result."
+            git diff src/config/delegates.json
+            exit 1
+          fi
+
   prettier:
     runs-on: ubuntu-latest
     needs: [install]

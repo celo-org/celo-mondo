@@ -21,6 +21,7 @@ import EllipsisIcon from 'src/images/icons/ellipsis.svg';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { sortByIdThenCGP } from 'src/utils/proposals';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 enum Filter {
@@ -61,9 +62,18 @@ function ProposalList() {
 
   const { proposals, isLoading } = useGovernanceProposals();
   const { address } = useAccount();
+  const trackEvent = useTrackEvent();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const { tab: filter, onTabChange: onFilterChange } = useTabs<Filter>(Filter.Recent);
+
+  const handleFilterChange = useCallback(
+    (newFilter: Filter) => {
+      trackEvent('proposal_filter_changed', { filter: newFilter });
+      onFilterChange(newFilter);
+    },
+    [trackEvent, onFilterChange],
+  );
 
   const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
 
@@ -105,7 +115,7 @@ function ProposalList() {
         <Fade show>
           <TabHeaderFilters
             activeFilter={filter}
-            setFilter={onFilterChange}
+            setFilter={handleFilterChange}
             counts={headerCounts}
             showCount={!isMobile}
             className="border-b border-taupe-300 pb-2 pt-1"

@@ -1,6 +1,7 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import clsx from 'clsx';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { OutlineButton, OutlineButtonClassName } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
@@ -15,22 +16,39 @@ import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
 export function WalletDropdown() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
+  const trackEvent = useTrackEvent();
+  const previousIsConnected = useRef(isConnected);
+
+  useEffect(() => {
+    if (isConnected && !previousIsConnected.current && address) {
+      trackEvent('wallet_connected', {
+        walletType: connector?.name,
+      });
+    }
+    previousIsConnected.current = isConnected;
+  }, [isConnected, trackEvent, address, connector]);
 
   const onDisconnect = async () => {
     try {
+      trackEvent('wallet_disconnected', {});
       await disconnectAsync();
     } catch (err) {
       logger.error('Error disconnecting wallet', err);
       // Sometimes a page reload helps handle disconnection issues
       window.location.reload();
     }
+  };
+
+  const onConnect = () => {
+    openConnectModal?.();
   };
 
   return (
@@ -50,7 +68,7 @@ export function WalletDropdown() {
           modalClasses="p-4"
         />
       ) : (
-        <SolidButton className="bg-primary" onClick={openConnectModal}>
+        <SolidButton className="bg-primary" onClick={onConnect}>
           Connect
         </SolidButton>
       )}

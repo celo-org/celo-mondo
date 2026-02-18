@@ -438,7 +438,8 @@
     "logoUri": "/logos/delegatees/0x3779CF289d8161Cd6679696D10647FBa2cb0ef50.jpg",
     "date": "2024-11-07",
     "links": {
-      "twitter": "https://twitter.com/martinvol"
+      "twitter": "https://twitter.com/martinvol",
+      "website": "https://martinvol.pe"
     },
     "interests": [
       "Engineering",
@@ -1446,5 +1447,50 @@
       "Blockchain"
     ],
     "description": "Stakely is a top Staking as a Service provider specialized in Proof of Stake blockchains | With over 40 supported networks we offer reliable and secure staking services for the best staking experience"
+  },
+  "0x81bdf1a4b890B67F240bc4ecf802a0da4866c1b5": {
+    "name": "Gulcan Yayla",
+    "address": "0x81bdf1a4b890B67F240bc4ecf802a0da4866c1b5",
+    "logoUri": "/logos/delegatees/0x81bdf1a4b890B67F240bc4ecf802a0da4866c1b5.png",
+    "date": "2025-12-19",
+    "links": {
+      "twitter": "https://x.com/CeloMenaApac"
+    },
+    "interests": [
+      "Blockchain"
+    ],
+    "description": "CELO MENA/APAC Community Co-Lead"
+  },
+  "0x99Ab671F387a0A5B5EDB49789D1cd2124E7D682C": {
+    "name": "Cel'Eu",
+    "address": "0x99Ab671F387a0A5B5EDB49789D1cd2124E7D682C",
+    "logoUri": "/logos/delegatees/0x99Ab671F387a0A5B5EDB49789D1cd2124E7D682C.png",
+    "date": "2025-12-18",
+    "links": {
+      "twitter": "https://www.twitter.com/celoeurope"
+    },
+    "interests": [
+      "Local hubs",
+      "Public Goods",
+      "Community Empowerment",
+      "Ecosystem Development"
+    ],
+    "description": "That's the Delegation profile form Cel'Eu, the Regional hub for Celo in Europe."
+  },
+  "0xb81e33b770d5B2858263484Fe27D7015e5Fd15C1": {
+    "name": "Celo Latam HUBs",
+    "address": "0xb81e33b770d5B2858263484Fe27D7015e5Fd15C1",
+    "logoUri": "/logos/delegatees/0xb81e33b770d5B2858263484Fe27D7015e5Fd15C1.jpeg",
+    "date": "2025-12-23",
+    "links": {
+      "twitter": "https://x.com/CeloLatamHUBs"
+    },
+    "interests": [
+      "Community",
+      "Governance",
+      "Stablecoins",
+      "Latam"
+    ],
+    "description": "The LATAM Hubs are a coordinated network of Local Regional HUBs working to grow the Celo ecosystem across Latin America. Through community building, developer onboarding, education, and real world use cases, the hubs support builders and local communities in shipping applications, generating on-chain activity, and expanding Celo adoption in the region. Operating across multiple countries and in close collaboration, the LATAM Hubs focus on measurable impact, transparency, and long term ecosystem development aligned with Celo's global goals."
   }
 }
