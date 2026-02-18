@@ -116,6 +116,8 @@ export function StakeStCeloForm({
             isLoading={isLoading}
             loadingText={ActionToVerb[values.action]}
             tipText={ActionToTipText[values.action]}
+            disabled={!(values.amount > 0)}
+            title={values.amount > 0 ? undefined : "Enter an amount"}
           >
             {`${toTitleCase(values.action)}`}
           </MultiTxFormSubmitButton>
