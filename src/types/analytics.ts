@@ -1,5 +1,12 @@
 // Type-safe analytics event system
 
+import { BRIDGES } from 'src/config/bridges';
+import { DelegateActionType } from 'src/features/delegation/types';
+import { VoteType } from 'src/features/governance/types';
+import { LockActionType } from 'src/features/locking/types';
+import { StakeActionType } from 'src/features/staking/types';
+import { z } from 'zod';
+
 export interface BridgeClickedProperties {
   bridgeId: string;
 }
@@ -289,4 +296,199 @@ export function isValidAnalyticsEvent<T extends AnalyticsEventName>(
   }
 
   return false;
+}
+
+// Extract valid bridge IDs from config
+const VALID_BRIDGE_IDS = BRIDGES.map((bridge) => bridge.id);
+
+// Zod schemas for server-side validation with precise constraints from codebase
+export const BridgeClickedPropertiesSchema = z
+  .object({
+    bridgeId: z.enum(VALID_BRIDGE_IDS as [string, ...string[]]),
+  })
+  .strict();
+
+export const WalletConnectedPropertiesSchema = z
+  .object({
+    walletType: z.string().min(1).max(50).optional(),
+  })
+  .strict();
+
+export const WalletDisconnectedPropertiesSchema = z.object({}).strict();
+
+export const StakeCompletedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(StakeActionType),
+    amount: z.number().min(0).finite(),
+    group: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
+      .optional(),
+  })
+  .strict();
+
+export const LockCompletedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(LockActionType),
+    amount: z.number().min(0).finite(),
+  })
+  .strict();
+
+export const VoteCompletedPropertiesSchema = z
+  .object({
+    voteType: z.nativeEnum(VoteType),
+    proposalId: z.number().int().min(1),
+  })
+  .strict();
+
+export const UpvoteCompletedPropertiesSchema = z
+  .object({
+    proposalId: z.number().int().min(0),
+  })
+  .strict();
+
+export const DelegateCompletedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(DelegateActionType),
+    percent: z.number().min(0).max(100).finite(),
+  })
+  .strict();
+
+export const AccountCreatedPropertiesSchema = z.object({}).strict();
+
+export const NavClickedPropertiesSchema = z
+  .object({
+    item: z.string().min(1).max(100),
+  })
+  .strict();
+
+export const ModeToggledPropertiesSchema = z
+  .object({
+    mode: z.enum(['CELO', 'stCELO']),
+  })
+  .strict();
+
+export const ProposalViewedPropertiesSchema = z
+  .object({
+    proposalId: z.string().min(1).max(100),
+    stage: z.string().min(1).max(50).optional(),
+  })
+  .strict();
+
+export const ProposalFilterChangedPropertiesSchema = z
+  .object({
+    filter: z.string().min(1).max(100),
+  })
+  .strict();
+
+export const VoteButtonClickedPropertiesSchema = z
+  .object({
+    proposalId: z.number().int().min(0),
+    voteType: z.nativeEnum(VoteType),
+  })
+  .strict();
+
+export const UpvoteButtonClickedPropertiesSchema = z
+  .object({
+    proposalId: z.number().int().min(0),
+  })
+  .strict();
+
+export const ValidatorGroupViewedPropertiesSchema = z
+  .object({
+    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+    groupName: z.string().min(1).max(200).optional(),
+  })
+  .strict();
+
+export const ValidatorFilterChangedPropertiesSchema = z
+  .object({
+    filter: z.string().min(1).max(100),
+  })
+  .strict();
+
+export const StakeButtonClickedPropertiesSchema = z
+  .object({
+    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+  })
+  .strict();
+
+export const StakeMenuClickedPropertiesSchema = z
+  .object({
+    action: z.nativeEnum(StakeActionType),
+    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+  })
+  .strict();
+
+export const DelegateeViewedPropertiesSchema = z
+  .object({
+    delegateeAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+    delegateeName: z.string().min(1).max(200).optional(),
+  })
+  .strict();
+
+export const DelegateButtonClickedPropertiesSchema = z
+  .object({
+    delegateeAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
+      .optional(),
+  })
+  .strict();
+
+export const RegisterDelegateeClickedPropertiesSchema = z.object({}).strict();
+
+export const ExternalLinkClickedPropertiesSchema = z
+  .object({
+    url: z.string().url().max(2000),
+    context: z.enum(['proposal', 'cgp']).optional(),
+  })
+  .strict();
+
+// Map of event names to their Zod schemas
+export const AnalyticsEventSchemaMap = {
+  bridge_clicked: BridgeClickedPropertiesSchema,
+  wallet_connected: WalletConnectedPropertiesSchema,
+  wallet_disconnected: WalletDisconnectedPropertiesSchema,
+  stake_completed: StakeCompletedPropertiesSchema,
+  lock_completed: LockCompletedPropertiesSchema,
+  vote_completed: VoteCompletedPropertiesSchema,
+  upvote_completed: UpvoteCompletedPropertiesSchema,
+  delegate_completed: DelegateCompletedPropertiesSchema,
+  account_created: AccountCreatedPropertiesSchema,
+  nav_clicked: NavClickedPropertiesSchema,
+  mode_toggled: ModeToggledPropertiesSchema,
+  proposal_viewed: ProposalViewedPropertiesSchema,
+  proposal_filter_changed: ProposalFilterChangedPropertiesSchema,
+  vote_button_clicked: VoteButtonClickedPropertiesSchema,
+  upvote_button_clicked: UpvoteButtonClickedPropertiesSchema,
+  validator_group_viewed: ValidatorGroupViewedPropertiesSchema,
+  validator_filter_changed: ValidatorFilterChangedPropertiesSchema,
+  stake_button_clicked: StakeButtonClickedPropertiesSchema,
+  stake_menu_clicked: StakeMenuClickedPropertiesSchema,
+  delegatee_viewed: DelegateeViewedPropertiesSchema,
+  delegate_button_clicked: DelegateButtonClickedPropertiesSchema,
+  register_delegatee_clicked: RegisterDelegateeClickedPropertiesSchema,
+  external_link_clicked: ExternalLinkClickedPropertiesSchema,
+} as const;
+
+// Server-side validation function using Zod
+export function validateAnalyticsEvent(
+  eventName: AnalyticsEventName,
+  properties: unknown,
+): { success: boolean; error?: string } {
+  const schema = AnalyticsEventSchemaMap[eventName];
+  if (!schema) {
+    return { success: false, error: `Unknown event type: ${eventName}` };
+  }
+
+  const result = schema.safeParse(properties);
+  if (!result.success) {
+    return {
+      success: false,
+      error: `Invalid properties for event ${eventName}: ${result.error.message}`,
+    };
+  }
+
+  return { success: true };
 }

@@ -35,7 +35,7 @@ describe('trackAnalyticsEvent', () => {
 
     const result = await trackAnalyticsEvent({
       eventName: 'bridge_clicked',
-      properties: { bridgeId: 'mock-bridge' },
+      properties: { bridgeId: 'superbridge' },
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
     });
 
@@ -46,7 +46,7 @@ describe('trackAnalyticsEvent', () => {
     expect(mockDatabase.insert).toHaveBeenCalled();
     expect(mockValues).toHaveBeenCalledWith({
       eventName: 'bridge_clicked',
-      properties: { bridgeId: 'mock-bridge' },
+      properties: { bridgeId: 'superbridge' },
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
     });
   });
@@ -54,7 +54,7 @@ describe('trackAnalyticsEvent', () => {
   test('should return error for missing required fields', async () => {
     const result = await trackAnalyticsEvent({
       eventName: '',
-      properties: { bridgeId: 'mock-bridge' },
+      properties: { bridgeId: 'superbridge' },
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
     });
 
@@ -69,7 +69,7 @@ describe('trackAnalyticsEvent', () => {
   test('should return error for invalid sessionId format', async () => {
     const result = await trackAnalyticsEvent({
       eventName: 'bridge_clicked',
-      properties: { bridgeId: 'mock-bridge' },
+      properties: { bridgeId: 'superbridge' },
       sessionId: 'invalid-uuid',
     });
 
@@ -105,7 +105,7 @@ describe('trackAnalyticsEvent', () => {
 
     const result = await trackAnalyticsEvent({
       eventName: 'bridge_clicked',
-      properties: { bridgeId: 'mock-bridge' },
+      properties: { bridgeId: 'superbridge' },
       sessionId: '550e8400-e29b-41d4-a716-446655440000',
     });
 
