@@ -32,7 +32,14 @@ export default function Page() {
           };
         });
 
-        const sorted = bridgesWithCounts.sort((a, b) => b.clickCount - a.clickCount);
+        const sorted = bridgesWithCounts.sort((a, b) => {
+          // First sort by click count (descending)
+          if (b.clickCount !== a.clickCount) {
+            return b.clickCount - a.clickCount;
+          }
+          // Then sort by name (ascending)
+          return a.name.localeCompare(b.name);
+        });
         setSortedBridges(sorted);
       } catch (error) {
         setSortedBridges(BRIDGES.map((bridge) => ({ ...bridge, clickCount: 0 })));
