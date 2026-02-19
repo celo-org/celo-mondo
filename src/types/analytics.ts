@@ -337,7 +337,7 @@ export const LockCompletedPropertiesSchema = z
 export const VoteCompletedPropertiesSchema = z
   .object({
     voteType: z.nativeEnum(VoteType),
-    proposalId: z.number().int().min(0),
+    proposalId: z.number().int().min(1),
   })
   .strict();
 
