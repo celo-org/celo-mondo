@@ -107,9 +107,15 @@ export async function POST(request: NextRequest): Promise<Response> {
           multisigTxIdsToProcess.add(BigInt(txIdInput.value));
         }
       } else {
-        // Process Governance events
-        // NOTE: in theory we _could_ just insert the `event.rawFields` directly in the db...
-        await fetchHistoricalEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
+        // Process Governance events - capture backfill proposalIds to ensure we update
+        // proposals that the backfill discovered (not just the webhook event itself).
+        const backfillProposalIds = await fetchHistoricalEventsAndSaveToDBProgressively(
+          event.name!,
+          celoPublicClient,
+        );
+        for (const id of backfillProposalIds) {
+          proposalIdsToUpdate.add(id);
+        }
 
         const eventData: Event = JSON.parse(event.rawFields);
 

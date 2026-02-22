@@ -332,6 +332,45 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [278n], 'update');
     });
 
+    it('includes proposalIds from governance backfill in updateProposalsInDB call', async () => {
+      // Backfill discovers proposals 275 and 276 that were missed
+      mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n, 276n]);
+      // The webhook event itself is for proposal 278
+      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
+
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+      });
+
+      const request = createSignedRequest([event]);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      const passedProposalIds = mockUpdateProposalsInDB.mock.calls[0][1] as bigint[];
+      expect(passedProposalIds).toEqual(expect.arrayContaining([275n, 276n, 278n]));
+      expect(passedProposalIds).toHaveLength(3);
+    });
+
+    it('updates proposals from backfill even when webhook event decoding returns null', async () => {
+      // Backfill discovers proposal 275
+      mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n]);
+      // The webhook event itself fails to decode (not a proposal event)
+      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(null);
+      mockDecodeAndPrepareVoteEvent.mockResolvedValueOnce([]);
+
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+      });
+
+      const request = createSignedRequest([event]);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [275n], 'update');
+    });
+
     it('handles mixed governance and multisig events in a single webhook', async () => {
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
       mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
