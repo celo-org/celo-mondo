@@ -77,14 +77,34 @@ export async function POST(request: NextRequest): Promise<Response> {
         ['Confirmation', 'Revocation', 'Execution'].includes(event.name!);
 
       if (isMultiSigEvent) {
-        // Process MultiSig events
-        await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(event.name!, celoPublicClient);
+        // Process MultiSig events - use backfill result to capture ALL new transactionIds,
+        // not just the one from the webhook event. This prevents missed approvals when the
+        // backfill advances progress past events that the webhook didn't specifically trigger for.
+        const backfillResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
+          event.name!,
+          celoPublicClient,
+        );
 
-        const eventData: MultisigEvent = JSON.parse(event.rawFields);
-        const transactionId = (eventData.args as any)?.transactionId;
+        for (const txId of backfillResult.transactionIds) {
+          multisigTxIdsToProcess.add(txId);
+        }
 
-        if (transactionId !== undefined) {
-          multisigTxIdsToProcess.add(BigInt(transactionId));
+        // Also extract transactionId from the webhook event itself as a fallback
+        try {
+          const eventData: MultisigEvent = JSON.parse(event.rawFields);
+          const transactionId = (eventData.args as any)?.transactionId;
+
+          if (transactionId !== undefined) {
+            multisigTxIdsToProcess.add(BigInt(transactionId));
+          }
+        } catch {
+          // rawFields parsing failed - rely on backfill result transactionIds
+        }
+
+        // Also try extracting from MultiBaas inputs array
+        const txIdInput = event.inputs.find((i) => i.name === 'transactionId');
+        if (txIdInput) {
+          multisigTxIdsToProcess.add(BigInt(txIdInput.value));
         }
       } else {
         // Process Governance events
