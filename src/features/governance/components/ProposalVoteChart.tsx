@@ -109,9 +109,13 @@ function ViewVotes({
           <div key={v} className="relative text-xs">
             <StackedBarChart data={[voteBarChartData[v]]} showBorder={false} height="h-7" />
             <span className="absolute left-2 top-1/2 -translate-y-1/2">{toTitleCase(v)}</span>
-            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-              <span className="text-gray-500">{formatNumberString(voteBarChartData[v].value)}</span>
-              <span>{voteBarChartData[v].percentage?.toFixed(0) + '%'}</span>
+            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-baseline gap-1.5">
+              <span className="text-sm font-medium">
+                {formatNumberString(voteBarChartData[v].value)}
+              </span>
+              <span className="text-taupe-500 w-[4ch] text-right text-[10px]">
+                {voteBarChartData[v].percentage?.toFixed(0)}%
+              </span>
             </div>
           </div>
         ))}
@@ -121,7 +125,7 @@ function ViewVotes({
 }
 
 const THRESHOLD_HELP_TEXT =
-  'The constitution defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
+  'The constitution threshold defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
 
 export function ProposalVoteRequirements({ propData }: { propData: MergedProposalData }) {
   const isPast = propData.stage > ProposalStage.Referendum;
