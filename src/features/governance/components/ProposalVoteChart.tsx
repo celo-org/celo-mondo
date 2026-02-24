@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
@@ -109,9 +109,13 @@ function ViewVotes({
           <div key={v} className="relative text-xs">
             <StackedBarChart data={[voteBarChartData[v]]} showBorder={false} height="h-7" />
             <span className="absolute left-2 top-1/2 -translate-y-1/2">{toTitleCase(v)}</span>
-            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-              <span className="text-gray-500">{formatNumberString(voteBarChartData[v].value)}</span>
-              <span>{voteBarChartData[v].percentage?.toFixed(0) + '%'}</span>
+            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-baseline gap-1.5">
+              <span className="text-sm font-medium">
+                {formatNumberString(voteBarChartData[v].value)}
+              </span>
+              <span className="text-taupe-500 w-[4ch] text-right text-[10px]">
+                {voteBarChartData[v].percentage?.toFixed(0)}%
+              </span>
             </div>
           </div>
         ))}
@@ -120,19 +124,34 @@ function ViewVotes({
   );
 }
 
-export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
+const THRESHOLD_HELP_TEXT =
+  'The constitution threshold defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
+
+export function ProposalVoteRequirements({ propData }: { propData: MergedProposalData }) {
+  const isPast = propData.stage > ProposalStage.Referendum;
+
+  return (
+    <div className="space-y-3 border-t border-taupe-300 pt-2">
+      <h2 className="font-serif text-2xl">Vote Requirements</h2>
+      <QuorumBar propData={propData} isPast={isPast} />
+      <ThresholdBar propData={propData} isPast={isPast} />
+    </div>
+  );
+}
+
+function QuorumBar({ propData, isPast }: { propData: MergedProposalData; isPast: boolean }) {
   const { votes } = useProposalVoteTotals(propData);
   const { isLoading, quorumMet, quorumVotesRequired } = useIsProposalPassingQuorum(propData);
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
 
-  const quorumBarChartData = useMemo(
+  const barData = useMemo(
     () => [
       {
         label: 'Yes Votes',
         value: fromWei(yesVotes),
-        percentage: isLoading ? 0 : percent(yesVotes, quorumVotesRequired || 0n),
+        percentage: isLoading ? 0 : percent(yesVotes, quorumVotesRequired || 1n),
         color: quorumMet ? Color.Mint : Color.Lilac,
       },
       {
@@ -145,46 +164,23 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
     [yesVotes, isLoading, quorumVotesRequired, quorumMet, abstainVotes],
   );
 
-  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
-
   return (
-    <div className="space-y-2 border-t border-taupe-300 pt-2">
-      <h2 className="font-serif text-2xl">
-        Quorum
-        <em>
-          {isLoading
-            ? ''
-            : quorumMet
-              ? ` — Pass${tense(isPastVotingStage)}`
-              : ` — Fail${tense(isPastVotingStage)}`}
-        </em>
-      </h2>
-      {isLoading}
-      <span className="py-2 text-sm  text-taupe-600">
-        {isLoading ? (
-          '...loading...'
-        ) : (
-          <>
-            {formatNumberString(quorumMeetingVotes, 0, true)} Votes <em>of</em>&nbsp;&nbsp;
-            {formatNumberString(quorumVotesRequired, 0, true)}&nbsp; Required
-          </>
-        )}
+    <div className="space-y-1">
+      <div className="flex items-baseline justify-between">
+        <span className="text-sm font-medium">Quorum</span>
+        {!isLoading && <PassFailLabel passing={quorumMet} isPast={isPast} />}
+      </div>
+      <span className="text-xs text-taupe-600">
+        {isLoading
+          ? '...loading...'
+          : `${formatNumberString(quorumMeetingVotes, 0, true)} Votes of ${formatNumberString(quorumVotesRequired, 0, true)} Required`}
       </span>
-      <StackedBarChart
-        data={quorumBarChartData}
-        showBorder={true}
-        height="h-6"
-        className="bg-white"
-      />
+      <StackedBarChart data={barData} showBorder={true} height="h-5" className="bg-white" />
     </div>
   );
 }
 
-const CONSTITUTION_HELP_TEXT =
-  'The constitution defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. For example, if a proposal requires 60% and has 80 Yes and 20 No votes, it passes with 80%. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
-
-export function ProposalConstitutionChart({ propData }: { propData: MergedProposalData }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+function ThresholdBar({ propData, isPast }: { propData: MergedProposalData; isPast: boolean }) {
   const { votes } = useProposalVoteTotals(propData);
   const { data: thresholds } = useConstitutionThreshold(propData.proposal?.id);
   const thresholdInfo = thresholds ? getMaxThresholdInfo(thresholds) : null;
@@ -195,62 +191,43 @@ export function ProposalConstitutionChart({ propData }: { propData: MergedPropos
   const yesPct = totalYesNo > 0n ? percent(yesVotes, totalYesNo) : 0;
   const thresholdPct = thresholdInfo ? thresholdInfo.maxThreshold * 100 : 50;
   const isPassing = yesPct >= thresholdPct;
-  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
 
-  const barChartData = useMemo(
+  const barData = useMemo(
     () => [
       {
         label: 'Yes',
         value: yesPct,
-        percentage: thresholdPct > 0 ? (yesPct / thresholdPct) * 100 : 0,
+        percentage: thresholdPct > 0 ? Math.min((yesPct / thresholdPct) * 100, 100) : 0,
         color: isPassing ? Color.Mint : Color.Lilac,
       },
     ],
     [yesPct, thresholdPct, isPassing],
   );
 
-  if (!thresholdInfo) return null;
-
   return (
-    <div className="border-t border-taupe-300 pt-2">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex w-full items-center justify-between"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-taupe-600">
-            Constitution{' '}
-            <em>
-              {isPassing
-                ? `— Pass${tense(isPastVotingStage)}`
-                : `— Fail${tense(isPastVotingStage)}`}
-            </em>
-          </span>
-          <span
-            className="inline-block h-2.5 w-2.5 rounded-full"
-            style={{ backgroundColor: isPassing ? Color.Mint : Color.Red }}
-          />
+    <div className="space-y-1">
+      <div className="flex items-baseline justify-between">
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">Threshold</span>
+          <HelpIcon text={THRESHOLD_HELP_TEXT} size={14} type="tooltip" />
         </div>
-        <span className="text-xs text-taupe-600">{isExpanded ? '-' : '+'}</span>
-      </button>
-      {isExpanded && (
-        <div className="mt-2 space-y-2">
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-taupe-600">
-              {yesPct.toFixed(0)}% Yes <em>of</em>&nbsp;&nbsp;{thresholdInfo.percentage}&nbsp;
-              Required
-            </span>
-            <HelpIcon text={CONSTITUTION_HELP_TEXT} size={14} />
-          </div>
-          <StackedBarChart
-            data={barChartData}
-            showBorder={true}
-            height="h-6"
-            className="bg-white"
-          />
-        </div>
-      )}
+        {thresholdInfo && <PassFailLabel passing={isPassing} isPast={isPast} />}
+      </div>
+      <span className="text-xs text-taupe-600">
+        {!thresholdInfo
+          ? '...loading...'
+          : `${yesPct.toFixed(1)}% Yes of ${thresholdInfo.percentage} Required`}
+      </span>
+      <StackedBarChart data={barData} showBorder={true} height="h-5" className="bg-white" />
     </div>
+  );
+}
+
+function PassFailLabel({ passing, isPast }: { passing: boolean; isPast: boolean }) {
+  return (
+    <em className={passing ? 'text-sm text-green-700' : 'text-sm text-red-500'}>
+      {passing ? `Pass${tense(isPast)}` : `Fail${tense(isPast)}`}
+    </em>
   );
 }
 

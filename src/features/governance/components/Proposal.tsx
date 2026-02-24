@@ -16,19 +16,17 @@ import {
 } from 'src/features/governance/components/ProposalVoteButtons';
 import {
   PastProposalVoteChart,
-  ProposalConstitutionChart,
-  ProposalQuorumChart,
   ProposalVoteChart,
+  ProposalVoteRequirements,
 } from 'src/features/governance/components/ProposalVoteChart';
 import { ProposalVotersTable } from 'src/features/governance/components/ProposalVotersTable';
 import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
-import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
-import { getHumanEndTime } from 'src/utils/time';
+import { ProposalTimeline } from './ProposalTimeline';
 import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
@@ -97,16 +95,7 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 }
 
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const {
-    id: proposalId,
-    stage,
-    history,
-    queuedAt,
-    dequeuedAt,
-    executedAt,
-    transactionCount,
-  } = propData;
-  const { quorumMet } = useIsProposalPassingQuorum(propData);
+  const { id: proposalId, stage, history, transactionCount } = propData;
 
   if (stage === ProposalStage.None) return null;
 
@@ -116,19 +105,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
-        {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
-        {stage >= ProposalStage.Approval && <ProposalConstitutionChart propData={propData} />}
-        <div className="max-w-[340px] space-y-2">
-          <div className="text-sm text-taupe-600">
-            {getHumanEndTime({
-              stage,
-              queuedAt,
-              dequeuedAt,
-              executedAt,
-              quorumMet,
-            })}
-          </div>
-        </div>
+        {stage >= ProposalStage.Approval && <ProposalVoteRequirements propData={propData} />}
+        <ProposalTimeline propData={propData} />
       </div>
       {stage === ProposalStage.Queued && (
         <div className="border-taupe-300 p-3 lg:block lg:border">

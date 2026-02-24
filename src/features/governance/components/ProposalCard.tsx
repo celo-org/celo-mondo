@@ -12,12 +12,12 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
-import { VoteToColor, VoteType } from 'src/features/governance/types';
+import { ProposalStage, VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
-import { getHumanEndTime } from 'src/utils/time';
+import { getHumanEndTime, getUTCDateString } from 'src/utils/time';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
@@ -45,7 +45,7 @@ export function ProposalCard({
   }, [trackEvent, id, cgp, metadata.cgp, stage]);
 
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp || metadata.cgp}`;
-  const endTimeValue = getHumanEndTime({
+  const endTimeResult = getHumanEndTime({
     quorumMet,
     executedAt,
     dequeuedAt,
@@ -87,10 +87,10 @@ export function ProposalCard({
           </div>
         </div>
       )}
-      {!isCompact && endTimeValue && (
-        <div className="flex items-center space-x-2">
+      {!isCompact && endTimeResult && (
+        <div className="tooltip flex items-center space-x-2" data-tip={endTimeResult.utc}>
           <Image src={ClockIcon} alt="" width={16} height={16} />
-          <div className="text-sm font-medium">{`${endTimeValue}`}</div>
+          <div className="text-sm font-medium">{endTimeResult.text}</div>
         </div>
       )}
     </Link>
@@ -111,8 +111,12 @@ export function ProposalBadgeRow({
   const { proposer } = proposal || {};
   const { cgp } = metadata || {};
 
-  const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
-  const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
+  const queuedMs = queuedAt ? new Date(queuedAt).getTime() : undefined;
+  const executedMs = executedAt ? new Date(executedAt).getTime() : undefined;
+  const proposedTimeValue = queuedMs ? new Date(queuedMs).toLocaleDateString() : undefined;
+  const proposedUtc = queuedMs ? getUTCDateString(queuedMs) : undefined;
+  const executedTimeValue = executedMs ? new Date(executedMs).toLocaleDateString() : undefined;
+  const executedUtc = executedMs ? getUTCDateString(executedMs) : undefined;
 
   return (
     <div className="flex items-center space-x-2">
@@ -120,7 +124,10 @@ export function ProposalBadgeRow({
       <IdBadge id={id} />
       <StageBadge stage={stage} />
       {proposedTimeValue && (
-        <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
+        <div
+          className="tooltip text-sm text-taupe-600"
+          data-tip={proposedUtc}
+        >{`Proposed ${proposedTimeValue}`}</div>
       )}
       {showProposer && proposer && (
         <>
@@ -132,14 +139,21 @@ export function ProposalBadgeRow({
         </>
       )}
       {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
-      {showExecutedTime && !executedTimeValue && id && (
-        <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
-      )}
+      {showExecutedTime &&
+        !executedTimeValue &&
+        id &&
+        stage !== ProposalStage.Expiration &&
+        stage !== ProposalStage.Rejected && (
+          <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
+        )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
       {showExecutedTime && executedTimeValue && !proposer && (
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
-          <div className="hidden text-sm text-taupe-600 sm:block">{`Executed ${executedTimeValue}`}</div>
+          <div
+            className="tooltip hidden text-sm text-taupe-600 sm:block"
+            data-tip={executedUtc}
+          >{`Executed ${executedTimeValue}`}</div>
         </>
       )}
     </div>

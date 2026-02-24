@@ -2,7 +2,11 @@
 
 import database from 'src/config/database';
 import { analyticsEventsTable } from 'src/db/schema';
-import { AnalyticsEventName, isValidAnalyticsEvent } from 'src/types/analytics';
+import {
+  AnalyticsEventName,
+  isValidAnalyticsEvent,
+  validateAnalyticsEvent,
+} from 'src/types/analytics';
 import { validate as uuidValidate } from 'uuid';
 
 interface TrackAnalyticsEventParams {
@@ -39,11 +43,20 @@ export async function trackAnalyticsEvent(
       };
     }
 
-    // Validate event name and properties type safety
+    // Validate event name and properties type safety (legacy check)
     if (!isValidAnalyticsEvent(eventName as AnalyticsEventName, properties)) {
       return {
         success: false,
         error: `Invalid event properties for event type: ${eventName}`,
+      };
+    }
+
+    // Additional server-side validation using Zod schemas
+    const validation = validateAnalyticsEvent(eventName as AnalyticsEventName, properties);
+    if (!validation.success) {
+      return {
+        success: false,
+        error: validation.error,
       };
     }
 
