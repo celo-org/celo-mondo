@@ -36,11 +36,15 @@ interface TimelineContext {
   pastReferendum: boolean;
   approvalImplied: boolean;
   approvalMissed: boolean;
+  quorumNotMet: boolean;
   skipPostVoting: boolean;
   skipExecution: boolean;
 }
 
-function computeTimelineContext(propData: MergedProposalData): TimelineContext | null {
+function computeTimelineContext(
+  propData: MergedProposalData,
+  quorumMet: boolean | null,
+): TimelineContext | null {
   const { stage, queuedAt, dequeuedAt, approvedAt, executedAt, transactionCount } = propData;
 
   const queuedMs = queuedAt ? new Date(queuedAt).getTime() : undefined;
@@ -80,8 +84,9 @@ function computeTimelineContext(propData: MergedProposalData): TimelineContext |
     stage === ProposalStage.Expiration &&
     transactionCount != null &&
     transactionCount > 0;
+  const quorumNotMet = stage === ProposalStage.Expiration && quorumMet === false;
   const skipPostVoting = isRejected || isWithdrawn;
-  const skipExecution = skipPostVoting || approvalMissed || isAdopted;
+  const skipExecution = skipPostVoting || approvalMissed || isAdopted || quorumNotMet;
 
   return {
     stage,
@@ -95,6 +100,7 @@ function computeTimelineContext(propData: MergedProposalData): TimelineContext |
     pastReferendum,
     approvalImplied,
     approvalMissed,
+    quorumNotMet,
     skipPostVoting,
     skipExecution,
   };
@@ -207,6 +213,14 @@ function insertApprovalEvent(phases: TimelineStep[], ctx: TimelineContext): void
       status: 'failed',
       isEvent: true,
     });
+  } else if (ctx.quorumNotMet) {
+    // Quorum not met — insert after Voting
+    const votingIdx = phases.findIndex((p) => p.label === 'Voting');
+    phases.splice(votingIdx + 1, 0, {
+      label: 'Quorum Not Met',
+      status: 'failed',
+      isEvent: true,
+    });
   } else if (ctx.stage === ProposalStage.Execution || ctx.stage === ProposalStage.Approval) {
     // In execution phase but not yet approved — show after Execution
     const execIdx = phases.findIndex((p) => p.label === 'Execution');
@@ -234,7 +248,7 @@ export function buildTimelineSteps(
   propData: MergedProposalData,
   quorumMet: boolean | null,
 ): TimelineStep[] {
-  const ctx = computeTimelineContext(propData);
+  const ctx = computeTimelineContext(propData, quorumMet);
   if (!ctx) return [];
 
   const phases = buildLifecyclePhases(ctx);

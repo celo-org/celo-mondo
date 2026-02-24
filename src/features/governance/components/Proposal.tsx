@@ -16,9 +16,8 @@ import {
 } from 'src/features/governance/components/ProposalVoteButtons';
 import {
   PastProposalVoteChart,
-  ProposalConstitutionChart,
-  ProposalQuorumChart,
   ProposalVoteChart,
+  ProposalVoteRequirements,
 } from 'src/features/governance/components/ProposalVoteChart';
 import { ProposalVotersTable } from 'src/features/governance/components/ProposalVotersTable';
 import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
@@ -106,8 +105,7 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
-        {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
-        {stage >= ProposalStage.Approval && <ProposalConstitutionChart propData={propData} />}
+        {stage >= ProposalStage.Approval && <ProposalVoteRequirements propData={propData} />}
         <ProposalTimeline propData={propData} />
       </div>
       {stage === ProposalStage.Queued && (
