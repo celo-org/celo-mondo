@@ -40,7 +40,9 @@ export function ApprovalBadge({
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
         <span>{transactionCount === 0 ? 'ℹ️' : '⏳'}</span>
-        {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Pending'}
+        <span>
+          {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Pending'}
+        </span>
       </div>
     );
   } else if (stage === ProposalStage.Expiration) {
