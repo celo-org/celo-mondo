@@ -12,6 +12,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
@@ -150,3 +151,23 @@ export const approvalsTable = pgTable(
   ],
 );
 export type Approval = typeof approvalsTable.$inferSelect;
+
+export const analyticsEventsTable = pgTable(
+  'analyticsEvents',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    createdAt: timestamp({ mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    eventName: text().notNull(),
+    properties: jsonb().notNull().default('{}'),
+    sessionId: uuid(),
+  },
+  (table) => [
+    index('idx_analytics_events_name_properties').using('gin', table.properties),
+    index('idx_analytics_events_name').on(table.eventName),
+    index('idx_analytics_events_created_at').on(table.createdAt.desc()),
+  ],
+);
+
+export type AnalyticsEvent = typeof analyticsEventsTable.$inferSelect;

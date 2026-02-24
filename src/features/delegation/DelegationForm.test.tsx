@@ -6,6 +6,7 @@ import * as useDelegationBalances from 'src/features/delegation/hooks/useDelegat
 import * as useWriteContractWithReceipt from 'src/features/transactions/useWriteContractWithReceipt';
 import { TEST_ADDRESSES } from 'src/test/anvil/constants';
 import * as useAddressToLabelModule from 'src/utils/useAddressToLabel';
+import * as useTrackEventModule from 'src/utils/useTrackEvent';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as wagmi from 'wagmi';
 
@@ -27,6 +28,7 @@ describe('<DelegationForm />', () => {
       fallback: '0x123...456',
       isCeloName: false,
     }));
+    vi.spyOn(useTrackEventModule, 'useTrackEvent').mockReturnValue(vi.fn());
   });
 
   afterEach(() => {

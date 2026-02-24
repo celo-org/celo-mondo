@@ -6,65 +6,16 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
-import JumperLogo from 'src/images/logos/jumper-bridge.png';
-import PortalLogo from 'src/images/logos/portal-bridge.jpg';
-import SquidLogo from 'src/images/logos/squid-router.jpg';
-import USDT0Logo from 'src/images/logos/usdt0.webp';
-
-interface Bridge {
-  name: string;
-  operator: string;
-  href: string;
-  logo: any;
-  description: string;
-}
-
-const BRIDGES: Bridge[] = [
-  {
-    name: 'Superbridge',
-    operator: 'Superbridge',
-    href: 'https://superbridge.app/?fromChainId=1&toChainId=42220',
-    logo: '/logos/superbridge.jpg',
-    description: 'Native Celo L2 bridge. Good for moving CELO and ETH between Ethereum and Celo.',
-  },
-  {
-    name: 'Squid Router',
-    operator: 'Squid',
-    href: 'https://app.squidrouter.com/?chains=1%2C42220&tokens=0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE%2C0xd221812de1bd094f35587ee8e174b07b6167d9af',
-    logo: SquidLogo,
-    description:
-      'Axelar based cross chain DEX. Good for moving stablecoins between chains, or swapping directly between assets.',
-  },
-  {
-    name: 'Jumper',
-    operator: 'Jumper',
-    href: 'https://jumper.exchange/?fromChain=1&fromToken=0x0000000000000000000000000000000000000000&toChain=42220&toToken=0x471EcE3750Da237f93B8E339c536989b8978a438',
-    logo: JumperLogo,
-    description:
-      'Cross-chain aggregator that compares routes across multiple bridges and DEXs to find optimal paths for swapping and bridging assets.',
-  },
-  {
-    name: 'Portal Bridge',
-    operator: 'Wormhole',
-    href: 'https://portalbridge.com/?fromChain=Ethereum&toChain=Celo&fromToken=ETH&toToken=0x66803FB87aBd4aaC3cbB3fAd7C3aa01f6F3FB207',
-    logo: PortalLogo,
-    description: 'Wormhole based bridge. Good for wormhole assets on Celo.',
-  },
-  {
-    name: 'USDT0',
-    operator: 'USDT0',
-    href: 'https://usdt0.to/transfer?source=ethereum&destination=celo&token=usdt0',
-    logo: USDT0Logo,
-    description: '1:1 transfers of native USDT powered by the Layer Zero OFT. Best for moving USDT',
-  },
-];
+import { BRIDGES } from 'src/config/bridges';
+import { Bridge } from 'src/types/bridge';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export default function Page() {
   return (
     <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
       <H1>Bridge to Celo</H1>
       {BRIDGES.map((bridge) => (
-        <BridgeLink key={bridge.name} {...bridge} />
+        <BridgeLink key={bridge.id} {...bridge} />
       ))}
       <p className="text-center text-sm text-taupe-600">
         These bridges are independent, third-party service providers.
@@ -75,7 +26,13 @@ export default function Page() {
   );
 }
 
-function BridgeLink({ name, operator, href, logo, description }: Bridge) {
+function BridgeLink({ id, name, operator, href, logo, description }: Bridge) {
+  const trackEvent = useTrackEvent();
+
+  const handleBridgeClick = () => {
+    trackEvent('bridge_clicked', { bridgeId: id });
+  };
+
   return (
     <div className="flex max-w-xl items-center justify-between self-center border border-taupe-300 bg-white p-4 sm:p-5">
       <div className="flex items-center space-x-4">
@@ -87,7 +44,12 @@ function BridgeLink({ name, operator, href, logo, description }: Bridge) {
         </div>
       </div>
       <SolidButton className="bg-primary text-primary-content all:p-0">
-        <A_Blank className="flex items-center space-x-2 px-5 py-3.5" href={href}>
+        <A_Blank
+          className="flex items-center space-x-2 px-5 py-3.5"
+          href={href}
+          onClick={handleBridgeClick}
+          data-testid={id}
+        >
           <span>Bridge</span>
           <ChevronIcon direction="e" width={12} height={12} />
         </A_Blank>

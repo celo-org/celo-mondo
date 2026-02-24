@@ -38,6 +38,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { toWei } from 'src/utils/amount';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { TransactionReceipt } from 'viem';
 import { useAccount } from 'wagmi';
 
@@ -61,6 +62,7 @@ export function StakeForm({
   const { lockedBalances } = useLockedStatus(signingFor);
   const { stakeBalances, groupToStake, refetch } = useStakingBalances(signingFor);
   const { delegations } = useDelegationBalances(address, signingFor);
+  const trackEvent = useTrackEvent();
 
   const onPlanSuccess = (v: StakeFormValues, r: TransactionReceipt) => {
     if (v.action === StakeActionType.Stake) {
@@ -70,6 +72,11 @@ export function StakeForm({
         transactionHash: r.transactionHash,
       });
     }
+    trackEvent('stake_completed', {
+      action: v.action,
+      amount: v.amount,
+      group: addressToGroup?.[v.group]?.name,
+    });
     onConfirmed({
       message: `${v.action} successful`,
       amount: v.amount,

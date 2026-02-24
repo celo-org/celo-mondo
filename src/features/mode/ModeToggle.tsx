@@ -1,10 +1,19 @@
 import clsx from 'clsx';
+import { useCallback } from 'react';
 import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export function ModeToggle() {
   const { mode, ui, shouldRender, toggleMode } = useStakingMode();
   const feature = useFeatureFlag();
+  const trackEvent = useTrackEvent();
+
+  const handleModeToggle = useCallback(() => {
+    const newMode = mode === 'CELO' ? 'stCELO' : 'CELO';
+    trackEvent('mode_toggled', { mode: newMode });
+    toggleMode();
+  }, [mode, toggleMode, trackEvent]);
   if (feature !== 'stcelo') {
     return null;
   }
@@ -17,7 +26,7 @@ export function ModeToggle() {
           id="modeToggle"
           className="peer sr-only"
           checked={mode === 'stCELO'}
-          onChange={toggleMode}
+          onChange={handleModeToggle}
         />
         <label
           htmlFor="modeToggle"

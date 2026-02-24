@@ -69,6 +69,19 @@ If you're not part of the cLabs Vercel team or want to modify the database local
 9. Run locally: `yarn dev`
 10. Test locally: `yarn test`
 
+### End-to-End Testing
+
+This project uses Playwright for end-to-end testing. Before running e2e tests:
+
+1. Install Playwright browsers:
+   ```bash
+   yarn playwright install
+   ```
+2. Run e2e tests:
+   ```bash
+   yarn test:e2e
+   ```
+
 ### Running Against Different Networks
 
 To run Celo Mondo against a different network, set the `NEXT_PUBLIC_RPC_URL` env variable to your desired RPC endpoint (e.g., `http://<your-rpc-url>`).

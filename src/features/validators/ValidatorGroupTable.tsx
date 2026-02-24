@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { SearchField } from 'src/components/input/SearchField';
 import { Amount } from 'src/components/numbers/Amount';
@@ -29,6 +29,7 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const NUM_COLLAPSED_GROUPS = 9;
 const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
@@ -47,6 +48,15 @@ export function ValidatorGroupTable({
   groups: ValidatorGroup[];
 }) {
   const { tab: filter, onTabChange: setFilter } = useTabs<Filter>(Filter.All);
+  const trackEvent = useTrackEvent();
+
+  const handleFilterChange = useCallback(
+    (newFilter: Filter) => {
+      trackEvent('validator_filter_changed', { filter: newFilter });
+      setFilter(newFilter);
+    },
+    [trackEvent, setFilter],
+  );
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
@@ -104,7 +114,11 @@ export function ValidatorGroupTable({
   return (
     <div>
       <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-end md:justify-between">
-        <TabHeaderFilters activeFilter={filter} setFilter={setFilter} counts={headerCounts} />
+        <TabHeaderFilters
+          activeFilter={filter}
+          setFilter={handleFilterChange}
+          counts={headerCounts}
+        />
         <SearchField
           value={searchQuery}
           setValue={setSearchQuery}
@@ -153,6 +167,12 @@ export function ValidatorGroupTable({
                   <Link
                     href={`/staking/${row.original.address}`}
                     className="flex items-center gap-4 px-4 py-4"
+                    onClick={() =>
+                      trackEvent('validator_group_viewed', {
+                        groupAddress: row.original.address,
+                        groupName: row.original.name,
+                      })
+                    }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
@@ -239,6 +259,7 @@ function TopGroupsRow({
 function useTableColumns(_totalVotes: bigint) {
   const showTxModal = useTransactionModal();
   const { mode, ui } = useStakingMode();
+  const trackEvent = useTrackEvent();
 
   return useMemo(() => {
     const columnHelper = createColumnHelper<ValidatorGroupRow>();
@@ -291,6 +312,8 @@ function useTableColumns(_totalVotes: bigint) {
           <SolidButton
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
+              trackEvent('stake_button_clicked', { groupAddress: props.row.original.address });
               showTxModal(
                 mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
                 { group: props.row.original.address },
@@ -303,7 +326,7 @@ function useTableColumns(_totalVotes: bigint) {
         ),
       }),
     ];
-  }, [ui.action, showTxModal, mode]);
+  }, [ui.action, showTxModal, mode, trackEvent]);
 }
 
 function useTableRows({
