@@ -42,7 +42,7 @@ export function ApprovalBadge({
         {isOptional ? 'Approval Optional (no transactions)' : 'Approval Pending'}
       </StatusPill>
     );
-  } else if (stage === ProposalStage.Expiration) {
+  } else if (stage === ProposalStage.Expiration || stage === ProposalStage.Rejected) {
     return <StatusPill variant="neutral">Approval Not Required</StatusPill>;
   } else {
     return null;

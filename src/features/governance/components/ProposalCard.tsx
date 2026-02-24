@@ -139,7 +139,7 @@ export function ProposalBadgeRow({
         </>
       )}
       {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
-      {showExecutedTime && !executedTimeValue && id && stage !== ProposalStage.Expiration && (
+      {showExecutedTime && !executedTimeValue && id && stage !== ProposalStage.Expiration && stage !== ProposalStage.Rejected && (
         <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
       )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
