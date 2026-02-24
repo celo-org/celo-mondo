@@ -11,7 +11,7 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
-import { VoteToColor, VoteType } from 'src/features/governance/types';
+import { ProposalStage, VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
@@ -129,7 +129,7 @@ export function ProposalBadgeRow({
         </>
       )}
       {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
-      {showExecutedTime && !executedTimeValue && id && (
+      {showExecutedTime && !executedTimeValue && id && stage !== ProposalStage.Expiration && (
         <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
       )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}

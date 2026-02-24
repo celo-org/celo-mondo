@@ -209,8 +209,8 @@ function insertApprovalEvent(phases: TimelineStep[], ctx: TimelineContext): void
     // Insert after Voting
     const votingIdx = phases.findIndex((p) => p.label === 'Voting');
     phases.splice(votingIdx + 1, 0, {
-      label: 'Approval Missed',
-      status: 'failed',
+      label: 'Approval Not Required',
+      status: 'completed',
       isEvent: true,
     });
   } else if (ctx.quorumNotMet) {

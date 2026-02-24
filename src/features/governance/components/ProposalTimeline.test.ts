@@ -271,8 +271,8 @@ describe('buildTimelineSteps', () => {
     });
   });
 
-  describe('Expired (quorum met — approval missed)', () => {
-    test('shows Approval Missed after Voting, no Execution', () => {
+  describe('Expired (quorum met — approval not required)', () => {
+    test('shows Approval Not Required after Voting, no Execution', () => {
       const data = makePropData({
         stage: ProposalStage.Expiration,
         dequeuedAt: DEQUEUED_AT,
@@ -280,8 +280,8 @@ describe('buildTimelineSteps', () => {
       });
       const steps = buildTimelineSteps(data, true);
 
-      expect(labels(steps)).toEqual(['Upvoting', 'Voting', 'Approval Missed', 'Expired']);
-      expect(statuses(steps)).toEqual(['completed', 'completed', 'failed', 'failed']);
+      expect(labels(steps)).toEqual(['Upvoting', 'Voting', 'Approval Not Required', 'Expired']);
+      expect(statuses(steps)).toEqual(['completed', 'completed', 'completed', 'failed']);
     });
 
     test('Expired timestamp is at execution end when quorum met', () => {

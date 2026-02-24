@@ -46,8 +46,8 @@ export function ApprovalBadge({
   } else if (stage === ProposalStage.Expiration) {
     return (
       <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
-        <span>❌</span>
-        <span>Approval Missed</span>
+        <span>ℹ️</span>
+        <span>Approval Not Required</span>
       </div>
     );
   } else {
