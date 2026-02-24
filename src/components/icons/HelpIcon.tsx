@@ -30,7 +30,7 @@ export function HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
         onClick={type === 'button' ? onClick : undefined}
       />
       {type === 'tooltip' && (
-        <span className="absolute left-1/2 z-50 mx-auto w-64 -translate-x-1/2 translate-y-8 rounded-[2px] bg-accent px-3 py-3 text-sm leading-relaxed text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="pointer-events-none absolute left-1/2 z-50 mx-auto w-64 -translate-x-1/2 translate-y-8 rounded-[2px] bg-accent px-3 py-3 text-sm leading-relaxed text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
           {text}
           <span className="absolute bottom-full left-[50%] ml-[-8px] border-8 border-transparent border-b-accent" />
         </span>
