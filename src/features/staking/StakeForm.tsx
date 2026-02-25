@@ -6,6 +6,7 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { AmountField, ZeroMaxValueReason } from 'src/components/input/AmountField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
+import { formatNumberString } from 'src/components/numbers/Amount';
 import {
   MAX_NUM_GROUPS_VOTED_FOR,
   MIN_GROUP_SCORE_FOR_RANDOM,
@@ -189,7 +190,6 @@ function StakeAmountField({
   let maxAmountWei = maxAmountToStakeByUser;
   if (maxAmountToStakeByUser > remainingGroupCapacity) {
     maxAmountWei = remainingGroupCapacity;
-    maxDescription = 'available group capacity';
   }
 
   return (
@@ -252,6 +252,9 @@ function GroupField({
 
   const onClickGroup = (address: Address) => helpers.setValue(address);
 
+  const validatorGroup = addressToGroup?.[field.value];
+  const remainingGroupCapacity = getRemainingCapacity(validatorGroup);
+
   return (
     <div className="relative space-y-1">
       <label htmlFor={fieldName} className="pl-0.5 text-xs font-medium">
@@ -305,6 +308,16 @@ function GroupField({
           disabled={disabled}
         />
       </div>
+      {remainingGroupCapacity > 0n && (
+        <p className="pb-2 text-xs">
+          Remaining group capacity: {formatNumberString(remainingGroupCapacity, 2, true)} CELO
+        </p>
+      )}
+      {remainingGroupCapacity <= 0n && (
+        <p className="pb-2 text-xs text-red-600">
+          Group is at 100% capacity and no more CELO <br /> can be staked on it
+        </p>
+      )}
     </div>
   );
 }

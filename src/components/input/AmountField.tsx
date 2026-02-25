@@ -17,7 +17,7 @@ export function AmountField({
   maxDescription,
   disabled,
   tokenId,
-  zeroMaxValueReason,
+  zeroMaxValueReason = ZeroMaxValueReason.DEFAULT,
 }: {
   maxValueWei: bigint;
   maxDescription: string;
@@ -50,8 +50,10 @@ export function AmountField({
           Amount
         </label>
         <span className="text-xs">
-          {maxValue <= 0 && tokenId === TokenId.CELO
-            ? getZeroValueReasonDescription(zeroMaxValueReason)
+          {maxValue <= 0 &&
+          tokenId === TokenId.CELO &&
+          zeroMaxValueReason === ZeroMaxValueReason.DEFAULT
+            ? 'Not enough CELO to cover gas fees'
             : `${formatNumberString(maxValue, 5)} ${maxDescription}`}
         </span>
       </div>
@@ -71,15 +73,3 @@ export function AmountField({
     </div>
   );
 }
-
-const getZeroValueReasonDescription = (zeroMaxValueReason?: ZeroMaxValueReason): string => {
-  if (zeroMaxValueReason) {
-    switch (zeroMaxValueReason) {
-      case ZeroMaxValueReason.GROUP_AT_CAPACITY:
-        return 'Group is at capacity';
-    }
-  }
-
-  // ZeroMaxValueReason.DEFEAULT and undefined both end here
-  return 'Not enough CELO to cover gas fees';
-};

@@ -29,9 +29,11 @@ export function getGroupStats(group?: ValidatorGroup) {
 export function getRemainingCapacity(group?: ValidatorGroup): bigint {
   if (!group) return 0n;
 
-  return group.capacity - group.votes;
-}
+  const remainingCapacity = group.capacity - group.votes;
 
-export function isGroupAtCapacity(group?: ValidatorGroup): boolean {
-  return getRemainingCapacity(group) <= 0;
+  if (remainingCapacity < 0n) {
+    return 0n;
+  }
+
+  return remainingCapacity;
 }
