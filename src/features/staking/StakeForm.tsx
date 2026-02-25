@@ -174,7 +174,7 @@ function StakeAmountField({
   const { values } = useFormikContext<StakeFormValues>();
   const { action, group } = values;
 
-  let maxDescription = 'CELO available';
+  const maxDescription = 'CELO available';
   let zeroMaxValueReason: ZeroMaxValueReason = ZeroMaxValueReason.DEFAULT;
   const validatorGroup = addressToGroup?.[group];
   const maxAmountToStakeByUser = useMemo(
