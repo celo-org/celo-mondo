@@ -1,6 +1,7 @@
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { useGovernanceProposal } from 'src/features/governance/hooks/useGovernanceProposals';
 import { trimToLength } from 'src/utils/strings';
+import { getUTCDateString } from 'src/utils/time';
 
 export function ProposalFormDetails({
   proposalId,
@@ -11,9 +12,9 @@ export function ProposalFormDetails({
 }) {
   const propData = useGovernanceProposal(proposalId);
   const { proposal, metadata } = propData || {};
-  const proposedTimeValue = proposal?.timestamp
-    ? new Date(proposal.timestamp).toLocaleDateString()
-    : undefined;
+  const proposedMs = proposal?.timestamp ? proposal.timestamp : undefined;
+  const proposedTimeValue = proposedMs ? new Date(proposedMs).toLocaleDateString() : undefined;
+  const proposedUtc = proposedMs ? getUTCDateString(proposedMs) : undefined;
   const cgpId = metadata?.cgp ? `(CGP ${metadata.cgp})` : '';
 
   return (
@@ -24,7 +25,10 @@ export function ProposalFormDetails({
         <p className="text-sm">{`Voting power: ${formatNumberString(votingPower, 2, true)}`}</p>
       )}
       {proposedTimeValue && (
-        <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
+        <div
+          className="tooltip text-sm text-taupe-600"
+          data-tip={proposedUtc}
+        >{`Proposed ${proposedTimeValue}`}</div>
       )}
     </>
   );

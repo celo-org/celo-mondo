@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import clsx from 'clsx';
 import { StaleTime } from 'src/config/consts';
 import { ProposalStage } from 'src/features/governance/types';
 
@@ -26,31 +27,50 @@ export function ApprovalBadge({
 
   if (!approvalData) return null;
 
+  const isOptional = transactionCount === 0;
+
   if (approvalData.approved) {
     return (
-      <div className="text-jade-600 inline-flex items-center space-x-1 text-sm">
-        <span>{transactionCount === 0 ? 'ℹ️' : '✅'}</span>
-        <span>
-          {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Attained'}
-        </span>
-      </div>
+      <StatusPill variant="success">
+        {isOptional ? 'Approval Optional (no transactions)' : 'Approval Attained'}
+      </StatusPill>
     );
   }
   if (stage === ProposalStage.Execution || stage === ProposalStage.Referendum) {
     return (
-      <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
-        <span>{transactionCount === 0 ? 'ℹ️' : '⏳'}</span>
-        {transactionCount === 0 ? 'Approval Optional (no transactions)' : 'Approval Pending'}
-      </div>
+      <StatusPill variant={isOptional ? 'neutral' : 'pending'}>
+        {isOptional ? 'Approval Optional (no transactions)' : 'Approval Pending'}
+      </StatusPill>
     );
-  } else if (stage === ProposalStage.Expiration) {
-    return (
-      <div className="inline-flex items-center space-x-1 text-sm text-taupe-600">
-        <span>❌</span>
-        <span>Approval Missed</span>
-      </div>
-    );
+  } else if (stage === ProposalStage.Expiration || stage === ProposalStage.Rejected) {
+    return <StatusPill variant="neutral">Approval Not Required</StatusPill>;
   } else {
     return null;
   }
+}
+
+function StatusPill({
+  variant,
+  children,
+}: {
+  variant: 'success' | 'pending' | 'neutral';
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={clsx(
+        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium',
+        variant === 'success' && 'bg-green-50 border-green-200 text-green-700',
+        variant === 'pending' && 'border-amber-200 bg-amber-50 text-amber-700',
+        variant === 'neutral' && 'border-taupe-300 bg-taupe-100 text-taupe-600',
+      )}
+    >
+      <span className="text-sm leading-none">
+        {variant === 'success' && '✅'}
+        {variant === 'pending' && '⏳'}
+        {variant === 'neutral' && 'ℹ️'}
+      </span>
+      {children}
+    </div>
+  );
 }

@@ -22,7 +22,7 @@ export function VotingPower() {
   return (
     <div className="flex items-center space-x-1.5 pt-1 text-sm">
       <span>{`Voting power: ${formatNumberString(_votingPower, 2, true)} CELO`}</span>
-      <HelpIcon text={text} />
+      <HelpIcon text={text} size={14} type="tooltip" align="right" />
     </div>
   );
 }
