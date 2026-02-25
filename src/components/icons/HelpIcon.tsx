@@ -9,9 +9,10 @@ type HelpIconProps = {
   type?: 'tooltip' | 'button';
   text: string;
   size?: number;
+  align?: 'center' | 'right';
 };
 
-export function HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
+export function HelpIcon({ text, size = 12, type = 'button', align = 'center' }: HelpIconProps) {
   const isMobile = useIsMobile();
   if (isMobile) {
     type = 'button';
@@ -30,9 +31,17 @@ export function HelpIcon({ text, size = 12, type = 'button' }: HelpIconProps) {
         onClick={type === 'button' ? onClick : undefined}
       />
       {type === 'tooltip' && (
-        <span className="absolute left-1/2 mx-auto min-w-max -translate-x-1/2 translate-y-8 rounded-[2px] bg-accent px-2 py-4 text-sm text-gray-100 opacity-0 transition-opacity group-hover:opacity-100">
+        <span
+          className={`pointer-events-none absolute z-50 w-64 translate-y-8 rounded-[2px] bg-accent px-3 py-3 text-sm leading-relaxed text-gray-100 opacity-0 transition-opacity group-hover:opacity-100 ${
+            align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'
+          }`}
+        >
           {text}
-          <span className="absolute bottom-full left-[50%] ml-[-8px] border-8 border-transparent border-b-accent" />
+          <span
+            className={`absolute bottom-full border-8 border-transparent border-b-accent ${
+              align === 'right' ? 'right-1' : 'left-[50%] ml-[-8px]'
+            }`}
+          />
         </span>
       )}
     </div>

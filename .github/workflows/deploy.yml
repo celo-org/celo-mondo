@@ -1,6 +1,7 @@
 name: Automatic deployments
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 11 * * 1-5' # Runs at 11 am UTC, Monday to Friday
 
