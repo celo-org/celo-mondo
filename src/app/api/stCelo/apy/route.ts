@@ -5,7 +5,7 @@ import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import { errorToString } from 'src/utils/strings';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 900; // Cache response for 15 minutes
 
 export async function GET() {
   try {
