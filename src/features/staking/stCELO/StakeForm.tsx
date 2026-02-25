@@ -11,6 +11,7 @@ import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { useExchangeRates } from 'src/features/staking/stCELO/hooks/useExchangeRates';
+import { useWithdrawals } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { getStakeTxPlan } from 'src/features/staking/stCELO/stakeTxPlan';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { OnConfirmedFn } from 'src/features/transactions/types';
@@ -42,6 +43,7 @@ export function StakeStCeloForm({
   const { unlockingPeriod } = useLockedStatus(address);
   const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);
   const { stakeBalances } = useStakingBalances(address);
+  const { startWaitingForNewWithdrawal } = useWithdrawals(address);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<LiquidStakeFormValues>({
@@ -53,6 +55,7 @@ export function StakeStCeloForm({
             if (v.action === LiquidStakeActionType.Stake) {
               await afterDeposit();
             } else {
+              startWaitingForNewWithdrawal();
               await withdraw(address!);
             }
           } catch (e) {

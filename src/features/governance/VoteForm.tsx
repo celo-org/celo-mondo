@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
@@ -49,10 +50,14 @@ export function VoteForm({
     defaultFormValues?.proposalId,
   );
   const trackEvent = useTrackEvent();
+  const queryClient = useQueryClient();
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || [], mode, stCeloVotingPower),
-    onStepSuccess: () => (mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord()),
+    onStepSuccess: () => {
+      mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord();
+      void queryClient.invalidateQueries({ queryKey: ['useProposalVoteTotals'] });
+    },
     onPlanSuccess: (v, r) => {
       trackEvent('vote_completed', {
         voteType: v.vote,

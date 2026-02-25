@@ -160,7 +160,11 @@ function GroupField({
         ...g,
         score: getGroupStats(g).score,
       }))
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => {
+        if (a.address === ZERO_ADDRESS) return -1;
+        if (b.address === ZERO_ADDRESS) return 1;
+        return b.score - a.score;
+      });
   }, [addressToGroup]);
 
   const onClickRandom = useCallback(

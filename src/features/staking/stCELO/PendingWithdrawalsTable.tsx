@@ -14,9 +14,13 @@ import { useAccount } from 'wagmi';
 
 interface PendingWithdrawalsProps {
   pendingWithdrawals: PendingStCELOWithdrawal[];
+  isWaitingForNewWithdrawal?: boolean;
 }
 
-export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawalsProps) => {
+export const PendingWithdrawalsTable = ({
+  pendingWithdrawals,
+  isWaitingForNewWithdrawal,
+}: PendingWithdrawalsProps) => {
   const { address } = useAccount();
   const { loadPendingWithdrawals } = useWithdrawals();
   const { isLoading, refetch } = useQuery({
@@ -31,7 +35,7 @@ export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawa
     await loadPendingWithdrawals();
   }, [loadPendingWithdrawals, refetch]);
 
-  if (pendingWithdrawals.length === 0) {
+  if (pendingWithdrawals.length === 0 && !isWaitingForNewWithdrawal) {
     return (
       <HeaderAndSubheader
         header="No withdrawals available"
@@ -52,6 +56,12 @@ export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawa
           isLoading={isLoading}
         />
       ))}
+      {isWaitingForNewWithdrawal && (
+        <div className="flex w-full flex-row items-center gap-10 border-b border-taupe-300 px-2 py-3 text-center">
+          <div className="h-6 w-24 animate-pulse rounded bg-taupe-300" />
+          <div className="h-6 w-40 animate-pulse rounded bg-taupe-300" />
+        </div>
+      )}
     </div>
   );
 };

@@ -23,6 +23,8 @@ function useStakingModeInternal() {
     [setMode],
   );
 
+  const selectMode = useCallback((newMode: StakingMode) => setMode(newMode), [setMode]);
+
   useEffect(() => {
     document
       .getElementsByTagName('html')
@@ -33,6 +35,7 @@ function useStakingModeInternal() {
   return {
     mode,
     toggleMode,
+    selectMode,
     shouldRender: true,
     ui: {
       action: (mode === 'stCELO' ? 'Liquid ' : '') + 'Stake',
@@ -45,6 +48,7 @@ const StakingModeContext = createContext<ReturnType<typeof useStakingModeInterna
   mode: 'CELO',
   shouldRender: true,
   toggleMode: () => null,
+  selectMode: () => null,
   ui: {
     action: 'Stake',
     participle: 'Staking',

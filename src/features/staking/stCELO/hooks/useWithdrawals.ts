@@ -1,5 +1,5 @@
 import { readContract } from '@wagmi/core';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import AccountABI from 'src/config/stcelo/AccountABI';
 import useDefaultGroups from 'src/features/staking/stCELO/hooks/useDefaultGroups';
 import { claim, withdraw } from 'src/utils/stCELOAPI';
@@ -111,7 +111,30 @@ const formatPendingWithdrawals = (
   return pendingWithdrawals.reverse();
 };
 
+// Shared across all hook instances so the StakeForm (modal) and account page stay in sync
+let waitingPrevCount: number | null = null;
+const listeners = new Set<() => void>();
+function setWaiting(prevCount: number) {
+  waitingPrevCount = prevCount;
+  listeners.forEach((fn) => fn());
+}
+function clearWaiting() {
+  waitingPrevCount = null;
+  listeners.forEach((fn) => fn());
+}
+
 export const useWithdrawals = (address?: Address) => {
+  const [, rerender] = useState(0);
+  const isWaitingForNewWithdrawal = waitingPrevCount !== null;
+
+  useEffect(() => {
+    const listener = () => rerender((n) => n + 1);
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  }, []);
+
   const { data: pendingWithdrawal, refetch: loadPendingWithdrawals } = useReadContract({
     ...AccountABI,
     functionName: 'getPendingWithdrawals',
@@ -120,12 +143,26 @@ export const useWithdrawals = (address?: Address) => {
       enabled: !!address,
       select: ([values, timestamps]) =>
         formatPendingWithdrawals(values as bigint[], timestamps as bigint[]),
-      refetchInterval: 60 * 1000,
+      refetchInterval: isWaitingForNewWithdrawal ? 3000 : 60 * 1000,
     },
   });
 
+  const pendingWithdrawals = pendingWithdrawal || [];
+
+  useEffect(() => {
+    if (waitingPrevCount !== null && pendingWithdrawals.length > waitingPrevCount) {
+      clearWaiting();
+    }
+  }, [pendingWithdrawals.length]);
+
+  const startWaitingForNewWithdrawal = useCallback(() => {
+    setWaiting(pendingWithdrawals.length);
+  }, [pendingWithdrawals.length]);
+
   return {
-    pendingWithdrawals: pendingWithdrawal || [],
+    pendingWithdrawals,
     loadPendingWithdrawals,
+    isWaitingForNewWithdrawal,
+    startWaitingForNewWithdrawal,
   };
 };

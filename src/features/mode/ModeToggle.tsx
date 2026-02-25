@@ -4,7 +4,7 @@ import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export function ModeToggle() {
-  const { mode, shouldRender, toggleMode } = useStakingMode();
+  const { mode, shouldRender, selectMode } = useStakingMode();
   const trackEvent = useTrackEvent();
 
   const celoRef = useRef<HTMLButtonElement>(null);
@@ -23,11 +23,10 @@ export function ModeToggle() {
 
   const handleSelect = useCallback(
     (newMode: 'CELO' | 'stCELO') => {
-      if (newMode === mode) return;
       trackEvent('mode_toggled', { mode: newMode });
-      toggleMode();
+      selectMode(newMode);
     },
-    [mode, toggleMode, trackEvent],
+    [selectMode, trackEvent],
   );
 
   return (

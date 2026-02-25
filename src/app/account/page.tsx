@@ -65,8 +65,8 @@ export default function Page() {
     signingFor,
     groupToStake,
   );
-  const { addressToGroup } = useValidatorGroups();
   const { mode } = useStakingMode();
+  const { addressToGroup } = useValidatorGroups(mode === 'stCELO');
   const withdrawals = useWithdrawals(address);
 
   const { activateStake } = useActivateStake(() => {
@@ -120,6 +120,7 @@ export default function Page() {
         activateStake={activateStake}
         mode={mode}
         withdrawals={withdrawals.pendingWithdrawals}
+        isWaitingForNewWithdrawal={withdrawals.isWaitingForNewWithdrawal}
       />
     </Section>
   );
@@ -315,6 +316,7 @@ function TableTabs({
   activateStake,
   mode,
   withdrawals,
+  isWaitingForNewWithdrawal,
 }: {
   groupToStake?: GroupToStake;
   addressToGroup?: AddressTo<ValidatorGroup>;
@@ -325,11 +327,10 @@ function TableTabs({
   activateStake: (g: Address) => void;
   mode: StakingMode;
   withdrawals: PendingStCELOWithdrawal[];
+  isWaitingForNewWithdrawal?: boolean;
 }) {
   const tabs: Tab[] =
-    mode === 'CELO'
-      ? ['stakes', 'rewards', 'delegations', 'history']
-      : ['stakes', 'history', 'withdrawals'];
+    mode === 'CELO' ? ['stakes', 'rewards', 'delegations', 'history'] : ['stakes', 'withdrawals'];
   const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
@@ -362,7 +363,10 @@ function TableTabs({
         <ActiveStrategyTable addressToGroup={addressToGroup} />
       )}
       {tab === 'withdrawals' && mode === 'stCELO' && (
-        <PendingWithdrawalsTable pendingWithdrawals={withdrawals} />
+        <PendingWithdrawalsTable
+          pendingWithdrawals={withdrawals}
+          isWaitingForNewWithdrawal={isWaitingForNewWithdrawal}
+        />
       )}
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
