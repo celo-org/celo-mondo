@@ -94,12 +94,12 @@ export async function getBridgeClickedCounts(): Promise<BridgeClickCount[]> {
     const bridgeClickCounts = await database
       .select({
         bridgeId: sql<string>`properties->>'bridgeId'`,
-        count: sql<number>`count(*)::int`,
+        count: sql<number>`count(distinct "sessionId")::int`,
       })
       .from(analyticsEventsTable)
       .where(eq(analyticsEventsTable.eventName, 'bridge_clicked'))
       .groupBy(sql`properties->>'bridgeId'`)
-      .orderBy(sql`count(*) desc`);
+      .orderBy(sql`count(distinct "sessionId") desc`);
 
     return bridgeClickCounts;
   } catch (error) {
