@@ -295,7 +295,7 @@ function DelegateField({ disabled }: { disabled?: boolean }) {
     <div className="flex items-center justify-between pt-1">
       <label htmlFor="delegate" className="flex items-center space-x-2 pl-0.5 text-xs font-medium">
         <span>Delegate voting power</span>
-        <HelpIcon text="You can allow this validator to participate in governance voting on your behalf. This delegation be changed at any time." />
+        <HelpIcon text="You can allow this validator to participate in governance voting on your behalf. This delegation can be changed at any time." />
       </label>
       <Field
         name="delegate"

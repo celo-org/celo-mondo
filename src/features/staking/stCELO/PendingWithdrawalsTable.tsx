@@ -35,7 +35,7 @@ export const PendingWithdrawalsTable = ({ pendingWithdrawals }: PendingWithdrawa
     return (
       <HeaderAndSubheader
         header="No withdrawals available"
-        subHeader={`You are not currently untaking any stCELO. Once you unstake, the withdrawals will show here.`}
+        subHeader={`You are not currently unstaking any stCELO. Once you unstake, the withdrawals will show here.`}
         className="my-10"
       ></HeaderAndSubheader>
     );

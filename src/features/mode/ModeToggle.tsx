@@ -9,7 +9,10 @@ export function ModeToggle() {
 
   const celoRef = useRef<HTMLButtonElement>(null);
   const stCeloRef = useRef<HTMLButtonElement>(null);
-  const [pillStyle, setPillStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number }>({
+    left: 0,
+    width: 0,
+  });
 
   useEffect(() => {
     const activeRef = mode === 'CELO' ? celoRef.current : stCeloRef.current;
@@ -33,7 +36,7 @@ export function ModeToggle() {
         {/* Sliding background pill */}
         <div
           className={clsx(
-            'absolute top-0.5 bottom-0.5 rounded-full transition-all duration-300 ease-in-out',
+            'absolute bottom-0.5 top-0.5 rounded-full transition-all duration-300 ease-in-out',
             mode === 'CELO' ? 'bg-yellow-500' : 'bg-purple-300',
           )}
           style={{ left: pillStyle.left, width: pillStyle.width }}

@@ -10,7 +10,6 @@ import {
   useState,
 } from 'react';
 
-
 // NOTE: inspired by https://github.com/vercel/next.js/discussions/16337
 // but the original post is about next/router which is for nextjs pages
 function useHistoryInternal() {
