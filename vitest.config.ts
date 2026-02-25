@@ -18,6 +18,7 @@ export default defineConfig({
       './src/vendor/polyfill.ts',
     ],
     environment: 'happy-dom',
+    exclude: ['**/node_modules/**', '**/e2e/**'],
     alias: {
       src: path.resolve(__dirname, 'src'),
     },
