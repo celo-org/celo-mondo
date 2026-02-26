@@ -21,18 +21,26 @@ export async function decodeAndPrepareProposalEvent(
     return null;
   }
 
-  const { topics, data } = event;
-  const {
-    args: { proposalId },
-  } = decodeEventLog({
-    abi: governanceABI,
-    topics,
-    data,
-    eventName,
-  });
-  if (!proposalId) {
-    throw new Error('Couldnt decode the proposal event: ' + JSON.stringify(event));
-  }
+  try {
+    const { topics, data } = event;
+    const {
+      args: { proposalId },
+    } = decodeEventLog({
+      abi: governanceABI,
+      topics,
+      data,
+      eventName,
+    });
+    if (!proposalId) {
+      // eslint-disable-next-line no-console
+      console.error('Could not decode proposal event, skipping:', JSON.stringify(event));
+      return null;
+    }
 
-  return proposalId;
+    return proposalId;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to decode proposal event, skipping:', error);
+    return null;
+  }
 }
