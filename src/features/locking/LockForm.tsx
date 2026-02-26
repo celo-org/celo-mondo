@@ -197,7 +197,7 @@ function LockAmountField({
 
   return (
     <AmountField
-      maxValueWei={maxAmountWei}
+      maxWalletValueWei={maxAmountWei}
       maxDescription="CELO available"
       tokenId={action === LockActionType.Lock ? TokenId.CELO : TokenId.lockedCELO}
       disabled={disabled || isWithdraw}

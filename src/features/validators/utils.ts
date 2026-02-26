@@ -26,7 +26,7 @@ export function getGroupStats(group?: ValidatorGroup) {
   return { numMembers: members.length, numElected: electedMembers.length, score: group.score };
 }
 
-export function getRemainingCapacity(group?: ValidatorGroup): bigint {
+export function getRemainingCapacityWei(group?: ValidatorGroup): bigint {
   if (!group) return 0n;
 
   const remainingCapacity = group.capacity - group.votes;

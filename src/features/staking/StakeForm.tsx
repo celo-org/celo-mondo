@@ -4,7 +4,7 @@ import { IconButton } from 'src/components/buttons/IconButton';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
-import { AmountField, ZeroMaxValueReason } from 'src/components/input/AmountField';
+import { AmountField } from 'src/components/input/AmountField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import {
@@ -32,7 +32,11 @@ import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteC
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { cleanGroupName, getGroupStats, getRemainingCapacity } from 'src/features/validators/utils';
+import {
+  cleanGroupName,
+  getGroupStats,
+  getRemainingCapacityWei,
+} from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { shortenAddress } from 'src/utils/addresses';
@@ -175,30 +179,20 @@ function StakeAmountField({
   const { action, group } = values;
 
   const maxDescription = 'CELO available';
-  let zeroMaxValueReason: ZeroMaxValueReason = ZeroMaxValueReason.DEFAULT;
   const validatorGroup = addressToGroup?.[group];
-  const maxAmountToStakeByUser = useMemo(
+  const maxAmountToStakeByUserWei = useMemo(
     () => getMaxAmount(action, group, lockedBalances, stakeBalances, groupToStake),
     [action, group, lockedBalances, stakeBalances, groupToStake],
   );
-
-  const remainingGroupCapacity = getRemainingCapacity(validatorGroup);
-  if (remainingGroupCapacity <= 0n) {
-    zeroMaxValueReason = ZeroMaxValueReason.GROUP_AT_CAPACITY;
-  }
-
-  let maxAmountWei = maxAmountToStakeByUser;
-  if (maxAmountToStakeByUser > remainingGroupCapacity) {
-    maxAmountWei = remainingGroupCapacity;
-  }
+  const remainingGroupCapacityWei = getRemainingCapacityWei(validatorGroup);
 
   return (
     <AmountField
       tokenId={TokenId.CELO}
-      maxValueWei={maxAmountWei}
+      maxWalletValueWei={maxAmountToStakeByUserWei}
+      maxButtonValueWei={remainingGroupCapacityWei}
       maxDescription={maxDescription}
-      zeroMaxValueReason={zeroMaxValueReason}
-      disabled={disabled}
+      disabled={disabled || remainingGroupCapacityWei === 0n}
     />
   );
 }
@@ -253,7 +247,7 @@ function GroupField({
   const onClickGroup = (address: Address) => helpers.setValue(address);
 
   const validatorGroup = addressToGroup?.[field.value];
-  const remainingGroupCapacity = getRemainingCapacity(validatorGroup);
+  const remainingGroupCapacity = getRemainingCapacityWei(validatorGroup);
 
   return (
     <div className="relative space-y-1">

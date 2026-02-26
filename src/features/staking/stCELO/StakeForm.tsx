@@ -167,7 +167,7 @@ function LockAmountField({
     <div>
       <AmountField
         tokenId={TokenId.stCELO}
-        maxValueWei={maxAmountWei}
+        maxWalletValueWei={maxAmountWei}
         maxDescription={`${action === LiquidStakeActionType.Stake ? '' : 'st'}CELO available`}
         disabled={disabled}
       />
