@@ -77,8 +77,13 @@ async function main() {
   );
   // exectution events for multisig are saved just to keep track but we dont yet create any other db entries from them
   console.info('execution result', executionResult);
+
+  // Reprocess ALL events to self-heal any orphaned events (events saved to eventsTable
+  // by the webhook backfill but never processed by updateApprovalsInDB).
+  // This is idempotent due to onConflictDoNothing() in the approvals insert.
+  // Trigger manually via UPDATE_ALL=true when needed (e.g., to fix missed approvals).
   if (process.env.UPDATE_ALL) {
-    console.info(`Processing all multisig transaction IDs...`);
+    console.info('Processing all multisig transaction IDs to self-heal any missed approvals...');
     try {
       await updateApprovalsInDB(client);
     } catch (error) {
