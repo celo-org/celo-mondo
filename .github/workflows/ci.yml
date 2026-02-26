@@ -137,6 +137,20 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: [build]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: celo_mondo_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -148,6 +162,10 @@ jobs:
             **/node_modules
             .yarn/cache
           key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+      - name: Run database migrations
+        run: yarn migrate
+        env:
+          POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/celo_mondo_test
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps chromium
       - name: Run Playwright tests
@@ -155,6 +173,7 @@ jobs:
         env:
           NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
           NEXT_PUBLIC_RPC_URL: https://public-archive-nodes.celo-testnet.org
+          POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/celo_mondo_test
       - uses: actions/upload-artifact@v4
         if: always()
         with:
