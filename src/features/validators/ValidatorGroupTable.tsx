@@ -312,18 +312,19 @@ function useTableColumns(_totalVotes: bigint) {
         sortingFn: (rowA, rowB) => {
           const capacityA = rowA.original.capacity;
           const votesA = rowA.original.votes;
-          const utilizationA = Number((votesA * 100n) / capacityA);
+          const utilizationA = capacityA === 0n ? 0 : Number((votesA * 100n) / capacityA);
 
           const capacityB = rowB.original.capacity;
           const votesB = rowB.original.votes;
-          const utilizationB = Number((votesB * 100n) / capacityB);
+          const utilizationB = capacityB === 0n ? 0 : Number((votesB * 100n) / capacityB);
 
           return utilizationA - utilizationB;
         },
         cell: (props) => {
           const capacity = props.getValue();
           const votes = props.row.original.votes;
-          const utilizationPercent = Math.min(Number((votes * 100n) / capacity), 100);
+          const utilizationPercent =
+            capacity === 0n ? 0 : Math.min(Number((votes * 100n) / capacity), 100);
           return <div>{`${utilizationPercent.toFixed(0)}%`}</div>;
         },
       }),

@@ -135,6 +135,7 @@ export function StakeForm({
               addressToGroup={addressToGroup}
               defaultGroup={defaultFormValues?.group}
               disabled={isInputDisabled}
+              showCapacity={values.action === StakeActionType.Stake}
             />
             <StakeAmountField
               lockedBalances={lockedBalances}
@@ -203,12 +204,14 @@ function GroupField({
   addressToGroup,
   defaultGroup,
   disabled,
+  showCapacity,
 }: {
   fieldName: 'group';
   label: string;
   addressToGroup?: AddressTo<ValidatorGroup>;
   defaultGroup?: Address;
   disabled?: boolean;
+  showCapacity: boolean;
 }) {
   const [field, , helpers] = useField<Address>(fieldName);
 
@@ -302,12 +305,12 @@ function GroupField({
           disabled={disabled}
         />
       </div>
-      {remainingGroupCapacity > 0n && (
+      {showCapacity && remainingGroupCapacity > 0n && (
         <p className="pb-2 text-xs">
           Remaining group capacity: {formatNumberString(remainingGroupCapacity, 2, true)} CELO
         </p>
       )}
-      {remainingGroupCapacity <= 0n && (
+      {showCapacity && remainingGroupCapacity <= 0n && (
         <p className="pb-2 text-xs text-red-600">
           Group is at 100% capacity and no more CELO <br /> can be staked on it
         </p>
