@@ -8,6 +8,10 @@ vi.mock('src/utils/useTrackEvent');
 const mockTrackEvent = vi.fn();
 const mockUseTrackEvent = vi.mocked(useTrackEventModule.useTrackEvent);
 
+vi.mock('../actions', () => ({
+  getBridgeClickedCounts: vi.fn().mockResolvedValue([]),
+}));
+
 vi.mock('next/image', () => ({
   // eslint-disable-next-line @next/next/no-img-element
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
@@ -24,29 +28,37 @@ describe('Bridge Page', () => {
     mockUseTrackEvent.mockReturnValue(mockTrackEvent);
   });
 
-  test('should render all bridge options', () => {
+  test('should render all bridge options', async () => {
     render(<Page />);
+
+    // Wait for the loading to complete and bridges to render
+    await screen.findByText('Jumper');
 
     for (const bridge of BRIDGES) {
       expect(screen.getByText(bridge.name)).toBeInTheDocument();
     }
   });
 
-  test('should track different bridge clicks correctly', () => {
+  test('should track different bridge clicks correctly', async () => {
     render(<Page />);
 
-    const firstBridgeButton = screen.getByTestId(BRIDGES[0].id);
-    fireEvent.click(firstBridgeButton);
+    // Wait for the component to load and render bridges
+    await screen.findByText('Jumper');
+
+    // Bridges are sorted alphabetically when click counts are equal (all 0)
+    // Order should be: Jumper, Portal Bridge, Squid Router, Superbridge, USDT0
+    const jumperButton = screen.getByTestId('jumper');
+    fireEvent.click(jumperButton);
 
     expect(mockTrackEvent).toHaveBeenCalledWith('bridge_clicked', {
-      bridgeId: BRIDGES[0].id,
+      bridgeId: 'jumper',
     });
 
-    const secondBridgeButton = screen.getByTestId(BRIDGES[1].id);
-    fireEvent.click(secondBridgeButton);
+    const portalBridgeButton = screen.getByTestId('portal-bridge');
+    fireEvent.click(portalBridgeButton);
 
     expect(mockTrackEvent).toHaveBeenCalledWith('bridge_clicked', {
-      bridgeId: BRIDGES[1].id,
+      bridgeId: 'portal-bridge',
     });
   });
 });
