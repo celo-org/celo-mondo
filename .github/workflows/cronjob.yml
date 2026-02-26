@@ -3,6 +3,13 @@ name: Check for events
 on:
   schedule:
     - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch:
+    inputs:
+      update_all_approvals:
+        description: 'Reprocess ALL approval events to self-heal missed approvals'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   install:
@@ -59,6 +66,8 @@ jobs:
         run: yarn backfill-approvals
         continue-on-error: true
         if: always()
+        env:
+          UPDATE_ALL: ${{ inputs.update_all_approvals || '' }}
 
       - name: notify-failures-production
         if: failure() || steps.backfill-db-prod.outcome == 'failure' || steps.backfill-approvals-prod.outcome == 'failure'
@@ -96,6 +105,8 @@ jobs:
         run: yarn backfill-approvals
         continue-on-error: true
         if: always()
+        env:
+          UPDATE_ALL: ${{ inputs.update_all_approvals || '' }}
 
       - name: notify-failures-staging
         if: failure() || steps.backfill-db-staging.outcome == 'failure' || steps.backfill-approvals-staging.outcome == 'failure'
