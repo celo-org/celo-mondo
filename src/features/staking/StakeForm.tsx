@@ -185,7 +185,8 @@ function StakeAmountField({
     () => getMaxAmount(action, group, lockedBalances, stakeBalances, groupToStake),
     [action, group, lockedBalances, stakeBalances, groupToStake],
   );
-  const remainingGroupCapacityWei = getRemainingCapacityWei(validatorGroup);
+  const remainingGroupCapacityWei =
+    action === StakeActionType.Stake ? getRemainingCapacityWei(validatorGroup) : undefined;
 
   return (
     <AmountField
