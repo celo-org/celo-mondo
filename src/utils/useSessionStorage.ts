@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useState } from 'react';
 
 export function useSessionStorage<T>(
   key: string,
@@ -34,7 +34,15 @@ export function useSessionStorage<T>(
     }
   }, [key, deserializer, initialValue]);
 
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') return initialValue;
+    try {
+      const raw = window.sessionStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
 
   const setValue: Dispatch<SetStateAction<T>> = useCallback(
     (value) => {
@@ -54,11 +62,6 @@ export function useSessionStorage<T>(
     window.sessionStorage.removeItem(key);
     setStoredValue(initialValue);
   }, [initialValue, key]);
-
-  useEffect(() => {
-    setStoredValue(readValue());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
 
   return [storedValue, setValue, removeValue];
 }
