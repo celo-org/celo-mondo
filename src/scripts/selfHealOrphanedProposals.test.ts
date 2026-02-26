@@ -4,7 +4,7 @@ import { ProposalStage } from 'src/features/governance/types';
 import { TEST_CHAIN_ID } from 'src/test/database';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { selfHealOrphanedProposals } from './fetchHistoricalGovernanceEvents';
+import { selfHealOrphanedProposals } from 'src/features/governance/selfHealOrphanedProposals';
 
 vi.mock('src/features/governance/updateProposalsInDB', () => ({
   default: vi.fn().mockResolvedValue(undefined),
@@ -109,6 +109,17 @@ describe('selfHealOrphanedProposals', () => {
     // Only vote events exist for proposal 300 — should NOT be treated as orphaned
     await insertEvent(300, 'ProposalVotedV2');
     await insertEvent(300, 'ProposalUpvoted');
+
+    const client = createMockClient();
+    const result = await selfHealOrphanedProposals(client);
+
+    expect(result).toEqual([]);
+    expect(updateProposalsInDB).not.toHaveBeenCalled();
+  });
+
+  it('skips proposals with id <= 149 (legacy proposals without metadata)', async () => {
+    await insertEvent(50, 'ProposalQueued');
+    await insertEvent(149, 'ProposalApproved');
 
     const client = createMockClient();
     const result = await selfHealOrphanedProposals(client);

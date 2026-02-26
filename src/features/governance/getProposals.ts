@@ -14,7 +14,7 @@ function findHistory(
     return history;
   }
 
-  const initialPastId = pastId!;
+  const initialPastId = pastId;
   do {
     const pastProposal = proposals.find((proposal) => proposal.id === pastId);
     if (!pastProposal) {

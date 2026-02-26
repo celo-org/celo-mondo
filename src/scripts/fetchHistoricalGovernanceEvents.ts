@@ -1,10 +1,8 @@
 /* eslint no-console: 0 */
 import 'dotenv/config';
 
-import { and, eq, inArray, notInArray, sql } from 'drizzle-orm';
-import database from 'src/config/database';
-import { eventsTable, proposalsTable } from 'src/db/schema';
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
+import { selfHealOrphanedProposals } from 'src/features/governance/selfHealOrphanedProposals';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
 import updateVotesInDB from 'src/features/governance/updateVotesInDB';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
@@ -88,47 +86,3 @@ async function main() {
 }
 
 main();
-
-/**
- * Self-heal: find proposals that have events but no row in proposalsTable.
- * This happens when metadata wasn't available at the time the event was first processed.
- */
-export async function selfHealOrphanedProposals(
-  client: PublicClient<Transport, Chain>,
-): Promise<bigint[]> {
-  const proposalIdSql = sql`(${eventsTable.args}->>'proposalId')::bigint`;
-  const orphanedProposals = await database
-    .selectDistinct({ proposalId: proposalIdSql.mapWith(Number) })
-    .from(eventsTable)
-    .where(
-      and(
-        eq(eventsTable.chainId, client.chain.id),
-        inArray(eventsTable.eventName, [
-          'ProposalQueued',
-          'ProposalDequeued',
-          'ProposalApproved',
-          'ProposalExecuted',
-          'ProposalExpired',
-        ]),
-        notInArray(
-          proposalIdSql,
-          database
-            .select({ id: proposalsTable.id })
-            .from(proposalsTable)
-            .where(eq(proposalsTable.chainId, client.chain.id)),
-        ),
-      ),
-    );
-
-  if (orphanedProposals.length) {
-    const orphanedIds = orphanedProposals.map((p) => BigInt(p.proposalId));
-    console.info(
-      `Self-healing: found ${orphanedIds.length} orphaned proposal(s): [${orphanedIds.join(', ')}]`,
-    );
-    await updateProposalsInDB(client, orphanedIds, 'update');
-    return orphanedIds;
-  }
-
-  console.info('Self-healing: no orphaned proposals found');
-  return [];
-}

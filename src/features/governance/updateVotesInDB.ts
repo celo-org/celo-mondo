@@ -57,7 +57,7 @@ export default async function updateVotesInDB(
 
     if (process.env.NODE_ENV === 'test') {
       console.info('not revalidating cache in test mode');
-      return;
+      continue;
     } // Revalidate the cache
     if (process.env.CI === 'true') {
       const BASE_URL = process.env.IS_PRODUCTION_DATABASE
