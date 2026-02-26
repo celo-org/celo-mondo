@@ -1,6 +1,8 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
@@ -9,12 +11,59 @@ import { H1 } from 'src/components/text/headers';
 import { BRIDGES } from 'src/config/bridges';
 import { Bridge } from 'src/types/bridge';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
+import { getBridgeClickedCounts } from '../actions';
+
+type BridgeWithCount = Bridge & { clickCount: number };
 
 export default function Page() {
+  const [sortedBridges, setSortedBridges] = useState<BridgeWithCount[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBridgeData() {
+      try {
+        const bridgeClickCounts = await getBridgeClickedCounts();
+
+        const bridgesWithCounts = BRIDGES.map((bridge) => {
+          const clickData = bridgeClickCounts.find((count) => count.bridgeId === bridge.id);
+          return {
+            ...bridge,
+            clickCount: clickData?.count || 0,
+          };
+        });
+
+        const sorted = bridgesWithCounts.sort((a, b) => {
+          // First sort by click count (descending)
+          if (b.clickCount !== a.clickCount) {
+            return b.clickCount - a.clickCount;
+          }
+          // Then sort by name (ascending)
+          return a.name.localeCompare(b.name);
+        });
+        setSortedBridges(sorted);
+      } catch (error) {
+        setSortedBridges(BRIDGES.map((bridge) => ({ ...bridge, clickCount: 0 })));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadBridgeData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
+        <H1>Bridge to Celo</H1>
+        <FullWidthSpinner>Loading bridge data</FullWidthSpinner>
+      </Section>
+    );
+  }
+
   return (
     <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
       <H1>Bridge to Celo</H1>
-      {BRIDGES.map((bridge) => (
+      {sortedBridges.map((bridge) => (
         <BridgeLink key={bridge.id} {...bridge} />
       ))}
       <p className="text-center text-sm text-taupe-600">
