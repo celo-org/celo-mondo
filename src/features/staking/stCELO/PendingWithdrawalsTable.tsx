@@ -24,7 +24,7 @@ export const PendingWithdrawalsTable = ({
   const { address } = useAccount();
   const { loadPendingWithdrawals } = useWithdrawals();
   const { isLoading, refetch } = useQuery({
-    queryKey: [address],
+    queryKey: ['stcelo-claim', address],
     queryFn: () => claim(address!),
     enabled: false,
   });
