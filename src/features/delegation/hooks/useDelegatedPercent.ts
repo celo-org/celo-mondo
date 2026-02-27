@@ -12,7 +12,8 @@ export function useDelegatedPercent(address?: Address) {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useDelegatedPercent', publicClient, address],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useDelegatedPercent', address],
     queryFn: async () => {
       if (!address || !publicClient) return null;
 

@@ -13,7 +13,8 @@ export function useDelegationBalances(address?: Address, voteSigner?: Address) {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useDelegationBalances', publicClient, address, voteSigner],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useDelegationBalances', address, voteSigner],
     queryFn: async () => {
       if (!address || !publicClient) return null;
 

@@ -57,7 +57,8 @@ function useGovernanceApproverMultiSigAddress() {
   const publicClient = usePublicClient();
 
   return useQuery({
-    queryKey: ['GovernanceApproverMultiSigAddress', publicClient],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['GovernanceApproverMultiSigAddress'],
     queryFn: () => fetchApproverMultiSigAddress(publicClient!),
     enabled: !!publicClient,
     staleTime: StaleTime.Default,
@@ -67,7 +68,8 @@ function useGovernanceApproverMultiSigAddress() {
 function useRequiredApproversCount(approversMultisigAddress: Address | undefined) {
   const publicClient = usePublicClient();
   return useQuery({
-    queryKey: ['GovernanceRequiredConfirmationsCount', publicClient, approversMultisigAddress],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['GovernanceRequiredConfirmationsCount', approversMultisigAddress],
     queryFn: () => fetchRequiredConfirmationsCount(publicClient!, approversMultisigAddress!),
     enabled: !!publicClient && !!approversMultisigAddress,
     staleTime: StaleTime.Default,

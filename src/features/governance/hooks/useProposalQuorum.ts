@@ -181,7 +181,8 @@ export function useThresholds(
 } {
   const publicClient = usePublicClient();
   const { error, isLoading, data } = useQuery({
-    queryKey: ['useThresholds', publicClient, proposal?.id],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useThresholds', proposal?.id],
     queryFn: async () => {
       return await fetchThresholds(publicClient!, proposal!.id);
     },

@@ -39,7 +39,7 @@ export function useTrackEvent() {
 
   const track = useCallback(
     <T extends AnalyticsEventName>(eventName: T, properties: AnalyticsEventMap[T]) => {
-      return trackEvent(eventName, properties, sessionId);
+      trackEvent(eventName, properties, sessionId);
     },
     [sessionId],
   );

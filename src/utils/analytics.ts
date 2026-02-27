@@ -1,26 +1,19 @@
-import { trackAnalyticsEvent } from 'src/app/actions';
 import { AnalyticsEventMap, AnalyticsEventName } from 'src/types/analytics';
 
-// Type-safe analytics tracking helper
-export async function trackEvent<T extends AnalyticsEventName>(
+// Type-safe analytics tracking helper using a plain fetch to avoid blocking Next.js navigation
+// (server actions serialize with RSC requests and delay client-side transitions)
+export function trackEvent<T extends AnalyticsEventName>(
   eventName: T,
   properties: AnalyticsEventMap[T],
   sessionId: string,
-): Promise<void> {
-  try {
-    const result = await trackAnalyticsEvent({
-      eventName,
-      properties,
-      sessionId,
-    });
-
-    if (!result.success) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to track analytics event:', result.error);
-    }
-  } catch (error) {
+): void {
+  fetch('/api/analytics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ eventName, properties, sessionId }),
+    keepalive: true,
+  }).catch((error) => {
     // eslint-disable-next-line no-console
     console.error('Analytics tracking error:', error);
-    // Don't throw - analytics failures shouldn't break the app
-  }
+  });
 }

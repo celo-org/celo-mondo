@@ -14,7 +14,8 @@ export function useDelegatees() {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useDelegatees', publicClient],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useDelegatees'],
     queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching delegatees');

@@ -28,7 +28,8 @@ import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 export function useValidatorGroups(includeStCeloDefault: boolean = false) {
   const publicClient = usePublicClient();
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useValidatorGroups', publicClient],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton; including it causes cache invalidation on navigation
+    queryKey: ['useValidatorGroups'],
     queryFn: () => {
       if (!publicClient) return null;
       logger.debug('Fetching validator groups');
