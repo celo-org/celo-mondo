@@ -103,7 +103,7 @@ export const formatPendingWithdrawals = (
     const amount = values[indices[i]];
 
     /* If next timestamp is not within allowed time span create new pending withdrawal */
-    if (timestamp > referenceTimestamp + groupingTimeSpan) {
+    if (pendingWithdrawals.length === 0 || timestamp > referenceTimestamp + groupingTimeSpan) {
       referenceTimestamp = timestamp;
       pendingWithdrawals.push({
         amount,
