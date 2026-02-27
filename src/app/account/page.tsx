@@ -107,6 +107,7 @@ export default function Page() {
         <StCELOAccountStats
           stCELOBalances={stCELOBalances}
           withdrawals={withdrawals.pendingWithdrawals}
+          scheduledWithdrawalAmount={withdrawals.scheduledWithdrawalAmount}
         />
       )}
       {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
@@ -121,6 +122,7 @@ export default function Page() {
         mode={mode}
         withdrawals={withdrawals.pendingWithdrawals}
         isWaitingForNewWithdrawal={withdrawals.isWaitingForNewWithdrawal}
+        scheduledWithdrawalAmount={withdrawals.scheduledWithdrawalAmount}
       />
     </Section>
   );
@@ -233,14 +235,18 @@ function AccountStats({
 function StCELOAccountStats({
   stCELOBalances,
   withdrawals,
+  scheduledWithdrawalAmount,
 }: {
   stCELOBalances: ReturnType<typeof useStCELOBalance>['stCELOBalances'];
   withdrawals: PendingStCELOWithdrawal[];
+  scheduledWithdrawalAmount: bigint;
 }) {
   const { annualProjectedRate } = useAnnualProjectedRate();
   const totalWithdrawals = useMemo(
-    () => withdrawals.reduce((agg, withdrawal) => agg + withdrawal.amount, 0n),
-    [withdrawals],
+    () =>
+      withdrawals.reduce((agg, withdrawal) => agg + withdrawal.amount, 0n) +
+      scheduledWithdrawalAmount,
+    [withdrawals, scheduledWithdrawalAmount],
   );
   return (
     <div className="items-top items-top flex justify-between">
@@ -317,6 +323,7 @@ function TableTabs({
   mode,
   withdrawals,
   isWaitingForNewWithdrawal,
+  scheduledWithdrawalAmount,
 }: {
   groupToStake?: GroupToStake;
   addressToGroup?: AddressTo<ValidatorGroup>;
@@ -328,6 +335,7 @@ function TableTabs({
   mode: StakingMode;
   withdrawals: PendingStCELOWithdrawal[];
   isWaitingForNewWithdrawal?: boolean;
+  scheduledWithdrawalAmount?: bigint;
 }) {
   const tabs: Tab[] =
     mode === 'CELO' ? ['stakes', 'rewards', 'delegations', 'history'] : ['stakes', 'withdrawals'];
@@ -344,9 +352,14 @@ function TableTabs({
           >
             <span className=" flex items-center gap-2 text-sm capitalize">
               {tabName === 'stakes' && mode !== 'CELO' ? 'Strategy' : tabName}
-              {tabName === 'withdrawals' && mode !== 'CELO' && withdrawals.length > 0 ? (
-                <TabBadge label={withdrawals.length > 10 ? '10+' : `${withdrawals.length}`} />
-              ) : null}
+              {tabName === 'withdrawals' &&
+                mode !== 'CELO' &&
+                (() => {
+                  const count =
+                    withdrawals.length +
+                    (scheduledWithdrawalAmount && scheduledWithdrawalAmount > 0n ? 1 : 0);
+                  return count > 0 ? <TabBadge label={count > 10 ? '10+' : `${count}`} /> : null;
+                })()}
             </span>
           </TabHeaderButton>
         ))}
@@ -366,6 +379,7 @@ function TableTabs({
         <PendingWithdrawalsTable
           pendingWithdrawals={withdrawals}
           isWaitingForNewWithdrawal={isWaitingForNewWithdrawal}
+          scheduledWithdrawalAmount={scheduledWithdrawalAmount}
         />
       )}
       {tab === 'rewards' && (

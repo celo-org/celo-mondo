@@ -18,11 +18,13 @@ import { useAccount } from 'wagmi';
 interface PendingWithdrawalsProps {
   pendingWithdrawals: PendingStCELOWithdrawal[];
   isWaitingForNewWithdrawal?: boolean;
+  scheduledWithdrawalAmount?: bigint;
 }
 
 export const PendingWithdrawalsTable = ({
   pendingWithdrawals,
   isWaitingForNewWithdrawal,
+  scheduledWithdrawalAmount,
 }: PendingWithdrawalsProps) => {
   const { address } = useAccount();
   const { loadPendingWithdrawals } = useWithdrawals();
@@ -38,7 +40,9 @@ export const PendingWithdrawalsTable = ({
     await loadPendingWithdrawals();
   }, [loadPendingWithdrawals, refetch]);
 
-  if (pendingWithdrawals.length === 0 && !isWaitingForNewWithdrawal) {
+  const hasScheduled = !!scheduledWithdrawalAmount && scheduledWithdrawalAmount > 0n;
+
+  if (pendingWithdrawals.length === 0 && !isWaitingForNewWithdrawal && !hasScheduled) {
     return (
       <HeaderAndSubheader
         header="No withdrawals available"
@@ -50,6 +54,7 @@ export const PendingWithdrawalsTable = ({
 
   return (
     <div className="w-full">
+      {hasScheduled && <ScheduledWithdrawalRow amount={scheduledWithdrawalAmount} />}
       {pendingWithdrawals.map(({ amount, timestamp, entries }) =>
         entries ? (
           <ExpandableWithdrawalGroup
@@ -70,7 +75,7 @@ export const PendingWithdrawalsTable = ({
           />
         ),
       )}
-      {isWaitingForNewWithdrawal && (
+      {isWaitingForNewWithdrawal && !hasScheduled && (
         <div className="flex w-full flex-row items-center gap-10 border-b border-taupe-300 px-2 py-3 text-center">
           <div className="h-6 w-24 animate-pulse rounded bg-taupe-300" />
           <div className="h-6 w-40 animate-pulse rounded bg-taupe-300" />
@@ -113,6 +118,20 @@ export const PendingWithdrawal = ({
         ) : (
           `Available in ${getHumanReadableDuration(date - now)}`
         )}
+      </div>
+    </div>
+  );
+};
+
+const ScheduledWithdrawalRow = ({ amount }: { amount: bigint }) => {
+  return (
+    <div className="flex w-full flex-row items-center gap-10 border-b border-taupe-300 px-2 py-3 text-center">
+      <Amount valueWei={amount} className="text-lg" />
+      <div className="flex w-full flex-row items-center gap-4 text-[14px] text-taupe-600">
+        <span className="flex items-center gap-2">
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-purple-500" />
+          Processing…
+        </span>
       </div>
     </div>
   );

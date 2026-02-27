@@ -134,7 +134,10 @@ export function StakeStCeloForm({
               </TipBox>
             )}
             {values.action === LiquidStakeActionType.Unstake && (
-              <TipBox color="purple">Unstaking takes {unlockingPeriodReadable}. </TipBox>
+              <TipBox color="purple">
+                Unstaking may take up to {unlockingPeriodReadable}. If unlocked CELO is available,
+                it will be sent directly to your wallet.
+              </TipBox>
             )}
             <LockAmountField
               stCELOBalances={stCELOBalances}
@@ -280,5 +283,6 @@ const ActionToVerb: Record<LiquidStakeActionType, string> = {
 const ActionToTipText: Record<LiquidStakeActionType, string> = {
   [LiquidStakeActionType.Stake]:
     'stCelo tokens are automatically staked in a basket of 8 validator groups. You may switch groups later if you wish',
-  [LiquidStakeActionType.Unstake]: 'Return in three days to withdraw',
+  [LiquidStakeActionType.Unstake]:
+    'Withdrawal may be instant or take up to three days depending on available liquidity',
 };

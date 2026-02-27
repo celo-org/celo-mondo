@@ -5,7 +5,7 @@ import useDefaultGroups from 'src/features/staking/stCELO/hooks/useDefaultGroups
 import { logger } from 'src/utils/logger';
 import { claim, withdraw } from 'src/utils/stCELOAPI';
 import type { Address } from 'viem';
-import { useConfig, usePublicClient, useReadContract } from 'wagmi';
+import { useConfig, usePublicClient, useReadContract, useReadContracts } from 'wagmi';
 
 export interface StCELOWithdrawalEntry {
   amount: bigint;
@@ -157,6 +157,7 @@ function clearWaiting() {
 export const useWithdrawals = (address?: Address) => {
   const [, rerender] = useState(0);
   const isWaitingForNewWithdrawal = waitingPrevCount !== null;
+  const { activeGroups } = useDefaultGroups();
 
   useEffect(() => {
     const listener = () => rerender((n) => n + 1);
@@ -177,6 +178,28 @@ export const useWithdrawals = (address?: Address) => {
       refetchInterval: isWaitingForNewWithdrawal ? 3000 : 60 * 1000,
     },
   });
+
+  // Fetch scheduled (pre-bot) withdrawals across all active groups via multicall
+  const { data: scheduledResults } = useReadContracts({
+    contracts: activeGroups.map(
+      (group) =>
+        ({
+          ...AccountABI,
+          functionName: 'scheduledWithdrawalsForGroupAndBeneficiary',
+          args: [group, address!],
+        }) as const,
+    ),
+    allowFailure: true,
+    query: {
+      enabled: !!address && activeGroups.length > 0,
+      refetchInterval: 5000,
+    },
+  });
+
+  const scheduledWithdrawalAmount = (scheduledResults ?? []).reduce(
+    (sum, r) => sum + ((r.status === 'success' ? (r.result as bigint) : 0n) as bigint),
+    0n,
+  );
 
   const pendingWithdrawals = pendingWithdrawal || [];
 
@@ -199,5 +222,6 @@ export const useWithdrawals = (address?: Address) => {
     loadPendingWithdrawals,
     isWaitingForNewWithdrawal,
     startWaitingForNewWithdrawal,
+    scheduledWithdrawalAmount,
   };
 };
