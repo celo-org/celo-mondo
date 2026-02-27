@@ -2,6 +2,7 @@ import { readContract } from '@wagmi/core';
 import { useCallback, useEffect, useState } from 'react';
 import AccountABI from 'src/config/stcelo/AccountABI';
 import useDefaultGroups from 'src/features/staking/stCELO/hooks/useDefaultGroups';
+import { logger } from 'src/utils/logger';
 import { claim, withdraw } from 'src/utils/stCELOAPI';
 import type { Address } from 'viem';
 import { useConfig, usePublicClient, useReadContract } from 'wagmi';
@@ -56,15 +57,21 @@ export const useClaimingBot = (address?: Address) => {
   const finalizeClaim = useCallback(async () => {
     if (!address) return;
 
-    const [{ timestamp: currentBlockTimestamp }, { data: valuesAndTimestamps }] = await Promise.all(
-      [publicClient!.getBlock({ blockTag: 'latest' }), loadPendingWithdrawals()],
-    );
-    const [, withdrawalTimestamps] = valuesAndTimestamps!;
-    const availableToClaim = !!withdrawalTimestamps.find(
-      (withdrawalTimestamp) => withdrawalTimestamp < currentBlockTimestamp,
-    );
+    try {
+      const [{ timestamp: currentBlockTimestamp }, { data: valuesAndTimestamps }] =
+        await Promise.all([
+          publicClient!.getBlock({ blockTag: 'latest' }),
+          loadPendingWithdrawals(),
+        ]);
+      const [, withdrawalTimestamps] = valuesAndTimestamps!;
+      const availableToClaim = !!withdrawalTimestamps.find(
+        (withdrawalTimestamp) => withdrawalTimestamp < currentBlockTimestamp,
+      );
 
-    if (availableToClaim) await claim(address);
+      if (availableToClaim) await claim(address);
+    } catch (error) {
+      logger.warn('useClaimingBot: finalizeClaim failed', error);
+    }
   }, [address, loadPendingWithdrawals, publicClient]);
 
   useEffect(() => {
@@ -80,17 +87,20 @@ export const useClaimingBot = (address?: Address) => {
  * Groups pending withdrawals that are within 5 minutes time span
  */
 const groupingTimeSpan = 5n * 60n;
-const formatPendingWithdrawals = (
+export const formatPendingWithdrawals = (
   values: bigint[],
   timestamps: bigint[],
 ): PendingStCELOWithdrawal[] => {
-  const sortedTimestamps = [...timestamps].sort();
+  // Create indices array and sort by timestamps
+  const indices = timestamps.map((_, i) => i);
+  indices.sort((a, b) => Number(timestamps[a] - timestamps[b]));
+
   const pendingWithdrawals: PendingStCELOWithdrawal[] = [];
 
   let referenceTimestamp = 0n;
-  for (let index = 0; index < sortedTimestamps.length; index++) {
-    const timestamp = sortedTimestamps[index];
-    const amount = values[index];
+  for (let i = 0; i < indices.length; i++) {
+    const timestamp = timestamps[indices[i]];
+    const amount = values[indices[i]];
 
     /* If next timestamp is not within allowed time span create new pending withdrawal */
     if (timestamp > referenceTimestamp + groupingTimeSpan) {
