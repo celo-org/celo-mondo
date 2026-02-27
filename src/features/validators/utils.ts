@@ -25,3 +25,15 @@ export function getGroupStats(group?: ValidatorGroup) {
   const electedMembers = members.filter((m) => m.status === ValidatorStatus.Elected);
   return { numMembers: members.length, numElected: electedMembers.length, score: group.score };
 }
+
+export function getRemainingCapacityWei(group?: ValidatorGroup): bigint {
+  if (!group) return 0n;
+
+  const remainingCapacity = group.capacity - group.votes;
+
+  if (remainingCapacity < 0n) {
+    return 0n;
+  }
+
+  return remainingCapacity;
+}

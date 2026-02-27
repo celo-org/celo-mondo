@@ -6,6 +6,7 @@ import { ChevronIcon } from 'src/components/icons/Chevron';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { AmountField } from 'src/components/input/AmountField';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
+import { formatNumberString } from 'src/components/numbers/Amount';
 import {
   MAX_NUM_GROUPS_VOTED_FOR,
   MIN_GROUP_SCORE_FOR_RANDOM,
@@ -31,7 +32,11 @@ import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteC
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
-import { cleanGroupName, getGroupStats } from 'src/features/validators/utils';
+import {
+  cleanGroupName,
+  getGroupStats,
+  getRemainingCapacityWei,
+} from 'src/features/validators/utils';
 
 import ShuffleIcon from 'src/images/icons/shuffle.svg';
 import { shortenAddress } from 'src/utils/addresses';
@@ -130,11 +135,13 @@ export function StakeForm({
               addressToGroup={addressToGroup}
               defaultGroup={defaultFormValues?.group}
               disabled={isInputDisabled}
+              showCapacity={values.action === StakeActionType.Stake}
             />
             <StakeAmountField
               lockedBalances={lockedBalances}
               stakeBalances={stakeBalances}
               groupToStake={groupToStake}
+              addressToGroup={addressToGroup}
               disabled={isInputDisabled}
             />
             {values.action === StakeActionType.Stake && delegations?.totalPercent === 0 && (
@@ -161,25 +168,48 @@ function StakeAmountField({
   stakeBalances,
   groupToStake,
   disabled,
+  addressToGroup,
 }: {
   lockedBalances?: LockedBalances;
   stakeBalances?: StakingBalances;
   groupToStake?: GroupToStake;
   disabled?: boolean;
+  addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
   const { values } = useFormikContext<StakeFormValues>();
   const { action, group } = values;
-  const maxAmountWei = useMemo(
+
+  const maxDescription = 'CELO available';
+  const zeroBalanceMessage =
+    action === StakeActionType.Stake ? (
+      <span className="flex items-center gap-1">
+        No locked CELO available to stake
+        <HelpIcon
+          type="tooltip"
+          position="above"
+          align="right"
+          text="Lock more CELO on the Account page to stake."
+        />
+      </span>
+    ) : (
+      'No CELO staked in this group'
+    );
+  const validatorGroup = addressToGroup?.[group];
+  const maxAmountToStakeByUserWei = useMemo(
     () => getMaxAmount(action, group, lockedBalances, stakeBalances, groupToStake),
     [action, group, lockedBalances, stakeBalances, groupToStake],
   );
+  const remainingGroupCapacityWei =
+    action === StakeActionType.Stake ? getRemainingCapacityWei(validatorGroup) : undefined;
 
   return (
     <AmountField
-      tokenId={TokenId.CELO}
-      maxValueWei={maxAmountWei}
-      maxDescription="CELO available"
-      disabled={disabled}
+      tokenId={TokenId.lockedCELO}
+      maxWalletValueWei={maxAmountToStakeByUserWei}
+      maxButtonValueWei={remainingGroupCapacityWei}
+      maxDescription={maxDescription}
+      zeroBalanceMessage={zeroBalanceMessage}
+      disabled={disabled || remainingGroupCapacityWei === 0n}
     />
   );
 }
@@ -190,12 +220,14 @@ function GroupField({
   addressToGroup,
   defaultGroup,
   disabled,
+  showCapacity,
 }: {
   fieldName: 'group';
   label: string;
   addressToGroup?: AddressTo<ValidatorGroup>;
   defaultGroup?: Address;
   disabled?: boolean;
+  showCapacity: boolean;
 }) {
   const [field, , helpers] = useField<Address>(fieldName);
 
@@ -232,6 +264,9 @@ function GroupField({
   );
 
   const onClickGroup = (address: Address) => helpers.setValue(address);
+
+  const validatorGroup = addressToGroup?.[field.value];
+  const remainingGroupCapacity = getRemainingCapacityWei(validatorGroup);
 
   return (
     <div className="relative space-y-1">
@@ -286,6 +321,16 @@ function GroupField({
           disabled={disabled}
         />
       </div>
+      {showCapacity && remainingGroupCapacity > 0n && (
+        <p className="pb-2 text-xs">
+          Remaining group capacity: {formatNumberString(remainingGroupCapacity, 2, true)} CELO
+        </p>
+      )}
+      {showCapacity && remainingGroupCapacity <= 0n && (
+        <p className="pb-2 text-xs text-red-600">
+          Group is at 100% capacity and no more CELO <br /> can be staked on it
+        </p>
+      )}
     </div>
   );
 }
@@ -295,7 +340,11 @@ function DelegateField({ disabled }: { disabled?: boolean }) {
     <div className="flex items-center justify-between pt-1">
       <label htmlFor="delegate" className="flex items-center space-x-2 pl-0.5 text-xs font-medium">
         <span>Delegate voting power</span>
-        <HelpIcon text="You can allow this validator to participate in governance voting on your behalf. This delegation can be changed at any time." />
+        <HelpIcon
+          type="tooltip"
+          position="above"
+          text="You can allow this validator to participate in governance voting on your behalf. This delegation can be changed at any time."
+        />
       </label>
       <Field
         name="delegate"

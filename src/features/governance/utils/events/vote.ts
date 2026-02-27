@@ -26,7 +26,9 @@ export async function decodeAndPrepareVoteEvent(
 
   const proposal = decodeVoteEventLog(event);
   if (!proposal || !proposal.proposalId) {
-    throw new Error('Couldnt decode the vote event: ' + JSON.stringify(event));
+    // eslint-disable-next-line no-console
+    console.error('Could not decode vote event, skipping:', JSON.stringify(event));
+    return [];
   }
 
   const { totals } = await sumProposalVotes(proposal.proposalId);

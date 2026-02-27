@@ -14,11 +14,14 @@ function findHistory(
     return history;
   }
 
-  const initialPastId = pastId!;
+  const initialPastId = pastId;
   do {
     const pastProposal = proposals.find((proposal) => proposal.id === pastId);
-    history.push({ id: pastId, stage: pastProposal!.stage });
-    pastId = pastProposal!.pastId;
+    if (!pastProposal) {
+      break;
+    }
+    history.push({ id: pastId, stage: pastProposal.stage });
+    pastId = pastProposal.pastId;
 
     if (pastId && pastId >= initialPastId) {
       // NOTE: this should never happen, however since the DB can be edited manually
