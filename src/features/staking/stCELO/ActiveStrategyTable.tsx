@@ -93,7 +93,7 @@ export function ActiveStrategyTable({
                   )}
                 </div>
               </td>
-              <td className={tableClasses.td}>{formatNumberString(stake, 2) + ' CELO'}</td>
+              <td className={tableClasses.td}>{formatNumberString(stake, 2) + ' stCELO'}</td>
               <td className={clsx(tableClasses.td, 'hidden sm:table-cell')}>{percentage + '%'}</td>
               <td className={tableClasses.td}>
                 <OptionsDropdown
