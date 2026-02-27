@@ -7,9 +7,15 @@ import { claim, withdraw } from 'src/utils/stCELOAPI';
 import type { Address } from 'viem';
 import { useConfig, usePublicClient, useReadContract } from 'wagmi';
 
+export interface StCELOWithdrawalEntry {
+  amount: bigint;
+  timestamp: string;
+}
+
 export interface PendingStCELOWithdrawal {
   amount: bigint;
   timestamp: string;
+  entries?: StCELOWithdrawalEntry[];
 }
 
 const botActionInterval = 180 * 1000;
@@ -22,17 +28,21 @@ export const useWithdrawalBot = (address?: Address) => {
     if (!address) return;
     if (!groups.length) return;
 
-    for (const group of groups) {
-      const scheduledWithdrawals = await readContract(config, {
-        ...AccountABI,
-        functionName: 'scheduledWithdrawalsForGroupAndBeneficiary',
-        args: [group, address],
-      });
+    try {
+      for (const group of groups) {
+        const scheduledWithdrawals = await readContract(config, {
+          ...AccountABI,
+          functionName: 'scheduledWithdrawalsForGroupAndBeneficiary',
+          args: [group, address],
+        });
 
-      if (scheduledWithdrawals > 0) {
-        await withdraw(address);
-        return;
+        if (scheduledWithdrawals > 0) {
+          await withdraw(address);
+          return;
+        }
       }
+    } catch (error) {
+      logger.warn('useWithdrawalBot: finalizeWithdrawal failed', error);
     }
   }, [address, groups, config]);
 
@@ -96,11 +106,13 @@ export const formatPendingWithdrawals = (
   indices.sort((a, b) => Number(timestamps[a] - timestamps[b]));
 
   const pendingWithdrawals: PendingStCELOWithdrawal[] = [];
+  const groupEntries: StCELOWithdrawalEntry[][] = [];
 
   let referenceTimestamp = 0n;
   for (let i = 0; i < indices.length; i++) {
     const timestamp = timestamps[indices[i]];
     const amount = values[indices[i]];
+    const entry: StCELOWithdrawalEntry = { amount, timestamp: timestamp.toString() };
 
     /* If next timestamp is not within allowed time span create new pending withdrawal */
     if (pendingWithdrawals.length === 0 || timestamp > referenceTimestamp + groupingTimeSpan) {
@@ -109,6 +121,7 @@ export const formatPendingWithdrawals = (
         amount,
         timestamp: timestamp.toString(),
       });
+      groupEntries.push([entry]);
       continue;
     }
 
@@ -116,6 +129,14 @@ export const formatPendingWithdrawals = (
     const lastPendingWithdrawal = pendingWithdrawals[pendingWithdrawals.length - 1];
     lastPendingWithdrawal.timestamp = timestamp.toString();
     lastPendingWithdrawal.amount = lastPendingWithdrawal.amount + amount;
+    groupEntries[groupEntries.length - 1].push(entry);
+  }
+
+  // Attach individual entries only to groups with 2+ items
+  for (let i = 0; i < pendingWithdrawals.length; i++) {
+    if (groupEntries[i].length > 1) {
+      pendingWithdrawals[i].entries = groupEntries[i];
+    }
   }
 
   return pendingWithdrawals.reverse();
