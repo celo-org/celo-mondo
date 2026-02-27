@@ -181,9 +181,7 @@ function LockAmountField({
   disabled?: boolean;
 }) {
   const maxAmountWei = useMemo(
-    () =>
-      getMaxAmount(action, lockedBalances, walletBalance) -
-      (action === LockActionType.Lock ? MIN_REMAINING_BALANCE : 0n),
+    () => getMaxAmount(action, lockedBalances, walletBalance),
     [action, lockedBalances, walletBalance],
   );
 
@@ -200,6 +198,9 @@ function LockAmountField({
       maxWalletValueWei={maxAmountWei}
       maxDescription="CELO available"
       tokenId={action === LockActionType.Lock ? TokenId.CELO : TokenId.lockedCELO}
+      zeroBalanceMessage={
+        action === LockActionType.Lock ? 'Not enough CELO to cover gas fees' : undefined
+      }
       disabled={disabled || isWithdraw}
     />
   );

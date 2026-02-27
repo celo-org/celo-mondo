@@ -1,5 +1,5 @@
 import { useFormikContext } from 'formik';
-import { useMemo } from 'react';
+import { ReactNode, useMemo } from 'react';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { NumberField } from 'src/components/input/NumberField';
 import { formatNumberString } from 'src/components/numbers/Amount';
@@ -13,12 +13,14 @@ export function AmountField({
   maxDescription,
   disabled,
   tokenId,
+  zeroBalanceMessage,
 }: {
   maxWalletValueWei: bigint;
   maxButtonValueWei?: bigint;
   maxDescription: string;
   disabled?: boolean;
   tokenId: TokenId;
+  zeroBalanceMessage?: ReactNode;
 }) {
   const { setFieldValue } = useFormikContext();
 
@@ -34,17 +36,12 @@ export function AmountField({
   );
 
   const maxButtonValue = useMemo(() => {
-    if (!maxButtonValueWei) {
+    if (maxButtonValueWei == null) {
       return maxWalletValue;
     }
 
-    return Math.max(
-      0,
-      fromWei(
-        tokenId === TokenId.CELO ? maxButtonValueWei - MIN_REMAINING_BALANCE : maxButtonValueWei,
-      ),
-    );
-  }, [maxButtonValueWei, maxWalletValue, tokenId]);
+    return Math.max(0, fromWei(maxButtonValueWei));
+  }, [maxButtonValueWei, maxWalletValue]);
 
   const onClickMax = async () => {
     if (disabled) return;
@@ -57,7 +54,7 @@ export function AmountField({
     await setFieldValue('amount', maxWalletValue);
   };
 
-  const _disabled = maxButtonValue === 0 || disabled;
+  const _disabled = maxWalletValue === 0 || maxButtonValue === 0 || disabled;
 
   return (
     <div>
@@ -66,8 +63,8 @@ export function AmountField({
           Amount
         </label>
         <span className="text-xs">
-          {maxWalletValue <= 0 && tokenId === TokenId.CELO
-            ? 'Not enough CELO to cover gas fees'
+          {maxWalletValue <= 0 && zeroBalanceMessage
+            ? zeroBalanceMessage
             : `${formatNumberString(maxWalletValue, 5)} ${maxDescription}`}
         </span>
       </div>

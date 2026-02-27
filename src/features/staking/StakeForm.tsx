@@ -180,6 +180,20 @@ function StakeAmountField({
   const { action, group } = values;
 
   const maxDescription = 'CELO available';
+  const zeroBalanceMessage =
+    action === StakeActionType.Stake ? (
+      <span className="flex items-center gap-1">
+        No locked CELO available to stake
+        <HelpIcon
+          type="tooltip"
+          position="above"
+          align="right"
+          text="Lock more CELO on the Account page to stake."
+        />
+      </span>
+    ) : (
+      'No CELO staked in this group'
+    );
   const validatorGroup = addressToGroup?.[group];
   const maxAmountToStakeByUserWei = useMemo(
     () => getMaxAmount(action, group, lockedBalances, stakeBalances, groupToStake),
@@ -190,10 +204,11 @@ function StakeAmountField({
 
   return (
     <AmountField
-      tokenId={TokenId.CELO}
+      tokenId={TokenId.lockedCELO}
       maxWalletValueWei={maxAmountToStakeByUserWei}
       maxButtonValueWei={remainingGroupCapacityWei}
       maxDescription={maxDescription}
+      zeroBalanceMessage={zeroBalanceMessage}
       disabled={disabled || remainingGroupCapacityWei === 0n}
     />
   );
@@ -325,7 +340,11 @@ function DelegateField({ disabled }: { disabled?: boolean }) {
     <div className="flex items-center justify-between pt-1">
       <label htmlFor="delegate" className="flex items-center space-x-2 pl-0.5 text-xs font-medium">
         <span>Delegate voting power</span>
-        <HelpIcon text="You can allow this validator to participate in governance voting on your behalf. This delegation be changed at any time." />
+        <HelpIcon
+          type="tooltip"
+          position="above"
+          text="You can allow this validator to participate in governance voting on your behalf. This delegation can be changed at any time."
+        />
       </label>
       <Field
         name="delegate"
