@@ -16,6 +16,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
+import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
@@ -25,6 +26,7 @@ export function WalletDropdown() {
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
   const trackEvent = useTrackEvent();
+  const { mode } = useStakingMode();
   const previousIsConnected = useRef(isConnected);
 
   useEffect(() => {
@@ -68,7 +70,10 @@ export function WalletDropdown() {
           modalClasses="p-4"
         />
       ) : (
-        <SolidButton className="bg-primary" onClick={onConnect}>
+        <SolidButton
+          className={mode === 'stCELO' ? 'bg-purple-300 text-white' : 'bg-yellow-500'}
+          onClick={onConnect}
+        >
           Connect
         </SolidButton>
       )}

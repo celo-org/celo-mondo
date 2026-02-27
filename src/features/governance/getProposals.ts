@@ -1,9 +1,22 @@
 import { sql } from 'drizzle-orm';
-import { unstable_cache } from 'next/cache';
-import { CacheKeys, StaleTime } from 'src/config/consts';
 import database from 'src/config/database';
 import { Proposal, proposalsTable } from 'src/db/schema';
 import { ProposalStage } from 'src/features/governance/types';
+
+/**
+ * PostgreSQL `timestamp` (without timezone) strips the "Z" suffix when storing
+ * ISO strings, so drizzle returns e.g. "2026-02-20 18:49:00" with no timezone.
+ * JavaScript's `new Date()` treats such strings as LOCAL time, causing an offset
+ * equal to the user's UTC offset (e.g. 8 hours for PST).
+ *
+ * This function ensures the string is parsed as UTC.
+ */
+function ensureUTC(ts: string): string {
+  if (ts.endsWith('Z') || ts.includes('+') || /-\d{2}:\d{2}$/.test(ts)) {
+    return ts;
+  }
+  return ts.replace(' ', 'T') + 'Z';
+}
 
 function findHistory(
   proposals: Proposal[],
@@ -44,13 +57,13 @@ export async function getProposals(chainId: number): Promise<ProposalWithHistory
     .where(sql`${proposalsTable.chainId} = ${chainId}`)
     .orderBy(sql`${proposalsTable.id} ASC`);
   proposals.forEach((p) => {
+    // Normalize timestamps so clients parse them as UTC, not local time
+    if (p.queuedAt) p.queuedAt = ensureUTC(p.queuedAt);
+    if (p.dequeuedAt) p.dequeuedAt = ensureUTC(p.dequeuedAt);
+    if (p.approvedAt) p.approvedAt = ensureUTC(p.approvedAt);
+    if (p.executedAt) p.executedAt = ensureUTC(p.executedAt);
     (p as ProposalWithHistory).history = findHistory(proposals, p.pastId);
   });
 
   return proposals.sort((a, b) => b.id - a.id) as ProposalWithHistory[];
 }
-
-export const getCachedProposals = unstable_cache(getProposals, undefined, {
-  revalidate: process.env.NODE_ENV === 'production' ? StaleTime.Default / 1000 : 1,
-  tags: [CacheKeys.AllProposals],
-});

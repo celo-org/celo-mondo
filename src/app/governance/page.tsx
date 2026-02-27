@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useCallback, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
-import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { SkeletonBlock, SkeletonText } from 'src/components/animation/Skeleton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { SearchField } from 'src/components/input/SearchField';
 import { Section } from 'src/components/layout/Section';
@@ -137,8 +137,37 @@ function ProposalList() {
           </div>
         </Fade>
       ) : (
-        <FullWidthSpinner className="text-taupe-600">Loading governance data</FullWidthSpinner>
+        <ProposalListSkeleton />
       )}
+    </div>
+  );
+}
+
+function ProposalListSkeleton() {
+  return (
+    <div>
+      <div className="grid grid-flow-row grid-cols-2 gap-x-7 gap-y-6 border-b border-taupe-300 pb-2 pt-1 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <SkeletonBlock key={i} className="h-6 w-20" />
+        ))}
+      </div>
+      <div className="mt-5 divide-y divide-taupe-300">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="space-y-2.5 py-5 first:pt-0">
+            <div className="flex items-center space-x-2">
+              <SkeletonBlock className="h-5 w-16 rounded-full" />
+              <SkeletonBlock className="h-5 w-14 rounded-full" />
+              <SkeletonBlock className="h-5 w-20 rounded-full" />
+            </div>
+            <SkeletonText className="h-5 w-3/4" />
+            <SkeletonBlock className="h-1 w-full" />
+            <div className="flex items-center space-x-2">
+              <SkeletonBlock className="h-4 w-4" />
+              <SkeletonText className="w-32" />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { SkeletonBlock, SkeletonCircle, SkeletonText } from 'src/components/animation/Skeleton';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
@@ -55,7 +55,7 @@ export default function Page() {
     return (
       <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
         <H1>Bridge to Celo</H1>
-        <FullWidthSpinner>Loading bridge data</FullWidthSpinner>
+        <BridgeCardsSkeleton />
       </Section>
     );
   }
@@ -75,6 +75,29 @@ export default function Page() {
   );
 }
 
+function BridgeCardsSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:p-5"
+        >
+          <div className="flex items-center space-x-4">
+            <SkeletonCircle size={60} />
+            <div className="flex flex-col gap-1">
+              <SkeletonBlock className="h-6 w-32" />
+              <SkeletonText className="w-20" />
+              <SkeletonText className="w-48" />
+            </div>
+          </div>
+          <SkeletonBlock className="h-11 w-24 rounded-full" />
+        </div>
+      ))}
+    </>
+  );
+}
+
 function BridgeLink({ id, name, operator, href, logo, description }: Bridge) {
   const trackEvent = useTrackEvent();
 
@@ -83,7 +106,7 @@ function BridgeLink({ id, name, operator, href, logo, description }: Bridge) {
   };
 
   return (
-    <div className="flex max-w-xl items-center justify-between self-center border border-taupe-300 bg-white p-4 sm:p-5">
+    <div className="flex items-center justify-between border border-taupe-300 bg-white p-4 sm:p-5">
       <div className="flex items-center space-x-4">
         <Image src={logo} width={60} height={60} alt="" className="rounded-full" />
         <div className="flex flex-col gap-1">

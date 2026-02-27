@@ -12,7 +12,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
-import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { SkeletonBlock, SkeletonCircle } from 'src/components/animation/Skeleton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
@@ -230,11 +230,67 @@ const classNames = {
   tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };
+function DelegateeTableSkeleton() {
+  return (
+    <div>
+      <div className="flex justify-between">
+        <SkeletonBlock className="h-6 w-24" />
+        <div className="flex flex-row gap-2">
+          <SkeletonBlock className="h-10 w-full rounded-full md:w-64" />
+        </div>
+      </div>
+      <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
+        <thead>
+          <tr>
+            {['w-20', 'w-16', 'w-12', 'w-20'].map((w, i) => (
+              <th
+                key={i}
+                className={clsx(classNames.th, (i === 1 || i === 2) && 'hidden md:table-cell')}
+              >
+                <SkeletonBlock className={`h-4 ${w}`} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <tr key={i}>
+              <td className={classNames.td}>
+                <div className="flex items-center space-x-2 px-4 py-4">
+                  <SkeletonCircle size={34} />
+                  <SkeletonBlock className="h-5 w-28" />
+                </div>
+              </td>
+              <td className={clsx(classNames.td, 'hidden md:table-cell')}>
+                <div className="flex space-x-2 px-4 py-4">
+                  <SkeletonBlock className="h-5 w-16 rounded-full" />
+                  <SkeletonBlock className="h-5 w-12 rounded-full" />
+                </div>
+              </td>
+              <td className={clsx(classNames.td, 'hidden md:table-cell')}>
+                <div className="flex space-x-3 px-4 py-4">
+                  <SkeletonCircle size={20} />
+                  <SkeletonCircle size={20} />
+                </div>
+              </td>
+              <td className={classNames.td}>
+                <div className="px-4 py-4">
+                  <SkeletonBlock className="h-5 w-24" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function DelegateeTableSection() {
   const { delegatees } = useDelegatees();
 
   if (!delegatees) {
-    return <FullWidthSpinner>Loading delegate data</FullWidthSpinner>;
+    return <DelegateeTableSkeleton />;
   }
 
   return (

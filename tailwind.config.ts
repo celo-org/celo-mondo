@@ -96,6 +96,7 @@ module.exports = {
         },
         'light-liquid': {
           primary: '#B490FF',
+          'primary-content': '#ffffff',
           secondary: '#E7E3D4',
           accent: '#1E002B',
           neutral: '#ffffff',

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
@@ -51,7 +52,6 @@ export function ModeToggle() {
         <button
           ref={celoRef}
           onClick={() => handleSelect('CELO')}
-          title="Stake CELO directly with validator groups"
           className={clsx(
             'relative z-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-300',
             mode === 'CELO' ? 'text-black' : 'text-taupe-600 hover:text-black',
@@ -62,13 +62,19 @@ export function ModeToggle() {
         <button
           ref={stCeloRef}
           onClick={() => handleSelect('stCELO')}
-          title="Liquid stake CELO to receive stCELO"
           className={clsx(
-            'relative z-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-300',
+            'relative z-10 flex items-center gap-1 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-300',
             mode === 'stCELO' ? 'text-white' : 'text-taupe-600 hover:text-black',
           )}
         >
           Liquid Stake
+          <HelpIcon
+            type="tooltip"
+            text="Toggle Mondo to use your liquid staked Celo positions vs regular staked Celo positions."
+            size={14}
+            position="below"
+            align="right"
+          />
         </button>
       </div>
     </div>

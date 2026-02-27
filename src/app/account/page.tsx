@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
+import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
@@ -76,6 +77,14 @@ export default function Page() {
   const totalLocked = getTotalLockedCelo(lockedBalances);
   const totalBalance = (walletBalance || 0n) + totalLocked;
   const totalDelegated = (BigInt(Math.floor(delegations?.totalPercent || 0)) * totalLocked) / 100n;
+
+  if (!addressToGroup) {
+    return (
+      <Section className="mt-6" containerClassName="space-y-6 px-4 max-w-screen-md">
+        <AccountPageSkeleton />
+      </Section>
+    );
+  }
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4 max-w-screen-md">
@@ -393,5 +402,66 @@ function TableTabs({
       )}
       {tab === 'history' && <ProposalVotesHistoryTable />}
     </div>
+  );
+}
+
+function AccountPageSkeleton() {
+  return (
+    <>
+      <SkeletonBlock className="hidden h-8 w-32 sm:block" />
+      {/* Total Balance + buttons */}
+      <div className="items-top flex justify-between">
+        <div className="space-y-1">
+          <SkeletonBlock className="h-5 w-28" />
+          <SkeletonBlock className="h-9 w-48 md:h-10" />
+        </div>
+        <div className="hidden space-x-2 md:flex">
+          <SkeletonBlock className="h-10 w-24 rounded-full" />
+          <SkeletonBlock className="h-10 w-24 rounded-full" />
+          <SkeletonBlock className="h-10 w-28 rounded-full" />
+        </div>
+      </div>
+      {/* Stat boxes */}
+      <div className="flex items-center justify-between">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-1">
+            <SkeletonBlock className="h-4 w-24" />
+            <SkeletonBlock className="h-7 w-32 md:h-8" />
+            <SkeletonBlock className="h-3 w-20" />
+          </div>
+        ))}
+      </div>
+      {/* Tab headers */}
+      <div className="pt-2">
+        <div className="flex space-x-10 border-b border-taupe-300 pb-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonBlock key={i} className="h-5 w-20" />
+          ))}
+        </div>
+        {/* Table rows */}
+        <table className="mt-2 w-full">
+          <thead>
+            <tr>
+              {['w-24', 'w-20', 'w-16', 'w-16'].map((w, i) => (
+                <th key={i} className="border-y border-taupe-300 px-4 py-3">
+                  <SkeletonBlock className={`h-4 ${w}`} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 5 }).map((_, row) => (
+              <tr key={row}>
+                {['w-28', 'w-20', 'w-16', 'w-20'].map((w, col) => (
+                  <td key={col} className="border-y border-taupe-300 px-4 py-4">
+                    <SkeletonBlock className={`h-5 ${w}`} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
