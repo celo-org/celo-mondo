@@ -345,7 +345,7 @@ function useTableColumns(_totalVotes: bigint) {
                   { group: props.row.original.address },
                 );
               }}
-              className="bg-primary text-primary-content all:btn-neutral"
+              className="bg-primary all:btn-neutral all:text-primary-content"
               disabled={isFull}
               title={isFull ? 'This group has reached maximum capacity' : undefined}
             >

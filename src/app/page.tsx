@@ -53,11 +53,11 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <H1>Discover Validators</H1>
         <div className="flex flex-row gap-2">
           <SolidButton
-            className="bg-yellow-500 px-8"
+            className="bg-yellow-500 px-4 sm:px-8"
             onClick={() => {
               selectMode('CELO');
               showStakeModal();
@@ -70,7 +70,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
               selectMode('stCELO');
               showLiquidStakeModal();
             }}
-            className="bg-purple-300 px-8"
+            className="bg-purple-300 px-4 text-white sm:px-8"
           >
             Liquid Stake
           </SolidButton>

@@ -22,7 +22,7 @@ export function Header() {
         <div className="hidden md:block">
           <NavBar collapsed={collapseHeader} />
         </div>
-        <div className="flew-row flex items-center justify-center gap-4">
+        <div className="flex min-w-0 flex-row items-center justify-center gap-2 sm:gap-4">
           <ModeToggle />
           <WalletDropdown />
         </div>
