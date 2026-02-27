@@ -144,16 +144,29 @@ describe('buildTimelineSteps', () => {
   });
 
   describe('Active Execution', () => {
-    test('shows Execution active with implied Approved before it', () => {
+    test('shows Execution active with pending Approval when not yet approved', () => {
       const data = makePropData({
         stage: ProposalStage.Execution,
         dequeuedAt: DEQUEUED_AT,
       });
       const steps = buildTimelineSteps(data, null);
 
-      // approvalImplied is true when stage is Execution, so Approved is placed before Execution
-      expect(labels(steps)).toEqual(['Upvoting', 'Voting', 'Approved', 'Execution', 'Expiration']);
-      expect(statuses(steps)).toEqual(['completed', 'completed', 'completed', 'active', 'future']);
+      // Execution stage is time-based; without explicit approval, Approval is pending after Execution
+      expect(labels(steps)).toEqual(['Upvoting', 'Voting', 'Execution', 'Approval', 'Expiration']);
+      expect(statuses(steps)).toEqual(['completed', 'completed', 'active', 'future', 'future']);
+    });
+
+    test('shows Approved at chronological position when approvedAt is set', () => {
+      const data = makePropData({
+        stage: ProposalStage.Execution,
+        dequeuedAt: DEQUEUED_AT,
+        approvedAt: APPROVED_AT, // VOTING_END + 1000, i.e. during Execution phase
+      });
+      const steps = buildTimelineSteps(data, null);
+
+      // Approved is placed chronologically — APPROVED_AT falls during Execution, so after it
+      expect(labels(steps)).toEqual(['Upvoting', 'Voting', 'Execution', 'Approved', 'Expiration']);
+      expect(statuses(steps)).toEqual(['completed', 'completed', 'active', 'completed', 'future']);
     });
   });
 

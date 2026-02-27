@@ -75,10 +75,7 @@ function computeTimelineContext(
   const isAdopted = stage === ProposalStage.Adopted;
   const pastReferendum = stage > ProposalStage.Referendum;
   const approvalImplied =
-    !approvedMs &&
-    (stage === ProposalStage.Execution ||
-      stage === ProposalStage.Executed ||
-      stage === ProposalStage.Adopted);
+    !approvedMs && (stage === ProposalStage.Executed || stage === ProposalStage.Adopted);
   const approvalMissed =
     !approvedMs &&
     stage === ProposalStage.Expiration &&

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { SkeletonBlock, SkeletonText } from 'src/components/animation/Skeleton';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { BackLink } from 'src/components/buttons/BackLink';
@@ -37,7 +38,7 @@ export function Proposal({ id }: { id: string }) {
   usePageInvariant(isLoading || propData, '/governance', 'Proposal not found');
 
   if (!propData) {
-    return <FullWidthSpinner>Loading proposals</FullWidthSpinner>;
+    return <ProposalDetailSkeleton />;
   }
 
   return (
@@ -91,6 +92,70 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
         {content && <div dangerouslySetInnerHTML={{ __html: content }} className="space-y-4"></div>}
       </div>
     </div>
+  );
+}
+
+function ProposalDetailSkeleton() {
+  return (
+    <>
+      {/* Left panel — mirrors ProposalContent */}
+      <div className="min-w-0 space-y-3 lg:max-w-4xl lg:flex-1">
+        <SkeletonText className="w-32" />
+        <SkeletonBlock className="h-8 w-3/4" />
+        <div className="flex items-center space-x-2">
+          <SkeletonBlock className="h-5 w-16 rounded-full" />
+          <SkeletonBlock className="h-5 w-14 rounded-full" />
+          <SkeletonBlock className="h-5 w-20 rounded-full" />
+          <SkeletonText className="w-28" />
+        </div>
+        <SkeletonBlock className="h-12 w-full" />
+        <div className="space-y-3 pt-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonText key={i} className={i % 3 === 2 ? 'w-2/3' : 'w-full'} />
+          ))}
+        </div>
+      </div>
+
+      {/* Right panel — mirrors ProposalChainData */}
+      <CollapsibleResponsiveMenu defaultCollapsed>
+        <div className="w-full space-y-4 xl:w-[26rem]">
+          <div className="space-y-4 border-taupe-300 p-3 lg:border">
+            {/* Votes */}
+            <div className="space-y-2">
+              <SkeletonBlock className="h-7 w-16" />
+              <div className="space-y-1.5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonBlock key={i} className="h-7 w-full" />
+                ))}
+              </div>
+            </div>
+            {/* Vote Requirements */}
+            <div className="space-y-3 border-t border-taupe-300 pt-2">
+              <SkeletonBlock className="h-7 w-36" />
+              <div className="space-y-1">
+                <SkeletonText className="w-20" />
+                <SkeletonText className="w-48" />
+                <SkeletonBlock className="h-5 w-full" />
+              </div>
+              <div className="space-y-1">
+                <SkeletonText className="w-20" />
+                <SkeletonText className="w-48" />
+                <SkeletonBlock className="h-5 w-full" />
+              </div>
+            </div>
+            {/* Timeline */}
+            <div className="space-y-3 py-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <SkeletonBlock className="h-3 w-3 flex-shrink-0 rounded-full" />
+                  <SkeletonText className={i % 2 === 0 ? 'w-24' : 'w-32'} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CollapsibleResponsiveMenu>
+    </>
   );
 }
 
