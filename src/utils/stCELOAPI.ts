@@ -15,7 +15,7 @@ async function sendRequest(action: ActionType, address?: string): Promise<boolea
         },
         body: JSON.stringify({ beneficiary: address, type: action }),
       },
-      15000,
+      180000,
     );
 
     if (!response.ok) {
