@@ -13,6 +13,7 @@ import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { bigIntMin } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
+import { useStakingMode } from 'src/utils/useStakingMode';
 
 export default function Page() {
   const { groups, totalVotes } = useValidatorGroups();
@@ -47,17 +48,30 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
   }, [groups]);
 
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
-  const showLiquidStakeModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
+  const showLiquidStakeModal = useTransactionModal(TransactionFlowType.StakeStCELO);
+  const { selectMode } = useStakingMode();
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <H1>Discover Validators</H1>
         <div className="flex flex-row gap-2">
-          <SolidButton className="bg-yellow-500 px-8" onClick={() => showStakeModal()}>
+          <SolidButton
+            className="bg-yellow-500 px-8"
+            onClick={() => {
+              selectMode('CELO');
+              showStakeModal();
+            }}
+          >
             Stake
           </SolidButton>
-          <SolidButton onClick={() => showLiquidStakeModal()} className="bg-purple-300 px-8">
+          <SolidButton
+            onClick={() => {
+              selectMode('stCELO');
+              showLiquidStakeModal();
+            }}
+            className="bg-purple-300 px-8"
+          >
             Liquid Stake
           </SolidButton>
         </div>

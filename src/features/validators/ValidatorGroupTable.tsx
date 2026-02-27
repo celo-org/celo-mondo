@@ -331,22 +331,28 @@ function useTableColumns(_totalVotes: bigint) {
       columnHelper.display({
         id: 'cta',
         header: '',
-        cell: (props) => (
-          <SolidButton
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              trackEvent('stake_button_clicked', { groupAddress: props.row.original.address });
-              showTxModal(
-                mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
-                { group: props.row.original.address },
-              );
-            }}
-            className="bg-primary text-primary-content all:btn-neutral"
-          >
-            {ui.action}
-          </SolidButton>
-        ),
+        cell: (props) => {
+          const { votes, capacity } = props.row.original;
+          const isFull = capacity > 0n && votes >= capacity;
+          return (
+            <SolidButton
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                trackEvent('stake_button_clicked', { groupAddress: props.row.original.address });
+                showTxModal(
+                  mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
+                  { group: props.row.original.address },
+                );
+              }}
+              className="bg-primary text-primary-content all:btn-neutral"
+              disabled={isFull}
+              title={isFull ? 'This group has reached maximum capacity' : undefined}
+            >
+              {isFull ? 'Full' : ui.action}
+            </SolidButton>
+          );
+        },
       }),
     ];
   }, [ui.action, showTxModal, mode, trackEvent]);

@@ -5,18 +5,24 @@ import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmi
 import { AmountField } from 'src/components/input/AmountField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { MIN_REMAINING_BALANCE } from 'src/config/consts';
+import { MIN_REMAINING_BALANCE, ZERO_ADDRESS } from 'src/config/consts';
 import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
 import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { useExchangeRates } from 'src/features/staking/stCELO/hooks/useExchangeRates';
+import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { useWithdrawals } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { getStakeTxPlan } from 'src/features/staking/stCELO/stakeTxPlan';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
+import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
+import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
+import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
+import { getGroupStats } from 'src/features/validators/utils';
 import { fromWei, toWei } from 'src/utils/amount';
 import { afterDeposit, withdraw } from 'src/utils/stCELOAPI';
 import { toTitleCase } from 'src/utils/strings';
@@ -44,6 +50,21 @@ export function StakeStCeloForm({
   const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);
   const { stakeBalances } = useStakingBalances(address);
   const { startWaitingForNewWithdrawal } = useWithdrawals(address);
+  const { group: strategyGroup } = useStrategy(address);
+  const { addressToGroup } = useValidatorGroups(true);
+  const showChangeStrategy = useTransactionModal(TransactionFlowType.ChangeStrategy);
+
+  const changeStrategyDefaultGroup = useMemo(() => {
+    if (!strategyGroup || strategyGroup !== ZERO_ADDRESS || !addressToGroup) return ZERO_ADDRESS;
+    // Current strategy is already default (StCelo Basket), pick a random top group with free capacity
+    const candidates = Object.values(addressToGroup)
+      .filter((g) => g.validStCeloGroup && g.address !== ZERO_ADDRESS && g.votes < g.capacity)
+      .map((g) => ({ ...g, score: getGroupStats(g).score }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+    if (!candidates.length) return ZERO_ADDRESS;
+    return candidates[Math.floor(Math.random() * candidates.length)].address;
+  }, [strategyGroup, addressToGroup]);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<LiquidStakeFormValues>({
@@ -104,7 +125,7 @@ export function StakeStCeloForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="lock-form">
+        <Form className="mt-4 flex flex-1 flex-col justify-between gap-6" data-testid="lock-form">
           <div className="space-y-5">
             {showTip && (
               <TipBox color="purple">
@@ -121,6 +142,25 @@ export function StakeStCeloForm({
               action={values.action}
               disabled={isInputDisabled}
             />
+            {strategyGroup && addressToGroup && (
+              <div>
+                <label className="pl-0.5 text-xs font-medium">Strategy</label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    showChangeStrategy(undefined, { group: changeStrategyDefaultGroup })
+                  }
+                  className="mt-2 flex w-full items-center justify-between rounded-full border border-taupe-300 py-2 pl-3 pr-4 hover:bg-taupe-300/50"
+                >
+                  <ValidatorGroupLogoAndName
+                    address={strategyGroup}
+                    name={addressToGroup[strategyGroup]?.name}
+                    size={24}
+                  />
+                  <span className="shrink-0 text-xs text-purple-500">Change</span>
+                </button>
+              </div>
+            )}
           </div>
           <MultiTxFormSubmitButton
             txIndex={txPlanIndex}
@@ -176,9 +216,7 @@ function LockAmountField({
       </div>
       <div className="flex items-center justify-between">
         <label className="pl-0.5 text-xs font-medium">Exchange Rate</label>
-        <span className="text-xs">
-          {action === LiquidStakeActionType.Stake ? stakingRate : unstakingRate}
-        </span>
+        <span className="text-xs">{rate != null ? formatNumberString(rate, 2) : 'Loading…'}</span>
       </div>
     </div>
   );

@@ -46,7 +46,7 @@ export function formatNumberString(value?: BigNumber.Value | bigint, decimals = 
 
   const roundedDown = valueBN
     .decimalPlaces(decimals, BigNumber.ROUND_FLOOR)
-    .toFormat(NUMBER_FORMAT);
+    .toFormat(decimals, NUMBER_FORMAT);
 
   if (roundedDown === '0' && valueBN.gt(0)) {
     const epsilon = Math.pow(10, -decimals);

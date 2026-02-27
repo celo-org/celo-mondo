@@ -8,6 +8,7 @@ import { sortAndCombineChartData } from 'src/components/charts/chartData';
 import { HeaderAndSubheader } from 'src/components/layout/HeaderAndSubheader';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
+import { ZERO_ADDRESS } from 'src/config/consts';
 import { useStCELOBalance } from 'src/features/account/hooks';
 import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { StCeloActionType } from 'src/features/staking/types';
@@ -15,6 +16,7 @@ import { TransactionFlowType } from 'src/features/transactions/TransactionFlowTy
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
 import { ValidatorGroup } from 'src/features/validators/types';
+import { getGroupStats } from 'src/features/validators/utils';
 import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
@@ -100,6 +102,7 @@ export function ActiveStrategyTable({
                   group={address}
                   isActivatable={groupToIsActivatable?.[address]}
                   changeStrategy={showModal}
+                  addressToGroup={addressToGroup}
                 />
               </td>
             </tr>
@@ -112,14 +115,29 @@ export function ActiveStrategyTable({
 
 function OptionsDropdown({
   group,
+  addressToGroup,
 }: {
   group: Address;
   isActivatable?: boolean;
   changeStrategy: () => void;
+  addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
   const showTxModal = useTransactionModal();
+
+  const defaultToGroup = useMemo(() => {
+    if (group !== ZERO_ADDRESS || !addressToGroup) return ZERO_ADDRESS;
+    // Current strategy is already default (StCelo Basket), pick a random top group with free capacity
+    const candidates = Object.values(addressToGroup)
+      .filter((g) => g.validStCeloGroup && g.address !== ZERO_ADDRESS && g.votes < g.capacity)
+      .map((g) => ({ ...g, score: getGroupStats(g).score }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+    if (!candidates.length) return ZERO_ADDRESS;
+    return candidates[Math.floor(Math.random() * candidates.length)].address;
+  }, [group, addressToGroup]);
+
   const onClickItem = (action: StCeloActionType) => {
-    showTxModal(TransactionFlowType.ChangeStrategy, { group, action });
+    showTxModal(TransactionFlowType.ChangeStrategy, { group: defaultToGroup, action });
   };
 
   return (

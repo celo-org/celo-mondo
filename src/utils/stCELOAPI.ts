@@ -2,11 +2,7 @@ import { ST_CELO_API_URL } from 'src/config/consts';
 import { fetchWithTimeout } from 'src/utils/async';
 import { logger } from 'src/utils/logger';
 
-type ActionType =
-  | 'activate'
-  | 'withdraw'
-  | 'claim'
-  | ['rebalanceDefault', 'rebalance', 'revoke', 'activate']; // must be this order
+type ActionType = 'withdraw' | 'claim' | ['rebalanceDefault', 'rebalance', 'revoke', 'activate']; // must be this order
 
 async function sendRequest(action: ActionType, address?: string): Promise<boolean> {
   try {
@@ -36,6 +32,5 @@ async function sendRequest(action: ActionType, address?: string): Promise<boolea
 
 export const afterDeposit = (): Promise<boolean> =>
   sendRequest(['rebalanceDefault', 'rebalance', 'revoke', 'activate']);
-export const activate = (): Promise<boolean> => sendRequest('activate');
 export const withdraw = (address: string): Promise<boolean> => sendRequest('withdraw', address);
 export const claim = (address: string): Promise<boolean> => sendRequest('claim', address);
