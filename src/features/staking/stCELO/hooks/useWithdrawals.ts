@@ -180,15 +180,19 @@ export const useWithdrawals = (address?: Address) => {
 
   const pendingWithdrawals = pendingWithdrawal || [];
 
+  // Count raw on-chain entries (not grouped count) so we detect new withdrawals
+  // even when they merge into an existing group
+  const rawEntryCount = pendingWithdrawals.reduce((sum, w) => sum + (w.entries?.length || 1), 0);
+
   useEffect(() => {
-    if (waitingPrevCount !== null && pendingWithdrawals.length > waitingPrevCount) {
+    if (waitingPrevCount !== null && rawEntryCount > waitingPrevCount) {
       clearWaiting();
     }
-  }, [pendingWithdrawals.length]);
+  }, [rawEntryCount]);
 
   const startWaitingForNewWithdrawal = useCallback(() => {
-    setWaiting(pendingWithdrawals.length);
-  }, [pendingWithdrawals.length]);
+    setWaiting(rawEntryCount);
+  }, [rawEntryCount]);
 
   return {
     pendingWithdrawals,
