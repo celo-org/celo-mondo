@@ -1,8 +1,8 @@
 /* eslint no-console: 0 */
 
-import { sql } from 'drizzle-orm';
+import { inArray, sql } from 'drizzle-orm';
 import database from 'src/config/database';
-import { votesTable } from 'src/db/schema';
+import { proposalsTable, votesTable } from 'src/db/schema';
 
 import { VoteType } from 'src/features/governance/types';
 
@@ -15,7 +15,28 @@ export default async function updateVotesInDB(
   chainId: number,
   proposalIds: bigint[],
 ): Promise<void> {
+  // Filter to only proposals that exist in the DB to avoid FK violations
+  const existingProposals = await database
+    .select({ id: proposalsTable.id })
+    .from(proposalsTable)
+    .where(
+      inArray(
+        proposalsTable.id,
+        proposalIds.map((id) => Number(id)),
+      ),
+    );
+  const existingIds = new Set(existingProposals.map((p) => p.id));
+  const skippedIds = proposalIds.filter((id) => !existingIds.has(Number(id)));
+  if (skippedIds.length) {
+    console.info(
+      `Skipping votes for ${skippedIds.length} non-existent proposal(s): [${skippedIds.join(', ')}]`,
+    );
+  }
+
   for (const proposalId of proposalIds) {
+    if (!existingIds.has(Number(proposalId))) {
+      continue;
+    }
     const { totals } = await sumProposalVotes(Number(proposalId));
 
     const rows = Object.entries(totals).map(([type, count]) => ({
@@ -36,7 +57,7 @@ export default async function updateVotesInDB(
 
     if (process.env.NODE_ENV === 'test') {
       console.info('not revalidating cache in test mode');
-      return;
+      continue;
     } // Revalidate the cache
     if (process.env.CI === 'true') {
       const BASE_URL = process.env.IS_PRODUCTION_DATABASE

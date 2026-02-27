@@ -74,6 +74,11 @@ export default async function updateProposalsInDB(
     }
   }
 
+  if (rowsToInsert.length === 0) {
+    console.info('No proposals to insert (all filtered out due to missing metadata)');
+    return;
+  }
+
   const { count } = await database
     .insert(proposalsTable)
     .values(rowsToInsert)
