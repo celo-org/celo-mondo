@@ -11,7 +11,17 @@ describe('formatPendingWithdrawals', () => {
     // Sorted by timestamp: 100 (amount 20), 200 (amount 30), 300 (amount 10)
     // All within 300s window of first (100), so all grouped: 20+30+10=60
     // Timestamp updated to last: 300, then reversed (newest first)
-    expect(result).toEqual([{ amount: 60n, timestamp: '300' }]);
+    expect(result).toEqual([
+      {
+        amount: 60n,
+        timestamp: '300',
+        entries: [
+          { amount: 20n, timestamp: '100' },
+          { amount: 30n, timestamp: '200' },
+          { amount: 10n, timestamp: '300' },
+        ],
+      },
+    ]);
   });
 
   it('correctly handles already sorted timestamps', () => {
@@ -23,7 +33,17 @@ describe('formatPendingWithdrawals', () => {
     // Already sorted: 100 (amount 10), 200 (amount 20), 300 (amount 30)
     // All within 300s window of first (100), so all grouped: 10+20+30=60
     // Timestamp updated to last: 300, then reversed (newest first)
-    expect(result).toEqual([{ amount: 60n, timestamp: '300' }]);
+    expect(result).toEqual([
+      {
+        amount: 60n,
+        timestamp: '300',
+        entries: [
+          { amount: 10n, timestamp: '100' },
+          { amount: 20n, timestamp: '200' },
+          { amount: 30n, timestamp: '300' },
+        ],
+      },
+    ]);
   });
 
   it('groups withdrawals within 5-minute (300 second) window', () => {
@@ -33,7 +53,16 @@ describe('formatPendingWithdrawals', () => {
     const result = formatPendingWithdrawals(values, timestamps);
 
     // Expected: grouped into one withdrawal with combined amount
-    expect(result).toEqual([{ amount: 30n, timestamp: '200' }]);
+    expect(result).toEqual([
+      {
+        amount: 30n,
+        timestamp: '200',
+        entries: [
+          { amount: 10n, timestamp: '100' },
+          { amount: 20n, timestamp: '200' },
+        ],
+      },
+    ]);
   });
 
   it('returns empty array for empty input', () => {
