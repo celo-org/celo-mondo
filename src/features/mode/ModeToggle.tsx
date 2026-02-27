@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
@@ -9,17 +9,22 @@ export function ModeToggle() {
 
   const celoRef = useRef<HTMLButtonElement>(null);
   const stCeloRef = useRef<HTMLButtonElement>(null);
-  const [pillStyle, setPillStyle] = useState<{ left: number; width: number }>({
-    left: 0,
-    width: 0,
-  });
+  const [pillStyle, setPillStyle] = useState<{
+    left: number;
+    width: number;
+  } | null>(null);
+  const [enableTransition, setEnableTransition] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const activeRef = mode === 'CELO' ? celoRef.current : stCeloRef.current;
     if (activeRef) {
       setPillStyle({ left: activeRef.offsetLeft, width: activeRef.offsetWidth });
     }
   }, [mode]);
+
+  useEffect(() => {
+    setEnableTransition(true);
+  }, []);
 
   const handleSelect = useCallback(
     (newMode: 'CELO' | 'stCELO') => {
@@ -33,13 +38,16 @@ export function ModeToggle() {
     <div className={clsx('flex items-center', !shouldRender && 'hidden')}>
       <div className="relative flex rounded-full bg-taupe-300 p-0.5">
         {/* Sliding background pill */}
-        <div
-          className={clsx(
-            'absolute bottom-0.5 top-0.5 rounded-full transition-all duration-300 ease-in-out',
-            mode === 'CELO' ? 'bg-yellow-500' : 'bg-purple-300',
-          )}
-          style={{ left: pillStyle.left, width: pillStyle.width }}
-        />
+        {pillStyle && (
+          <div
+            className={clsx(
+              'absolute bottom-0.5 top-0.5 rounded-full',
+              enableTransition && 'transition-all duration-300 ease-in-out',
+              mode === 'CELO' ? 'bg-yellow-500' : 'bg-purple-300',
+            )}
+            style={{ left: pillStyle.left, width: pillStyle.width }}
+          />
+        )}
         <button
           ref={celoRef}
           onClick={() => handleSelect('CELO')}
