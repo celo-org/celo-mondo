@@ -80,7 +80,7 @@ export function StakeForm({
     trackEvent('stake_completed', {
       action: v.action,
       amount: v.amount,
-      group: addressToGroup?.[v.group]?.name,
+      group: v.group,
     });
     onConfirmed({
       message: `${v.action} successful`,
