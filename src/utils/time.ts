@@ -159,8 +159,8 @@ export function getHumanEndTime({
         const pastEndTime = endDate - now < 0;
         return result(
           pastEndTime
-            ? `Execution window closed on ${getFullDateHumanDateString(endDate)} (awaiting update)`
-            : `Execution window ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`,
+            ? `Execution closed on ${getFullDateHumanDateString(endDate)} (awaiting update)`
+            : `Execution ends in ${getHumanReadableDuration(endDate - now)} on ${getFullDateHumanDateString(endDate)}`,
           endDate,
         );
       }
