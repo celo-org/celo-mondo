@@ -38,7 +38,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
 
   return (
     <nav>
-      <ul className="flex list-none items-center justify-center space-x-6">
+      <ul className="flex list-none items-center justify-center space-x-6 overflow-hidden">
         {LINKS(!!address).map((l) => {
           const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
 

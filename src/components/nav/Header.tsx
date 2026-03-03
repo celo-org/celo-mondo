@@ -15,14 +15,14 @@ export function Header() {
       }`}
     >
       <div className="flex items-center justify-between">
-        <MobileNavDropdown className="block md:hidden" />
-        <Link href="/" className="hidden items-center md:flex">
+        <MobileNavDropdown className="block lg:hidden" />
+        <Link href="/" className="hidden items-center lg:flex">
           <CeloLogo width={110} height={26} />
         </Link>
-        <div className="hidden md:block">
+        <div className="hidden min-w-0 lg:block">
           <NavBar collapsed={collapseHeader} />
         </div>
-        <div className="flex min-w-0 flex-row items-center justify-center gap-2 sm:gap-4">
+        <div className="flex shrink-0 flex-row items-center justify-center gap-2 sm:gap-4">
           <ModeToggle />
           <WalletDropdown />
         </div>
