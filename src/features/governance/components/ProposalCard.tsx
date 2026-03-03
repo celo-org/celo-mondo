@@ -65,11 +65,7 @@ export function ProposalCard({
     }));
 
   return (
-    <Link
-      href={link}
-      className={clsx('block space-y-2.5', className)}
-      onClick={onProposalClick}
-    >
+    <Link href={link} className={clsx('block space-y-2.5', className)} onClick={onProposalClick}>
       <ProposalBadgeRow propData={propData} />
       {metadata.title && (
         <h2 className={clsx('truncate text-lg font-medium', !isCompact && 'text-lg')}>
