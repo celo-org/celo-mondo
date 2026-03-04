@@ -49,6 +49,7 @@ import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import useTabs from 'src/utils/useTabs';
 import { isAddressEqual } from 'viem';
 import { useAccount } from 'wagmi';
@@ -96,7 +97,11 @@ function HeaderSection({
   };
 
   const showTxModal = useTransactionModal();
+  const trackEvent = useTrackEvent();
   const onClickStake = (action?: StakeActionType) => {
+    if (action === StakeActionType.Stake) {
+      trackEvent('stake_button_clicked', { groupAddress: address });
+    }
     showTxModal(mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy, {
       group: address,
       action,

@@ -20,6 +20,7 @@ import { getGroupStats } from 'src/features/validators/utils';
 import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 export function ActiveStrategyTable({
@@ -33,6 +34,7 @@ export function ActiveStrategyTable({
   const { stCELOBalances } = useStCELOBalance(account.address);
   const { group, isLoading } = useStrategy(account.address);
   const showModal = useTransactionModal(TransactionFlowType.ChangeStrategy);
+  const trackEvent = useTrackEvent();
 
   const { chartData, tableData } = useMemo(() => {
     if (!group || !addressToGroup || stCELOBalances.total == 0n) {
@@ -65,7 +67,14 @@ export function ActiveStrategyTable({
   if (!tableData.length) {
     return (
       <HeaderAndSubheader header="" subHeader={`No stCELO tokens`} className="my-10">
-        <OutlineButton onClick={() => showModal()}>Liquid Stake for stCELO</OutlineButton>
+        <OutlineButton
+          onClick={() => {
+            trackEvent('stake_button_clicked', {});
+            showModal();
+          }}
+        >
+          Liquid Stake for stCELO
+        </OutlineButton>
       </HeaderAndSubheader>
     );
   }

@@ -33,6 +33,7 @@ export function ActiveStakesTable({
   activateStake: (g: Address) => void;
 }) {
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const trackEvent = useTrackEvent();
 
   const { chartData, tableData } = useMemo(() => {
     if (!groupToStake || !addressToGroup || !objLength(groupToStake)) {
@@ -77,7 +78,14 @@ export function ActiveStakesTable({
         subHeader={`You don’t currently have any funds staked. Stake with validators to start earning rewards.`}
         className="my-10"
       >
-        <SolidButton onClick={() => showStakeModal()}>Stake CELO</SolidButton>
+        <SolidButton
+          onClick={() => {
+            trackEvent('stake_button_clicked', {});
+            showStakeModal();
+          }}
+        >
+          Stake CELO
+        </SolidButton>
       </HeaderAndSubheader>
     );
   }

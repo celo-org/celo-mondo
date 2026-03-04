@@ -13,6 +13,7 @@ import { tableClasses } from 'src/styles/common';
 import { percent, sum } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export function RewardsTable({
   groupToReward,
@@ -22,6 +23,7 @@ export function RewardsTable({
   addressToGroup?: AddressTo<ValidatorGroup>;
 }) {
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const trackEvent = useTrackEvent();
   const addressToLabel = useAddressToLabel(() => 'Unknown Group');
 
   const { chartData, tableData } = useMemo(() => {
@@ -61,7 +63,14 @@ export function RewardsTable({
         subHeader={`You don’t currently have any rewards. Stake with validators to start earning rewards.`}
         className="my-10"
       >
-        <SolidButton onClick={() => showStakeModal()}>Stake CELO</SolidButton>
+        <SolidButton
+          onClick={() => {
+            trackEvent('stake_button_clicked', {});
+            showStakeModal();
+          }}
+        >
+          Stake CELO
+        </SolidButton>
       </HeaderAndSubheader>
     );
   }

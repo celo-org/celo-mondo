@@ -424,6 +424,27 @@ describe('Analytics Event Validation', () => {
     });
   });
 
+  describe('stake_button_clicked', () => {
+    it('should accept valid EVM address', () => {
+      const result = validateAnalyticsEvent('stake_button_clicked', {
+        groupAddress: '0x1234567890123456789012345678901234567890',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('should accept missing groupAddress (empty state buttons)', () => {
+      const result = validateAnalyticsEvent('stake_button_clicked', {});
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject invalid address format', () => {
+      const result = validateAnalyticsEvent('stake_button_clicked', {
+        groupAddress: 'invalid-address',
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
   describe('stake_menu_clicked', () => {
     it('should accept valid stake action and address', () => {
       const result = validateAnalyticsEvent('stake_menu_clicked', {

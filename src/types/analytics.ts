@@ -85,7 +85,7 @@ export interface ValidatorFilterChangedProperties {
 }
 
 export interface StakeButtonClickedProperties {
-  groupAddress: string;
+  groupAddress?: string;
 }
 
 export interface StakeMenuClickedProperties {
@@ -262,7 +262,7 @@ export function isValidAnalyticsEvent<T extends AnalyticsEventName>(
 
   if (eventName === 'stake_button_clicked') {
     const props = properties as StakeButtonClickedProperties;
-    return typeof props.groupAddress === 'string';
+    return props.groupAddress === undefined || typeof props.groupAddress === 'string';
   }
 
   if (eventName === 'stake_menu_clicked') {
@@ -409,7 +409,10 @@ export const ValidatorFilterChangedPropertiesSchema = z
 
 export const StakeButtonClickedPropertiesSchema = z
   .object({
-    groupAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address'),
+    groupAddress: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be valid EVM address')
+      .optional(),
   })
   .strict();
 
