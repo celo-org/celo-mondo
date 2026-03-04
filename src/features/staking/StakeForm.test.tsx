@@ -36,8 +36,8 @@ vi.mock('src/features/validators/useValidatorGroups', () => ({
   useValidatorGroups: vi.fn(() => ({
     groups: [],
     addressToGroup: {
-      '0x0861a61Bf679A30680510EcC238ee43B82C5e843': {
-        address: '0x0861a61Bf679A30680510EcC238ee43B82C5e843',
+      '0xE09632da4dEAFb3DA2Cd6939F31c98607fCCdBC5': {
+        address: '0xE09632da4dEAFb3DA2Cd6939F31c98607fCCdBC5',
         name: 'cLabs',
         members: {},
         eligible: true,
@@ -94,7 +94,7 @@ describe('StakeForm Analytics', () => {
 
   describe('stake_completed', () => {
     test('tracks group address not group name', () => {
-      const groupAddress = '0x0861a61Bf679A30680510EcC238ee43B82C5e843';
+      const groupAddress = '0xE09632da4dEAFb3DA2Cd6939F31c98607fCCdBC5';
 
       render(
         <QueryClientProvider client={queryClient}>
@@ -123,7 +123,7 @@ describe('StakeForm Analytics', () => {
     });
 
     test('tracks unstake with group address', () => {
-      const groupAddress = '0x0861a61Bf679A30680510EcC238ee43B82C5e843';
+      const groupAddress = '0xE09632da4dEAFb3DA2Cd6939F31c98607fCCdBC5';
 
       render(
         <QueryClientProvider client={queryClient}>
