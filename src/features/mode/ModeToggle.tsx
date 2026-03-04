@@ -16,12 +16,22 @@ export function ModeToggle() {
   } | null>(null);
   const [enableTransition, setEnableTransition] = useState(false);
 
-  useLayoutEffect(() => {
+  const updatePillStyle = useCallback(() => {
     const activeRef = mode === 'CELO' ? celoRef.current : stCeloRef.current;
     if (activeRef) {
       setPillStyle({ left: activeRef.offsetLeft, width: activeRef.offsetWidth });
     }
   }, [mode]);
+
+  useLayoutEffect(() => {
+    updatePillStyle();
+  }, [updatePillStyle]);
+
+  useEffect(() => {
+    const handleResize = () => updatePillStyle();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [updatePillStyle]);
 
   useEffect(() => {
     setEnableTransition(true);
@@ -37,7 +47,7 @@ export function ModeToggle() {
 
   return (
     <div className={clsx('flex items-center', !shouldRender && 'hidden')}>
-      <div className="relative flex rounded-full bg-taupe-300 p-0.5">
+      <div className="relative flex whitespace-nowrap rounded-full bg-taupe-300 p-0.5">
         {/* Sliding background pill */}
         {pillStyle && (
           <div

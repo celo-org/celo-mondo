@@ -65,10 +65,10 @@ export function ProposalCard({
     }));
 
   return (
-    <Link href={link} className={clsx('space-y-2.5', className)} onClick={onProposalClick}>
+    <Link href={link} className={clsx('block space-y-2.5', className)} onClick={onProposalClick}>
       <ProposalBadgeRow propData={propData} />
       {metadata.title && (
-        <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
+        <h2 className={clsx('truncate text-lg font-medium', !isCompact && 'text-lg')}>
           {metadata.title}
         </h2>
       )}
@@ -79,7 +79,7 @@ export function ProposalCard({
             {barChartData.map((item, index) => (
               <div key={index} className="flex items-center space-x-1">
                 <div style={{ backgroundColor: item.color }} className="h-2 w-2 rounded-full"></div>
-                <div className="text-sm font-medium">{`${item.label} ${item.percentage.toFixed(
+                <div className="text-sm font-medium text-taupe-600">{`${item.label} ${item.percentage.toFixed(
                   1,
                 )}%`}</div>
               </div>
@@ -88,9 +88,9 @@ export function ProposalCard({
         </div>
       )}
       {!isCompact && endTimeResult && (
-        <div className="tooltip flex items-center space-x-2" data-tip={endTimeResult.utc}>
-          <Image src={ClockIcon} alt="" width={16} height={16} />
-          <div className="text-sm font-medium">{endTimeResult.text}</div>
+        <div className="tooltip flex items-center space-x-2 text-left" data-tip={endTimeResult.utc}>
+          <Image src={ClockIcon} alt="" width={16} height={16} className="shrink-0" />
+          <div className="text-[13px] font-medium text-taupe-600">{endTimeResult.text}</div>
         </div>
       )}
     </Link>
@@ -119,13 +119,13 @@ export function ProposalBadgeRow({
   const executedUtc = executedMs ? getUTCDateString(executedMs) : undefined;
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex flex-wrap items-center gap-2">
       <IdBadge cgp={cgp} />
       <IdBadge id={id} />
       <StageBadge stage={stage} />
       {proposedTimeValue && (
         <div
-          className="tooltip text-sm text-taupe-600"
+          className="tooltip text-left text-sm text-taupe-600"
           data-tip={proposedUtc}
         >{`Proposed ${proposedTimeValue}`}</div>
       )}
@@ -151,7 +151,7 @@ export function ProposalBadgeRow({
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
           <div
-            className="tooltip hidden text-sm text-taupe-600 sm:block"
+            className="tooltip hidden text-left text-sm text-taupe-600 sm:block"
             data-tip={executedUtc}
           >{`Executed ${executedTimeValue}`}</div>
         </>
@@ -207,7 +207,7 @@ export function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
   if (!cgp && !id) return null;
   const idValue = cgp ? `CGP ${cgp}` : `# ${id}`;
   return (
-    <div className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-sm font-light">
+    <div className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-sm font-light text-taupe-600">
       {idValue}
     </div>
   );
