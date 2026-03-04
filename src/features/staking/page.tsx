@@ -49,8 +49,8 @@ import { usePageInvariant } from 'src/utils/navigation';
 import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 import { useStakingMode } from 'src/utils/useStakingMode';
-import { useTrackEvent } from 'src/utils/useTrackEvent';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { isAddressEqual } from 'viem';
 import { useAccount } from 'wagmi';
 
