@@ -59,21 +59,21 @@ export function ModeToggle() {
             style={{ left: pillStyle.left, width: pillStyle.width }}
           />
         )}
-        <button
+        <span
           ref={celoRef}
           onClick={() => handleSelect('CELO')}
           className={clsx(
-            'relative z-10 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4',
+            'relative z-10 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4 cursor-pointer',
             mode === 'CELO' ? 'text-black' : 'text-taupe-600 hover:text-black',
           )}
         >
           Stake
-        </button>
-        <button
+        </span>
+        <span
           ref={stCeloRef}
           onClick={() => handleSelect('stCELO')}
           className={clsx(
-            'relative z-10 flex items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4',
+            'relative z-10 flex items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4  cursor-pointer',
             mode === 'stCELO' ? 'text-white' : 'text-taupe-600 hover:text-black',
           )}
         >
@@ -84,8 +84,9 @@ export function ModeToggle() {
             size={14}
             position="below"
             align="right"
+            autoWidth={true}
           />
-        </button>
+        </span>
       </div>
     </div>
   );
