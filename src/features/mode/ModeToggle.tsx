@@ -63,7 +63,7 @@ export function ModeToggle() {
           ref={celoRef}
           onClick={() => handleSelect('CELO')}
           className={clsx(
-            'relative z-10 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4 cursor-pointer',
+            'relative z-10 cursor-pointer rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4',
             mode === 'CELO' ? 'text-black' : 'text-taupe-600 hover:text-black',
           )}
         >
@@ -73,7 +73,7 @@ export function ModeToggle() {
           ref={stCeloRef}
           onClick={() => handleSelect('stCELO')}
           className={clsx(
-            'relative z-10 flex items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4  cursor-pointer',
+            'relative z-10 flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300  sm:px-4',
             mode === 'stCELO' ? 'text-white' : 'text-taupe-600 hover:text-black',
           )}
         >

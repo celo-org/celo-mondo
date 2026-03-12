@@ -18,7 +18,7 @@ export function HelpIcon({
   type = 'button',
   align = 'center',
   position = 'below',
-  autoWidth = false
+  autoWidth = false,
 }: HelpIconProps) {
   const isMobile = useIsMobile();
   if (isMobile) {
