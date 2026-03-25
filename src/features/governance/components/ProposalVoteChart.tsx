@@ -199,19 +199,15 @@ function ThresholdBar({ propData, isPast }: { propData: MergedProposalData; isPa
       ? getMaxThresholdInfo(onChainThresholds)
       : null;
 
-  // Backfill: save on-chain threshold to DB for future requests
+  // Backfill: trigger server-side threshold computation and DB storage
   const backfilledRef = useRef(false);
   useEffect(() => {
     if (onChainThresholds && propData.proposal?.id && !backfilledRef.current) {
       backfilledRef.current = true;
-      const maxThreshold = Math.max(...onChainThresholds);
       fetch('/api/governance/backfill-threshold', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          proposalId: propData.proposal.id,
-          constitutionThreshold: maxThreshold,
-        }),
+        body: JSON.stringify({ proposalId: propData.proposal.id }),
       }).catch(() => {});
     }
   }, [onChainThresholds, propData.proposal?.id]);
