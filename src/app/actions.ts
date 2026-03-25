@@ -116,7 +116,7 @@ async function getBridgeClickedCountsFromPostHog(): Promise<BridgeClickCount[]> 
         query: {
           kind: 'HogQLQuery',
           query: `
-            SELECT properties.bridgeId, count() AS cnt
+            SELECT properties.bridgeId, count(distinct properties.$session_id) AS cnt
             FROM events
             WHERE event = 'bridge_clicked'
             GROUP BY properties.bridgeId
