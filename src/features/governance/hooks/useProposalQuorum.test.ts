@@ -129,6 +129,7 @@ describe('fetchThresholds', () => {
     }));
 
     global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve(mockTransactions),
     });
 
@@ -191,6 +192,7 @@ describe('useProposalQuorum', () => {
 
     // Mock fetch to return transaction data
     global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
       json: () =>
         Promise.resolve([
           { to: '0x1', data: '0x11111111', value: 0n, index: 0 },
