@@ -90,6 +90,7 @@ describe('fetchThresholds', () => {
 
     // Mock fetch to return expected transaction data
     global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
       json: () =>
         Promise.resolve([
           {
