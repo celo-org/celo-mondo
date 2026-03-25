@@ -203,8 +203,48 @@ export async function fetchThresholds(
   proposalTransactions?: ProposalTransaction[],
 ) {
   if (!proposalTransactions) {
-    const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
-    proposalTransactions = (await response.json()) as ProposalTransaction[];
+    try {
+      const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          proposalTransactions = data as ProposalTransaction[];
+        }
+      }
+    } catch (e) {
+      logger.warn('Failed to fetch proposal transactions from API, falling back to on-chain', e);
+    }
+  }
+
+  // Fallback: fetch transactions directly from the smart contract
+  // Also triggers when API returns empty array (e.g. RPC error for historical blocks)
+  if (!proposalTransactions || proposalTransactions.length === 0) {
+    const proposal = await publicClient.readContract({
+      address: Addresses.Governance,
+      abi: governanceABI,
+      functionName: 'getProposal',
+      args: [BigInt(proposalId)],
+    });
+    const transactionCount = Number(proposal[3]);
+    if (transactionCount > 0) {
+      const baseCall = {
+        address: Addresses.Governance,
+        abi: governanceABI,
+        functionName: 'getProposalTransaction',
+      } as const;
+      const txResults = await publicClient.multicall({
+        allowFailure: false,
+        contracts: Array.from({ length: transactionCount }, (_, i) => ({
+          ...baseCall,
+          args: [BigInt(proposalId), BigInt(i)],
+        })),
+      });
+      proposalTransactions = (txResults as [bigint, `0x${string}`, `0x${string}`][]).map(
+        ([value, to, data], index) => ({ value, to, data, index }),
+      );
+    } else {
+      proposalTransactions = [];
+    }
   }
 
   if (proposalTransactions.length === 0) {
