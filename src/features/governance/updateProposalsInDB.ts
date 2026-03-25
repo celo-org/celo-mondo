@@ -9,9 +9,11 @@ import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from '
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
+import { extractFunctionSignature } from 'src/features/governance/utils/transactionDecoder';
 
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';
+import { fromFixidity } from 'src/utils/numbers';
 import { unixTimestampToISOString } from 'src/utils/time';
 import '../../vendor/polyfill';
 
@@ -107,6 +109,7 @@ export default async function updateProposalsInDB(
               approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
               executedAt: sql`excluded."executedAt"`,
               executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
+              constitutionThreshold: sql`excluded."constitutionThreshold"`,
             }
           : {
               stage: sql`excluded."stage"`,
@@ -120,6 +123,7 @@ export default async function updateProposalsInDB(
               approvedAtBlockNumber: sql`excluded."approvedAtBlockNumber"`,
               executedAt: sql`excluded."executedAt"`,
               executedAtBlockNumber: sql`excluded."executedAtBlockNumber"`,
+              constitutionThreshold: sql`excluded."constitutionThreshold"`,
             },
       target: [proposalsTable.chainId, proposalsTable.id],
     });
@@ -251,6 +255,39 @@ async function mergeProposalDataIntoPGRow({
       .then(({ timestamp }) => Number(timestamp)),
   ]);
 
+  // Compute constitution threshold (max across all transactions)
+  let constitutionThreshold = existingProposal?.constitutionThreshold ?? null;
+  if (!constitutionThreshold && Number(numTransactions) > 0) {
+    try {
+      const txResults = await client.multicall({
+        blockNumber: BigInt(proposalQueuedEvent.blockNumber),
+        allowFailure: false,
+        contracts: Array.from({ length: Number(numTransactions) }, (_, i) => ({
+          abi: governanceABI,
+          address: Addresses.Governance,
+          functionName: 'getProposalTransaction' as const,
+          args: [BigInt(proposalId), BigInt(i)],
+        })),
+      });
+      const thresholdResults = await client.multicall({
+        blockNumber: BigInt(proposalQueuedEvent.blockNumber),
+        allowFailure: false,
+        contracts: (txResults as [bigint, `0x${string}`, `0x${string}`][]).map(
+          ([, destination, data]) => ({
+            abi: governanceABI,
+            address: Addresses.Governance,
+            functionName: 'getConstitution' as const,
+            args: [destination, extractFunctionSignature(data)],
+          }),
+        ),
+      });
+      const maxThreshold = Math.max(...thresholdResults.map((t) => fromFixidity(t as bigint)));
+      constitutionThreshold = maxThreshold.toString();
+    } catch (err) {
+      console.warn('Failed to compute constitution threshold for proposal', proposalId, err);
+    }
+  }
+
   return {
     // NOTE: we need to make sure the existing values (dequeuedAt, queuedAt, etc) are
     // present in the object to not override them with NULL values
@@ -269,6 +306,7 @@ async function mergeProposalDataIntoPGRow({
     deposit: BigInt(proposalQueuedEvent.args.deposit),
     networkWeight,
     transactionCount: Number(numTransactions),
+    constitutionThreshold,
     [column + 'BlockNumber']: lastProposalEvent.blockNumber,
     [column]: unixTimestampToISOString(eventUnixTimestampInSeconds),
   };
