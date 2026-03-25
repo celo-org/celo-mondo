@@ -1,6 +1,8 @@
 'use client';
+import { PostHogProvider } from '@posthog/react';
 import { Analytics } from '@vercel/analytics/react';
-import { PropsWithChildren } from 'react';
+import posthog from 'posthog-js';
+import { PropsWithChildren, useEffect } from 'react';
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
@@ -17,25 +19,61 @@ import StakingModeProvider from 'src/utils/useStakingMode';
 import 'src/vendor/inpage-metamask.js';
 import 'src/vendor/polyfill';
 
+function PHProvider({ children }: PropsWithChildren) {
+  useEffect(() => {
+    if (posthog.__loaded) return;
+    posthog.init(process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN as string, {
+      api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+      person_profiles: 'never',
+      autocapture: true,
+      capture_pageview: true,
+      capture_pageleave: true,
+      persistence: 'sessionStorage',
+      defaults: '2026-01-30',
+      loaded: (posthog) => {
+        if (process.env.NODE_ENV === 'development') {
+          posthog.debug();
+        }
+      },
+    });
+  }, []);
+
+  useEffect(() => {
+    const markNoCapture = () => {
+      document.querySelectorAll('[data-rk] [role="dialog"]').forEach((el) => {
+        el.classList.add('ph-no-capture');
+      });
+    };
+
+    const observer = new MutationObserver(markNoCapture);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
+}
+
 export function App({ children }: PropsWithChildren<any>) {
   return (
     <ErrorBoundary>
       <SafeHydrate>
-        <WagmiContext>
-          <HistoryProvider>
-            <StakingModeProvider>
-              <ENSProvider>
-                <LegalRestrict>
-                  <BodyLayout>{children}</BodyLayout>
-                </LegalRestrict>
-                <TransactionModal />
-                <ErrorBoundaryInline>
-                  <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
-                </ErrorBoundaryInline>
-              </ENSProvider>
-            </StakingModeProvider>
-          </HistoryProvider>
-        </WagmiContext>
+        <PHProvider>
+          <WagmiContext>
+            <HistoryProvider>
+              <StakingModeProvider>
+                <ENSProvider>
+                  <LegalRestrict>
+                    <BodyLayout>{children}</BodyLayout>
+                  </LegalRestrict>
+                  <TransactionModal />
+                  <ErrorBoundaryInline>
+                    <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
+                  </ErrorBoundaryInline>
+                </ENSProvider>
+              </StakingModeProvider>
+            </HistoryProvider>
+          </WagmiContext>
+        </PHProvider>
       </SafeHydrate>
       <Analytics />
     </ErrorBoundary>

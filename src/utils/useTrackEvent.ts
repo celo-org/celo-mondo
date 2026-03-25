@@ -1,3 +1,4 @@
+import { usePostHog } from '@posthog/react';
 import { useCallback, useEffect, useState } from 'react';
 import { AnalyticsEventMap, AnalyticsEventName } from 'src/types/analytics';
 import { v4 as uuidv4, validate as validateUUID } from 'uuid';
@@ -5,8 +6,8 @@ import { trackEvent } from './analytics';
 
 const SESSION_STORAGE_KEY = 'analytics_session_id';
 
-// React hook for analytics tracking with session management
 export function useTrackEvent() {
+  const posthog = usePostHog();
   const [sessionId, setSessionId] = useState<string>('');
 
   useEffect(() => {
@@ -40,8 +41,9 @@ export function useTrackEvent() {
   const track = useCallback(
     <T extends AnalyticsEventName>(eventName: T, properties: AnalyticsEventMap[T]) => {
       trackEvent(eventName, properties, sessionId);
+      posthog?.capture(eventName, properties);
     },
-    [sessionId],
+    [sessionId, posthog],
   );
 
   return track;

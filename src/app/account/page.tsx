@@ -95,7 +95,7 @@ export default function Page() {
           <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
         {isVoteSigner ? (
-          <div className="align-right flex flex-col items-end">
+          <div className="ph-no-capture align-right flex flex-col items-end">
             <h2 className="font-medium">Vote Signer For</h2>
             <span className="hidden font-mono text-sm md:flex">{signingFor}</span>
             <span className="font-mono text-sm md:hidden">{shortenAddress(signingFor!)}</span>

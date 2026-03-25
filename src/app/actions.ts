@@ -89,19 +89,56 @@ export interface BridgeClickCount {
   count: number;
 }
 
-export async function getBridgeClickedCounts(): Promise<BridgeClickCount[]> {
-  try {
-    const bridgeClickCounts = await database
-      .select({
-        bridgeId: sql<string>`properties->>'bridgeId'`,
-        count: sql<number>`count(distinct "sessionId")::int`,
-      })
-      .from(analyticsEventsTable)
-      .where(eq(analyticsEventsTable.eventName, 'bridge_clicked'))
-      .groupBy(sql`properties->>'bridgeId'`)
-      .orderBy(sql`count(distinct "sessionId") desc`);
+async function getBridgeClickedCountsFromDb(): Promise<BridgeClickCount[]> {
+  const bridgeClickCounts = await database
+    .select({
+      bridgeId: sql<string>`properties->>'bridgeId'`,
+      count: sql<number>`count(distinct "sessionId")::int`,
+    })
+    .from(analyticsEventsTable)
+    .where(eq(analyticsEventsTable.eventName, 'bridge_clicked'))
+    .groupBy(sql`properties->>'bridgeId'`)
+    .orderBy(sql`count(distinct "sessionId") desc`);
 
-    return bridgeClickCounts;
+  return bridgeClickCounts;
+}
+
+async function getBridgeClickedCountsFromPostHog(): Promise<BridgeClickCount[]> {
+  const res = await fetch(
+    `https://us.posthog.com/api/projects/${process.env.POSTHOG_PROJECT_ID}/query`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.POSTHOG_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: {
+          kind: 'HogQLQuery',
+          query: `
+            SELECT properties.bridgeId, count() AS cnt
+            FROM events
+            WHERE event = 'bridge_clicked'
+            GROUP BY properties.bridgeId
+            ORDER BY cnt DESC
+          `,
+        },
+      }),
+      // Cache the response for an hour
+      next: { revalidate: 3600 },
+    },
+  );
+
+  const data = await res.json();
+  return data.results.map(([bridgeId, count]: [string, number]) => ({ bridgeId, count }));
+}
+
+export async function getBridgeClickedCounts(): Promise<BridgeClickCount[]> {
+  const source = process.env.BRIDGE_COUNTS_SOURCE ?? 'database';
+  try {
+    return await (source === 'posthog'
+      ? getBridgeClickedCountsFromPostHog()
+      : getBridgeClickedCountsFromDb());
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error fetching bridge click counts:', error);
