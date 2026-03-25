@@ -8,8 +8,8 @@ import { Address, Chain, PublicClient, ReadContractErrorType, Transport } from '
 
 import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
-import { extractFunctionSignature } from 'src/features/governance/hooks/useProposalQuorum';
 import { ProposalMetadata, ProposalStage } from 'src/features/governance/types';
+import { extractFunctionSignature } from 'src/features/governance/utils/transactionDecoder';
 
 import { revalidateTag } from 'next/cache';
 import { CacheKeys } from 'src/config/consts';

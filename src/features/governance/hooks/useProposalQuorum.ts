@@ -8,13 +8,18 @@ import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { Proposal, VoteAmounts, VoteType } from 'src/features/governance/types';
-import type { ProposalTransaction } from 'src/features/governance/utils/transactionDecoder';
+import {
+  extractFunctionSignature,
+  type ProposalTransaction,
+} from 'src/features/governance/utils/transactionDecoder';
 import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
-import { PublicClient, fromHex, toHex } from 'viem';
+import { PublicClient } from 'viem';
 import { usePublicClient, useReadContract } from 'wagmi';
+// Re-export for backward compatibility with tests
+export { extractFunctionSignature };
 
 interface ParticipationParameters {
   baseline: number;
@@ -278,17 +283,6 @@ export async function fetchThresholds(
 
   // https://github.com/celo-org/celo-monorepo/blob/a60152ba4ed8218a36ec80fdf4774b77d253bbb6/packages/protocol/contracts/governance/Governance.sol#L1738-L1741
   return thresholds.map(fromFixidity);
-}
-
-/**
- *
- * @notice Extracts the first four bytes of a byte array.
- * https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/common/ExtractFunctionSignature.sol#L9
- */
-export function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
-  if (!input.startsWith('0x')) input = `0x${input}`;
-  const data = fromHex(input, { to: 'bytes' });
-  return toHex(data.subarray(0, 4));
 }
 
 /**
