@@ -16,10 +16,11 @@ import { celo } from 'viem/chains';
 export async function updateProposalStages(
   client: PublicClient<Transport, Chain>,
   /**
-   * Optional client for current-state reads (e.g. getProposalStage).
-   * When the archive node is stale, this can be a non-archive node like forno
+   * Client for current-state reads (e.g. getProposalStage).
+   * When the archive node is stale, this is a non-archive node like forno
    * that is up-to-date with chain head. Historical reads (e.g. quorum calculation)
    * still go through `client` which must be an archive node.
+   * When not provided, defaults to `client`.
    */
   headClient?: PublicClient<Transport, Chain>,
 ) {
@@ -166,13 +167,13 @@ export async function updateProposalStages(
 }
 
 /**
- * Checks if the archive RPC node is stale compared to the public forno RPC.
- * Returns a forno-backed client for current-state reads if the archive node
- * is behind, or undefined if fresh.
+ * Returns the best client for current-state reads (e.g. getProposalStage).
+ * If the archive node is fresh, returns it directly.
+ * If stale (>100 blocks behind), returns a forno-backed client instead.
  */
 async function getFreshHeadClient(
   archiveClient: PublicClient<Transport, Chain>,
-): Promise<PublicClient<Transport, Chain> | undefined> {
+): Promise<PublicClient<Transport, Chain>> {
   const MAX_BLOCK_LAG = 100;
   try {
     const publicClient = createPublicClient({
@@ -191,10 +192,10 @@ async function getFreshHeadClient(
       return publicClient;
     }
     console.log(`Archive node is fresh (${lag} blocks behind head)`);
-    return undefined;
+    return archiveClient;
   } catch (error) {
-    console.warn('⚠️ Could not verify archive node freshness:', error);
-    return undefined;
+    console.warn('⚠️ Could not verify archive node freshness, using archive client:', error);
+    return archiveClient;
   }
 }
 
