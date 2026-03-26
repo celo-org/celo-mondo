@@ -88,38 +88,3 @@ export function getStageEndTimestamp(
 
 // Backwards compatibility alias
 export const getExpiryTimestamp = getStageEndTimestamp;
-
-/**
- * Optimistically advances the displayed stage when the calculated end time for
- * the current stage has passed but the DB hasn't been updated yet (cron lag or
- * L2 block.timestamp lag).
- *
- * Only advances for safe, deterministic transitions:
- * - Referendum → Execution (voting period ended)
- * - Execution → Expiration (execution window ended)
- *
- * Does NOT advance Queued → Expiration because the proposal could be dequeued instead.
- */
-export function getEffectiveStage(
-  dbStage: ProposalStage,
-  dequeuedAt: string | null | undefined,
-): ProposalStage {
-  if (!dequeuedAt) return dbStage;
-
-  const now = Date.now();
-  const dequeuedMs = new Date(dequeuedAt).getTime();
-
-  if (dbStage === ProposalStage.Referendum) {
-    if (now > dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME) {
-      return ProposalStage.Execution;
-    }
-  }
-
-  if (dbStage === ProposalStage.Execution) {
-    if (now > dequeuedMs + REFERENDUM_STAGE_EXPIRY_TIME + EXECUTION_STAGE_EXPIRY_TIME) {
-      return ProposalStage.Expiration;
-    }
-  }
-
-  return dbStage;
-}
