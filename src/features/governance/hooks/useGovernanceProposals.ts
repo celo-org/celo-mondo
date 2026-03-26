@@ -7,7 +7,11 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import type { ProposalWithHistory } from 'src/features/governance/getProposals';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import { getStageEndTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
+import {
+  getEffectiveStage,
+  getStageEndTimestamp,
+  MergedProposalData,
+} from 'src/features/governance/governanceData';
 import { ProposalMetadata, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { sortByIdThenCGP } from 'src/utils/proposals';
@@ -102,14 +106,19 @@ export function useGovernanceProposals() {
             upvotes = upvotesArr.at(queuedId)!;
           }
 
+          // Optimistically advance stage when the calculated end time has passed
+          // but the DB hasn't caught up yet (cron/L2 block.timestamp lag)
+          const effectiveStage = getEffectiveStage(proposal.stage, proposal.dequeuedAt);
+
           return {
             ...proposal,
+            stage: effectiveStage,
             metadata: {
               author: proposal.author,
               cgp: proposal.cgp,
               cgpUrl: proposal.cgpUrl,
               cgpUrlRaw: proposal.cgpUrlRaw,
-              stage: proposal.stage,
+              stage: effectiveStage,
               title: proposal.title,
               timestamp: proposal.timestamp * 1000,
               timestampExecuted: proposal.executedAt
@@ -123,11 +132,11 @@ export function useGovernanceProposals() {
               id: proposal.id,
               networkWeight: BigInt(proposal.networkWeight || 0),
               numTransactions: BigInt(proposal.transactionCount || 0),
-              stage: proposal.stage,
+              stage: effectiveStage,
               proposer: proposal.proposer,
               upvotes,
               url: proposal.url,
-              expiryTimestamp: getStageEndTimestamp(proposal.stage, proposal.timestamp * 1000),
+              expiryTimestamp: getStageEndTimestamp(effectiveStage, proposal.timestamp * 1000),
               // deprecated field, prefer <root>.queuedAt, dequeuedAt, etc
               timestamp: proposal.timestamp * 1000,
               isPassing: await publicClient.readContract({
