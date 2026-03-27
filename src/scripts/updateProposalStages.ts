@@ -174,7 +174,7 @@ export async function updateProposalStages(
 async function getFreshHeadClient(
   archiveClient: PublicClient<Transport, Chain>,
 ): Promise<PublicClient<Transport, Chain>> {
-  const MAX_BLOCK_LAG = 100;
+  const MAX_BLOCK_LAG = 300;
   try {
     const publicClient = createPublicClient({
       chain: celo,
