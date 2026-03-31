@@ -24,14 +24,14 @@ import { useStakingRewards } from 'src/features/staking/rewards/useStakingReward
 import { ActiveStrategyTable } from 'src/features/staking/stCELO/ActiveStrategyTable';
 import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
 import {
-  PendingStCELOWithdrawal,
-  useWithdrawals,
+    PendingStCELOWithdrawal,
+    useWithdrawals,
 } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { PendingWithdrawalsTable } from 'src/features/staking/stCELO/PendingWithdrawalsTable';
 import { GroupToStake, StakeActionType, StakingBalances } from 'src/features/staking/types';
 import {
-  useActivateStake,
-  usePendingStakingActivations,
+    useActivateStake,
+    usePendingStakingActivations,
 } from 'src/features/staking/useStakingActivation';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
@@ -217,7 +217,7 @@ function AccountStats({
   totalDelegated?: bigint;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:flex md:items-center md:justify-between">
       <AccountStat
         title="Total locked"
         valueWei={lockedBalances?.locked}
@@ -258,7 +258,7 @@ function StCELOAccountStats({
     [withdrawals, scheduledWithdrawalAmount],
   );
   return (
-    <div className="items-top items-top flex justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4 md:flex md:items-start md:justify-between">
       <AccountStat
         title="Total stCELO"
         valueWei={stCELOBalances.total}
