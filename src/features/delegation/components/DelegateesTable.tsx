@@ -1,12 +1,12 @@
 'use client';
 
 import {
-    SortingState,
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    useReactTable,
+  SortingState,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import Link from 'next/link';
