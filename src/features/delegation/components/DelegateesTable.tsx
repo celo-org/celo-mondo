@@ -1,12 +1,12 @@
 'use client';
 
 import {
-  SortingState,
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
+    SortingState,
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -139,7 +139,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
                 <td key={cell.id} className={classNames.td}>
                   <Link
                     href={`/delegate/${row.original.address}`}
-                    className="flex px-4 py-4"
+                    className="flex items-center px-2 py-4 sm:px-4"
                     onClick={() => handleDelegateeClick(row.original.address, row.original.name)}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -227,9 +227,9 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-32 xs:max-w-16',
-  td: 'relative border-y border-taupe-300 text-nowrap',
-  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
+  th: 'border-y border-taupe-300 px-2 sm:px-4 py-3 last:pr-3 md:min-w-32 xs:max-w-16',
+  td: 'relative border-y border-taupe-300 sm:whitespace-nowrap',
+  tdTopGroups: 'relative border-y border-taupe-300 px-2 sm:px-4 py-4 sm:whitespace-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };
 function DelegateeTableSkeleton() {
