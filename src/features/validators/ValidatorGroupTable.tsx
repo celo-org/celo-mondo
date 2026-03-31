@@ -1,11 +1,11 @@
 import {
-  CellContext,
-  SortingState,
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
+    CellContext,
+    SortingState,
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -249,7 +249,7 @@ function TopGroupsRow({
           !isVisible && 'hidden',
         )}
       >
-        <td colSpan={8}>
+        <td colSpan={8} className="whitespace-normal break-words px-4 py-3">
           Improve decentralization and network health by staking with a group below ↓
         </td>
       </tr>
