@@ -67,7 +67,7 @@ function makePropData(
       votes: { yes: 0n, no: 0n, abstain: 0n },
     },
     ...overrides,
-  } as MergedProposalData;
+  } as unknown as MergedProposalData;
 }
 
 function labels(steps: ReturnType<typeof buildTimelineSteps>) {
