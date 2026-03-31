@@ -12,6 +12,7 @@ import Delegate from 'src/images/icons/delegate.svg';
 import ENS from 'src/images/icons/ens.svg';
 import Governance from 'src/images/icons/governance.svg';
 import Staking from 'src/images/icons/staking.svg';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
@@ -28,6 +29,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const pathname = usePathname();
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
+  const isMiniPay = useIsMiniPay();
 
   const handleNavClick = useCallback(
     (item: string) => {
@@ -39,7 +41,9 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
   return (
     <nav>
       <ul className="flex list-none items-center justify-center space-x-6 overflow-hidden">
-        {LINKS(!!address).map((l) => {
+        {LINKS(!!address)
+          .filter((l) => !(isMiniPay && (l.label === 'Bridge' || l.label === 'Names')))
+          .map((l) => {
           const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
 
           return (
@@ -72,6 +76,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
 export function MobileNavDropdown({ className }: { className?: string }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
+  const isMiniPay = useIsMiniPay();
 
   const handleNavClick = useCallback(
     (item: string) => {
@@ -90,7 +95,9 @@ export function MobileNavDropdown({ className }: { className?: string }) {
           </div>
         }
         menuClasses="space-y-8 py-6 px-8"
-        menuItems={LINKS(!!address).map((l) => {
+        menuItems={LINKS(!!address)
+          .filter((l) => !(isMiniPay && (l.label === 'Bridge' || l.label === 'Names')))
+          .map((l) => {
           return (
             <Link
               key={l.label}
