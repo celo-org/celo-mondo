@@ -24,14 +24,14 @@ import { useStakingRewards } from 'src/features/staking/rewards/useStakingReward
 import { ActiveStrategyTable } from 'src/features/staking/stCELO/ActiveStrategyTable';
 import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
 import {
-    PendingStCELOWithdrawal,
-    useWithdrawals,
+  PendingStCELOWithdrawal,
+  useWithdrawals,
 } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { PendingWithdrawalsTable } from 'src/features/staking/stCELO/PendingWithdrawalsTable';
 import { GroupToStake, StakeActionType, StakingBalances } from 'src/features/staking/types';
 import {
-    useActivateStake,
-    usePendingStakingActivations,
+  useActivateStake,
+  usePendingStakingActivations,
 } from 'src/features/staking/useStakingActivation';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';

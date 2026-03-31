@@ -28,7 +28,7 @@ export function RegisterCtaCard() {
         </Link>
         .
       </p>
-      <div className="col-span-2 mt-3 flex justify-self-start md:col-[2/3] md:row-[1/3] md:mt-0 md:justify-self-center md:self-center">
+      <div className="col-span-2 mt-3 flex justify-self-start md:col-[2/3] md:row-[1/3] md:mt-0 md:self-center md:justify-self-center">
         <Link
           href="/delegate/register"
           className="btn btn-primary rounded-full border-taupe-300"

@@ -44,30 +44,30 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
         {LINKS(!!address)
           .filter((l) => !(isMiniPay && (l.label === 'Bridge' || l.label === 'Names')))
           .map((l) => {
-          const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
+            const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
 
-          return (
-            <div key={l.label} className="relative">
-              <li
-                className={clsx(
-                  'flex items-center justify-center transition-all hover:opacity-100',
-                  isSelected ? 'font-semibold opacity-100' : 'font-medium opacity-60',
+            return (
+              <div key={l.label} className="relative">
+                <li
+                  className={clsx(
+                    'flex items-center justify-center transition-all hover:opacity-100',
+                    isSelected ? 'font-semibold opacity-100' : 'font-medium opacity-60',
+                  )}
+                >
+                  <Link href={l.to} onClick={() => handleNavClick(l.label)}>
+                    {l.label}
+                  </Link>
+                </li>
+                {isSelected && (
+                  <div
+                    className={`absolute h-0.5 w-full bg-black transition-all duration-500 ${
+                      collapsed ? '-bottom-3' : '-bottom-[1.15rem]'
+                    }`}
+                  ></div>
                 )}
-              >
-                <Link href={l.to} onClick={() => handleNavClick(l.label)}>
-                  {l.label}
-                </Link>
-              </li>
-              {isSelected && (
-                <div
-                  className={`absolute h-0.5 w-full bg-black transition-all duration-500 ${
-                    collapsed ? '-bottom-3' : '-bottom-[1.15rem]'
-                  }`}
-                ></div>
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
       </ul>
     </nav>
   );
@@ -98,18 +98,18 @@ export function MobileNavDropdown({ className }: { className?: string }) {
         menuItems={LINKS(!!address)
           .filter((l) => !(isMiniPay && (l.label === 'Bridge' || l.label === 'Names')))
           .map((l) => {
-          return (
-            <Link
-              key={l.label}
-              href={l.to}
-              className="flex space-x-4 font-medium"
-              onClick={() => handleNavClick(l.label)}
-            >
-              <Image src={l.icon} height={20} width={20} alt="" />
-              <span>{l.label}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={l.label}
+                href={l.to}
+                className="flex space-x-4 font-medium"
+                onClick={() => handleNavClick(l.label)}
+              >
+                <Image src={l.icon} height={20} width={20} alt="" />
+                <span>{l.label}</span>
+              </Link>
+            );
+          })}
       />
     </nav>
   );

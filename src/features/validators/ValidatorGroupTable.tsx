@@ -1,11 +1,11 @@
 import {
-    CellContext,
-    SortingState,
-    createColumnHelper,
-    flexRender,
-    getCoreRowModel,
-    getSortedRowModel,
-    useReactTable,
+  CellContext,
+  SortingState,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -156,6 +156,7 @@ export function ValidatorGroupTable({
             totalVotes={totalVotes}
             isVisible={collapseTopGroups}
             expand={() => setIsTopGroupsExpanded(true)}
+            colSpan={table.getVisibleLeafColumns().length}
           />
           {table.getRowModel().rows.map((row) => (
             <tr
@@ -190,11 +191,13 @@ function TopGroupsRow({
   groups,
   isVisible,
   expand,
+  colSpan,
 }: {
   groups: ValidatorGroup[];
   totalVotes: bigint;
   isVisible: boolean;
   expand: () => void;
+  colSpan: number;
 }) {
   const { topGroups, staked, score, elected } = useMemo(() => {
     if (groups.length < NUM_COLLAPSED_GROUPS) return {};
@@ -249,7 +252,7 @@ function TopGroupsRow({
           !isVisible && 'hidden',
         )}
       >
-        <td colSpan={8} className="whitespace-normal break-words px-4 py-3">
+        <td colSpan={colSpan} className="whitespace-normal break-words px-4 py-3">
           Improve decentralization and network health by staking with a group below ↓
         </td>
       </tr>
