@@ -108,6 +108,7 @@ function DropdownContent({
   disconnect: () => any;
   close: () => void;
 }) {
+  const isMiniPay = useIsMiniPay();
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(address);
   const { votingPower } = useGovernanceVotingPower(signingFor);
@@ -169,11 +170,16 @@ function DropdownContent({
           value={totalRewards}
         />
       </div>
-      <div className="flex w-full items-center justify-between space-x-4">
+      <div
+        className={clsx(
+          'flex w-full items-center space-x-4',
+          isMiniPay ? 'justify-center' : 'justify-between',
+        )}
+      >
         <Link href="/account">
           <OutlineButton onClick={close}>My Account</OutlineButton>
         </Link>
-        <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>
+        {!isMiniPay && <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>}
       </div>
     </div>
   );
