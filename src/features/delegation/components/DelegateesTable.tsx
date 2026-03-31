@@ -1,12 +1,12 @@
 'use client';
 
 import {
-  SortingState,
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
+    SortingState,
+    createColumnHelper,
+    flexRender,
+    getCoreRowModel,
+    getSortedRowModel,
+    useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import Link from 'next/link';
@@ -87,14 +87,16 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
   const mode = useStakingMode();
   return (
     <div>
-      <div className="flex justify-between">
-        <TabHeaderButton isActive={true} count={rows.length}>
-          Delegates
-        </TabHeaderButton>
-        <div className="flex flex-row gap-2">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full md:w-auto">
+          <TabHeaderButton isActive={true} count={rows.length}>
+            Delegates
+          </TabHeaderButton>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
           {mode.mode === 'CELO' && (
             <SolidButton
-              className="btn-neutral h-full text-xs"
+              className="btn-neutral flex w-full justify-center text-xs sm:w-auto"
               onClick={handleDelegateButtonClick}
             >{`️🗳️ Delegate voting power`}</SolidButton>
           )}
@@ -102,7 +104,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
             value={searchQuery}
             setValue={setSearchQuery}
             placeholder="Search delegates"
-            className="w-full text-sm md:w-64"
+            className="w-full text-sm sm:w-64"
           />
         </div>
       </div>
