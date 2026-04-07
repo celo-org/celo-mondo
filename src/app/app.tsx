@@ -10,6 +10,7 @@ import { Header } from 'src/components/nav/Header';
 import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
+import { MiniPayNoCeloBanner } from 'src/components/banner/MiniPayNoCeloBanner';
 import { useIsSsr } from 'src/utils/ssr';
 import ENSProvider from 'src/utils/useAddressToLabel';
 import HistoryProvider from 'src/utils/useHistory';
@@ -57,6 +58,7 @@ export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
     <div className="relative flex h-full min-h-screen w-full flex-col justify-between overflow-x-hidden bg-taupe-100 text-black">
       <Header />
+      <MiniPayNoCeloBanner />
       <main className="flex w-full flex-1">{children}</main>
       <Footer />
     </div>
