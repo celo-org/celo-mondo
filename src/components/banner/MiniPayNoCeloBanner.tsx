@@ -7,9 +7,9 @@ import { useAccount } from 'wagmi';
 export function MiniPayNoCeloBanner() {
   const isMiniPay = useIsMiniPay();
   const { address } = useAccount();
-  const { balance, isLoading } = useBalance(address);
+  const { balance, isLoading, isError } = useBalance(address);
 
-  if (!isMiniPay || !address || isLoading || balance > 0n) return null;
+  if (!isMiniPay || !address || isLoading || isError || balance > 0n) return null;
 
   return (
     <div className="flex items-center gap-2 bg-yellow-500/50 px-4 py-2.5 text-sm">
