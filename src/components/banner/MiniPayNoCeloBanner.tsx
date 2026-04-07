@@ -7,7 +7,7 @@ import { useAccount } from 'wagmi';
 export function MiniPayNoCeloBanner() {
   const isMiniPay = useIsMiniPay();
   const { address } = useAccount();
-  const { balance, isLoading, isError } = useBalance(address);
+  const { balance, isLoading, isError } = useBalance(isMiniPay ? address : undefined);
 
   if (!isMiniPay || !address || isLoading || isError || balance > 0n) return null;
 
