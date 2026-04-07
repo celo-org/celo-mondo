@@ -20,8 +20,8 @@ const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
   { label: 'Governance', to: '/governance', icon: Governance },
   { label: 'Delegate', to: '/delegate', icon: Delegate },
-  { label: 'Bridge', to: '/bridge', icon: Bridge },
-  { label: 'Names', to: 'https://names.celo.org', icon: ENS },
+  { label: 'Bridge', to: '/bridge', icon: Bridge, hideInMiniPay: true },
+  { label: 'Names', to: 'https://names.celo.org', icon: ENS, hideInMiniPay: true },
   ...(isWalletConnected ? [{ label: 'Account', to: '/account', icon: Dashboard }] : []),
 ];
 
@@ -42,7 +42,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
     <nav>
       <ul className="flex list-none items-center justify-center space-x-6 overflow-hidden">
         {LINKS(!!address)
-          .filter((l) => !(isMiniPay && (l.label === 'Bridge' || l.label === 'Names')))
+          .filter((l) => !(isMiniPay && l.hideInMiniPay))
           .map((l) => {
             const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
 
@@ -96,7 +96,7 @@ export function MobileNavDropdown({ className }: { className?: string }) {
         }
         menuClasses="space-y-8 py-6 px-8"
         menuItems={LINKS(!!address)
-          .filter((l) => !(isMiniPay && (l.label === 'Bridge' || l.label === 'Names')))
+          .filter((l) => !(isMiniPay && l.hideInMiniPay))
           .map((l) => {
             return (
               <Link
