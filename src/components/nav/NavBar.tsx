@@ -19,7 +19,7 @@ import { useAccount } from 'wagmi';
 const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
   { label: 'Governance', to: '/governance', icon: Governance },
-  { label: 'Delegate', to: '/delegate', icon: Delegate },
+  { label: 'Delegate', to: '/delegate', icon: Delegate, hideInMiniPay: true },
   { label: 'Bridge', to: '/bridge', icon: Bridge, hideInMiniPay: true },
   { label: 'Names', to: 'https://names.celo.org', icon: ENS, hideInMiniPay: true },
   ...(isWalletConnected ? [{ label: 'Account', to: '/account', icon: Dashboard }] : []),
