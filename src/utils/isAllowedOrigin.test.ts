@@ -47,4 +47,9 @@ describe('isAllowedOrigin', () => {
     vi.stubEnv('NODE_ENV', 'production');
     expect(isAllowedOrigin(null, 'https://evil.com/fake-page')).toBe(false);
   });
+
+  it('rejects malformed referer without throwing', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    expect(isAllowedOrigin(null, 'not-a-url')).toBe(false);
+  });
 });

@@ -3,7 +3,14 @@ export function isAllowedOrigin(origin: string | null, referer: string | null): 
     return true;
   }
 
-  const effectiveOrigin = origin || (referer ? new URL(referer).origin : null);
+  let effectiveOrigin: string | null = origin;
+  if (!effectiveOrigin && referer) {
+    try {
+      effectiveOrigin = new URL(referer).origin;
+    } catch {
+      return false;
+    }
+  }
   if (!effectiveOrigin) {
     return false;
   }
