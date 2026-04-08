@@ -2,6 +2,7 @@ import { TransactionLog } from 'src/features/explorers/types';
 import { parseStakeLogs } from 'src/features/staking/rewards/fetchStakeHistory';
 import { StakeEventType } from 'src/features/staking/types';
 import { toWei } from 'src/utils/amount';
+import { describe, expect, it } from 'vitest';
 
 const ACTIVATE_LOGS: TransactionLog[] = [
   {

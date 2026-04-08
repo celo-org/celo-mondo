@@ -13,7 +13,18 @@ import { getOnChainQuorumRequired } from 'src/features/governance/utils/quorum';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
-export async function updateProposalStages(client: PublicClient<Transport, Chain>) {
+export async function updateProposalStages(
+  client: PublicClient<Transport, Chain>,
+  /**
+   * Client for current-state reads (e.g. getProposalStage).
+   * When the archive node is stale, this is a non-archive node like forno
+   * that is up-to-date with chain head. Historical reads (e.g. quorum calculation)
+   * still go through `client` which must be an archive node.
+   * When not provided, defaults to `client`.
+   */
+  headClient?: PublicClient<Transport, Chain>,
+) {
+  const currentClient = headClient ?? client;
   console.log('Starting proposal stage update...');
 
   // 1. Get all proposals in Referendum, Execution, or Expiration stages from DB
@@ -47,8 +58,8 @@ export async function updateProposalStages(client: PublicClient<Transport, Chain
 
   for (const proposal of activeProposals) {
     try {
-      // Query on-chain stage
-      let onChainStage = (await client.readContract({
+      // Query on-chain stage using the head client (current state, no archive needed)
+      let onChainStage = (await currentClient.readContract({
         abi: governanceABI,
         address: Addresses.Governance,
         functionName: 'getProposalStage',
@@ -100,8 +111,17 @@ export async function updateProposalStages(client: PublicClient<Transport, Chain
 
       // Only update if stage changed
       if (onChainStage !== proposal.stage) {
-        // 4.1 Get events related to the proposal in order to calculate quorum
-        const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
+        // 4.1 Get events related to the proposal in order to calculate quorum.
+        // Uses the archive client — may fail if archive node is stale, but that
+        // should not block the stage update itself.
+        let quorumVotesRequired: bigint | undefined;
+        try {
+          ({ quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal));
+        } catch (quorumError) {
+          console.warn(
+            `  ⚠️ Could not calculate quorum for proposal ${proposal.id} (archive node may be stale), skipping quorum update`,
+          );
+        }
 
         // 4.2
         // Tempurature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
@@ -146,15 +166,49 @@ export async function updateProposalStages(client: PublicClient<Transport, Chain
   }
 }
 
+/**
+ * Returns the best client for current-state reads (e.g. getProposalStage).
+ * If the archive node is fresh, returns it directly.
+ * If stale (>100 blocks behind), returns a forno-backed client instead.
+ */
+async function getFreshHeadClient(
+  archiveClient: PublicClient<Transport, Chain>,
+): Promise<PublicClient<Transport, Chain>> {
+  const MAX_BLOCK_LAG = 300;
+  try {
+    const publicClient = createPublicClient({
+      chain: celo,
+      transport: http(celo.rpcUrls.default.http[0]),
+    }) as PublicClient<Transport, Chain>;
+    const [privateBlock, publicBlock] = await Promise.all([
+      archiveClient.getBlockNumber(),
+      publicClient.getBlockNumber(),
+    ]);
+    const lag = Number(publicBlock - privateBlock);
+    if (lag > MAX_BLOCK_LAG) {
+      console.warn(
+        `⚠️ Archive node is ${lag} blocks behind (archive: ${privateBlock}, public: ${publicBlock}). Using forno for current-state reads.`,
+      );
+      return publicClient;
+    }
+    console.log(`Archive node is fresh (${lag} blocks behind head)`);
+    return archiveClient;
+  } catch (error) {
+    console.warn('⚠️ Could not verify archive node freshness, using archive client:', error);
+    return archiveClient;
+  }
+}
+
 // Run the script when executed directly
 if (process.argv[1]?.endsWith('updateProposalStages.ts')) {
   const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
-  const client = createPublicClient({
+  const archiveClient = createPublicClient({
     chain: celo,
     transport: http(archiveNode),
   }) as PublicClient<Transport, Chain>;
 
-  updateProposalStages(client)
+  getFreshHeadClient(archiveClient)
+    .then((headClient) => updateProposalStages(archiveClient, headClient))
     .then(() => {
       console.log('Script completed successfully');
       process.exit(0);

@@ -16,15 +16,18 @@ import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
 export function WalletDropdown() {
   const { address, isConnected, connector } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
+  const { connect, connectors } = useConnect();
+  const isMiniPay = useIsMiniPay();
   const trackEvent = useTrackEvent();
   const { mode } = useStakingMode();
   const previousIsConnected = useRef(isConnected);
@@ -52,6 +55,21 @@ export function WalletDropdown() {
   const onConnect = () => {
     openConnectModal?.();
   };
+
+  useEffect(() => {
+    if (isMiniPay && !isConnected && !address) {
+      const injectedConnector = connectors.find(
+        (c) => c.id === 'injected' || c.name.toLowerCase().includes('injected'),
+      );
+      if (injectedConnector) {
+        connect({ connector: injectedConnector });
+      }
+    }
+  }, [isMiniPay, isConnected, address, connectors, connect]);
+
+  if (isMiniPay && (!address || !isConnected)) {
+    return null;
+  }
 
   return (
     <div className="relative flex justify-end">
@@ -90,6 +108,7 @@ function DropdownContent({
   disconnect: () => any;
   close: () => void;
 }) {
+  const isMiniPay = useIsMiniPay();
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(address);
   const { votingPower } = useGovernanceVotingPower(signingFor);
@@ -151,11 +170,16 @@ function DropdownContent({
           value={totalRewards}
         />
       </div>
-      <div className="flex w-full items-center justify-between space-x-4">
+      <div
+        className={clsx(
+          'flex w-full items-center space-x-4',
+          isMiniPay ? 'justify-center' : 'justify-between',
+        )}
+      >
         <Link href="/account">
           <OutlineButton onClick={close}>My Account</OutlineButton>
         </Link>
-        <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>
+        {!isMiniPay && <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>}
       </div>
     </div>
   );

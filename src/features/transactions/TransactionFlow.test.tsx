@@ -264,7 +264,7 @@ const setupHooks = (options?: SetupHooksOptions) => {
   vi.spyOn(votingHooks, 'useGovernanceVotingPower').mockReturnValue({
     isLoading: false,
     votingPower: options?.votingPower ?? 0n,
-    isError: false,
+    error: null,
   });
 
   vi.spyOn(votingHooks, 'useStCELOVoteRecord').mockReturnValue({

@@ -2,7 +2,7 @@
 import { governanceABI } from '@celo/abis';
 import { Addresses } from 'src/config/contracts';
 import { celoPublicClient } from 'src/utils/client';
-import { Address, decodeFunctionData, formatUnits } from 'viem';
+import { Address, decodeFunctionData, formatUnits, fromHex, toHex } from 'viem';
 
 export interface DecodedTransaction {
   to: Address;
@@ -64,6 +64,16 @@ export async function getProposalTransactions(
     console.error(`Error fetching transactions for proposal ${proposalId}@${blockNumber}:`, error);
     return [];
   }
+}
+
+/**
+ * Extracts the first four bytes of a byte array (function signature).
+ * https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/common/ExtractFunctionSignature.sol#L9
+ */
+export function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
+  if (!input.startsWith('0x')) input = `0x${input}`;
+  const data = fromHex(input, { to: 'bytes' });
+  return toHex(data.subarray(0, 4));
 }
 
 /**

@@ -156,6 +156,7 @@ export function ValidatorGroupTable({
             totalVotes={totalVotes}
             isVisible={collapseTopGroups}
             expand={() => setIsTopGroupsExpanded(true)}
+            colSpan={table.getVisibleLeafColumns().length}
           />
           {table.getRowModel().rows.map((row) => (
             <tr
@@ -190,11 +191,13 @@ function TopGroupsRow({
   groups,
   isVisible,
   expand,
+  colSpan,
 }: {
   groups: ValidatorGroup[];
   totalVotes: bigint;
   isVisible: boolean;
   expand: () => void;
+  colSpan: number;
 }) {
   const { topGroups, staked, score, elected } = useMemo(() => {
     if (groups.length < NUM_COLLAPSED_GROUPS) return {};
@@ -243,14 +246,11 @@ function TopGroupsRow({
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>-</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
       </tr>
-      <tr
-        className={clsx(
-          'border-y border-taupe-300 bg-primary text-center text-sm text-primary-content',
-          !isVisible && 'hidden',
-        )}
-      >
-        <td colSpan={8}>
-          Improve decentralization and network health by staking with a group below ↓
+      <tr className={clsx(!isVisible && 'hidden')}>
+        <td colSpan={colSpan} className="py-4">
+          <div className="mx-4 whitespace-normal break-words rounded-lg bg-primary px-4 py-3 text-center text-sm text-primary-content sm:mx-8">
+            Improve decentralization and network health by staking with a group below ↓
+          </div>
         </td>
       </tr>
     </>
@@ -409,7 +409,7 @@ function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
   th: 'border-y border-taupe-300 px-4 py-3 first:min-w-12 last:min-w-0 md:min-w-32',
-  td: 'relative border-y border-taupe-300 text-nowrap',
-  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
+  td: 'relative border-y border-taupe-300 sm:whitespace-nowrap',
+  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 sm:whitespace-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };
