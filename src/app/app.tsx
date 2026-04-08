@@ -31,10 +31,19 @@ function PHProvider({ children }: PropsWithChildren) {
       capture_pageleave: true,
       persistence: 'sessionStorage',
       defaults: '2026-01-30',
+      internal_or_test_user_hostname: null,
+      debug: false,
       loaded: (posthog) => {
         if (process.env.NODE_ENV === 'development') {
           posthog.debug();
         }
+      },
+      before_send: (event) => {
+        if (event !== null) {
+          delete event.properties['$ip'];
+        }
+
+        return event;
       },
     });
   }, []);

@@ -1,6 +1,7 @@
 'use server';
 
 import { eq, sql } from 'drizzle-orm';
+import { unstable_cache } from 'next/cache';
 import database from 'src/config/database';
 import { analyticsEventsTable } from 'src/db/schema';
 import {
@@ -103,35 +104,39 @@ async function getBridgeClickedCountsFromDb(): Promise<BridgeClickCount[]> {
   return bridgeClickCounts;
 }
 
-async function getBridgeClickedCountsFromPostHog(): Promise<BridgeClickCount[]> {
-  const res = await fetch(
-    `https://us.posthog.com/api/projects/${process.env.POSTHOG_PROJECT_ID}/query`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.POSTHOG_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: {
-          kind: 'HogQLQuery',
-          query: `
-            SELECT properties.bridgeId, count(distinct properties.$session_id) AS cnt
-            FROM events
-            WHERE event = 'bridge_clicked'
-            GROUP BY properties.bridgeId
-            ORDER BY cnt DESC
-          `,
+const getBridgeClickedCountsFromPostHog = unstable_cache(
+  async (): Promise<BridgeClickCount[]> => {
+    const res = await fetch(
+      `https://eu.posthog.com/api/projects/${process.env.POSTHOG_PROJECT_ID}/query`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.POSTHOG_API_KEY}`,
+          'Content-Type': 'application/json',
         },
-      }),
-      // Cache the response for an hour
-      next: { revalidate: 3600 },
-    },
-  );
+        body: JSON.stringify({
+          query: {
+            kind: 'HogQLQuery',
+            query: `
+              SELECT properties.bridgeId, count(distinct properties.$session_id) AS cnt
+              FROM events
+              WHERE event = 'bridge_clicked'
+              GROUP BY properties.bridgeId
+              ORDER BY cnt DESC
+            `,
+          },
+        }),
+      },
+    );
 
-  const data = await res.json();
-  return data.results.map(([bridgeId, count]: [string, number]) => ({ bridgeId, count }));
-}
+    if (!res.ok) throw new Error(`PostHog API error: ${res.status}`);
+
+    const data = await res.json();
+    return data.results.map(([bridgeId, count]: [string, number]) => ({ bridgeId, count }));
+  },
+  ['bridge-clicked-counts'],
+  { revalidate: 300 },
+);
 
 export async function getBridgeClickedCounts(): Promise<BridgeClickCount[]> {
   const source = process.env.BRIDGE_COUNTS_SOURCE ?? 'database';
