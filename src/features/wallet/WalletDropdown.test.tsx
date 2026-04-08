@@ -53,6 +53,10 @@ describe('<WalletDropdown />', () => {
     vi.spyOn(wagmi, 'useDisconnect').mockReturnValue({
       disconnectAsync: vi.fn(),
     } as any);
+    vi.spyOn(wagmi, 'useConnect').mockReturnValue({
+      connect: vi.fn(),
+      connectors: [],
+    } as any);
   });
 
   afterEach(() => {
