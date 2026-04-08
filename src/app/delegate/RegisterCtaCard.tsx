@@ -14,10 +14,10 @@ export function RegisterCtaCard() {
 
   return (
     <CtaCard>
-      <h3 className="col-[1/3] row-[1/2] font-serif text-xl sm:text-2xl md:col-[1/2] md:row-[1/2]">
+      <h3 className="col-span-2 font-serif text-xl sm:text-2xl md:col-[1/2] md:row-[1/2]">
         Passionate about Celo governance?
       </h3>
-      <p className="col-[1/2] row-[2/3] text-sm sm:text-base md:col-[1/2] md:row-[2/3]">
+      <p className="col-span-2 text-sm sm:text-base md:col-[1/2] md:row-[2/3]">
         If you would like to be included in this list, fill out{' '}
         <Link
           href="/delegate/register"
@@ -28,7 +28,7 @@ export function RegisterCtaCard() {
         </Link>
         .
       </p>
-      <div className="col-[2/3] row-[2/3] flex self-center justify-self-center md:col-[2/3] md:row-[1/3]">
+      <div className="col-span-2 mt-3 flex justify-self-start md:col-[2/3] md:row-[1/3] md:mt-0 md:self-center md:justify-self-center">
         <Link
           href="/delegate/register"
           className="btn btn-primary rounded-full border-taupe-300"

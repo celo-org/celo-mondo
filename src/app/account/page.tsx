@@ -217,7 +217,7 @@ function AccountStats({
   totalDelegated?: bigint;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:flex md:items-center md:justify-between">
       <AccountStat
         title="Total locked"
         valueWei={lockedBalances?.locked}
@@ -258,7 +258,7 @@ function StCELOAccountStats({
     [withdrawals, scheduledWithdrawalAmount],
   );
   return (
-    <div className="items-top items-top flex justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4 md:flex md:items-start md:justify-between">
       <AccountStat
         title="Total stCELO"
         valueWei={stCELOBalances.total}

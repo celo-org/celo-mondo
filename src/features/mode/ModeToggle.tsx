@@ -1,12 +1,14 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export function ModeToggle() {
   const { mode, shouldRender, selectMode } = useStakingMode();
   const trackEvent = useTrackEvent();
+  const isMiniPay = useIsMiniPay();
 
   const celoRef = useRef<HTMLButtonElement>(null);
   const stCeloRef = useRef<HTMLButtonElement>(null);
@@ -46,7 +48,7 @@ export function ModeToggle() {
   );
 
   return (
-    <div className={clsx('flex items-center', !shouldRender && 'hidden')}>
+    <div className={clsx('flex items-center', (!shouldRender || isMiniPay) && 'hidden')}>
       <div className="relative flex whitespace-nowrap rounded-full bg-taupe-300 p-0.5">
         {/* Sliding background pill */}
         {pillStyle && (
