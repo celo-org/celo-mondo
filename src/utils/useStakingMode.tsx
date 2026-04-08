@@ -3,12 +3,14 @@
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect } from 'react';
 import { useStCELOBalance } from 'src/features/account/hooks';
 import { useWithdrawalBot } from 'src/features/staking/stCELO/hooks/useWithdrawals';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useSessionStorage } from 'src/utils/useSessionStorage';
 import { useAccount } from 'wagmi';
 
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
   const { address } = useAccount();
+  const isMiniPay = useIsMiniPay();
   const { stCELOBalances } = useStCELOBalance(address);
   const [mode, setMode] = useSessionStorage<StakingMode>(
     'mode',
@@ -16,6 +18,10 @@ function useStakingModeInternal() {
   );
 
   useWithdrawalBot(address);
+
+  useEffect(() => {
+    if (isMiniPay && mode !== 'CELO') setMode('CELO');
+  }, [isMiniPay, mode, setMode]);
 
   const toggleMode = useCallback(
     () => setMode((mode) => (mode === 'CELO' ? 'stCELO' : 'CELO')),

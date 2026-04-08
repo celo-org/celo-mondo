@@ -120,7 +120,7 @@ function HeaderSection({
             <h1 className="overflow-hidden text-ellipsis font-serif text-xl md:text-4xl">
               {group?.name || '...'}
             </h1>
-            <div className="mt-2 flex items-center space-x-1.5 sm:space-x-3">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-3">
               <OutlineButton
                 className="text-sm all:py-1 all:font-normal"
                 onClick={onClickAddress}

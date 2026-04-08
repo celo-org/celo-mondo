@@ -16,3 +16,5 @@ yarn lint
 - When a coding task is complete (after all edits are done)
 
 If lint errors are found, fix them before proceeding.
+
+**IMPORTANT:** Always run `/prettier` in addition to `/lint` before committing. Both are separate CI checks — running only lint is not enough.
