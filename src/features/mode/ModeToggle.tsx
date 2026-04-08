@@ -61,6 +61,7 @@ export function ModeToggle() {
         )}
         <span
           ref={celoRef}
+          role="button"
           onClick={() => handleSelect('CELO')}
           className={clsx(
             'relative z-10 cursor-pointer rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300 sm:px-4',
@@ -71,6 +72,7 @@ export function ModeToggle() {
         </span>
         <span
           ref={stCeloRef}
+          role="button"
           onClick={() => handleSelect('stCELO')}
           className={clsx(
             'relative z-10 flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1.5 text-sm font-medium transition-colors duration-300  sm:px-4',

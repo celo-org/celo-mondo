@@ -74,6 +74,8 @@ module.exports = {
     },
   },
 
+  safelist: ['w-auto', 'w-64'],
+
   plugins: [require('daisyui')],
 
   daisyui: {
