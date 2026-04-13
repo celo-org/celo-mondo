@@ -51,10 +51,18 @@ function PHProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    const markNoCapture = () => {
-      document.querySelectorAll('[data-rk] [role="dialog"]').forEach((el) => {
-        el.classList.add('ph-no-capture');
-      });
+    const markNoCapture = (mutations: MutationRecord[]) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (!(node instanceof Element)) continue;
+          if (node.matches('[data-rk] [role="dialog"]')) {
+            node.classList.add('ph-no-capture');
+          }
+          node.querySelectorAll('[data-rk] [role="dialog"]').forEach((el) => {
+            el.classList.add('ph-no-capture');
+          });
+        }
+      }
     };
 
     const observer = new MutationObserver(markNoCapture);
