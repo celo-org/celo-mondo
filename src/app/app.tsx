@@ -13,6 +13,7 @@ import { Header } from 'src/components/nav/Header';
 import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
+import { scrubEventUrlProperties } from 'src/utils/posthog';
 import { useIsSsr } from 'src/utils/ssr';
 import ENSProvider from 'src/utils/useAddressToLabel';
 import HistoryProvider from 'src/utils/useHistory';
@@ -43,6 +44,7 @@ function PHProvider({ children }: PropsWithChildren) {
       before_send: (event) => {
         if (event !== null) {
           delete event.properties['$ip'];
+          scrubEventUrlProperties(event.properties);
         }
 
         return event;
