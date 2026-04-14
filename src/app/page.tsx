@@ -29,6 +29,8 @@ export default function Page() {
 
   const { groups, totalVotes } = useValidatorGroups();
 
+  if (isMiniPay) return null;
+
   return (
     <Section className="mt-4">
       <div className="space-y-6">
