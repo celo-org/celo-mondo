@@ -27,9 +27,13 @@ export default function Page() {
     }
   }, [isMiniPay, router]);
 
-  const { groups, totalVotes } = useValidatorGroups();
-
   if (isMiniPay) return null;
+
+  return <StakingPage />;
+}
+
+function StakingPage() {
+  const { groups, totalVotes } = useValidatorGroups();
 
   return (
     <Section className="mt-4">
