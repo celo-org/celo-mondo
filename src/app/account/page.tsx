@@ -107,7 +107,7 @@ export default function Page() {
           <LockButtons className="hidden md:flex" mode={mode} />
         )}
       </div>
-      {isMiniPay && stCELOBalances.total === 0n && <StakeCeloCta />}
+      {isMiniPay && totalLocked === 0n && <StakeCeloCta />}
       {mode === 'CELO' ? (
         <AccountStats
           walletBalance={walletBalance}

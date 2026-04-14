@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
-import { useStCELOBalance } from 'src/features/account/hooks';
+import { useLockedBalance } from 'src/features/account/hooks';
 import Bridge from 'src/images/icons/bridge.svg';
 import Dashboard from 'src/images/icons/dashboard.svg';
 import Delegate from 'src/images/icons/delegate.svg';
@@ -31,8 +31,8 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
-  const { stCELOBalances } = useStCELOBalance(address);
-  const hasStaked = stCELOBalances.total > 0n;
+  const { lockedBalance } = useLockedBalance(address);
+  const hasStaked = lockedBalance > 0n;
 
   const handleNavClick = useCallback(
     (item: string) => {
@@ -81,8 +81,8 @@ export function MobileNavDropdown({ className }: { className?: string }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
-  const { stCELOBalances } = useStCELOBalance(address);
-  const hasStaked = stCELOBalances.total > 0n;
+  const { lockedBalance } = useLockedBalance(address);
+  const hasStaked = lockedBalance > 0n;
 
   const handleNavClick = useCallback(
     (item: string) => {
