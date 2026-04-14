@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
+import { CtaCard } from 'src/components/layout/CtaCard';
 import { Section } from 'src/components/layout/Section';
 import { Amount } from 'src/components/numbers/Amount';
 import { TokenId } from 'src/config/tokens';
@@ -106,6 +107,7 @@ export default function Page() {
           <LockButtons className="hidden md:flex" mode={mode} />
         )}
       </div>
+      {isMiniPay && stCELOBalances.total === 0n && <StakeCeloCta />}
       {mode === 'CELO' ? (
         <AccountStats
           walletBalance={walletBalance}
@@ -404,6 +406,36 @@ function TableTabs({
       )}
       {tab === 'history' && <ProposalVotesHistoryTable />}
     </div>
+  );
+}
+
+function StakeCeloCta() {
+  const showTxModal = useTransactionModal();
+
+  return (
+    <CtaCard>
+      <div className="space-y-2">
+        <h3 className="font-serif text-xl sm:text-2xl">Stake your CELO</h3>
+        <p className="text-sm sm:text-base">
+          Earn ~2% annually in exchange for agreeing to a three-day lockup. Staked CELO also gives
+          you access to participate in Celo Governance decisions so you can help shape the future of
+          Celo, the network powering MiniPay.
+        </p>
+      </div>
+      <div className="flex items-end justify-end">
+        <SolidButton
+          onClick={() =>
+            showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Stake })
+          }
+          className="bg-purple-300 text-white"
+        >
+          <div className="flex items-center space-x-1.5">
+            <Image src={StakingIcon} width={12} height={12} alt="" />
+            <span>Stake</span>
+          </div>
+        </SolidButton>
+      </div>
+    </CtaCard>
   );
 }
 
