@@ -43,6 +43,7 @@ import StakingIcon from 'src/images/icons/staking.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { shortenAddress } from 'src/utils/addresses';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { usePageInvariant } from 'src/utils/navigation';
 import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
@@ -52,7 +53,8 @@ import { useAccount } from 'wagmi';
 export default function Page() {
   const account = useAccount();
   const address = account?.address;
-  usePageInvariant(!!address, '/');
+  const isMiniPay = useIsMiniPay();
+  usePageInvariant(!!address || isMiniPay, '/');
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
