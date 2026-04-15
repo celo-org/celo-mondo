@@ -169,17 +169,7 @@ export default function PrivacyPage() {
         cross-session identifier is stored.
       </P>
 
-      <H3>2.3 Page view analytics (Vercel Analytics)</H3>
-      <P>
-        We use Vercel Analytics, which collects: page URL visited, referring URL, country (derived
-        from your IP by Vercel — the IP is not stored), and device type. This is governed by{' '}
-        <A_Blank href="https://vercel.com/legal/privacy-policy" className="underline">
-          Vercel&apos;s Privacy Policy
-        </A_Blank>
-        . There is currently no opt-out mechanism for Vercel Analytics on this site.
-      </P>
-
-      <H3>2.4 Geo-restriction check</H3>
+      <H3>2.3 Geo-restriction check</H3>
       <P>
         When you connect a wallet, your request is sent to our <code>/police</code> endpoint. This
         uses Vercel&apos;s geo-enrichment headers to determine your country and region (ISO 3166
@@ -188,7 +178,7 @@ export default function PrivacyPage() {
         territories of Ukraine (Crimea, Luhansk, Donetsk) as required by applicable sanctions law.
       </P>
 
-      <H3>2.5 OFAC sanctions screening</H3>
+      <H3>2.4 OFAC sanctions screening</H3>
       <P>
         When you connect a wallet, your wallet address is checked against the OFAC Specially
         Designated Nationals list. This check is performed entirely in your browser — your wallet
@@ -197,7 +187,7 @@ export default function PrivacyPage() {
         <code>localStorage</code> for 24 hours.
       </P>
 
-      <H3>2.6 Celo name resolution (namespace.ninja)</H3>
+      <H3>2.5 Celo name resolution (namespace.ninja)</H3>
       <P>
         To display human-readable names next to wallet addresses in the UI, displayed wallet
         addresses are sent to a GraphQL endpoint operated by Namespace (
@@ -207,7 +197,7 @@ export default function PrivacyPage() {
         are queried.
       </P>
 
-      <H3>2.7 Staking auto-activation (Upstash)</H3>
+      <H3>2.6 Staking auto-activation (Upstash)</H3>
       <P>
         When you stake CELO, a delayed activation job is scheduled via Upstash QStash. The following
         data is sent to Upstash: your wallet address, the validator group address, and the
@@ -220,7 +210,7 @@ export default function PrivacyPage() {
         .
       </P>
 
-      <H3>2.8 stCELO Cloud Functions</H3>
+      <H3>2.7 stCELO Cloud Functions</H3>
       <P>
         For stCELO <code>withdraw</code> and <code>claim</code> operations, your wallet address is
         sent as <code>beneficiary</code> to a Celo-operated Cloud Function at{' '}
@@ -228,7 +218,7 @@ export default function PrivacyPage() {
         relevant on-chain transaction on your behalf.
       </P>
 
-      <H3>2.9 Wallet connection (WalletConnect / RainbowKit)</H3>
+      <H3>2.8 Wallet connection (WalletConnect / RainbowKit)</H3>
       <P>
         Wallet connectivity is handled by RainbowKit and WalletConnect. When connecting via
         WalletConnect, session data (wallet type, chain ID, connection session) is relayed through
@@ -239,7 +229,7 @@ export default function PrivacyPage() {
         .
       </P>
 
-      <H3>2.10 Delegate registration</H3>
+      <H3>2.9 Delegate registration</H3>
       <P>
         If you choose to register as a governance delegate, you submit your name, wallet address,
         image, website, Twitter handle, and bio. This data is submitted as a pull request to the
@@ -328,12 +318,6 @@ export default function PrivacyPage() {
         <tbody>
           {[
             ['PostHog', 'Anonymous usage events, page views', 'Product analytics', 'EU'],
-            [
-              'Vercel Analytics',
-              'Page views, country, device type',
-              'Infrastructure analytics',
-              'Vercel',
-            ],
             ['WalletConnect', 'Wallet session metadata', 'Wallet connection relay', 'Global'],
             [
               'Namespace (namespace.ninja)',

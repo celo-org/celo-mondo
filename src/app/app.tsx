@@ -1,6 +1,5 @@
 'use client';
 import { PostHogProvider } from '@posthog/react';
-import { Analytics } from '@vercel/analytics/react';
 import posthog from 'posthog-js';
 import { PropsWithChildren, useEffect } from 'react';
 import { ToastContainer, Zoom } from 'react-toastify';
@@ -98,7 +97,6 @@ export function App({ children }: PropsWithChildren<any>) {
           </WagmiContext>
         </PHProvider>
       </SafeHydrate>
-      <Analytics />
     </ErrorBoundary>
   );
 }
