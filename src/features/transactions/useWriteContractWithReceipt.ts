@@ -4,6 +4,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { WALLET_CONNECT_CONNECTOR_ID } from 'src/config/consts';
 import { logger } from 'src/utils/logger';
 import { capitalizeFirstLetter } from 'src/utils/strings';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { TransactionReceipt, encodeFunctionData } from 'viem';
 import {
   Config,
@@ -13,6 +14,9 @@ import {
   useWriteContract,
 } from 'wagmi';
 import type { WriteContractMutate } from 'wagmi/query';
+
+// MiniPay's default fee currency (USDC adapter on Celo)
+const MINIPAY_FEE_CURRENCY = '0x2f25deb3848c207fc8e0c34035b3ba7fc157602b';
 
 // Special case handling for this common error to provide a more specific error message
 const CHAIN_MISMATCH_ERROR = 'does not match the target chain';
@@ -27,6 +31,7 @@ export function useWriteContractWithReceipt(
 ) {
   const account = useAccount();
   const publicClient = usePublicClient();
+  const isMiniPay = useIsMiniPay();
 
   const {
     data: hash,
@@ -75,11 +80,14 @@ export function useWriteContractWithReceipt(
             : { gasPrice: request.gasPrice }),
         } as any);
       } else {
-        logger.debug('Trigger transaction write');
-        writeContract({ ...args, gas: bufferedGas });
+        const txArgs = isMiniPay
+          ? { ...args, gas: bufferedGas, feeCurrency: MINIPAY_FEE_CURRENCY }
+          : { ...args, gas: bufferedGas };
+        logger.debug(`Trigger transaction write (isMiniPay=${isMiniPay}, value=${args.value})`);
+        writeContract(txArgs as any);
       }
     },
-    [writeContract, publicClient, account],
+    [writeContract, publicClient, account, isMiniPay],
   );
 
   const {
