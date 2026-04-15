@@ -43,8 +43,8 @@ import StakingIcon from 'src/images/icons/staking.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { shortenAddress } from 'src/utils/addresses';
-import { useAddressParam } from 'src/utils/useAddressParam';
 import { usePageInvariant } from 'src/utils/navigation';
+import { useAddressParam } from 'src/utils/useAddressParam';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
@@ -101,7 +101,7 @@ export default function Page() {
         </div>
         {isReadOnly ? (
           <div className="align-right flex flex-col items-end">
-            <h2 className="font-medium text-sm text-taupe-600">Viewing account</h2>
+            <h2 className="text-sm font-medium text-taupe-600">Viewing account</h2>
             <span className="hidden font-mono text-sm md:flex">{address}</span>
             <span className="font-mono text-sm md:hidden">{shortenAddress(address!)}</span>
           </div>
