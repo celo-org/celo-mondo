@@ -43,6 +43,7 @@ import StakingIcon from 'src/images/icons/staking.svg';
 import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { shortenAddress } from 'src/utils/addresses';
+import { useAddressParam } from 'src/utils/useAddressParam';
 import { usePageInvariant } from 'src/utils/navigation';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
@@ -52,7 +53,9 @@ import { useAccount } from 'wagmi';
 
 export default function Page() {
   const account = useAccount();
-  const address = account?.address;
+  const addressOverride = useAddressParam();
+  const address = addressOverride || account?.address;
+  const isReadOnly = !!addressOverride;
   const isMiniPay = useIsMiniPay();
   usePageInvariant(!!address || isMiniPay, '/');
 
@@ -96,7 +99,13 @@ export default function Page() {
           <h2>Total Balance</h2>
           <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
-        {isVoteSigner ? (
+        {isReadOnly ? (
+          <div className="align-right flex flex-col items-end">
+            <h2 className="font-medium text-sm text-taupe-600">Viewing account</h2>
+            <span className="hidden font-mono text-sm md:flex">{address}</span>
+            <span className="font-mono text-sm md:hidden">{shortenAddress(address!)}</span>
+          </div>
+        ) : isVoteSigner ? (
           <div className="align-right flex flex-col items-end">
             <h2 className="font-medium">Vote Signer For</h2>
             <span className="hidden font-mono text-sm md:flex">{signingFor}</span>
@@ -106,7 +115,7 @@ export default function Page() {
           <LockButtons className="hidden md:flex" mode={mode} />
         )}
       </div>
-      {isMiniPay && totalLocked === 0n && <StakeCeloCta />}
+      {isMiniPay && !isReadOnly && totalLocked === 0n && <StakeCeloCta />}
       {mode === 'CELO' ? (
         <AccountStats
           walletBalance={walletBalance}
@@ -122,7 +131,9 @@ export default function Page() {
           scheduledWithdrawalAmount={withdrawals.scheduledWithdrawalAmount}
         />
       )}
-      {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
+      {!isReadOnly && !isVoteSigner && (
+        <LockButtons className="flex justify-between md:hidden" mode={mode} />
+      )}
       <TableTabs
         groupToStake={groupToStake}
         addressToGroup={addressToGroup}
