@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
+import { useLockedBalance } from 'src/features/account/hooks';
 import Bridge from 'src/images/icons/bridge.svg';
 import Dashboard from 'src/images/icons/dashboard.svg';
 import Delegate from 'src/images/icons/delegate.svg';
@@ -18,7 +19,7 @@ import { useAccount } from 'wagmi';
 
 const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
-  { label: 'Governance', to: '/governance', icon: Governance },
+  { label: 'Governance', to: '/governance', icon: Governance, hideInMiniPayUntilStaked: true },
   { label: 'Delegate', to: '/delegate', icon: Delegate, hideInMiniPay: true },
   { label: 'Bridge', to: '/bridge', icon: Bridge, hideInMiniPay: true },
   { label: 'Names', to: 'https://names.celo.org', icon: ENS, hideInMiniPay: true },
@@ -30,6 +31,8 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
+  const { lockedBalance } = useLockedBalance(address);
+  const hasStaked = lockedBalance > 0n;
 
   const handleNavClick = useCallback(
     (item: string) => {
@@ -43,6 +46,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
       <ul className="flex list-none items-center justify-center space-x-6 overflow-hidden">
         {LINKS(!!address)
           .filter((l) => !(isMiniPay && l.hideInMiniPay))
+          .filter((l) => !(isMiniPay && l.hideInMiniPayUntilStaked && !hasStaked))
           .map((l) => {
             const isSelected = l.to === pathname || (l.to !== '/' && pathname?.startsWith(l.to));
 
@@ -77,6 +81,8 @@ export function MobileNavDropdown({ className }: { className?: string }) {
   const { address } = useAccount();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
+  const { lockedBalance } = useLockedBalance(address);
+  const hasStaked = lockedBalance > 0n;
 
   const handleNavClick = useCallback(
     (item: string) => {
@@ -97,6 +103,7 @@ export function MobileNavDropdown({ className }: { className?: string }) {
         menuClasses="space-y-8 py-6 px-8"
         menuItems={LINKS(!!address)
           .filter((l) => !(isMiniPay && l.hideInMiniPay))
+          .filter((l) => !(isMiniPay && l.hideInMiniPayUntilStaked && !hasStaked))
           .map((l) => {
             return (
               <Link

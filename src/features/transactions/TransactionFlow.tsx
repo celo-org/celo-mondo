@@ -66,6 +66,10 @@ export function TransactionFlow<FormDefaults extends {}>({
     votingPower.isLoading
   ) {
     Component = <SpinnerWithLabel className="py-20">Loading account data...</SpinnerWithLabel>;
+  } else if (confirmationDetails) {
+    Component = (
+      <TransactionConfirmation confirmation={confirmationDetails} closeModal={closeModal} />
+    );
   } else if (!isRegistered && !isVoteSigner && !requiresStCelo && mode === 'CELO') {
     Component = <AccountRegisterForm refetchAccountDetails={refetchAccountDetails} />;
   } else if (
@@ -74,10 +78,11 @@ export function TransactionFlow<FormDefaults extends {}>({
     !isVoteSigner &&
     !willVoteAndHasVotingPower
   ) {
-    Component = <LockForm showTip={true} />;
+    header = 'Lock CELO';
+    Component = <LockForm showTip={true} onConfirmed={onConfirmed} />;
   } else if (requiresStCelo && stCELOBalances.total <= 0n) {
     Component = <StakeStCeloForm showTip={true} />;
-  } else if (!confirmationDetails) {
+  } else {
     const action = (defaultFormValues as any).action as string;
     if (action) {
       if (action === DelegateActionType.Transfer) {
@@ -92,10 +97,6 @@ export function TransactionFlow<FormDefaults extends {}>({
     }
 
     Component = <FormComponent defaultFormValues={defaultFormValues} onConfirmed={onConfirmed} />;
-  } else {
-    Component = (
-      <TransactionConfirmation confirmation={confirmationDetails} closeModal={closeModal} />
-    );
   }
 
   return (

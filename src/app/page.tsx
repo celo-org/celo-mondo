@@ -1,5 +1,6 @@
 'use client';
-import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
@@ -17,6 +18,21 @@ import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useStakingMode } from 'src/utils/useStakingMode';
 
 export default function Page() {
+  const isMiniPay = useIsMiniPay();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isMiniPay) {
+      router.replace('/account');
+    }
+  }, [isMiniPay, router]);
+
+  if (isMiniPay) return null;
+
+  return <StakingPage />;
+}
+
+function StakingPage() {
   const { groups, totalVotes } = useValidatorGroups();
 
   return (

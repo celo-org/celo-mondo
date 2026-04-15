@@ -44,6 +44,8 @@ import UnlockIcon from 'src/images/icons/unlock.svg';
 import WithdrawIcon from 'src/images/icons/withdraw.svg';
 import { shortenAddress } from 'src/utils/addresses';
 import { usePageInvariant } from 'src/utils/navigation';
+import { useAddressParam } from 'src/utils/useAddressParam';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { Address } from 'viem';
@@ -51,8 +53,11 @@ import { useAccount } from 'wagmi';
 
 export default function Page() {
   const account = useAccount();
-  const address = account?.address;
-  usePageInvariant(!!address, '/');
+  const addressOverride = useAddressParam();
+  const address = addressOverride || account?.address;
+  const isReadOnly = !!addressOverride;
+  const isMiniPay = useIsMiniPay();
+  usePageInvariant(!!address || isMiniPay, '/');
 
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(signingFor);
@@ -94,7 +99,13 @@ export default function Page() {
           <h2>Total Balance</h2>
           <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
-        {isVoteSigner ? (
+        {isReadOnly ? (
+          <div className="align-right flex flex-col items-end">
+            <h2 className="text-sm font-medium text-taupe-600">Viewing account</h2>
+            <span className="hidden font-mono text-sm md:flex">{address}</span>
+            <span className="font-mono text-sm md:hidden">{shortenAddress(address!)}</span>
+          </div>
+        ) : isVoteSigner ? (
           <div className="align-right flex flex-col items-end">
             <h2 className="font-medium">Vote Signer For</h2>
             <span className="hidden font-mono text-sm md:flex">{signingFor}</span>
@@ -104,6 +115,7 @@ export default function Page() {
           <LockButtons className="hidden md:flex" mode={mode} />
         )}
       </div>
+      {isMiniPay && !isReadOnly && totalLocked === 0n && <StakeCeloCta />}
       {mode === 'CELO' ? (
         <AccountStats
           walletBalance={walletBalance}
@@ -119,7 +131,9 @@ export default function Page() {
           scheduledWithdrawalAmount={withdrawals.scheduledWithdrawalAmount}
         />
       )}
-      {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
+      {!isReadOnly && !isVoteSigner && (
+        <LockButtons className="flex justify-between md:hidden" mode={mode} />
+      )}
       <TableTabs
         groupToStake={groupToStake}
         addressToGroup={addressToGroup}
@@ -401,6 +415,32 @@ function TableTabs({
         />
       )}
       {tab === 'history' && <ProposalVotesHistoryTable />}
+    </div>
+  );
+}
+
+function StakeCeloCta() {
+  const showTxModal = useTransactionModal();
+
+  return (
+    <div className="space-y-3 border border-taupe-300 bg-white px-3 py-4 md:px-5 md:py-5">
+      <h3 className="font-serif text-xl sm:text-2xl">Stake your CELO</h3>
+      <p className="text-sm sm:text-base">
+        Earn ~2% annually in exchange for agreeing to a three-day lockup. Staked CELO also gives you
+        access to participate in Celo Governance decisions so you can help shape the future of Celo,
+        the network powering MiniPay.
+      </p>
+      <SolidButton
+        onClick={() =>
+          showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Stake })
+        }
+        className="bg-purple-300 text-white"
+      >
+        <div className="flex items-center space-x-1.5">
+          <Image src={StakingIcon} width={12} height={12} alt="" />
+          <span>Stake</span>
+        </div>
+      </SolidButton>
     </div>
   );
 }
