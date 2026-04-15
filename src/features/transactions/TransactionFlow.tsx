@@ -74,7 +74,8 @@ export function TransactionFlow<FormDefaults extends {}>({
     !isVoteSigner &&
     !willVoteAndHasVotingPower
   ) {
-    Component = <LockForm showTip={true} />;
+    header = 'Lock CELO';
+    Component = <LockForm showTip={true} onConfirmed={onConfirmed} />;
   } else if (requiresStCelo && stCELOBalances.total <= 0n) {
     Component = <StakeStCeloForm showTip={true} />;
   } else if (!confirmationDetails) {
