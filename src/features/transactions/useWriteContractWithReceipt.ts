@@ -83,7 +83,9 @@ export function useWriteContractWithReceipt(
         const txArgs = isMiniPay
           ? { ...args, gas: bufferedGas, feeCurrency: MINIPAY_FEE_CURRENCY }
           : { ...args, gas: bufferedGas };
-        logger.debug(`Trigger transaction write (isMiniPay=${isMiniPay}, value=${args.value})`);
+        window.alert(
+          `isMiniPay=${isMiniPay} value=${args.value} feeCurrency=${(txArgs as any).feeCurrency}`,
+        );
         writeContract(txArgs as any);
       }
     },
