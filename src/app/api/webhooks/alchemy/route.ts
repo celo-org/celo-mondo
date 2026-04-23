@@ -59,6 +59,14 @@ type AlchemyWebhookPayload = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
+  // Feature flag: only process if Alchemy is the active webhook provider.
+  // When MultiBaas is active, return 200 immediately so Alchemy stops
+  // retrying, but skip all processing so only one provider writes to the DB.
+  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
+  if (activeProvider !== 'alchemy') {
+    return new Response(null, { status: 200 });
+  }
+
   const rawBody = await request.text();
   const signingKey = process.env.ALCHEMY_SIGNING_KEY;
   if (!signingKey) {
@@ -70,14 +78,6 @@ export async function POST(request: NextRequest): Promise<Response> {
   const payload = assertSignature(rawBody, request.headers.get('x-alchemy-signature'), signingKey);
   if (!payload) {
     return new Response(null, { status: 403 });
-  }
-
-  // Feature flag: only process if Alchemy is the active webhook provider.
-  // When MultiBaas is active, return 200 immediately so Alchemy stops
-  // retrying, but skip all processing so only one provider writes to the DB.
-  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
-  if (activeProvider !== 'alchemy') {
-    return new Response(null, { status: 200 });
   }
 
   try {

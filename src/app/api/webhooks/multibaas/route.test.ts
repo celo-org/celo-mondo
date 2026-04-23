@@ -445,6 +445,19 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
 
+    it('returns 200 when inactive even without MULTIBAAS_WEBHOOK_SECRET set', async () => {
+      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
+      delete process.env.MULTIBAAS_WEBHOOK_SECRET;
+
+      const request = new NextRequest('http://localhost/api/webhooks/multibaas', {
+        method: 'POST',
+        body: '{}',
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+    });
+
     it('processes normally when ACTIVE_WEBHOOK_PROVIDER is multibaas', async () => {
       process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);

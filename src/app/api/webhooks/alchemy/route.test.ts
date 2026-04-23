@@ -440,6 +440,19 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
 
+    it('returns 200 when inactive even without ALCHEMY_SIGNING_KEY set', async () => {
+      process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
+      delete process.env.ALCHEMY_SIGNING_KEY;
+
+      const request = new NextRequest('http://localhost/api/webhooks/alchemy', {
+        method: 'POST',
+        body: '{}',
+      });
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+    });
+
     it('processes normally when ACTIVE_WEBHOOK_PROVIDER is alchemy', async () => {
       process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);

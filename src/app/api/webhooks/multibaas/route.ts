@@ -26,6 +26,14 @@ type MultibassEvent = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
+  // Feature flag: only process if MultiBaas is the active webhook provider.
+  // When Alchemy is active, return 200 immediately so MultiBaas stops
+  // retrying, but skip all processing so only one provider writes to the DB.
+  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
+  if (activeProvider !== 'multibaas') {
+    return new Response(null, { status: 200 });
+  }
+
   const rawBody = await request.text();
   const body = assertSignature(
     rawBody,
@@ -34,14 +42,6 @@ export async function POST(request: NextRequest): Promise<Response> {
   );
   if (!body) {
     return new Response(null, { status: 403 });
-  }
-
-  // Feature flag: only process if MultiBaas is the active webhook provider.
-  // When Alchemy is active, return 200 immediately so MultiBaas stops
-  // retrying, but skip all processing so only one provider writes to the DB.
-  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
-  if (activeProvider !== 'multibaas') {
-    return new Response(null, { status: 200 });
   }
 
   try {
