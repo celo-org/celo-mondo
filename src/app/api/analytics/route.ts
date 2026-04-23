@@ -6,10 +6,18 @@ import {
   isValidAnalyticsEvent,
   validateAnalyticsEvent,
 } from 'src/types/analytics';
+import { isAllowedOrigin } from 'src/utils/isAllowedOrigin';
 import { validate as uuidValidate } from 'uuid';
 
 export async function POST(request: NextRequest) {
   try {
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+
+    if (!isAllowedOrigin(origin, referer)) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    }
+
     const { eventName, properties, sessionId } = await request.json();
 
     if (!eventName || typeof eventName !== 'string' || !properties || !sessionId) {
