@@ -49,11 +49,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           .orderBy(sql`${proposalsTable.id} DESC`)
           .limit(1)
       ).at(0)!;
+      if (!proposal) {
+        return NextResponse.json(
+          { error: `Couldnt find proposal with id ${matches[2]}` },
+          { status: 404 },
+        );
+      }
     } else {
       return NextResponse.json({ error: 'Invalid proposal ID format' }, { status: 400 });
     }
 
-    const earliestBlockNumber = (
+    const earliestEvent = (
       await database
         .select()
         .from(eventsTable)
@@ -64,7 +70,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           ),
         )
         .limit(1)
-    ).at(0)!.blockNumber;
+    ).at(0);
+    if (!earliestEvent) {
+      return NextResponse.json(
+        { error: `No ProposalQueued event found for proposal ${proposal.id}` },
+        { status: 404 },
+      );
+    }
+    const earliestBlockNumber = earliestEvent.blockNumber;
     // Fetch and decode transactions
     const transactions = await getProposalTransactions(
       proposal.id,

@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { PropsWithChildren } from 'react';
 import { ToastContainer, Zoom } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { MiniPayNoCeloBanner } from 'src/components/banner/MiniPayNoCeloBanner';
 import { ErrorBoundary } from 'src/components/errors/ErrorBoundary';
 import { ErrorBoundaryInline } from 'src/components/errors/ErrorBoundaryInline';
 import { Footer } from 'src/components/nav/Footer';
@@ -57,6 +58,7 @@ export function BodyLayout({ children }: PropsWithChildren<any>) {
   return (
     <div className="relative flex h-full min-h-screen w-full flex-col justify-between overflow-x-hidden bg-taupe-100 text-black">
       <Header />
+      <MiniPayNoCeloBanner />
       <main className="flex w-full flex-1">{children}</main>
       <Footer />
     </div>

@@ -7,6 +7,7 @@ type HelpIconProps = {
   type?: 'tooltip' | 'button';
   text: string;
   size?: number;
+  autoWidth?: boolean; // Use true for longer tooltips
   align?: 'center' | 'right';
   position?: 'above' | 'below';
 };
@@ -17,6 +18,7 @@ export function HelpIcon({
   type = 'button',
   align = 'center',
   position = 'below',
+  autoWidth = false,
 }: HelpIconProps) {
   const isMobile = useIsMobile();
   if (isMobile) {
@@ -41,7 +43,7 @@ export function HelpIcon({
       </button>
       {type === 'tooltip' && (
         <span
-          className={`pointer-events-none absolute z-50 w-64 rounded-[2px] bg-accent px-3 py-3 text-sm leading-relaxed text-gray-100 opacity-0 transition-opacity group-hover:opacity-100 ${
+          className={`pointer-events-none absolute z-50 w-${autoWidth ? 'auto' : '64'} rounded-[2px] bg-accent px-3 py-3 text-sm leading-relaxed text-gray-100 opacity-0 transition-opacity group-hover:opacity-100 ${
             position === 'above' ? 'bottom-full mb-2' : 'translate-y-8'
           } ${align === 'right' ? 'right-0' : 'left-1/2 -translate-x-1/2'}`}
         >

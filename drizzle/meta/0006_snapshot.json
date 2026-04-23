@@ -1,5 +1,5 @@
 {
-  "id": "a5b652e1-a65c-46f2-bd99-c192b384a344",
+  "id": "a878d5e2-4984-445a-be4f-83882f72c3b3",
   "prevId": "3abcaab8-2cf4-421f-800b-2459ffdcfeba",
   "version": "7",
   "dialect": "postgresql",
@@ -292,143 +292,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.events_alchemy": {
-      "name": "events_alchemy",
-      "schema": "",
-      "columns": {
-        "chainId": {
-          "name": "chainId",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "eventName": {
-          "name": "eventName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "args": {
-          "name": "args",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "address": {
-          "name": "address",
-          "type": "varchar(42)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "topics": {
-          "name": "topics",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "data": {
-          "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "blockNumber": {
-          "name": "blockNumber",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "transactionHash": {
-          "name": "transactionHash",
-          "type": "varchar(66)",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {
-        "events_alchemy_blockNumber_index": {
-          "name": "events_alchemy_blockNumber_index",
-          "columns": [
-            {
-              "expression": "blockNumber",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "events_alchemy_eventName_index": {
-          "name": "events_alchemy_eventName_index",
-          "columns": [
-            {
-              "expression": "eventName",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "events_alchemy_chainId_index": {
-          "name": "events_alchemy_chainId_index",
-          "columns": [
-            {
-              "expression": "chainId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "events_alchemy_topics_proposalId_index": {
-          "name": "events_alchemy_topics_proposalId_index",
-          "columns": [
-            {
-              "expression": "\"topics\"[2]",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "gin",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "events_alchemy_chainId_chains_id_fk": {
-          "name": "events_alchemy_chainId_chains_id_fk",
-          "tableFrom": "events_alchemy",
-          "tableTo": "chains",
-          "columnsFrom": ["chainId"],
-          "columnsTo": ["id"],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "events_alchemy_eventName_transactionHash_chainId_pk": {
-          "name": "events_alchemy_eventName_transactionHash_chainId_pk",
-          "columns": ["eventName", "transactionHash", "chainId"]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.events": {
       "name": "events",
       "schema": "",
@@ -710,6 +573,12 @@
         },
         "quorumVotesRequired": {
           "name": "quorumVotesRequired",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "constitutionThreshold": {
+          "name": "constitutionThreshold",
           "type": "numeric",
           "primaryKey": false,
           "notNull": false

@@ -21,6 +21,7 @@ vi.mock('next/image', () => ({
 vi.mock('src/images/logos/portal-bridge.jpg', () => ({ default: '/mock-portal-logo.jpg' }));
 vi.mock('src/images/logos/squid-router.jpg', () => ({ default: '/mock-squid-logo.jpg' }));
 vi.mock('src/images/logos/usdt0.webp', () => ({ default: '/mock-usdt0-logo.webp' }));
+vi.mock('src/images/logos/relay.svg', () => ({ default: '/mock-relay-logo.svg' }));
 
 describe('Bridge Page', () => {
   beforeEach(() => {

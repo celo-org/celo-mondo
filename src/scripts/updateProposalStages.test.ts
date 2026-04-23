@@ -8,8 +8,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { updateProposalStages } from './updateProposalStages';
 
 // Mock getOnChainQuorumRequired since it makes complex RPC calls
+const mockGetOnChainQuorumRequired = vi.fn().mockResolvedValue({ quorumVotesRequired: 100n });
 vi.mock('src/features/governance/utils/quorum', () => ({
-  getOnChainQuorumRequired: vi.fn().mockResolvedValue({ quorumVotesRequired: 100n }),
+  getOnChainQuorumRequired: (...args: unknown[]) => mockGetOnChainQuorumRequired(...args),
 }));
 
 function createMockClient(getProposalStageResponses: Record<number, ProposalStage>) {
@@ -155,6 +156,79 @@ describe('updateProposalStages', () => {
     expect(client.readContract).not.toHaveBeenCalled();
     expect(await getProposalStage(90)).toBe(ProposalStage.Executed);
     expect(await getProposalStage(91)).toBe(ProposalStage.Queued);
+  });
+
+  describe('headClient fallback (stale archive node)', () => {
+    it('uses headClient for getProposalStage when provided', async () => {
+      await insertProposal({ id: 300, stage: ProposalStage.Referendum });
+
+      // Archive node is stale — still returns Referendum
+      const archiveClient = createMockClient({ 300: ProposalStage.Referendum });
+      // Head client (forno) returns the correct current stage
+      const headClient = createMockClient({ 300: ProposalStage.Execution });
+
+      await updateProposalStages(archiveClient, headClient);
+
+      // Stage should update based on headClient's response
+      expect(await getProposalStage(300)).toBe(ProposalStage.Execution);
+      // headClient was used for getProposalStage
+      expect(headClient.readContract).toHaveBeenCalled();
+      // archiveClient was NOT used for getProposalStage (only for quorum via mock)
+      expect(archiveClient.readContract).not.toHaveBeenCalled();
+    });
+
+    it('still updates stage when quorum calculation fails (archive node stale)', async () => {
+      await insertProposal({ id: 310, stage: ProposalStage.Referendum });
+
+      const archiveClient = createMockClient({ 310: ProposalStage.Referendum });
+      const headClient = createMockClient({ 310: ProposalStage.Execution });
+
+      // Simulate archive node failing on historical reads
+      mockGetOnChainQuorumRequired.mockRejectedValueOnce(
+        new Error('historical state is not available'),
+      );
+
+      await updateProposalStages(archiveClient, headClient);
+
+      // Stage should still update even though quorum failed
+      expect(await getProposalStage(310)).toBe(ProposalStage.Execution);
+    });
+
+    it('updates stage without quorumVotesRequired when quorum fails', async () => {
+      await insertProposal({
+        id: 320,
+        stage: ProposalStage.Referendum,
+        quorumVotesRequired: 50n,
+      });
+
+      const archiveClient = createMockClient({ 320: ProposalStage.Referendum });
+      const headClient = createMockClient({ 320: ProposalStage.Execution });
+
+      mockGetOnChainQuorumRequired.mockRejectedValueOnce(
+        new Error('historical state is not available'),
+      );
+
+      await updateProposalStages(archiveClient, headClient);
+
+      // Stage updated, but quorumVotesRequired preserved from before (not overwritten)
+      const [row] = await database
+        .select({ stage: proposalsTable.stage, quorum: proposalsTable.quorumVotesRequired })
+        .from(proposalsTable)
+        .where(eq(proposalsTable.id, 320));
+      expect(row.stage).toBe(ProposalStage.Execution);
+      expect(row.quorum).toBe(50n);
+    });
+
+    it('falls back to main client when headClient is not provided', async () => {
+      await insertProposal({ id: 330, stage: ProposalStage.Referendum });
+
+      const client = createMockClient({ 330: ProposalStage.Execution });
+
+      await updateProposalStages(client);
+
+      expect(await getProposalStage(330)).toBe(ProposalStage.Execution);
+      expect(client.readContract).toHaveBeenCalled();
+    });
   });
 
   it('self-heals multiple proposals in a single run', async () => {

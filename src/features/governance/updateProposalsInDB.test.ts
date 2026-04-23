@@ -29,6 +29,7 @@ function createMockClient() {
       if (functionName === 'getProposalStage') {
         return 1;
       }
+      return undefined;
     }),
     getBlock: vi.fn().mockResolvedValue({ timestamp: 1234567890n }),
   } as any;

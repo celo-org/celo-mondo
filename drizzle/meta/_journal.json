@@ -47,15 +47,8 @@
     {
       "idx": 6,
       "version": "7",
-      "when": 1775125711955,
-      "tag": "0006_white_tyger_tiger",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1775143860001,
-      "tag": "0007_lame_vermin",
+      "when": 1774445502129,
+      "tag": "0006_green_strong_guy",
       "breakpoints": true
     }
   ]

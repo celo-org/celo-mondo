@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { HelpIcon } from 'src/components/icons/HelpIcon';
@@ -7,6 +7,7 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import {
   getMaxThresholdInfo,
+  getThresholdLabel,
   useConstitutionThreshold,
   useIsProposalPassingQuorum,
 } from 'src/features/governance/hooks/useProposalQuorum';
@@ -182,8 +183,34 @@ function QuorumBar({ propData, isPast }: { propData: MergedProposalData; isPast:
 
 function ThresholdBar({ propData, isPast }: { propData: MergedProposalData; isPast: boolean }) {
   const { votes } = useProposalVoteTotals(propData);
-  const { data: thresholds } = useConstitutionThreshold(propData.proposal?.id);
-  const thresholdInfo = thresholds ? getMaxThresholdInfo(thresholds) : null;
+
+  // Prefer DB-stored threshold; fall back to on-chain fetch
+  const dbThreshold = propData.constitutionThreshold
+    ? parseFloat(propData.constitutionThreshold)
+    : null;
+  const shouldFetchOnChain = dbThreshold == null;
+  const { data: onChainThresholds } = useConstitutionThreshold(
+    shouldFetchOnChain ? propData.proposal?.id : undefined,
+  );
+
+  const thresholdInfo = dbThreshold
+    ? { maxThreshold: dbThreshold, ...getThresholdLabel(dbThreshold) }
+    : onChainThresholds
+      ? getMaxThresholdInfo(onChainThresholds)
+      : null;
+
+  // Backfill: trigger server-side threshold computation and DB storage
+  const backfilledRef = useRef(false);
+  useEffect(() => {
+    if (onChainThresholds && propData.proposal?.id && !backfilledRef.current) {
+      backfilledRef.current = true;
+      fetch('/api/governance/backfill-threshold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proposalId: propData.proposal.id }),
+      }).catch(() => {});
+    }
+  }, [onChainThresholds, propData.proposal?.id]);
 
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const noVotes = votes?.[VoteType.No] || 0n;
