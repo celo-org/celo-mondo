@@ -102,18 +102,11 @@ export default function PrivacyPage() {
           session recordings. Other on-screen content (text, amounts, addresses) is visible in
           replays and is used solely for product improvement.
         </li>
-        <li>
-          <strong>Text and attributes masked in autocapture.</strong> Text content and HTML
-          attributes are not captured by autocapture events.
-        </li>
-        <li>
-          <strong>Session replay disabled.</strong> PostHog session recording is explicitly disabled
-          in code.
-        </li>
       </ul>
       <P>
-        PostHog receives page views, page-leave events, clicks on UI elements (autocapture), and the
-        custom events listed below. All events are anonymous.
+        PostHog receives page views, page-leave events, clicks on UI elements (autocapture), session
+        recordings (with input fields masked), and the custom events listed below. All events are
+        anonymous.
       </P>
       <Table>
         <thead>
@@ -281,6 +274,7 @@ export default function PrivacyPage() {
               'On tab close',
             ],
             ['sessionStorage', 'PostHog SDK state', 'Anonymous PostHog SDK data', 'On tab close'],
+            ['sessionStorage', 'mode', 'Staking mode preference (CELO / stCELO)', 'On tab close'],
             [
               'localStorage',
               'celonames_cache',

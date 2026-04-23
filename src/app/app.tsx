@@ -29,7 +29,6 @@ function PHProvider({ children }: PropsWithChildren) {
       autocapture: true,
       mask_all_text: true,
       mask_all_element_attributes: true,
-
       capture_pageview: true,
       capture_pageleave: true,
       persistence: 'sessionStorage',
