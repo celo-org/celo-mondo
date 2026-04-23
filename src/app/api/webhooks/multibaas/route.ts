@@ -77,6 +77,10 @@ export async function POST(request: NextRequest): Promise<Response> {
       });
     }
 
+    if (!parsedEvents.length) {
+      return new Response(null, { status: 200 });
+    }
+
     await processWebhookEvents(parsedEvents);
     return new Response(null, { status: 200 });
   } catch (err) {
