@@ -1,27 +1,8 @@
-import { governanceABI, multiSigABI } from '@celo/abis';
-import { sql } from 'drizzle-orm';
-import { revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
-import { Event } from 'src/app/governance/events';
-import { MultisigEvent } from 'src/app/governance/multisigEvents';
-import { CacheKeys } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
-import database from 'src/config/database';
 import { sendAlertToSlack } from 'src/config/slackbot';
-import { votesTable } from 'src/db/schema';
-import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
-import fetchHistoricalMultiSigEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalMultiSigEventsAndSaveToDBProgressively';
-import updateApprovalsInDB from 'src/features/governance/updateApprovalsInDB';
-import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
-import { decodeAndPrepareProposalEvent } from 'src/features/governance/utils/events/proposal';
-import { decodeAndPrepareVoteEvent } from 'src/features/governance/utils/events/vote';
-import { celoPublicClient } from 'src/utils/client';
-import { Address, GetContractEventsParameters } from 'viem';
-
-type GovernanceEventName = GetContractEventsParameters<typeof governanceABI>['eventName'];
-type MultiSigEventName = GetContractEventsParameters<typeof multiSigABI>['eventName'];
-type EventName = GovernanceEventName | MultiSigEventName;
+import { Address } from 'viem';
+import { type EventName, type ParsedEvent, processWebhookEvents } from '../processWebhookEvents';
 
 type MultibassEvent = {
   id: string;
@@ -55,104 +36,48 @@ export async function POST(request: NextRequest): Promise<Response> {
     return new Response(null, { status: 403 });
   }
 
+  // Feature flag: only process if MultiBaas is the active webhook provider.
+  // When Alchemy is active, return 200 immediately so MultiBaas stops
+  // retrying, but skip all processing so only one provider writes to the DB.
+  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
+  if (activeProvider !== 'multibaas') {
+    return new Response(null, { status: 200 });
+  }
+
   try {
-    let proposalId: bigint | undefined | null;
-    const proposalIdsToUpdate: Set<bigint> = new Set();
-    const multisigTxIdsToProcess: Set<bigint> = new Set();
-
-    // Fetch the approver multisig address once for all events
-    const approverMultisigAddress = await celoPublicClient.readContract({
-      address: Addresses.Governance,
-      abi: governanceABI,
-      functionName: 'approver',
-      args: [],
-    });
-
+    const parsedEvents: ParsedEvent[] = [];
     for (const {
       data: { event },
     } of body) {
-      // Check if this is a MultiSig event by comparing contract address
-      const isMultiSigEvent =
-        event.contract.address.toLowerCase() === approverMultisigAddress.toLowerCase() &&
-        ['Confirmation', 'Revocation', 'Execution'].includes(event.name!);
-
-      if (isMultiSigEvent) {
-        // Process MultiSig events - use backfill result to capture ALL new transactionIds,
-        // not just the one from the webhook event. This prevents missed approvals when the
-        // backfill advances progress past events that the webhook didn't specifically trigger for.
-        const backfillResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-          event.name!,
-          celoPublicClient,
-        );
-
-        for (const txId of backfillResult.transactionIds) {
-          multisigTxIdsToProcess.add(txId);
-        }
-
-        // Also extract transactionId from the webhook event itself as a fallback
-        try {
-          const eventData: MultisigEvent = JSON.parse(event.rawFields);
-          const transactionId = (eventData.args as any)?.transactionId;
-
-          if (transactionId !== undefined) {
-            multisigTxIdsToProcess.add(BigInt(transactionId));
-          }
-        } catch {
-          // rawFields parsing failed - rely on backfill result transactionIds
-        }
-
-        // Also try extracting from MultiBaas inputs array
-        const txIdInput = event.inputs.find((i) => i.name === 'transactionId');
-        if (txIdInput) {
-          multisigTxIdsToProcess.add(BigInt(txIdInput.value));
-        }
-      } else {
-        // Process Governance events - capture backfill proposalIds to ensure we update
-        // proposals that the backfill discovered (not just the webhook event itself).
-        const backfillProposalIds = await fetchHistoricalEventsAndSaveToDBProgressively(
-          event.name!,
-          celoPublicClient,
-        );
-        for (const id of backfillProposalIds) {
-          proposalIdsToUpdate.add(id);
-        }
-
-        const eventData: Event = JSON.parse(event.rawFields);
-
-        // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
-        // since they just exit early when the event doesnt match
-        proposalId = await decodeAndPrepareProposalEvent(event.name!, eventData);
-        if (proposalId) {
-          proposalIdsToUpdate.add(proposalId);
-          continue;
-        }
-
-        proposalId = await decodeAndPrepareVoteEvent(
-          event.name!,
-          eventData,
-          celoPublicClient.chain.id,
-        ).then(upsertVotes);
-
-        // NOTE: we're keeping track of the proposalId because voting for a
-        // proposal means the networkWeight will be changed and the proposal row
-        // needs to be updated
-        if (proposalId) {
-          proposalIdsToUpdate.add(proposalId);
-          revalidateTag(CacheKeys.AllVotes);
-        }
+      let parsedFields: { topics?: unknown[]; data?: string; args?: Record<string, unknown> } = {};
+      try {
+        parsedFields = JSON.parse(event.rawFields);
+      } catch {
+        // rawFields parsing failed
       }
+
+      const transactionIds: bigint[] = [];
+      // Extract transactionId from rawFields args
+      const argsTransactionId = parsedFields.args?.transactionId;
+      if (argsTransactionId !== undefined) {
+        transactionIds.push(BigInt(argsTransactionId as string));
+      }
+      // Extract transactionId from inputs array as an additional source
+      const txIdInput = event.inputs.find((i) => i.name === 'transactionId');
+      if (txIdInput) {
+        transactionIds.push(BigInt(txIdInput.value));
+      }
+
+      parsedEvents.push({
+        name: event.name,
+        contractAddress: event.contract.address,
+        topics: (parsedFields.topics ?? []) as [`0x${string}`, ...`0x${string}`[]],
+        data: (parsedFields.data ?? '0x') as `0x${string}`,
+        transactionIds,
+      });
     }
 
-    // Update approvals if we have MultiSig events
-    if (multisigTxIdsToProcess.size) {
-      await updateApprovalsInDB(celoPublicClient, [...multisigTxIdsToProcess]);
-    }
-
-    // Update proposals if needed
-    if (proposalIdsToUpdate.size) {
-      await updateProposalsInDB(celoPublicClient, [...proposalIdsToUpdate], 'update');
-    }
-
+    await processWebhookEvents(parsedEvents);
     return new Response(null, { status: 200 });
   } catch (err) {
     const error = err as Error;
@@ -171,22 +96,6 @@ stack: ${error.stack}
 
     return new Response(null, { status: 500 });
   }
-}
-
-async function upsertVotes(rows: (typeof votesTable)['$inferInsert'][]) {
-  if (!rows.length) return null;
-
-  const { count } = await database
-    .insert(votesTable)
-    .values(rows)
-    .onConflictDoUpdate({
-      set: { count: sql`excluded.count` },
-      target: [votesTable.proposalId, votesTable.type, votesTable.chainId],
-    });
-
-  // eslint-disable-next-line no-console
-  console.info(`Inserted ${count} vote records for proposal: ${rows[0].proposalId}`);
-  return BigInt(rows[0].proposalId);
 }
 
 function assertSignature(

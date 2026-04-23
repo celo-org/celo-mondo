@@ -1,25 +1,16 @@
 import { governanceABI, multiSigABI } from '@celo/abis';
-import { and, eq, or, sql } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
-import { Event } from 'src/app/governance/events';
-import database from 'src/config/database';
 import { sendAlertToSlack } from 'src/config/slackbot';
-import { eventsAlchemyTable, votesAlchemyTable } from 'src/db/schema';
-import { EmptyVoteAmounts, VoteAmounts, VoteType } from 'src/features/governance/types';
-import { decodeVoteEventLog } from 'src/features/governance/utils/votes';
-import { celoPublicClient } from 'src/utils/client';
 import { decodeEventLog } from 'viem';
+import {
+  type EventName,
+  MULTISIG_EVENT_NAMES,
+  type ParsedEvent,
+  processWebhookEvents,
+} from '../processWebhookEvents';
 
-const MULTISIG_EVENT_NAMES = new Set(['Confirmation', 'Revocation', 'Execution']);
-const VOTE_EVENT_NAMES = new Set([
-  'ProposalVoted',
-  'ProposalVotedV2',
-  'ProposalVoteRevoked',
-  'ProposalVoteRevokedV2',
-]);
-
-const TOPIC0_TO_EVENT_NAME: Record<string, string> = {
+const TOPIC0_TO_EVENT_NAME: Record<string, EventName> = {
   '0x1bfe527f3548d9258c2512b6689f0acfccdd0557d80a53845db25fc57e93d8fe': 'ProposalQueued',
   '0x3e069fb74dcf5fbc07740b0d40d7f7fc48e9c0ca5dc3d19eb34d2e05d74c5543': 'ProposalDequeued',
   '0x28ec9e38ba73636ceb2f6c1574136f83bd46284a3c74734b711bf45e12f8d929': 'ProposalApproved',
@@ -81,57 +72,46 @@ export async function POST(request: NextRequest): Promise<Response> {
     return new Response(null, { status: 403 });
   }
 
+  // Feature flag: only process if Alchemy is the active webhook provider.
+  // When MultiBaas is active, return 200 immediately so Alchemy stops
+  // retrying, but skip all processing so only one provider writes to the DB.
+  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
+  if (activeProvider !== 'alchemy') {
+    return new Response(null, { status: 200 });
+  }
+
   try {
     const { block } = payload.event.data;
-    const chainId = celoPublicClient.chain.id;
-    const rows: (typeof eventsAlchemyTable)['$inferInsert'][] = [];
-
+    const parsedEvents: ParsedEvent[] = [];
     for (const log of block.logs) {
       const eventName = TOPIC0_TO_EVENT_NAME[log.topics[0]];
       if (!eventName) continue;
 
+      const topics = log.topics as [`0x${string}`, ...`0x${string}`[]];
+      const data = log.data as `0x${string}`;
       const abi = MULTISIG_EVENT_NAMES.has(eventName) ? multiSigABI : governanceABI;
-      let args: Record<string, unknown> = {};
+
+      const transactionIds: bigint[] = [];
       try {
-        const decoded = decodeEventLog({
-          abi,
-          data: log.data as `0x${string}`,
-          topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
-          strict: false,
-        });
-        args = serializeBigInts(decoded.args) as Record<string, unknown>;
+        const decoded = decodeEventLog({ abi, data, topics, strict: false });
+        const args = serializeBigInts(decoded.args) as Record<string, unknown>;
+        if (args?.transactionId !== undefined) {
+          transactionIds.push(BigInt(args.transactionId as string));
+        }
       } catch {
-        // Leave args empty if decode fails
+        // Leave transactionIds empty if decode fails
       }
 
-      rows.push({
-        chainId,
-        eventName: eventName as (typeof rows)[number]['eventName'],
-        args,
-        address: log.account.address.toLowerCase(),
-        topics: log.topics as [`0x${string}`, ...`0x${string}`[]],
-        data: log.data as `0x${string}`,
-        blockNumber: BigInt(block.number),
-        transactionHash: log.transaction.hash as `0x${string}`,
+      parsedEvents.push({
+        name: eventName,
+        contractAddress: log.account.address,
+        topics,
+        data,
+        transactionIds,
       });
     }
 
-    if (rows.length > 0) {
-      await database.insert(eventsAlchemyTable).values(rows).onConflictDoNothing();
-    }
-
-    const voteProposalIds = new Set<number>();
-    for (const row of rows) {
-      if (VOTE_EVENT_NAMES.has(row.eventName as string)) {
-        const proposalId = (row.args as Record<string, unknown>)?.proposalId;
-        if (proposalId !== undefined) voteProposalIds.add(Number(proposalId));
-      }
-    }
-
-    for (const proposalId of voteProposalIds) {
-      await upsertAlchemyVotes(proposalId, chainId);
-    }
-
+    await processWebhookEvents(parsedEvents);
     return new Response(null, { status: 200 });
   } catch (err) {
     const error = err as Error;
@@ -150,61 +130,6 @@ stack: ${error.stack}
 
     return new Response(null, { status: 500 });
   }
-}
-
-async function upsertAlchemyVotes(proposalId: number, chainId: number) {
-  const voteEvents = await database
-    .select()
-    .from(eventsAlchemyTable)
-    .where(
-      and(
-        eq(eventsAlchemyTable.chainId, chainId),
-        or(
-          eq(eventsAlchemyTable.eventName, 'ProposalVoted'),
-          eq(eventsAlchemyTable.eventName, 'ProposalVotedV2'),
-        ),
-        sql`(${eventsAlchemyTable.args}->>'proposalId')::bigint = ${proposalId}`,
-      ),
-    );
-
-  const voterToVotes: Record<string, VoteAmounts> = {};
-  for (const event of voteEvents) {
-    const decoded = decodeVoteEventLog(event as unknown as Event);
-    if (!decoded) continue;
-    voterToVotes[decoded.account] = {
-      [VoteType.Yes]: decoded.yesVotes,
-      [VoteType.No]: decoded.noVotes,
-      [VoteType.Abstain]: decoded.abstainVotes,
-    };
-  }
-
-  const totals = Object.values(voterToVotes).reduce<VoteAmounts>(
-    (acc, votes) => {
-      acc[VoteType.Yes] += votes[VoteType.Yes];
-      acc[VoteType.No] += votes[VoteType.No];
-      acc[VoteType.Abstain] += votes[VoteType.Abstain];
-      return acc;
-    },
-    { ...EmptyVoteAmounts },
-  );
-
-  const { count } = await database
-    .insert(votesAlchemyTable)
-    .values(
-      Object.entries(totals).map(([type, count]) => ({
-        type: type as VoteType,
-        count,
-        chainId,
-        proposalId,
-      })),
-    )
-    .onConflictDoUpdate({
-      set: { count: sql`excluded.count` },
-      target: [votesAlchemyTable.proposalId, votesAlchemyTable.type, votesAlchemyTable.chainId],
-    });
-
-  // eslint-disable-next-line no-console
-  console.info(`Upserted ${count} alchemy vote records for proposal: ${proposalId}`);
 }
 
 function assertSignature(

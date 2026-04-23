@@ -4,7 +4,7 @@ import { Address } from 'viem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
 
-const MOCK_WEBHOOK_SECRET = 'test-webhook-secret';
+const MOCK_SIGNING_KEY = 'test-alchemy-signing-key';
 const MOCK_APPROVER_MULTISIG = '0x41822d8A191fcfB1cfcA5F7048818aCd8eE933d3' as Address;
 const MOCK_GOVERNANCE_ADDRESS = '0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972' as Address;
 
@@ -70,68 +70,82 @@ vi.mock('src/config/slackbot', () => ({
   sendAlertToSlack: (...args: unknown[]) => mockSendAlertToSlack(...args),
 }));
 
+const mockDecodeEventLog = vi.fn().mockReturnValue({ eventName: 'ProposalQueued', args: {} });
+vi.mock('viem', async (importOriginal) => {
+  const original = await importOriginal<typeof import('viem')>();
+  return { ...original, decodeEventLog: (...args: unknown[]) => mockDecodeEventLog(...args) };
+});
+
 // --- Helpers ---
 
-function signPayload(payload: string, timestamp: string): string {
-  const hmac = createHmac('sha256', MOCK_WEBHOOK_SECRET);
-  hmac.update(Buffer.from(payload));
-  hmac.update(timestamp);
-  return hmac.digest().toString('hex');
+function signPayload(payload: string): string {
+  return createHmac('sha256', MOCK_SIGNING_KEY).update(payload, 'utf8').digest('hex');
 }
 
-function makeMultiBaasEvent(overrides: {
-  name: string;
-  contractAddress?: string;
-  inputs?: { name: string; value: string; hashed: boolean; type: string }[];
-  rawFields?: string;
-}) {
+function makeAlchemyLog(
+  overrides: Partial<{
+    topics: string[];
+    data: string;
+    address: string;
+    txHash: string;
+  }> = {},
+) {
   return {
-    id: 'test-event-id',
-    event: 'event.emitted',
-    data: {
-      triggeredAt: '2025-02-18T12:00:00Z',
-      event: {
-        name: overrides.name,
-        signature: `${overrides.name}(uint256)`,
-        inputs: overrides.inputs ?? [],
-        rawFields: overrides.rawFields ?? '{}',
-        contract: {
-          address: overrides.contractAddress ?? MOCK_GOVERNANCE_ADDRESS,
-          addressLabel: 'Governance',
-          name: 'Governance',
-          label: 'Governance',
-        },
-        indexInLog: 0,
-      },
+    index: 0,
+    data: overrides.data ?? '0x',
+    topics: overrides.topics ?? [
+      '0x1bfe527f3548d9258c2512b6689f0acfccdd0557d80a53845db25fc57e93d8fe', // ProposalQueued
+    ],
+    account: { address: overrides.address ?? MOCK_GOVERNANCE_ADDRESS },
+    transaction: {
+      hash: overrides.txHash ?? '0xabc123',
+      index: 0,
+      from: { address: '0x1234' },
+      to: { address: MOCK_GOVERNANCE_ADDRESS },
+      status: 1,
     },
   };
 }
 
-function createSignedRequest(events: ReturnType<typeof makeMultiBaasEvent>[]): NextRequest {
-  const payload = JSON.stringify(events);
-  const timestamp = String(Math.floor(Date.now() / 1000));
-  const signature = signPayload(payload, timestamp);
+function makeAlchemyPayload(logs: ReturnType<typeof makeAlchemyLog>[], blockNumber = 12345678) {
+  return {
+    webhookId: 'wh_123',
+    id: 'evt_123',
+    createdAt: '2026-04-01T00:00:00Z',
+    type: 'GRAPHQL',
+    event: {
+      data: {
+        block: {
+          number: blockNumber,
+          timestamp: 1743465600,
+          logs,
+        },
+      },
+      sequenceNumber: '1',
+    },
+  };
+}
 
-  return new NextRequest('http://localhost/api/webhooks/multibaas', {
+function createSignedRequest(payload: object): NextRequest {
+  const body = JSON.stringify(payload);
+  const signature = signPayload(body);
+  return new NextRequest('http://localhost/api/webhooks/alchemy', {
     method: 'POST',
-    body: payload,
+    body,
     headers: {
       'Content-Type': 'application/json',
-      'X-MultiBaas-Signature': signature,
-      'X-MultiBaas-Timestamp': timestamp,
+      'x-alchemy-signature': signature,
     },
   });
 }
 
 // --- Tests ---
 
-describe('POST /api/webhooks/multibaas', () => {
+describe('POST /api/webhooks/alchemy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.MULTIBAAS_WEBHOOK_SECRET = MOCK_WEBHOOK_SECRET;
-    // Default to multibaas so existing tests exercise the full handler.
-    // The feature flag describe block sets/unsets this per test.
-    process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
+    process.env.ALCHEMY_SIGNING_KEY = MOCK_SIGNING_KEY;
+    process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
     mockReadContract.mockResolvedValue(MOCK_APPROVER_MULTISIG);
   });
 
@@ -141,25 +155,9 @@ describe('POST /api/webhooks/multibaas', () => {
 
   describe('signature verification', () => {
     it('returns 403 when signature header is missing', async () => {
-      const request = new NextRequest('http://localhost/api/webhooks/multibaas', {
+      const request = new NextRequest('http://localhost/api/webhooks/alchemy', {
         method: 'POST',
-        body: '[]',
-        headers: {
-          'X-MultiBaas-Timestamp': '12345',
-        },
-      });
-
-      const response = await POST(request);
-      expect(response.status).toBe(403);
-    });
-
-    it('returns 403 when timestamp header is missing', async () => {
-      const request = new NextRequest('http://localhost/api/webhooks/multibaas', {
-        method: 'POST',
-        body: '[]',
-        headers: {
-          'X-MultiBaas-Signature': 'invalid',
-        },
+        body: JSON.stringify(makeAlchemyPayload([])),
       });
 
       const response = await POST(request);
@@ -167,45 +165,57 @@ describe('POST /api/webhooks/multibaas', () => {
     });
 
     it('returns 403 when signature is invalid', async () => {
-      const request = new NextRequest('http://localhost/api/webhooks/multibaas', {
+      const request = new NextRequest('http://localhost/api/webhooks/alchemy', {
         method: 'POST',
-        body: '[]',
-        headers: {
-          'X-MultiBaas-Signature': 'invalid-signature',
-          'X-MultiBaas-Timestamp': '12345',
-        },
+        body: JSON.stringify(makeAlchemyPayload([])),
+        headers: { 'x-alchemy-signature': 'invalid-signature' },
       });
 
       const response = await POST(request);
       expect(response.status).toBe(403);
     });
 
+    it('returns 500 when ALCHEMY_SIGNING_KEY is not set', async () => {
+      delete process.env.ALCHEMY_SIGNING_KEY;
+
+      const payload = makeAlchemyPayload([]);
+      const body = JSON.stringify(payload);
+      const request = new NextRequest('http://localhost/api/webhooks/alchemy', {
+        method: 'POST',
+        body,
+        headers: { 'x-alchemy-signature': signPayload(body) },
+      });
+
+      const response = await POST(request);
+      expect(response.status).toBe(500);
+    });
+
     it('returns 200 when signature is valid', async () => {
-      const request = createSignedRequest([]);
+      const request = createSignedRequest(makeAlchemyPayload([]));
       const response = await POST(request);
       expect(response.status).toBe(200);
     });
   });
 
   describe('MultiSig event processing', () => {
-    it('collects transactionIds from backfill result and passes them to updateApprovalsInDB', async () => {
+    it('collects transactionIds from backfill result and decoded args, passes them to updateApprovalsInDB', async () => {
       const backfillTxIds = [100n, 101n];
       mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
         transactionIds: backfillTxIds,
         confirmationCount: 2,
         lastEventBlock: 59520678n,
       });
-
-      const event = makeMultiBaasEvent({
-        name: 'Confirmation',
-        contractAddress: MOCK_APPROVER_MULTISIG,
-        inputs: [{ name: 'transactionId', value: '102', hashed: false, type: 'uint256' }],
-        rawFields: JSON.stringify({
-          args: { sender: '0x1234', transactionId: '103' },
-        }),
+      mockDecodeEventLog.mockReturnValue({
+        eventName: 'Confirmation',
+        args: { sender: '0x1234', transactionId: 102n },
       });
 
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog({
+        topics: ['0x4a504a94899432a9846e1aa406dceb1bcfd538bb839071d49d1e5e23f5be30ef'],
+        address: MOCK_APPROVER_MULTISIG,
+      });
+
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -215,29 +225,28 @@ describe('POST /api/webhooks/multibaas', () => {
       );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalledTimes(1);
 
-      // Should include backfill IDs (100, 101), rawFields ID (103), and inputs ID (102)
       const passedTxIds = mockUpdateApprovalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedTxIds).toEqual(expect.arrayContaining([100n, 101n, 102n, 103n]));
-      expect(passedTxIds).toHaveLength(4);
+      expect(passedTxIds).toEqual(expect.arrayContaining([100n, 101n, 102n]));
+      expect(passedTxIds).toHaveLength(3);
     });
 
-    it('deduplicates transactionIds from multiple sources', async () => {
+    it('deduplicates transactionIds from backfill and decoded args', async () => {
       mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
         transactionIds: [248n],
         confirmationCount: 1,
         lastEventBlock: 59520678n,
       });
-
-      const event = makeMultiBaasEvent({
-        name: 'Confirmation',
-        contractAddress: MOCK_APPROVER_MULTISIG,
-        inputs: [{ name: 'transactionId', value: '248', hashed: false, type: 'uint256' }],
-        rawFields: JSON.stringify({
-          args: { sender: '0x1234', transactionId: '248' },
-        }),
+      mockDecodeEventLog.mockReturnValue({
+        eventName: 'Confirmation',
+        args: { sender: '0x1234', transactionId: 248n },
       });
 
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog({
+        topics: ['0x4a504a94899432a9846e1aa406dceb1bcfd538bb839071d49d1e5e23f5be30ef'],
+        address: MOCK_APPROVER_MULTISIG,
+      });
+
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       await POST(request);
 
       const passedTxIds = mockUpdateApprovalsInDB.mock.calls[0][1] as bigint[];
@@ -245,21 +254,22 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(passedTxIds).toContainEqual(248n);
     });
 
-    it('handles backfill returning transactionIds even when rawFields parsing fails', async () => {
+    it('handles backfill returning transactionIds even when log decoding fails', async () => {
       mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
         transactionIds: [200n, 201n],
         confirmationCount: 2,
         lastEventBlock: 59520678n,
       });
-
-      const event = makeMultiBaasEvent({
-        name: 'Confirmation',
-        contractAddress: MOCK_APPROVER_MULTISIG,
-        inputs: [],
-        rawFields: 'not-valid-json',
+      mockDecodeEventLog.mockImplementation(() => {
+        throw new Error('decode failed');
       });
 
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog({
+        topics: ['0x4a504a94899432a9846e1aa406dceb1bcfd538bb839071d49d1e5e23f5be30ef'],
+        address: MOCK_APPROVER_MULTISIG,
+      });
+
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -273,14 +283,17 @@ describe('POST /api/webhooks/multibaas', () => {
         confirmationCount: 0,
         lastEventBlock: 100n,
       });
-
-      const event = makeMultiBaasEvent({
-        name: 'Revocation',
-        contractAddress: MOCK_APPROVER_MULTISIG,
-        inputs: [{ name: 'transactionId', value: '50', hashed: false, type: 'uint256' }],
+      mockDecodeEventLog.mockReturnValue({
+        eventName: 'Revocation',
+        args: { sender: '0x1234', transactionId: 50n },
       });
 
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog({
+        topics: ['0xf6a317157440607f36269043eb55f1287a5a19ba2216afeab88cd46cbcfb88e9'],
+        address: MOCK_APPROVER_MULTISIG,
+      });
+
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -294,24 +307,25 @@ describe('POST /api/webhooks/multibaas', () => {
     it('does not call updateApprovalsInDB when no multisig events are present', async () => {
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(1n);
 
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       await POST(request);
 
       expect(mockUpdateApprovalsInDB).not.toHaveBeenCalled();
     });
 
     it('does not treat events from non-approver multisig as multisig events', async () => {
-      const event = makeMultiBaasEvent({
-        name: 'Confirmation',
-        contractAddress: '0x0000000000000000000000000000000000000001',
+      mockDecodeEventLog.mockReturnValue({
+        eventName: 'Confirmation',
+        args: { sender: '0x1234', transactionId: 42n },
       });
 
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog({
+        topics: ['0x4a504a94899432a9846e1aa406dceb1bcfd538bb839071d49d1e5e23f5be30ef'],
+        address: '0x0000000000000000000000000000000000000001',
+      });
+
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       await POST(request);
 
       expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
@@ -323,12 +337,8 @@ describe('POST /api/webhooks/multibaas', () => {
     it('processes proposal events and calls updateProposalsInDB', async () => {
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -340,17 +350,11 @@ describe('POST /api/webhooks/multibaas', () => {
     });
 
     it('includes proposalIds from governance backfill in updateProposalsInDB call', async () => {
-      // Backfill discovers proposals 275 and 276 that were missed
       mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n, 276n]);
-      // The webhook event itself is for proposal 278
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -360,18 +364,12 @@ describe('POST /api/webhooks/multibaas', () => {
     });
 
     it('updates proposals from backfill even when webhook event decoding returns null', async () => {
-      // Backfill discovers proposal 275
       mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n]);
-      // The webhook event itself fails to decode (not a proposal event)
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(null);
       mockDecodeAndPrepareVoteEvent.mockResolvedValueOnce([]);
 
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
@@ -385,23 +383,32 @@ describe('POST /api/webhooks/multibaas', () => {
         confirmationCount: 1,
         lastEventBlock: 100n,
       });
-
-      const govEvent = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-      const msigEvent = makeMultiBaasEvent({
-        name: 'Confirmation',
-        contractAddress: MOCK_APPROVER_MULTISIG,
-        inputs: [{ name: 'transactionId', value: '248', hashed: false, type: 'uint256' }],
+      mockDecodeEventLog.mockReturnValue({
+        eventName: 'Confirmation',
+        args: { sender: '0x1234', transactionId: 248n },
       });
 
-      const request = createSignedRequest([govEvent, msigEvent]);
+      const govLog = makeAlchemyLog();
+      const msigLog = makeAlchemyLog({
+        topics: ['0x4a504a94899432a9846e1aa406dceb1bcfd538bb839071d49d1e5e23f5be30ef'],
+        address: MOCK_APPROVER_MULTISIG,
+      });
+
+      const request = createSignedRequest(makeAlchemyPayload([govLog, msigLog]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
       expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
+    });
+
+    it('skips logs with unknown topic0', async () => {
+      const log = makeAlchemyLog({ topics: ['0xdeadbeef'] });
+      const request = createSignedRequest(makeAlchemyPayload([log]));
+      await POST(request);
+
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
   });
 
@@ -409,51 +416,49 @@ describe('POST /api/webhooks/multibaas', () => {
     it('sends Slack alert and returns 500 on error', async () => {
       mockReadContract.mockRejectedValueOnce(new Error('RPC failed'));
 
-      const event = makeMultiBaasEvent({ name: 'Confirmation' });
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(500);
       expect(mockSendAlertToSlack).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to process celo-mondo webhook'),
+        expect.stringContaining('Failed to process celo-mondo alchemy webhook'),
       );
     });
   });
 
   describe('feature flag', () => {
-    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is alchemy (default)', async () => {
-      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
-
-      const event = makeMultiBaasEvent({ name: 'ProposalQueued' });
-      const request = createSignedRequest([event]);
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
-    });
-
-    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is explicitly set to alchemy', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
-
-      const event = makeMultiBaasEvent({ name: 'ProposalQueued' });
-      const request = createSignedRequest([event]);
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
-    });
-
-    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is multibaas', async () => {
+    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is multibaas', async () => {
       process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
+
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
+    });
+
+    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is alchemy', async () => {
+      process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-      const request = createSignedRequest([event]);
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).toHaveBeenCalled();
+    });
+
+    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is not set (defaults to alchemy)', async () => {
+      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
+      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
+
+      const log = makeAlchemyLog();
+      const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);

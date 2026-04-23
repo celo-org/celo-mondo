@@ -152,47 +152,6 @@ export const approvalsTable = pgTable(
 );
 export type Approval = typeof approvalsTable.$inferSelect;
 
-export const votesAlchemyTable = pgTable(
-  'votes_alchemy',
-  {
-    chainId: integer().notNull(),
-    type: VoteTypeEnum().notNull(),
-    count: numeric({ mode: 'bigint' }).notNull(),
-    proposalId: bigint({ mode: 'number' }).notNull(),
-  },
-  (table) => [
-    foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
-    primaryKey({ columns: [table.chainId, table.type, table.proposalId] }),
-  ],
-);
-
-export const eventsAlchemyTable = pgTable(
-  'events_alchemy',
-  {
-    chainId: integer().notNull(),
-    eventName: text()
-      .notNull()
-      .$type<
-        | GetContractEventsParameters<typeof governanceABI>['eventName']
-        | GetContractEventsParameters<typeof multiSigABI>['eventName']
-      >(),
-    args: jsonb().notNull(),
-    address: varchar({ length: 42 }).notNull(),
-    topics: text().array().notNull().$type<[signature: `0x${string}`, ...args: `0x${string}`[]]>(),
-    data: text().notNull().$type<`0x${string}`>(),
-    blockNumber: numeric({ mode: 'bigint' }).notNull(),
-    transactionHash: varchar({ length: 66 }).notNull(),
-  },
-  (table) => [
-    foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
-    primaryKey({ columns: [table.eventName, table.transactionHash, table.chainId] }),
-    index().on(table.blockNumber),
-    index().on(table.eventName),
-    index().on(table.chainId),
-    index('events_alchemy_topics_proposalId_index').using('gin', sql`${table.topics}[2]`),
-  ],
-);
-
 export const analyticsEventsTable = pgTable(
   'analyticsEvents',
   {
