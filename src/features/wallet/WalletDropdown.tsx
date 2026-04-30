@@ -76,7 +76,7 @@ export function WalletDropdown() {
       {address && isConnected ? (
         <DropdownModal
           button={() => (
-            <div className="flex items-center justify-center space-x-1">
+            <div className="ph-no-capture flex items-center justify-center space-x-1">
               <Identicon address={address} size={26} />
               <AddressLabel address={address} />
             </div>
@@ -124,7 +124,7 @@ function DropdownContent({
 
   return (
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">
-      <div className="flex flex-col items-center">
+      <div className="ph-no-capture flex flex-col items-center">
         <Identicon address={address} size={34} />
         <button title="Click to copy" onClick={onClickCopy} className="flex flex-col text-sm">
           <AddressLabel address={address} hiddenIfNoLabel shortener={() => shortAddress} />
@@ -203,7 +203,9 @@ function ValueRow({
       <div className="flex flex-row justify-between">
         <label className="text-sm">{label} </label>
         {address && (
-          <span className="font-mono text-xs text-taupe-600">&hellip;{address?.slice(-4)}</span>
+          <span className="ph-no-capture font-mono text-xs text-taupe-600">
+            &hellip;{address?.slice(-4)}
+          </span>
         )}
       </div>
       <Amount value={value} valueWei={valueWei} className="text-xl" />

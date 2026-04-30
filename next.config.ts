@@ -26,6 +26,8 @@ const CONNECT_SRC_HOSTS = [
   'https://pass.celopg.eco',
   'https://*.rainbow.me',
   'https://us-central1-staked-celo-bot.cloudfunctions.net',
+  'https://eu.i.posthog.com',
+  'https://eu-assets.i.posthog.com',
 ];
 const FRAME_SRC_HOSTS = [
   'https://*.walletconnect.com',
@@ -38,12 +40,12 @@ const IMG_SRC_HOSTS = [
   'https://app.safe.global',
   'https://pass.celopg.eco',
 ];
-const SCRIPTS_SRC_HOSTS = ['https://*.safe.global'];
+const SCRIPTS_SRC_HOSTS = ['https://*.safe.global', 'https://eu-assets.i.posthog.com'];
 
 const cspHeader = `
   default-src 'self';
   script-src 'self' ${isDev ? "'unsafe-eval'" : SCRIPTS_SRC_HOSTS.join(' ')};
-  script-src-elem 'self' 'unsafe-inline';
+  script-src-elem 'self' 'unsafe-inline' https://eu-assets.i.posthog.com;
   style-src 'self' 'unsafe-inline';
   connect-src 'self' ${CONNECT_SRC_HOSTS.join(' ')};
   img-src 'self' blob: data: ${IMG_SRC_HOSTS.join(' ')};
