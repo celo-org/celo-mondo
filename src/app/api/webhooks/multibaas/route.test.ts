@@ -421,18 +421,6 @@ describe('POST /api/webhooks/multibaas', () => {
   });
 
   describe('feature flag', () => {
-    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is alchemy (default)', async () => {
-      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
-
-      const event = makeMultiBaasEvent({ name: 'ProposalQueued' });
-      const request = createSignedRequest([event]);
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
-    });
-
     it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is explicitly set to alchemy', async () => {
       process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
 
@@ -446,7 +434,7 @@ describe('POST /api/webhooks/multibaas', () => {
     });
 
     it('returns 200 when inactive even without MULTIBAAS_WEBHOOK_SECRET set', async () => {
-      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
+      process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
       delete process.env.MULTIBAAS_WEBHOOK_SECRET;
 
       const request = new NextRequest('http://localhost/api/webhooks/multibaas', {
@@ -460,6 +448,22 @@ describe('POST /api/webhooks/multibaas', () => {
 
     it('processes normally when ACTIVE_WEBHOOK_PROVIDER is multibaas', async () => {
       process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
+      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
+
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+      });
+      const request = createSignedRequest([event]);
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).toHaveBeenCalled();
+    });
+
+    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is not set (defaults to multibaas)', async () => {
+      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
       const event = makeMultiBaasEvent({

@@ -88,6 +88,7 @@ function makeAlchemyLog(
     data: string;
     address: string;
     txHash: string;
+    txStatus: number;
   }> = {},
 ) {
   return {
@@ -102,7 +103,7 @@ function makeAlchemyLog(
       index: 0,
       from: { address: '0x1234' },
       to: { address: MOCK_GOVERNANCE_ADDRESS },
-      status: 1,
+      status: overrides.txStatus ?? 1,
     },
   };
 }
@@ -410,6 +411,16 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
       expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
+
+    it('skips logs from reverted transactions', async () => {
+      const log = makeAlchemyLog({ txStatus: 0 });
+      const request = createSignedRequest(makeAlchemyPayload([log]));
+      const response = await POST(request);
+
+      expect(response.status).toBe(200);
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
+    });
   });
 
   describe('error handling', () => {
@@ -466,17 +477,16 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
     });
 
-    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is not set (defaults to alchemy)', async () => {
+    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is not set (defaults to multibaas)', async () => {
       delete process.env.ACTIVE_WEBHOOK_PROVIDER;
-      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
       const log = makeAlchemyLog();
       const request = createSignedRequest(makeAlchemyPayload([log]));
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).toHaveBeenCalled();
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
   });
 });

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { sendAlertToSlack } from 'src/config/slackbot';
 import { decodeEventLog } from 'viem';
+import { WebhookProvider, isActiveWebhookProvider } from '../activeProvider';
 import {
   type EventName,
   MULTISIG_EVENT_NAMES,
@@ -59,11 +60,7 @@ type AlchemyWebhookPayload = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  // Feature flag: only process if Alchemy is the active webhook provider.
-  // When MultiBaas is active, return 200 immediately so Alchemy stops
-  // retrying, but skip all processing so only one provider writes to the DB.
-  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
-  if (activeProvider !== 'alchemy') {
+  if (!isActiveWebhookProvider(WebhookProvider.Alchemy)) {
     return new Response(null, { status: 200 });
   }
 
@@ -84,6 +81,10 @@ export async function POST(request: NextRequest): Promise<Response> {
     const { block } = payload.event.data;
     const parsedEvents: ParsedEvent[] = [];
     for (const log of block.logs) {
+      if (log.transaction.status !== 1) {
+        continue;
+      }
+
       const eventName = TOPIC0_TO_EVENT_NAME[log.topics[0]];
       if (!eventName) continue;
 

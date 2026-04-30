@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { sendAlertToSlack } from 'src/config/slackbot';
 import { Address } from 'viem';
+import { WebhookProvider, isActiveWebhookProvider } from '../activeProvider';
 import { type EventName, type ParsedEvent, processWebhookEvents } from '../processWebhookEvents';
 
 type MultibassEvent = {
@@ -26,11 +27,7 @@ type MultibassEvent = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  // Feature flag: only process if MultiBaas is the active webhook provider.
-  // When Alchemy is active, return 200 immediately so MultiBaas stops
-  // retrying, but skip all processing so only one provider writes to the DB.
-  const activeProvider = process.env.ACTIVE_WEBHOOK_PROVIDER ?? 'alchemy';
-  if (activeProvider !== 'multibaas') {
+  if (!isActiveWebhookProvider(WebhookProvider.MultiBaas)) {
     return new Response(null, { status: 200 });
   }
 
