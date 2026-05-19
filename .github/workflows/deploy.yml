@@ -13,15 +13,34 @@ jobs:
       id-token: write
       contents: read
     steps:
-    - name: Akeyless Get Secrets
-      id: get_auth_token
-      uses: docker://us-west1-docker.pkg.dev/devopsre/akeyless-public/akeyless-action:latest
-      with:
-        api-url: https://api.gateway.akeyless.celo-networks-dev.org
-        access-id: p-kf9vjzruht6l
-        static-secrets: '{"/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook":"TOKEN_VAR"}'
-    - name: Trigger Deployment
-      env:
-        DEPLOYMENT_WEBHOOK_URL: ${{ env.TOKEN_VAR }}
-      run: |
-        curl -s -o /dev/null -X GET "$DEPLOYMENT_WEBHOOK_URL"
+
+      - name: Import Secrets from OpenBao
+        id: import-secrets
+        uses: hashicorp/vault-action@v3
+        with:
+          # Your OpenBao URL
+          url: https://openbao.akeyless.celo-networks-dev.org
+          # Authentication configuration
+          method: jwt
+          path: github
+          role: "celo-org_celo-mondo"
+          # Secrets to retrieve: <PATH> <KEY> | <ENV_VAR_NAME>
+          secrets: |
+            secrets/data/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook value | TOKEN_VAR
+
+
+      - name: Verify Secret Retrieval
+        run: |
+          if [ -n "${{ env.TOKEN_VAR }}" ]; then
+            echo "SUCCESS: TOKEN_VAR retrieved successfully from OpenBao."
+          else
+            echo "FAIL: TOKEN_VAR is empty. Check OpenBao roles or policy."
+            exit 1
+          fi
+
+      - name: Trigger Deployment
+        if: ${{ false }}
+        env:
+          DEPLOYMENT_WEBHOOK_URL: ${{ env.TOKEN_VAR }}
+        run: |
+          curl -s -o /dev/null -X GET "$DEPLOYMENT_WEBHOOK_URL"
