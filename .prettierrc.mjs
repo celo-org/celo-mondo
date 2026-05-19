@@ -1,8 +1,0 @@
-export default {
-  tabWidth: 2,
-  printWidth: 100,
-  singleQuote: true,
-  trailingComma: 'all',
-  plugins: ['prettier-plugin-organize-imports', 'prettier-plugin-tailwindcss'],
-  tailwindFunctions: ['clsx'],
-};
