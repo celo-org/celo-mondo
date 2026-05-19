@@ -33,7 +33,7 @@ jobs:
           role: "celo-org_celo-mondo_deployment-test"
           # Secrets to retrieve: <PATH> <KEY> | <ENV_VAR_NAME>
           secrets: |
-            secrets/data/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook | TOKEN_VAR
+            secrets/data/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook value | TOKEN_VAR
 
       - name: Verify Secret Retrieval
         run: |
