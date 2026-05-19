@@ -23,7 +23,7 @@ jobs:
           # Authentication configuration
           method: jwt
           path: github
-          role: "celo-org_celo-mondo"
+          role: "celo-org_celo-mondo_main"
           # Secrets to retrieve: <PATH> <KEY> | <ENV_VAR_NAME>
           secrets: |
             secrets/data/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook value | TOKEN_VAR
