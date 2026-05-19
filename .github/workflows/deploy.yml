@@ -28,18 +28,7 @@ jobs:
           secrets: |
             secrets/data/static-secrets/dev-tooling-circle/vercel/celo-mondo_vercel_deploy_hook value | TOKEN_VAR
 
-
-      - name: Verify Secret Retrieval
-        run: |
-          if [ -n "${{ env.TOKEN_VAR }}" ]; then
-            echo "SUCCESS: TOKEN_VAR retrieved successfully from OpenBao."
-          else
-            echo "FAIL: TOKEN_VAR is empty. Check OpenBao roles or policy."
-            exit 1
-          fi
-
       - name: Trigger Deployment
-        if: ${{ false }}
         env:
           DEPLOYMENT_WEBHOOK_URL: ${{ env.TOKEN_VAR }}
         run: |
