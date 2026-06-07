@@ -90,7 +90,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.20.3",
     "typescript": "^5.4.3",
-    "vitest": "^2.1.1"
+    "vitest": "^4.0.0"
   },
   "resolutions": {
     "bignumber.js": "9.1.2",
