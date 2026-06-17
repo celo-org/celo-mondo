@@ -4,7 +4,12 @@ import { eventsTable } from 'src/db/schema';
 import { TEST_CHAIN_ID } from 'src/test/database';
 import { describe, expect, it } from 'vitest';
 
-import { ingestedViaConflictSet, IngestSource, withIngestionMetadata } from './ingest';
+import {
+  formatIngestedVia,
+  ingestedViaConflictSet,
+  IngestSource,
+  withIngestionMetadata,
+} from './ingest';
 
 const PK = {
   eventName: 'ProposalExecuted' as const,
@@ -93,5 +98,40 @@ describe('event ingestion provenance', () => {
     await ingest('cron');
     const row = await readRow();
     expect(Object.keys(row.ingestedVia ?? {})).toEqual(['cron']);
+  });
+
+  it('same event received via Alchemy then MultiBaas → one row recording both providers', async () => {
+    // Simulates the same on-chain ProposalExecuted delivered by both webhooks:
+    // the Alchemy backfill writes it first, then the MultiBaas backfill writes
+    // the identical event (same PK). End state must be a single row whose
+    // ingestedVia records both providers, each with its own first-arrival time.
+    await ingest('alchemy');
+    const afterAlchemy = await readRow();
+    await tick();
+    await ingest('multibaas');
+
+    const all = await database.select().from(eventsTable);
+    expect(all).toHaveLength(1);
+
+    const row = all[0];
+    expect(row.ingestedVia).toEqual({
+      alchemy: afterAlchemy.ingestedVia?.alchemy,
+      multibaas: expect.any(String),
+    });
+    // alchemy arrived first, so it must sort first in the rendered string
+    expect(formatIngestedVia(row.ingestedVia)).toMatch(
+      /^alchemy \(\d\d:\d\d:\d\d\), multibaas \(\d\d:\d\d:\d\d\)$/,
+    );
+  });
+
+  it('order of arrival is reflected: MultiBaas first, then Alchemy', async () => {
+    await ingest('multibaas');
+    await tick();
+    await ingest('alchemy');
+
+    const row = await readRow();
+    expect(Object.keys(row.ingestedVia ?? {}).sort()).toEqual(['alchemy', 'multibaas']);
+    // multibaas arrived first → renders first
+    expect(formatIngestedVia(row.ingestedVia)).toMatch(/^multibaas \(.*\), alchemy \(.*\)$/);
   });
 });

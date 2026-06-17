@@ -35,3 +35,17 @@ export function withIngestionMetadata<T extends object>(
 export const ingestedViaConflictSet = {
   ingestedVia: sql`excluded."ingestedVia" || coalesce(${eventsTable.ingestedVia}, '{}'::jsonb)`,
 };
+
+/**
+ * Renders an ingestedVia map for display, ordered by arrival time, e.g.
+ * `alchemy (12:15:31), multibaas (12:17:40)`.
+ */
+export function formatIngestedVia(
+  ingestedVia: Partial<Record<IngestSource, string>> | null | undefined,
+): string {
+  if (!ingestedVia) return '';
+  return Object.entries(ingestedVia)
+    .sort(([, a], [, b]) => a.localeCompare(b))
+    .map(([source, iso]) => `${source} (${iso.slice(11, 19)})`)
+    .join(', ');
+}
