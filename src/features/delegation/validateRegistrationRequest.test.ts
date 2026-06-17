@@ -2,7 +2,13 @@ import { RegisterDelegateRequest } from 'src/features/delegation/types';
 import * as utils from 'src/features/delegation/utils';
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
 import { getValidRequest } from 'src/test/delegatee-registration-utils';
-import { expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
+
+// Restore spies between tests so per-call mockResolvedValueOnce queues do not
+// leak across tests (vitest 4 no longer resets a re-spied method's queue).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 it('validates successfully', async () => {
   const request = await getValidRequest();

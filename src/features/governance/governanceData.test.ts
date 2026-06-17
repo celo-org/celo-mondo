@@ -1,6 +1,5 @@
-import { afterEach, beforeEach } from 'node:test';
 import { publicClient } from 'src/test/anvil/utils';
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { getStageEndTimestamp } from './governanceData';
 import { ProposalStage } from './types';
 

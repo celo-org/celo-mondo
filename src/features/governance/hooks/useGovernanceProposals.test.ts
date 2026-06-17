@@ -1,8 +1,7 @@
-import { afterEach, beforeEach } from 'node:test';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { ProposalStage, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { publicClient } from 'src/test/anvil/utils';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useGovernanceProposal } from './useGovernanceProposals';
 
 beforeEach(() => {
