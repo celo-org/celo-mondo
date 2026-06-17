@@ -3,25 +3,28 @@ import { useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { AmountField } from 'src/components/input/AmountField';
-import { RadioField } from 'src/components/input/RadioField';
 import { TipBox } from 'src/components/layout/TipBox';
 import { formatNumberString } from 'src/components/numbers/Amount';
-import { MIN_REMAINING_BALANCE } from 'src/config/consts';
+import { MIN_REMAINING_BALANCE, ZERO_ADDRESS } from 'src/config/consts';
 import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance } from 'src/features/account/hooks';
-import {
-  LiquidStakeActionType,
-  LiquidStakeFormValues,
-  StCeloActionValues,
-} from 'src/features/locking/types';
+import { LiquidStakeActionType, LiquidStakeFormValues } from 'src/features/locking/types';
 import { useLockedStatus } from 'src/features/locking/useLockedStatus';
 import { useExchangeRates } from 'src/features/staking/stCELO/hooks/useExchangeRates';
+import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
+import { useWithdrawals } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { getStakeTxPlan } from 'src/features/staking/stCELO/stakeTxPlan';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
+import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
+import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
+import { ValidatorGroupLogoAndName } from 'src/features/validators/ValidatorGroupLogo';
+import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
+import { getGroupStats } from 'src/features/validators/utils';
 import { fromWei, toWei } from 'src/utils/amount';
+import { afterDeposit, withdraw } from 'src/utils/stCELOAPI';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
@@ -46,23 +49,54 @@ export function StakeStCeloForm({
   const { unlockingPeriod } = useLockedStatus(address);
   const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);
   const { stakeBalances } = useStakingBalances(address);
+  const { startWaitingForNewWithdrawal } = useWithdrawals(address);
+  const { group: strategyGroup } = useStrategy(address);
+  const { addressToGroup } = useValidatorGroups(true);
+  const showChangeStrategy = useTransactionModal(TransactionFlowType.ChangeStrategy);
+
+  const changeStrategyDefaultGroup = useMemo(() => {
+    if (!strategyGroup || strategyGroup !== ZERO_ADDRESS || !addressToGroup) return ZERO_ADDRESS;
+    // Current strategy is already default (StCelo Basket), pick a random top group with free capacity
+    const candidates = Object.values(addressToGroup)
+      .filter((g) => g.validStCeloGroup && g.address !== ZERO_ADDRESS && g.votes < g.capacity)
+      .map((g) => ({ ...g, score: getGroupStats(g).score }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 20);
+    if (!candidates.length) return ZERO_ADDRESS;
+    return candidates[Math.floor(Math.random() * candidates.length)].address;
+  }, [strategyGroup, addressToGroup]);
 
   const { getNextTx, txPlanIndex, numTxs, isPlanStarted, onTxSuccess } =
     useTransactionPlan<LiquidStakeFormValues>({
       createTxPlan: (v) => getStakeTxPlan(v),
       onStepSuccess: () => refetch(),
-      onPlanSuccess: onConfirmed
-        ? (v, r) =>
-            onConfirmed({
-              message: `${v.action} successful`,
-              amount: v.amount,
-              receipt: r,
-              properties: [
-                { label: 'Action', value: toTitleCase(v.action) },
-                { label: 'Amount', value: `${v.amount} CELO` },
-              ],
-            })
-        : undefined,
+      onPlanSuccess: async (v, r) => {
+        void (async function callstCeloApi() {
+          try {
+            if (v.action === LiquidStakeActionType.Stake) {
+              await afterDeposit();
+            } else {
+              startWaitingForNewWithdrawal();
+              await withdraw(address!);
+            }
+          } catch (e) {
+            console.error(`${v.action} error`, e);
+          }
+        })();
+
+        return (
+          onConfirmed &&
+          onConfirmed({
+            message: `${v.action} successful`,
+            amount: v.amount,
+            receipt: r,
+            properties: [
+              { label: 'Action', value: toTitleCase(v.action) },
+              { label: 'Amount', value: `${v.amount} CELO` },
+            ],
+          })
+        );
+      },
     });
   const { writeContract, isLoading } = useWriteContractWithReceipt('lock/unlock', onTxSuccess);
   const isInputDisabled = isLoading || isPlanStarted;
@@ -91,7 +125,7 @@ export function StakeStCeloForm({
       validateOnBlur={false}
     >
       {({ values }) => (
-        <Form className="mt-4 flex flex-1 flex-col justify-between" data-testid="lock-form">
+        <Form className="mt-4 flex flex-1 flex-col justify-between gap-6" data-testid="lock-form">
           <div className="space-y-5">
             {showTip && (
               <TipBox color="purple">
@@ -100,15 +134,36 @@ export function StakeStCeloForm({
               </TipBox>
             )}
             {values.action === LiquidStakeActionType.Unstake && (
-              <TipBox color="purple">Unstaking takes {unlockingPeriodReadable}. </TipBox>
+              <TipBox color="purple">
+                Unstaking may take up to {unlockingPeriodReadable}. If unlocked CELO is available,
+                it will be sent directly to your wallet.
+              </TipBox>
             )}
-            <ActionTypeField defaultAction={defaultFormValues?.action} disabled={isInputDisabled} />
             <LockAmountField
               stCELOBalances={stCELOBalances}
               walletBalance={walletBalance}
               action={values.action}
               disabled={isInputDisabled}
             />
+            {strategyGroup && addressToGroup && (
+              <div>
+                <label className="pl-0.5 text-xs font-medium">Strategy</label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    showChangeStrategy(undefined, { group: changeStrategyDefaultGroup })
+                  }
+                  className="mt-2 flex w-full items-center justify-between rounded-full border border-taupe-300 py-2 pl-3 pr-4 hover:bg-taupe-300/50"
+                >
+                  <ValidatorGroupLogoAndName
+                    address={strategyGroup}
+                    name={addressToGroup[strategyGroup]?.name}
+                    size={24}
+                  />
+                  <span className="shrink-0 text-xs text-purple-500">Change</span>
+                </button>
+              </div>
+            )}
           </div>
           <MultiTxFormSubmitButton
             txIndex={txPlanIndex}
@@ -122,22 +177,6 @@ export function StakeStCeloForm({
         </Form>
       )}
     </Formik>
-  );
-}
-function ActionTypeField({
-  defaultAction,
-  disabled,
-}: {
-  defaultAction?: LiquidStakeActionType;
-  disabled?: boolean;
-}) {
-  return (
-    <RadioField<LiquidStakeActionType>
-      name="action"
-      values={StCeloActionValues}
-      defaultValue={defaultAction}
-      disabled={disabled}
-    />
   );
 }
 
@@ -167,22 +206,20 @@ function LockAmountField({
     <div>
       <AmountField
         tokenId={TokenId.stCELO}
-        maxValueWei={maxAmountWei}
+        maxWalletValueWei={maxAmountWei}
         maxDescription={`${action === LiquidStakeActionType.Stake ? '' : 'st'}CELO available`}
         disabled={disabled}
       />
       <div className="flex items-center justify-between pt-4">
         <label className="pl-0.5 text-xs font-medium">Receive</label>
         <strong className="text-xs">
-          {rate != null ? formatNumberString(values.amount / rate, 5) : 'Loading exchange rate…'}{' '}
+          {rate != null ? formatNumberString(values.amount * rate, 5) : 'Loading exchange rate…'}{' '}
           {action === LiquidStakeActionType.Unstake ? '' : 'st'}CELO
         </strong>
       </div>
       <div className="flex items-center justify-between">
         <label className="pl-0.5 text-xs font-medium">Exchange Rate</label>
-        <span className="text-xs">
-          {action === LiquidStakeActionType.Stake ? stakingRate : unstakingRate}
-        </span>
+        <span className="text-xs">{rate != null ? formatNumberString(rate, 2) : 'Loading…'}</span>
       </div>
     </div>
   );
@@ -246,5 +283,6 @@ const ActionToVerb: Record<LiquidStakeActionType, string> = {
 const ActionToTipText: Record<LiquidStakeActionType, string> = {
   [LiquidStakeActionType.Stake]:
     'stCelo tokens are automatically staked in a basket of 8 validator groups. You may switch groups later if you wish',
-  [LiquidStakeActionType.Unstake]: 'Return in three days to withdraw',
+  [LiquidStakeActionType.Unstake]:
+    'Withdrawal may be instant or take up to three days depending on available liquidity',
 };

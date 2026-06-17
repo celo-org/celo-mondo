@@ -257,7 +257,7 @@
     "author": "@martinvol, @pedro-clabs",
     "stage": 6,
     "id": 26,
-    "url": "https://forum.celo.org/t/ceur-celo-euro-goes-live/876",
+    "url": "https://forum.celo.org/t/ceur-celo-euro-goes-live",
     "timestamp": 1615420800000,
     "timestampExecuted": 1619136000000
   },
@@ -333,7 +333,8 @@
     "author": "@tkporter, @albertclabs",
     "stage": 6,
     "id": 41,
-    "timestamp": 1592179200000
+    "timestamp": 1592179200000,
+    "timestampExecuted": 1633046400000
   },
   {
     "cgp": 32,
@@ -354,7 +355,8 @@
     "author": "@tobikuhlmann",
     "stage": 6,
     "id": 34,
-    "timestamp": 1624924800000
+    "timestamp": 1624924800000,
+    "timestampExecuted": 1632355200000
   },
   {
     "cgp": 34,
@@ -364,7 +366,8 @@
     "author": "@tobikuhlmann",
     "stage": 6,
     "id": 35,
-    "timestamp": 1625097600000
+    "timestamp": 1625097600000,
+    "timestampExecuted": 1632355200000
   },
   {
     "cgp": 35,
@@ -392,8 +395,9 @@
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
     "id": 40,
-    "url": "https://forum.celo.org/t/core-contracts-release-5/1263",
-    "timestamp": 1628726400000
+    "url": "https://forum.celo.org/t/core-contracts-release-5",
+    "timestamp": 1628726400000,
+    "timestampExecuted": 1633046400000
   },
   {
     "cgp": 38,
@@ -403,8 +407,9 @@
     "author": "Yaz Khoury (@YazzyYaz), Jarrell James, Gab Micheletti, Eric Nakagawa, Medha Kothari, Maya Zehavi, Elizabeth Barnes, Cassidy Daly, Tux",
     "stage": 6,
     "id": 43,
-    "url": "https://forum.celo.org/t/the-celo-ecosystem-treasury/1313",
-    "timestamp": 1630281600000
+    "url": "https://forum.celo.org/t/the-celo-ecosystem-treasury",
+    "timestamp": 1630281600000,
+    "timestampExecuted": 1636588800000
   },
   {
     "cgp": 39,
@@ -414,8 +419,9 @@
     "author": "Mariano Cortesi (@mcortesi), Or Neeman (@oneeman)",
     "stage": 6,
     "id": 39,
-    "url": "https://forum.celo.org/t/discussion-for-cgp-0039-incre/1333",
-    "timestamp": 1630886400000
+    "url": "https://forum.celo.org/t/discussion-for-cgp-0039-incre",
+    "timestamp": 1630886400000,
+    "timestampExecuted": 1633046400000
   },
   {
     "cgp": 40,
@@ -425,8 +431,9 @@
     "author": "Roman Croessmann (@rcroessmann), Martin Volpe (@martinvol), Nadiem Sissouno (sissnad), Zviad Metreveli (@zviadm), Markus Franke (@MarkusBerlin)",
     "stage": 6,
     "id": 42,
-    "url": "https://forum.celo.org/t/discussions-for-cgp-40-proposal-to-reduce-exchange-spreads/1619",
-    "timestamp": 1632960000000
+    "url": "https://forum.celo.org/t/discussions-for-cgp-40-proposal-to-reduce-exchange-spreads",
+    "timestamp": 1632960000000,
+    "timestampExecuted": 1634169600000
   },
   {
     "cgp": 42,
@@ -436,8 +443,9 @@
     "author": "@luisgj (Bitso), @martinvol (cLabs)",
     "stage": 6,
     "id": 48,
-    "url": "https://forum.celo.org/t/cbrl-stable-asset/1281",
-    "timestamp": 1633737600000
+    "url": "https://forum.celo.org/t/cbrl-stable-asset",
+    "timestamp": 1633737600000,
+    "timestampExecuted": 1639440000000
   },
   {
     "cgp": 43,
@@ -446,7 +454,7 @@
     "title": "Reserve freezing to get back to target allocation",
     "author": "@martinvol, @rcroessmann",
     "stage": 7,
-    "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
+    "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43",
     "timestamp": 1633996800000
   },
   {
@@ -457,7 +465,7 @@
     "author": "@martinvol, @rcroessmann",
     "stage": 8,
     "id": 45,
-    "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
+    "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43",
     "timestamp": 1635379200000
   },
   {
@@ -468,8 +476,9 @@
     "author": "@luisgj (Bitso), @martinvol (cLabs)",
     "stage": 6,
     "id": 50,
-    "url": "https://forum.celo.org/t/cbrl-stable-asset/1281",
-    "timestamp": 1634083200000
+    "url": "https://forum.celo.org/t/cbrl-stable-asset",
+    "timestamp": 1634083200000,
+    "timestampExecuted": 1639526400000
   },
   {
     "cgp": 46,
@@ -479,8 +488,9 @@
     "author": "@martinvol",
     "stage": 6,
     "id": 49,
-    "url": "https://forum.celo.org/t/cbrl-stable-asset/1281",
-    "timestamp": 1635724800000
+    "url": "https://forum.celo.org/t/cbrl-stable-asset",
+    "timestamp": 1635724800000,
+    "timestampExecuted": 1639440000000
   },
   {
     "cgp": 47,
@@ -489,7 +499,7 @@
     "title": "Providing dust for people who bridging asset and provide liquidity",
     "author": "Alberto Martin",
     "stage": 7,
-    "url": "https://forum.celo.org/t/community-fund-proposal-airdrop-funding-for-optics-bridging-ethereum-celo/2382",
+    "url": "https://forum.celo.org/t/community-fund-proposal-airdrop-funding-for-optics-bridging-ethereum-celo",
     "timestamp": 1636588800000
   },
   {
@@ -500,8 +510,9 @@
     "author": "Slobodan Sudaric (@sudarics), Martín Volpe (@martinvol)",
     "stage": 6,
     "id": 54,
-    "url": "https://forum.celo.org/t/discussion-for-cgp-48-reserve-gift-policy/2771",
-    "timestamp": 1643673600000
+    "url": "https://forum.celo.org/t/discussion-for-cgp-48-reserve-gift-policy",
+    "timestamp": 1643673600000,
+    "timestampExecuted": 1647561600000
   },
   {
     "cgp": 49,
@@ -510,7 +521,7 @@
     "title": "cREAL Liquidity Incentives",
     "author": "Mila Rioja @MilaRioja, Nikhil Raghuveera @nraghuveera",
     "stage": 7,
-    "url": "https://forum.celo.org/t/cgp-49-creal-liquidity-incentives/2935",
+    "url": "https://forum.celo.org/t/cgp-49-creal-liquidity-incentives",
     "timestamp": 1644796800000
   },
   {
@@ -521,8 +532,9 @@
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
     "id": 53,
-    "url": "https://forum.celo.org/t/core-contracts-release-6/2936",
-    "timestamp": 1644796800000
+    "url": "https://forum.celo.org/t/core-contracts-release-6",
+    "timestamp": 1644796800000,
+    "timestampExecuted": 1647561600000
   },
   {
     "cgp": 51,
@@ -532,8 +544,9 @@
     "author": "@martinvol, @rcroessmann, @sissnad, @tobikuhlmann",
     "stage": 6,
     "id": 55,
-    "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43/1997",
-    "timestamp": 1646611200000
+    "url": "https://forum.celo.org/t/economic-parameters-bucket-sizes-and-reserve-allocation-cgp-40-cgp-43",
+    "timestamp": 1646611200000,
+    "timestampExecuted": 1647561600000
   },
   {
     "cgp": 52,
@@ -543,8 +556,9 @@
     "author": "Nirvaan Ranganathan, Craig Wilson, Slobodan Sudaric",
     "stage": 6,
     "id": 60,
-    "url": "https://forum.celo.org/t/the-climate-collective-treasury/3157 / https://forum.celo.org/t/the-climate-collective-treasury-v2/3388",
-    "timestamp": 1647907200000
+    "url": "https://forum.celo.org/t/the-climate-collective-treasury / https://forum.celo.org/t/the-climate-collective-treasury-v2",
+    "timestamp": 1647907200000,
+    "timestampExecuted": 1655596800000
   },
   {
     "cgp": 53,
@@ -554,7 +568,7 @@
     "author": "Mariano Cortesi (@mcortesi5), Javier Cortejoso (@jcortejoso), Gastón Ponti (@gastonponti)",
     "stage": 6,
     "id": 57,
-    "url": "https://forum.celo.org/t/propose-to-increase-block-gas-limit-to-50m-gas-and-target-density-to-0-7/3519 (and https://forum.celo.org/t/propose-to-increase-block-gas-limit-to-35-000-000-gas/3267)",
+    "url": "https://forum.celo.org/t/propose-to-increase-block-gas-limit-to-50m-gas-and-target-density-to-0-7 (and https://forum.celo.org/t/propose-to-increase-block-gas-limit-to-35-000-000-gas)",
     "timestamp": 1648944000000,
     "timestampExecuted": 1655337600000
   },
@@ -565,7 +579,8 @@
     "title": "Reopening of the Celo Community Fund",
     "author": "@Maya-R-B @ThePassiveTrust @aaronmboyd",
     "stage": 6,
-    "id": 61
+    "id": 61,
+    "timestampExecuted": 1655596800000
   },
   {
     "cgp": 55,
@@ -575,8 +590,9 @@
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
     "id": 63,
-    "url": "https://forum.celo.org/t/core-contracts-release-7/3778",
-    "timestamp": 1654646400000
+    "url": "https://forum.celo.org/t/core-contracts-release-7",
+    "timestamp": 1654646400000,
+    "timestampExecuted": 1656547200000
   },
   {
     "cgp": 56,
@@ -586,8 +602,9 @@
     "author": "Roman Croessmann (@rcroessmann), Markus Franke (@MarkusBerlin), Slobodan Sudaric (@sudarics)",
     "stage": 6,
     "id": 62,
-    "url": "https://forum.celo.org/t/reserve-mandate-1-1-stable-value-asset-basket/3663",
-    "timestamp": 1655164800000
+    "url": "https://forum.celo.org/t/reserve-mandate-1-1-stable-value-asset-basket",
+    "timestamp": 1655164800000,
+    "timestampExecuted": 1684800000000
   },
   {
     "cgp": 57,
@@ -597,7 +614,7 @@
     "author": "Martin Volpe (@martinvol, volpe@clabs.co)",
     "stage": 6,
     "id": 69,
-    "url": "https://forum.celo.org/t/decentralized-oracles/3610",
+    "url": "https://forum.celo.org/t/decentralized-oracles",
     "timestamp": 1655164800000,
     "timestampExecuted": 1662854400000
   },
@@ -609,8 +626,9 @@
     "author": "@aleksey-nov, @sissnad",
     "stage": 6,
     "id": 66,
-    "url": "https://forum.celo.org/t/discussion-ggp-58-increase-creal-bucket-size/3867",
-    "timestamp": 1655856000000
+    "url": "https://forum.celo.org/t/discussion-ggp-58-increase-creal-bucket-size",
+    "timestamp": 1655856000000,
+    "timestampExecuted": 1660003200000
   },
   {
     "cgp": 59,
@@ -620,17 +638,18 @@
     "author": "@aleksey-nov, @sissnad",
     "stage": 6,
     "id": 67,
-    "url": "https://forum.celo.org/t/discussion-cgp-59-creal-fee-reduction/3929",
-    "timestamp": 1657238400000
+    "url": "https://forum.celo.org/t/discussion-cgp-59-creal-fee-reduction",
+    "timestamp": 1657238400000,
+    "timestampExecuted": 1660003200000
   },
   {
     "cgp": 60,
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0060.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0060.md",
     "title": "Introduce new StableCoin pegged to Colombian Peso - $cCOP",
-    "author": "Juan (@juancamp1987#4903)",
+    "author": "@0xj4an",
     "stage": 7,
-    "url": "https://forum.celo.org/t/proposal-to-introduce-colombian-peso-ccop-stable-coin/3200/15",
+    "url": "https://forum.celo.org/t/proposal-to-introduce-colombian-peso-ccop-stable-coin",
     "timestamp": 1659398400000
   },
   {
@@ -650,8 +669,9 @@
     "author": "Arthur (@0xarthurxyz), Martin Chrzanowski (@m-chrzan), Martin Volpe (@martinvol)",
     "stage": 6,
     "id": 71,
-    "url": "https://forum.celo.org/t/core-contracts-release-8/4050",
-    "timestamp": 1659657600000
+    "url": "https://forum.celo.org/t/core-contracts-release-8",
+    "timestamp": 1659657600000,
+    "timestampExecuted": 1665964800000
   },
   {
     "cgp": 63,
@@ -660,7 +680,7 @@
     "title": "Learn to Earn",
     "author": "Débora Conconi (@deboraconconi)",
     "stage": 0,
-    "url": "https://forum.celo.org/t/proposal-cgp-63-learn-to-earn-campaign-with-creal-and-celo-in-brazil/4772",
+    "url": "https://forum.celo.org/t/proposal-cgp-63-learn-to-earn-campaign-with-creal-and-celo-in-brazil",
     "timestamp": 1667692800000
   },
   {
@@ -670,7 +690,7 @@
     "title": "Celo India DAO (Regional DAO)",
     "author": "[Chitty Babu](https://github.com/cryptochitty)(chittyb@gmail.com), [Shaun Joseph](https://github.com/shaunjoseph) (shaun0078@gmail.com), [Avina Ajit](https://www.linkedin.com/in/avina-ajit-a153b742/?originalSubdomain=in), [Elio Jordan Lopes](https://github.com/lopeselio) (lopeselio@gmail.com), [Nikki Ajit](https://www.linkedin.com/in/nikitaajit/)",
     "stage": 7,
-    "url": "https://forum.celo.org/t/celo-indiadao-regional-dao-proposal/4207",
+    "url": "https://forum.celo.org/t/celo-indiadao-regional-dao-proposal",
     "timestamp": 1661126400000
   },
   {
@@ -681,7 +701,7 @@
     "author": "Roman Croessmann(@rcroessmann)",
     "stage": 7,
     "id": 79,
-    "url": "https://forum.celo.org/t/discussion-cgp-61-on-chain-68-governance-owned-cusd-usdc-liquidity/4036/16",
+    "url": "https://forum.celo.org/t/discussion-cgp-61-on-chain-68-governance-owned-cusd-usdc-liquidity",
     "timestamp": 1669248000000
   },
   {
@@ -692,8 +712,9 @@
     "author": "Roman Croessman (@rcroessmann), Markus Franke (@MarkusBerlin)",
     "stage": 6,
     "id": 56,
-    "url": "https://forum.celo.org/t/upcoming-cgp-increase-target-level-of-stable-holdings-in-the-reserve/3380",
-    "timestamp": 1652400000000
+    "url": "https://forum.celo.org/t/upcoming-cgp-increase-target-level-of-stable-holdings-in-the-reserve",
+    "timestamp": 1652400000000,
+    "timestampExecuted": 1653177600000
   },
   {
     "cgp": 67,
@@ -703,8 +724,9 @@
     "author": "Martin Volpe (@martinvol)",
     "stage": 6,
     "id": 77,
-    "url": "https://forum.celo.org/t/decentralized-oracles/3610",
-    "timestamp": 1670198400000
+    "url": "https://forum.celo.org/t/decentralized-oracles",
+    "timestamp": 1670198400000,
+    "timestampExecuted": 1671408000000
   },
   {
     "cgp": 68,
@@ -714,8 +736,9 @@
     "author": "[Khadeeejah](https://github.com/Khadeeejah)",
     "stage": 6,
     "id": 85,
-    "url": "https://forum.celo.org/t/celo-africa-regional-dao-proposal/4054/50?u=aliu",
-    "timestamp": 1670457600000
+    "url": "https://forum.celo.org/t/celo-africa-regional-dao-proposal?u=aliu",
+    "timestamp": 1670457600000,
+    "timestampExecuted": 1677888000000
   },
   {
     "cgp": 69,
@@ -725,8 +748,9 @@
     "author": "Roman Croessmann(@rcroessmann), Bogdan Dumitru (@bowd)",
     "stage": 6,
     "id": 80,
-    "url": "https://forum.celo.org/t/discussion-cgp-61-on-chain-68-governance-owned-cusd-usdc-liquidity/4036/20",
-    "timestamp": 1669248000000
+    "url": "https://forum.celo.org/t/discussion-cgp-61-on-chain-68-governance-owned-cusd-usdc-liquidity",
+    "timestamp": 1669248000000,
+    "timestampExecuted": 1673481600000
   },
   {
     "cgp": 70,
@@ -736,8 +760,9 @@
     "author": "Hawwal Ogungbadero @hawwal",
     "stage": 6,
     "id": 101,
-    "url": "https://forum.celo.org/t/proposal-celo-tribe-web3-social-club-for-universities/4861/7?u=hawwal",
-    "timestamp": 1670630400000
+    "url": "https://forum.celo.org/t/proposal-celo-tribe-web3-social-club-for-universities?u=hawwal",
+    "timestamp": 1670630400000,
+    "timestampExecuted": 1682726400000
   },
   {
     "cgp": 71,
@@ -746,7 +771,7 @@
     "title": "Addings USDC oracles",
     "author": "Roman Croessmann (@rcroessmann)",
     "stage": 0,
-    "url": "https://forum.celo.org/t/mento-core-contract-upgrade-1-multi-collateral-mint/4942/4",
+    "url": "https://forum.celo.org/t/mento-core-contract-upgrade-1-multi-collateral-mint",
     "timestamp": 1676505600000
   },
   {
@@ -756,7 +781,7 @@
     "title": "Prezenti (Celo Community Fund) stewardship follow-on funding request",
     "author": "Aaron Boyd (@aaronmboyd), Maya Richardson-Brown (@Maya-R-B), Wade Abel @ThePassiveTrust",
     "stage": 0,
-    "url": "https://forum.celo.org/t/prezenti-q1-2023-update/5138",
+    "url": "https://forum.celo.org/t/prezenti-q1-2023-update",
     "timestamp": 1677456000000
   },
   {
@@ -766,7 +791,7 @@
     "title": "Establish and Fund Bug Bounty Program on Immunefi",
     "author": "@vissequ, @keccakdog",
     "stage": 7,
-    "url": "https://forum.celo.org/t/proposal-establish-and-fund-a-bug-bounty-program-for-celo-on-immunefi/5060",
+    "url": "https://forum.celo.org/t/proposal-establish-and-fund-a-bug-bounty-program-for-celo-on-immunefi",
     "timestamp": 1677974400000
   },
   {
@@ -777,8 +802,9 @@
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>",
     "stage": 6,
     "id": 91,
-    "url": "https://forum.celo.org/t/proposal-mu01-phase1-multicollateral-mento/5245",
-    "timestamp": 1679443200000
+    "url": "https://forum.celo.org/t/proposal-mu01-phase1-multicollateral-mento",
+    "timestamp": 1679443200000,
+    "timestampExecuted": 1680825600000
   },
   {
     "cgp": 75,
@@ -787,7 +813,7 @@
     "title": "Celo to Join Chainlink SCALE Program To Accelerate Ecosystem Growth",
     "author": "tobiju",
     "stage": 7,
-    "url": "https://forum.celo.org/t/celo-to-join-chainlink-scale-program-to-accelerate-ecosystem-growth/5360",
+    "url": "https://forum.celo.org/t/celo-to-join-chainlink-scale-program-to-accelerate-ecosystem-growth",
     "timestamp": 1679616000000
   },
   {
@@ -795,7 +821,7 @@
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0076.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0076.md",
     "title": "LatAm-W3-DAO-Proposal",
-    "author": "@juancamp1987 in behalf of DAO Members",
+    "author": "@0xj4an in behalf of DAO Members",
     "stage": 6,
     "id": 95,
     "url": "https://forum.celo.org/t/latam-w3-dao-proposal",
@@ -810,9 +836,9 @@
     "author": "Nirvaan Ranganathan, Helena Merk, Kenneth Kou, Nikhil Raghuveera",
     "stage": 6,
     "id": 103,
-    "url": "https://forum.celo.org/t/on-chain-offsets/5471",
+    "url": "https://forum.celo.org/t/on-chain-offsets",
     "timestamp": 1681344000000,
-    "timestampExecuted": 1680307200000
+    "timestampExecuted": 1682812800000
   },
   {
     "cgp": 78,
@@ -822,7 +848,7 @@
     "author": "Martin Volpe (@martinvol), Pavel Hornak (@pahor167)",
     "stage": 6,
     "id": 107,
-    "url": "https://forum.celo.org/t/core-contracts-release-9/4050](https://forum.celo.org/t/core-contracts-release-9/5707",
+    "url": "https://forum.celo.org/t/core-contracts-release-9",
     "timestamp": 1681171200000,
     "timestampExecuted": 1684108800000
   },
@@ -834,8 +860,9 @@
     "author": "Roman Croessmann (@rcroessmann)",
     "stage": 6,
     "id": 102,
-    "url": "https://forum.celo.org/t/mento-reserve-returning-celo/5236/36",
-    "timestamp": 1682035200000
+    "url": "https://forum.celo.org/t/mento-reserve-returning-celo",
+    "timestamp": 1682035200000,
+    "timestampExecuted": 1682899200000
   },
   {
     "cgp": 80,
@@ -845,8 +872,9 @@
     "author": "Anna Lerner, Nirvaan Ranganathan, Ed Walters",
     "stage": 6,
     "id": 105,
-    "url": "https://forum.celo.org/t/climate-collective-1-year-anniversary-heres-to-many-more/5585",
-    "timestamp": 1682380800000
+    "url": "https://forum.celo.org/t/climate-collective-1-year-anniversary-heres-to-many-more",
+    "timestamp": 1682380800000,
+    "timestampExecuted": 1684022400000
   },
   {
     "cgp": 81,
@@ -854,9 +882,9 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0081.md",
     "title": "Mento Upgrade 01 Patch 1 - MultiCollateral Support",
     "author": "Bayo Sodimu <bayo@mentolabs.xyz>",
-    "stage": 1,
+    "stage": 5,
     "id": 110,
-    "url": "https://forum.celo.org/t/proposal-cgp081-mu01-patch1-multi-collateral-mento-decimal-fix/5787",
+    "url": "https://forum.celo.org/t/proposal-cgp081-mu01-patch1-multi-collateral-mento-decimal-fix",
     "timestamp": 1683158400000
   },
   {
@@ -864,10 +892,10 @@
     "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0082.md",
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0082.md",
     "title": "EuropeDAO-Proposal",
-    "author": "@juancamp1987 in behalf of Europe DAO Members",
-    "stage": 1,
+    "author": "@0xj4an in behalf of Europe DAO Members",
+    "stage": 5,
     "id": 112,
-    "url": "https://forum.celo.org/t/celo-europe-dao/5443",
+    "url": "https://forum.celo.org/t/celo-europe-dao",
     "timestamp": 1686268800000
   },
   {
@@ -876,9 +904,9 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0083.md",
     "title": "Establishing creatives community.[PRELIMINARY CELO X ART DAO PROPOSAL]",
     "author": "Shola @sholasparks",
-    "stage": 1,
+    "stage": 8,
     "id": 124,
-    "url": "https://forum.celo.org/t/proposal-establishing-creatives-community/5974/16?u=sholasparks",
+    "url": "https://forum.celo.org/t/proposal-establishing-creatives-community?u=sholasparks",
     "timestamp": 1687305600000
   },
   {
@@ -889,8 +917,9 @@
     "author": "Tomer Bariach, Reuven Palatnik",
     "stage": 6,
     "id": 117,
-    "url": "https://forum.celo.org/t/credit-collective-hello-world/5789",
-    "timestamp": 1688688000000
+    "url": "https://forum.celo.org/t/credit-collective-hello-world",
+    "timestamp": 1688688000000,
+    "timestampExecuted": 1690848000000
   },
   {
     "cgp": 85,
@@ -899,7 +928,7 @@
     "title": "G\\$ oracle activation",
     "author": "@sirpy",
     "stage": 0,
-    "url": "https://forum.celo.org/t/adding-gooddollar-as-gas-token-on-celo/5383",
+    "url": "https://forum.celo.org/t/adding-gooddollar-as-gas-token-on-celo",
     "timestamp": 1688256000000
   },
   {
@@ -910,8 +939,9 @@
     "author": "Nelson Taveras (@nvtaveras)",
     "stage": 6,
     "id": 119,
-    "url": "https://forum.celo.org/t/mento-upgrade-1-deployment-timeline/5219/11",
-    "timestamp": 1689206400000
+    "url": "https://forum.celo.org/t/mento-upgrade-1-deployment-timeline",
+    "timestamp": 1689206400000,
+    "timestampExecuted": 1690934400000
   },
   {
     "cgp": 87,
@@ -921,8 +951,9 @@
     "author": "productmatt",
     "stage": 6,
     "id": 116,
-    "url": "https://forum.celo.org/t/clabs-proposal-for-celo-to-transition-to-an-ethereum-l2/6109",
-    "timestamp": 1689897600000
+    "url": "https://forum.celo.org/t/clabs-proposal-for-celo-to-transition-to-an-ethereum-l2",
+    "timestamp": 1689897600000,
+    "timestampExecuted": 1690761600000
   },
   {
     "cgp": 88,
@@ -932,8 +963,9 @@
     "author": "Hope Lee (hopelee327@gmail.com), Alex Shin (alex@shinlabs.xyz, @82partners)",
     "stage": 6,
     "id": 120,
-    "url": "https://forum.celo.org/t/celo-asia-dao-proposal/5957/14",
-    "timestamp": 1690070400000
+    "url": "https://forum.celo.org/t/celo-asia-dao-proposal",
+    "timestamp": 1690070400000,
+    "timestampExecuted": 1691020800000
   },
   {
     "cgp": 89,
@@ -942,7 +974,7 @@
     "title": "Enable G\\$ as Gas Currency",
     "author": "@sirpy",
     "stage": 0,
-    "url": "https://forum.celo.org/t/adding-gooddollar-as-gas-token-on-celo/5383",
+    "url": "https://forum.celo.org/t/adding-gooddollar-as-gas-token-on-celo",
     "timestamp": 1688256000000
   },
   {
@@ -953,7 +985,8 @@
     "author": "Roman Croessmann <roman@mentolabs.xyz>",
     "stage": 6,
     "id": 121,
-    "timestamp": 1690934400000
+    "timestamp": 1690934400000,
+    "timestampExecuted": 1691712000000
   },
   {
     "cgp": 91,
@@ -963,7 +996,7 @@
     "author": "jeanne bloch <jeannebloch@decentralized-desires.com>",
     "stage": 8,
     "id": 128,
-    "url": "https://forum.celo.org/t/proposal-web3-x-sdg-event-proposal-for-road-to-cop28/6225",
+    "url": "https://forum.celo.org/t/proposal-web3-x-sdg-event-proposal-for-road-to-cop28",
     "timestamp": 1691539200000
   },
   {
@@ -974,7 +1007,7 @@
     "author": "@jeffpulver",
     "stage": 6,
     "id": 123,
-    "url": "https://forum.celo.org/t/proposal-for-60-000-funding-to-support-a-mobile-first-community-in-celo-ecosystem/6313",
+    "url": "https://forum.celo.org/t/proposal-for-60-000-funding-to-support-a-mobile-first-community-in-celo-ecosystem",
     "timestamp": 1691452800000,
     "timestampExecuted": 1693267200000
   },
@@ -986,7 +1019,7 @@
     "author": "John Ellison <je@refidao.com>",
     "stage": 8,
     "id": 126,
-    "url": "https://forum.celo.org/t/proposal-refi-dao-x-celo-onboarding-the-next-generation-of-talent-and-capital/6243/1",
+    "url": "https://forum.celo.org/t/proposal-refi-dao-x-celo-onboarding-the-next-generation-of-talent-and-capital",
     "timestamp": 1691625600000
   },
   {
@@ -997,7 +1030,7 @@
     "author": "@nvtaveras, @rcroessmann",
     "stage": 6,
     "id": 127,
-    "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261",
+    "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo",
     "timestamp": 1692230400000,
     "timestampExecuted": 1692921600000
   },
@@ -1009,7 +1042,7 @@
     "author": "Asad Khan, Nirvaan Ranganathan",
     "stage": 6,
     "id": 130,
-    "url": "https://forum.celo.org/t/centrifuge-deployment-on-celo/6405",
+    "url": "https://forum.celo.org/t/centrifuge-deployment-on-celo",
     "timestamp": 1692662400000,
     "timestampExecuted": 1693872000000
   },
@@ -1021,7 +1054,7 @@
     "author": "Pavel Hornak, Subha Subramanian",
     "stage": 6,
     "id": 132,
-    "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-32m-gas/6431",
+    "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-32m-gas",
     "timestamp": 1692835200000,
     "timestampExecuted": 1694390400000
   },
@@ -1033,7 +1066,7 @@
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Philip Rätsch <philip@mentolabs.xyz>",
     "stage": 6,
     "id": 133,
-    "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu03-enable-more-trading-pairs-and-continue-phasing-out-v1/6462",
+    "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu03-enable-more-trading-pairs-and-continue-phasing-out-v1",
     "timestamp": 1693440000000,
     "timestampExecuted": 1694476800000
   },
@@ -1045,7 +1078,7 @@
     "author": "@nvtaveras",
     "stage": 6,
     "id": 134,
-    "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261",
+    "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo",
     "timestamp": 1694476800000,
     "timestampExecuted": 1695081600000
   },
@@ -1057,7 +1090,7 @@
     "author": "Martin Volpe (@martinvol), Pavel Hornak (@pahor167)",
     "stage": 6,
     "id": 135,
-    "url": "https://forum.celo.org/t/contracts-release-10-proposal-on-chain/6563",
+    "url": "https://forum.celo.org/t/contracts-release-10-proposal-on-chain",
     "timestamp": 1694649600000,
     "timestampExecuted": 1695340800000
   },
@@ -1069,7 +1102,7 @@
     "author": "Martín Volpe (@martinvol), Gastón Ponti (@gastonponti), Pavel Hornak (@pahor167)",
     "stage": 6,
     "id": 136,
-    "url": "https://forum.celo.org/t/contract-release-10-proposal-on-chain/6563",
+    "url": "https://forum.celo.org/t/contract-release-10-proposal-on-chain",
     "timestamp": 1694736000000,
     "timestampExecuted": 1695427200000
   },
@@ -1081,7 +1114,7 @@
     "author": "Tim Moreton (@timmoreton)",
     "stage": 6,
     "id": 140,
-    "url": "https://forum.celo.org/t/we-need-to-talk-about-governance/6409/4?u=tim",
+    "url": "https://forum.celo.org/t/we-need-to-talk-about-governance?u=tim",
     "timestamp": 1695686400000,
     "timestampExecuted": 1697760000000
   },
@@ -1104,7 +1137,7 @@
     "author": "Serge Kiema <sergek@dunia.africa>, Serge Ouedraogo <serge_o@dunia.africa>",
     "stage": 6,
     "id": 139,
-    "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo/6261/1",
+    "url": "https://forum.celo.org/t/dunia-launching-exof-on-celo",
     "timestamp": 1695945600000,
     "timestampExecuted": 1697760000000
   },
@@ -1116,7 +1149,7 @@
     "author": "Javier Cortejoso, Subha Subramanian",
     "stage": 6,
     "id": 137,
-    "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-50m-gas-coming-soon/6633",
+    "url": "https://forum.celo.org/t/proposal-to-increase-block-gas-limit-to-50m-gas-coming-soon",
     "timestamp": 1696204800000,
     "timestampExecuted": 1696896000000
   },
@@ -1128,7 +1161,7 @@
     "author": "Tim Moreton (@timmoreton)",
     "stage": 8,
     "id": 141,
-    "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work/6569",
+    "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work",
     "timestamp": 1697673600000
   },
   {
@@ -1139,7 +1172,7 @@
     "author": "Tim Moreton (@timmoreton)",
     "stage": 6,
     "id": 142,
-    "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work/6569/19",
+    "url": "https://forum.celo.org/t/funding-for-clabs-blockchain-public-goods-work",
     "timestamp": 1698710400000,
     "timestampExecuted": 1699747200000
   },
@@ -1151,7 +1184,7 @@
     "author": "Celo User(@supercoolkay)",
     "stage": 8,
     "id": 149,
-    "url": "https://forum.celo.org/t/proposal-celo-dapps-over-apps/6743  ",
+    "url": "https://forum.celo.org/t/proposal-celo-dapps-over-apps  ",
     "timestamp": 1699315200000
   },
   {
@@ -1162,7 +1195,7 @@
     "author": "Martin Volpe (@martinvol)",
     "stage": 6,
     "id": 143,
-    "url": "https://forum.celo.org/t/core-devs-call-on-cip-ultragreen-celo/5387",
+    "url": "https://forum.celo.org/t/core-devs-call-on-cip-ultragreen-celo",
     "timestamp": 1699315200000,
     "timestampExecuted": 1702857600000
   },
@@ -1174,7 +1207,7 @@
     "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
     "stage": 6,
     "id": 144,
-    "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu04-phase-out-v1-fully-transition-to-v2-and-update-stabletoken/7034",
+    "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu04-phase-out-v1-fully-transition-to-v2-and-update-stabletoken",
     "timestamp": 1701820800000,
     "timestampExecuted": 1702944000000
   },
@@ -1186,7 +1219,7 @@
     "author": "Sharon Sciammas <sharon@mentorscollective.org>",
     "stage": 8,
     "id": 146,
-    "url": "https://forum.celo.org/t/mentors-collective-hello-world/6884/",
+    "url": "https://forum.celo.org/t/mentors-collective-hello-world/",
     "timestamp": 1702252800000
   },
   {
@@ -1197,7 +1230,7 @@
     "author": "Opera MiniPay (@opera_minipay)",
     "stage": 6,
     "id": 147,
-    "url": "https://forum.celo.org/t/strategic-grant-for-accelerating-celo-ecosystem-adoption-across-africa/6969",
+    "url": "https://forum.celo.org/t/strategic-grant-for-accelerating-celo-ecosystem-adoption-across-africa",
     "timestamp": 1702339200000,
     "timestampExecuted": 1703203200000
   },
@@ -1209,7 +1242,7 @@
     "author": "Hawwal Ogungbadero @hawwal",
     "stage": 8,
     "id": 156,
-    "url": "https://forum.celo.org/t/proposal-celo-tribe-web3-social-club-for-universities/4861/22?u=hawwal",
+    "url": "https://forum.celo.org/t/proposal-celo-tribe-web3-social-club-for-universities?u=hawwal",
     "timestamp": 1702425600000
   },
   {
@@ -1220,7 +1253,7 @@
     "author": "Roman Croessmann (@rcroessmann), Markus Franke (@MarkusBerlin), Oleksiy Novykov",
     "stage": 6,
     "id": 150,
-    "url": "https://forum.celo.org/t/yield-rewards-on-reserve-collateral/6881",
+    "url": "https://forum.celo.org/t/yield-rewards-on-reserve-collateral",
     "timestamp": 1704758400000,
     "timestampExecuted": 1705449600000
   },
@@ -1232,7 +1265,7 @@
     "author": "Denvil Jamal Clarke (@denviljclarke), Nelson Taveras (@nvtaveras)",
     "stage": 6,
     "id": 151,
-    "url": "https://forum.celo.org/t/decentralized-oracles/3610",
+    "url": "https://forum.celo.org/t/decentralized-oracles",
     "timestamp": 1705017600000,
     "timestampExecuted": 1706227200000
   },
@@ -1244,7 +1277,7 @@
     "author": "Luuk Weber(@LuukDAO), Monty Bryant(@MontyMerlin), Roman Croessmann (@rcroessmann), Bogdan Dumitru(@bowd)",
     "stage": 6,
     "id": 157,
-    "url": "https://forum.celo.org/t/draft-celo-governance-guidelines-and-public-goods-funding-strategy-h1-2024/7200",
+    "url": "https://forum.celo.org/t/draft-celo-governance-guidelines-and-public-goods-funding-strategy-h1-2024",
     "timestamp": 1707264000000,
     "timestampExecuted": 1708041600000
   },
@@ -1256,7 +1289,7 @@
     "author": "Henry He",
     "stage": 5,
     "id": 155,
-    "url": "https://forum.celo.org/t/celo-ecosystem-liquidity-operation-guild-celo-guild-allocate-portion-of-celo-in-the-celo-community-fund-to-solve-liquidity-challenges-faced-by-celo-projects-and-accelerate-the-growth-of-the-celo-ecosystem/7243",
+    "url": "https://forum.celo.org/t/celo-ecosystem-liquidity-operation-guild-celo-guild-allocate-portion-of-celo-in-the-celo-community-fund-to-solve-liquidity-challenges-faced-by-celo-projects-and-accelerate-the-growth-of-the-celo-ecosystem",
     "timestamp": 1706745600000
   },
   {
@@ -1279,7 +1312,7 @@
     "author": "LuukDAO (@LuukDAO)",
     "stage": 6,
     "id": 158,
-    "url": "https://forum.celo.org/t/minting-10m-cusd-from-mento-reserve-in-six-tranches/7458/1",
+    "url": "https://forum.celo.org/t/minting-10m-cusd-from-mento-reserve-in-six-tranches",
     "timestamp": 1708646400000,
     "timestampExecuted": 1709769600000
   },
@@ -1291,7 +1324,7 @@
     "author": "Upright Ventures (@upright)",
     "stage": 6,
     "id": 160,
-    "url": "https://forum.celo.org/t/celo-camp-2024-grant-the-minipay-launchpad-and-startup-pathway-program-final/7210/1",
+    "url": "https://forum.celo.org/t/celo-camp-2024-grant-the-minipay-launchpad-and-startup-pathway-program-final",
     "timestamp": 1708646400000,
     "timestampExecuted": 1709769600000
   },
@@ -1303,7 +1336,7 @@
     "author": "Joan de Ramón (@joan_ethichub), Luuk Weber, Niko da Costa Gomez",
     "stage": 6,
     "id": 161,
-    "url": "https://forum.celo.org/t/celo-europe-h1-2024-regional-dao-final/7450",
+    "url": "https://forum.celo.org/t/celo-europe-h1-2024-regional-dao-final",
     "timestamp": 1708041600000,
     "timestampExecuted": 1709769600000
   },
@@ -1327,7 +1360,7 @@
     "author": "Roman Croessmann (@rcroessmann)",
     "stage": 6,
     "id": 164,
-    "url": "https://forum.celo.org/t/adding-usdt-and-eurt-to-the-mento-reserve/7490",
+    "url": "https://forum.celo.org/t/adding-usdt-and-eurt-to-the-mento-reserve",
     "timestamp": 1709683200000,
     "timestampExecuted": 1710547200000
   },
@@ -1339,7 +1372,7 @@
     "author": "Nelson Taveras <nelson.taveras@mentolabs.xyz>, Philip Rätsch <philip.raetsch@mentolabs.xyz>",
     "stage": 6,
     "id": 163,
-    "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu05-native-usdc-integration/7545",
+    "url": "https://forum.celo.org/t/proposal-mento-upgrade-mu05-native-usdc-integration",
     "timestamp": 1709769600000,
     "timestampExecuted": 1710547200000
   },
@@ -1351,7 +1384,7 @@
     "author": "Varin Pulpol, Parnaigon Yangpaksi",
     "stage": 6,
     "id": 165,
-    "url": "https://forum.celo.org/t/celo-thailand-h1-2024-regional-dao-draft/7402",
+    "url": "https://forum.celo.org/t/celo-thailand-h1-2024-regional-dao-draft",
     "timestamp": 1709856000000,
     "timestampExecuted": 1710633600000
   },
@@ -1374,7 +1407,7 @@
     "author": "Daniel Kimotho, Umar Sebyala, Chimezie Chuta, Cynthia Kamau",
     "stage": 6,
     "id": 167,
-    "url": "https://forum.celo.org/t/celo-africa-h1-2024-regional-dao-final/7497",
+    "url": "https://forum.celo.org/t/celo-africa-h1-2024-regional-dao-final",
     "timestamp": 1708646400000,
     "timestampExecuted": 1710633600000
   },
@@ -1386,8 +1419,8 @@
     "author": "Martín Volpe (@martinvol), Pavel Hornak (@pahor167)",
     "stage": 6,
     "id": 168,
-    "url": "https://forum.celo.org/t/path-towards-making-usdc-a-gas-currency/7385/2",
-    "timestamp": 1715990400000,
+    "url": "https://forum.celo.org/t/path-towards-making-usdc-a-gas-currency",
+    "timestamp": 1710720000000,
     "timestampExecuted": 1711411200000
   },
   {
@@ -1398,7 +1431,7 @@
     "author": "Martín Volpe (@martinvol), Pavel Hornak (@pahor167), Subha Subramanian",
     "stage": 6,
     "id": 169,
-    "url": "https://forum.celo.org/t/draft-making-usdt-a-gas-fee-currency-on-celo/7686",
+    "url": "https://forum.celo.org/t/draft-making-usdt-a-gas-fee-currency-on-celo",
     "timestamp": 1711584000000,
     "timestampExecuted": 1712275200000
   },
@@ -1434,7 +1467,7 @@
     "author": "Pavel Hornak (@pahor167)",
     "stage": 6,
     "id": 171,
-    "url": "https://forum.celo.org/t/celo-protocol-upgrades-gingerbread-hard-fork-and-contracts-release-10/6612",
+    "url": "https://forum.celo.org/t/celo-protocol-upgrades-gingerbread-hard-fork-and-contracts-release-10",
     "timestamp": 1710201600000,
     "timestampExecuted": 1712880000000
   },
@@ -1446,7 +1479,7 @@
     "author": "Kevin Tharayil (@KevinTharayil)",
     "stage": 6,
     "id": 176,
-    "url": "https://forum.celo.org/t/final-proposal-for-funding-stabila-driving-stablecoin-adoption-on-celo/7810",
+    "url": "https://forum.celo.org/t/final-proposal-for-funding-stabila-driving-stablecoin-adoption-on-celo",
     "timestamp": 1714089600000,
     "timestampExecuted": 1715904000000
   },
@@ -1458,7 +1491,7 @@
     "author": "Mariano Cortesi (@mcortesi), cLabs Blockchain & Primitives teams",
     "stage": 6,
     "id": 174,
-    "url": "https://forum.celo.org/t/clabs-proposes-migrating-celo-to-an-ethereum-l2-leveraging-the-op-stack/7902",
+    "url": "https://forum.celo.org/t/clabs-proposes-migrating-celo-to-an-ethereum-l2-leveraging-the-op-stack",
     "timestamp": 1714694400000,
     "timestampExecuted": 1715385600000
   },
@@ -1470,7 +1503,7 @@
     "author": "@Thylacine @Patrick @Dee>",
     "stage": 6,
     "id": 178,
-    "url": "https://forum.celo.org/t/draft-validators-rewards-change-in-epoch-parameters/7702",
+    "url": "https://forum.celo.org/t/draft-validators-rewards-change-in-epoch-parameters",
     "timestamp": 1714780800000,
     "timestampExecuted": 1716422400000
   },
@@ -1482,7 +1515,7 @@
     "author": "@nvtaveras, @bayological",
     "stage": 6,
     "id": 175,
-    "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin/7964",
+    "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin",
     "timestamp": 1715126400000,
     "timestampExecuted": 1715731200000
   },
@@ -1494,7 +1527,7 @@
     "author": "@bayological",
     "stage": 6,
     "id": 177,
-    "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin/7964",
+    "url": "https://forum.celo.org/t/draft-launch-of-a-kenyan-shilling-stablecoin",
     "timestamp": 1715558400000,
     "timestampExecuted": 1716249600000
   },
@@ -1518,7 +1551,7 @@
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>, Oleksiy Novykov <oleksiy.novykov@mentolabs.xyz>",
     "stage": 6,
     "id": 180,
-    "url": "https://forum.celo.org/t/mento-spin-off-and-launch-of-the-mento-token/7747",
+    "url": "https://forum.celo.org/t/mento-spin-off-and-launch-of-the-mento-token",
     "timestamp": 1716422400000,
     "timestampExecuted": 1717113600000
   },
@@ -1530,7 +1563,7 @@
     "author": "cLabs Blockchain & Primitives teams",
     "stage": 6,
     "id": 181,
-    "url": "https://forum.celo.org/t/clabs-proposes-off-chain-data-availability-layer-powered-by-eigenlayer-and-eigenda/8236",
+    "url": "https://forum.celo.org/t/clabs-proposes-off-chain-data-availability-layer-powered-by-eigenlayer-and-eigenda",
     "timestamp": 1719446400000,
     "timestampExecuted": 1720483200000
   },
@@ -1542,7 +1575,7 @@
     "author": "Luuk Weber (LuukDAO) & Monty Bryant",
     "stage": 6,
     "id": 182,
-    "url": "https://forum.celo.org/t/celopg-h2-2024-budget/8231",
+    "url": "https://forum.celo.org/t/celopg-h2-2024-budget",
     "timestamp": 1719360000000,
     "timestampExecuted": 1720828800000
   },
@@ -1554,7 +1587,7 @@
     "author": "Garm Lucassen (Glo Dollar)",
     "stage": 6,
     "id": 183,
-    "url": "https://forum.celo.org/t/draft-allocate-1m-of-mento-s-current-reserve-holdings-to-glo-dollar-to-fund-celo-public-goods-at-no-cost/7927",
+    "url": "https://forum.celo.org/t/draft-allocate-1m-of-mento-s-current-reserve-holdings-to-glo-dollar-to-fund-celo-public-goods-at-no-cost",
     "timestamp": 1721779200000,
     "timestampExecuted": 1723507200000
   },
@@ -1566,7 +1599,7 @@
     "author": "Himanshu Garg",
     "stage": 8,
     "id": 186,
-    "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure/8266/9",
+    "url": "https://forum.celo.org/t/final-proposal-to-enable-account-abstraction-erc-4337-on-celo-s-upcoming-l2-leveraging-biconomy-s-aa-infrastructure",
     "timestamp": 1722470400000
   },
   {
@@ -1577,7 +1610,7 @@
     "author": "Anthony Yim (@andromedae88)",
     "stage": 8,
     "id": 184,
-    "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community/8384",
+    "url": "https://forum.celo.org/t/draft-artemis-proposal-to-build-public-goods-data-dashboards-for-celo-ecosystem-and-community",
     "timestamp": 1722902400000
   },
   {
@@ -1600,7 +1633,7 @@
     "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
     "stage": 6,
     "id": 187,
-    "url": "https://forum.celo.org/t/mu07-chainlink-price-feed-integration/8850",
+    "url": "https://forum.celo.org/t/mu07-chainlink-price-feed-integration",
     "timestamp": 1724630400000,
     "timestampExecuted": 1725408000000
   },
@@ -1612,7 +1645,7 @@
     "author": "Philip Rätsch <philip.raetsch@mentolabs.xyz>",
     "stage": 6,
     "id": 188,
-    "url": "https://forum.celo.org/t/launch-of-puso-the-philippines-first-community-led-stablecoin/8786/10?u=philbow61",
+    "url": "https://forum.celo.org/t/launch-of-puso-the-philippines-first-community-led-stablecoin?u=philbow61",
     "timestamp": 1724889600000,
     "timestampExecuted": 1725667200000
   },
@@ -1624,7 +1657,7 @@
     "author": "Anthony Yim <anthony@artemisanalytics.xyz>",
     "stage": 6,
     "id": 189,
-    "url": "https://forum.celo.org/t/proposal-for-stablecoin-dapp-public-goods-dashboard/8944",
+    "url": "https://forum.celo.org/t/proposal-for-stablecoin-dapp-public-goods-dashboard",
     "timestamp": 1725926400000,
     "timestampExecuted": 1728604800000
   },
@@ -1636,9 +1669,9 @@
     "author": "Martin Chrzanowski (@m-chrzan)",
     "stage": 6,
     "id": 198,
-    "url": "https://forum.celo.org/t/decrease-constitution-parameter-for-goldtoken-increaseallowance/9002",
+    "url": "https://forum.celo.org/t/decrease-constitution-parameter-for-goldtoken-increaseallowance",
     "timestamp": 1725926400000,
-    "timestampExecuted": 1705190400000
+    "timestampExecuted": 1736812800000
   },
   {
     "cgp": 150,
@@ -1648,7 +1681,7 @@
     "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
     "stage": 6,
     "id": 190,
-    "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin/9211",
+    "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin",
     "timestamp": 1729123200000,
     "timestampExecuted": 1730246400000
   },
@@ -1660,7 +1693,7 @@
     "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz), @nvtaveras",
     "stage": 6,
     "id": 191,
-    "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin/9211",
+    "url": "https://forum.celo.org/t/launch-of-ccop-colombia-s-first-decentralized-stablecoin",
     "timestamp": 1729123200000,
     "timestampExecuted": 1730332800000
   },
@@ -1696,7 +1729,7 @@
     "author": "Marek Olszewski (@marekolszewski)",
     "stage": 6,
     "id": 194,
-    "url": "https://forum.celo.org/t/follow-on-funding-proposal-funding-for-remaining-clabs-celo-l2-development/9354",
+    "url": "https://forum.celo.org/t/follow-on-funding-proposal-funding-for-remaining-clabs-celo-l2-development",
     "timestamp": 1698710400000,
     "timestampExecuted": 1731801600000
   },
@@ -1718,10 +1751,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0156.md",
     "title": "Enabling MENTO Governance",
     "author": "Bogdan Dumitru <bogdan@mentolabs.xyz>, Roman Croessmann <roman@mentolabs.xyz>, Markus Franke <markus@mentolabs.xyz>",
-    "stage": 1,
+    "stage": 6,
     "id": 235,
-    "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community/9526",
-    "timestamp": 1732492800000
+    "url": "https://forum.celo.org/t/finalize-mento-governance-transition-and-return-celo-to-the-community",
+    "timestamp": 1732492800000,
+    "timestampExecuted": 1752192000000
   },
   {
     "cgp": 157,
@@ -1875,7 +1909,7 @@
     "author": "cLabs Team",
     "stage": 6,
     "id": 219,
-    "url": "https://forum.celo.org/t/set-the-great-celo-halvening-parameters/10455",
+    "url": "https://forum.celo.org/t/set-the-great-celo-halvening-parameters",
     "timestamp": 1708992000000,
     "timestampExecuted": 1743292800000
   },
@@ -1981,7 +2015,7 @@
     "author": "Bayo Sodimu (bayo.sodimu@mentolabs.xyz)",
     "stage": 6,
     "id": 223,
-    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
+    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar",
     "timestamp": 1743120000000,
     "timestampExecuted": 1744502400000
   },
@@ -2029,7 +2063,7 @@
     "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
     "stage": 6,
     "id": 227,
-    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar/10603",
+    "url": "https://forum.celo.org/t/launch-new-mento-stablecoins-jpy-gbp-aud-cad-chf-ngn-zar",
     "timestamp": 1745539200000,
     "timestampExecuted": 1747008000000
   },
@@ -2052,7 +2086,7 @@
     "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
     "stage": 6,
     "id": 231,
-    "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
+    "url": "https://forum.celo.org/t/mento-oracles-migration",
     "timestamp": 1747094400000,
     "timestampExecuted": 1748822400000
   },
@@ -2064,7 +2098,7 @@
     "author": "CeLatam team",
     "stage": 8,
     "id": 230,
-    "url": "https://forum.celo.org/t/celatam-venture-studio/11200",
+    "url": "https://forum.celo.org/t/celatam-venture-studio",
     "timestamp": 1747267200000
   },
   {
@@ -2075,7 +2109,7 @@
     "author": "Nelson Taveras (nelson.taveras@mentolabs.xyz)",
     "stage": 6,
     "id": 232,
-    "url": "https://forum.celo.org/t/mento-oracles-migration/11270",
+    "url": "https://forum.celo.org/t/mento-oracles-migration",
     "timestamp": 1747872000000,
     "timestampExecuted": 1748822400000
   },
@@ -2133,7 +2167,7 @@
     "author": "@mentoLabs",
     "stage": 6,
     "id": 237,
-    "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote/11684/6",
+    "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote",
     "timestamp": 1752451200000,
     "timestampExecuted": 1753488000000
   },
@@ -2192,7 +2226,7 @@
     "author": "Martín Volpe (@martinvol)",
     "stage": 5,
     "id": 254,
-    "url": "https://forum.celo.org/t/add-usdc-and-usdt-to-the-feehandler-contract/12048",
+    "url": "https://forum.celo.org/t/add-usdc-and-usdt-to-the-feehandler-contract",
     "timestamp": 1753833600000
   },
   {
@@ -2298,7 +2332,7 @@
     "author": "@martinvol",
     "stage": 5,
     "id": 253,
-    "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote/11684/6",
+    "url": "https://forum.celo.org/t/mento-token-transferability-and-first-community-fund-proxy-vote",
     "timestamp": 1757548800000
   },
   {
@@ -2343,7 +2377,7 @@
     "author": "Governance ops team",
     "stage": 6,
     "id": 260,
-    "url": "https://forum.celo.org/t/proposal-to-transfer-celo-from-governance-reserve-to-governance-proxy/12472",
+    "url": "https://forum.celo.org/t/proposal-to-transfer-celo-from-governance-reserve-to-governance-proxy",
     "timestamp": 1760054400000,
     "timestampExecuted": 1762041600000
   },
@@ -2366,7 +2400,7 @@
     "author": "Martín Volpe @martinvol",
     "stage": 6,
     "id": 261,
-    "url": "https://forum.celo.org/t/setting-weth-oracle-for-gas-pricing/12552",
+    "url": "https://forum.celo.org/t/setting-weth-oracle-for-gas-pricing",
     "timestamp": 1761523200000,
     "timestampExecuted": 1762560000000
   },
@@ -2376,10 +2410,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0212.md",
     "title": "Jello Hardfork Temperature Check - OP Succinct Lite and ZK Proofs for Celo Mainnet",
     "author": "cLabs Team",
-    "stage": 1,
+    "stage": 6,
     "id": 265,
     "url": "https://forum.celo.org/t/introducing-the-jello-hardfork-op-succinct-lite-now-live-on-celo-sepolia",
-    "timestamp": 1762300800000
+    "timestamp": 1762300800000,
+    "timestampExecuted": 1765324800000
   },
   {
     "cgp": 213,
@@ -2398,7 +2433,8 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0214.md",
     "title": "Proxy Vote for MGP-12 - Mento Stablecoins Rebranding",
     "author": "@mentoLabs",
-    "stage": 0,
+    "stage": 8,
+    "id": 266,
     "url": "https://forum.celo.org/t/mento-stablecoin-rebranding-and-strategic-evolution/",
     "timestamp": 1764892800000
   },
@@ -2408,10 +2444,11 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0215.md",
     "title": "Celo SHIELD Part B - Strategic Conclusion and Bug Bounty Settlement",
     "author": "Benjamin Speckien (benjamin.speckien@clabs.co), Nikolaos Frestis (nikolaos.frestis@clabs.co), Stefan Ioja (stefan.ioja@clabs.co)",
-    "stage": 1,
+    "stage": 6,
     "id": 268,
     "url": "https://forum.celo.org/t/celo-shield-part-b-strategic-conclusion-and-bug-bounty-settlement",
-    "timestamp": 1766016000000
+    "timestamp": 1766016000000,
+    "timestampExecuted": 1767052800000
   },
   {
     "cgp": 216,
@@ -2419,8 +2456,9 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0216.md",
     "title": "Validator Spending Reduction - Option #1 Reduce the set by half",
     "author": "Alex Witt",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options/12817",
+    "stage": 8,
+    "id": 269,
+    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options",
     "timestamp": 1766707200000
   },
   {
@@ -2429,8 +2467,9 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0217.md",
     "title": "Validator Spending Reduction - Option #2 Reduce rewards by half",
     "author": "Alex Witt",
-    "stage": 0,
-    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options/12817",
+    "stage": 8,
+    "id": 270,
+    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options",
     "timestamp": 1766707200000
   },
   {
@@ -2439,8 +2478,158 @@
     "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0218.md",
     "title": "Validator Spending Reduction - Option #3 Keep the current set, with rewards reduced to zero",
     "author": "Alex Witt",
+    "stage": 6,
+    "id": 271,
+    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options",
+    "timestamp": 1766707200000,
+    "timestampExecuted": 1768089600000
+  },
+  {
+    "cgp": 219,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0219.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0219.md",
+    "title": "Celo Communities Guild | Season 2 Funding Request",
+    "author": "Goldo (@0xGoldo), 0xj4an-work (@0xj4an-work), Anthony (@Anthony), Skdt (@skdt)",
+    "stage": 6,
+    "id": 282,
+    "url": "https://forum.celo.org/t/celo-communities-guild-season-2-funding-request",
+    "timestamp": 1769040000000,
+    "timestampExecuted": 1772496000000
+  },
+  {
+    "cgp": 220,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0220.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0220.md",
+    "title": "cLabs Core Protocol Execution – Season 2 (H1 2026) Funding Proposal",
+    "author": "cLabs Team",
+    "stage": 6,
+    "id": 274,
+    "url": "https://forum.celo.org/t/clabs-core-protocol-execution-season-2-h1-2026-funding-proposal",
+    "timestamp": 1768435200000,
+    "timestampExecuted": 1770854400000
+  },
+  {
+    "cgp": 221,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0221.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0221.md",
+    "title": "Proxy Vote for MGP-13 - Increase Circuit Breaker to 15bps and Enable 5bps Spread Fee",
+    "author": "@mentoLabs",
+    "stage": 7,
+    "url": "https://forum.mento.org/t/mgp-13-increase-circuit-breaker-to-15bps-and-enable-5bps-spread-fee/102",
+    "timestamp": 1769644800000
+  },
+  {
+    "cgp": 222,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0222.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0222.md",
+    "title": "Stabila Season 2 Funding Request",
+    "author": "Michael (@MichaelCelo)",
+    "stage": 6,
+    "id": 273,
+    "url": "https://forum.celo.org/t/stabila-season-2-funding-request",
+    "timestamp": 1769731200000,
+    "timestampExecuted": 1770681600000
+  },
+  {
+    "cgp": 223,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0223.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0223.md",
+    "title": "Celo Governance Guild Season 2 Funding Request",
+    "author": "Celo Governance (@celogovernance)",
+    "stage": 6,
+    "id": 275,
+    "url": "https://forum.celo.org/t/celo-governance-guild-season-2-funding-request",
+    "timestamp": 1769904000000,
+    "timestampExecuted": 1771027200000
+  },
+  {
+    "cgp": 224,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0224.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0224.md",
+    "title": "Celo Foundation Season 2 Funding Proposal",
+    "author": "CeloFoundation",
+    "stage": 6,
+    "id": 276,
+    "url": "https://forum.celo.org/t/celo-foundation-season-2-funding-proposal",
+    "timestamp": 1769731200000,
+    "timestampExecuted": 1771027200000
+  },
+  {
+    "cgp": 225,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0225.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0225.md",
+    "title": "Sustaining and Expanding MiniPay as Celo’s Global Stablecoin Distribution Layer",
+    "author": "Opera MiniPay (@opera_minipay)",
+    "stage": 6,
+    "id": 277,
+    "url": "https://forum.celo.org/t/sustaining-and-expanding-minipay-as-celo-s-global-stablecoin-distribution-layer",
+    "timestamp": 1770249600000,
+    "timestampExecuted": 1771372800000
+  },
+  {
+    "cgp": 226,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0226.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0226.md",
+    "title": "Contracts Release 15",
+    "author": "Pavel Hornak, Martín Volpe (@martinvol)",
     "stage": 0,
-    "url": "https://forum.celo.org/t/validator-spending-reduction-3-onchain-options/12817",
-    "timestamp": 1766707200000
+    "timestamp": 1760054400000
+  },
+  {
+    "cgp": 227,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0227.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0227.md",
+    "title": "Prezenti Season 2 Funding Request - Direct Grants",
+    "author": "Prezenti (@prezenti)",
+    "stage": 6,
+    "id": 278,
+    "url": "https://forum.celo.org/t/prezenti-season-2-funding-request-direct-grants",
+    "timestamp": 1770854400000,
+    "timestampExecuted": 1771718400000
+  },
+  {
+    "cgp": 228,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0228.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0228.md",
+    "title": "Proxy Vote for MGP-14 - Mento V3 Deployment Phase 1",
+    "author": "@mentoLabs",
+    "stage": 5,
+    "id": 279,
+    "url": "https://forum.mento.org/t/mgp-14-mento-v3-deployment-phase-1",
+    "timestamp": 1770940800000
+  },
+  {
+    "cgp": 229,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0229.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0229.md",
+    "title": "Proxy Vote for MGP-15 - Mento Protocol Foundation Funding Request",
+    "author": "@mentoLabs",
+    "stage": 8,
+    "id": 280,
+    "url": "https://forum.mento.org/t/mgp-15-mento-protocol-foundation-funding-request",
+    "timestamp": 1770940800000
+  },
+  {
+    "cgp": 230,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0230.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0230.md",
+    "title": "Increase Intrinsic Gas for USDT and USDC Fee Currencies",
+    "author": "cLabs Team",
+    "stage": 1,
+    "id": 283,
+    "url": "https://forum.celo.org/t/update-intrinsic-gas-configuration-for-fee-abstraction",
+    "timestamp": 1771459200000
+  },
+  {
+    "cgp": 231,
+    "cgpUrl": "https://github.com/celo-org/governance/blob/main/CGPs/cgp-0231.md",
+    "cgpUrlRaw": "https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0231.md",
+    "title": "Celo Infrastructure for Chain Lifecycle Operational Support (CICLOPS) Season 2 Funding Request",
+    "author": "Nauman Mustafa (@nauman)",
+    "stage": 6,
+    "id": 281,
+    "url": "https://forum.celo.org/t/celo-infrastructure-for-chain-lifecycle-operational-support-ciclops-season-2-funding-request",
+    "timestamp": 1771459200000,
+    "timestampExecuted": 1772150400000
   }
 ]

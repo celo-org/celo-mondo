@@ -15,7 +15,8 @@ export function useLockedStatus(address?: Address) {
   const { isRegistered } = useAccountDetails(address);
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useLockedStatus', publicClient, address, isRegistered],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useLockedStatus', address, isRegistered],
     queryFn: async () => {
       if (!address || !isRegistered || !publicClient) return null;
       logger.debug('Fetching locked status balance and withdrawals');

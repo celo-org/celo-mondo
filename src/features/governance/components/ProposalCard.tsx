@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useCallback } from 'react';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { StackedBarChart } from 'src/components/charts/StackedBarChart';
 import { SocialLogo } from 'src/components/logos/SocialLogo';
@@ -11,12 +12,13 @@ import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
-import { VoteToColor, VoteType } from 'src/features/governance/types';
+import { ProposalStage, VoteToColor, VoteType } from 'src/features/governance/types';
 import ClockIcon from 'src/images/icons/clock.svg';
 import { fromWei } from 'src/utils/amount';
 import { bigIntSum, percent } from 'src/utils/math';
 import { toTitleCase } from 'src/utils/strings';
-import { getHumanEndTime } from 'src/utils/time';
+import { getHumanEndTime, getUTCDateString } from 'src/utils/time';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const MIN_VOTE_SUM_FOR_GRAPH = 10000000000000000000n; // 10 CELO
 
@@ -31,11 +33,19 @@ export function ProposalCard({
 }) {
   const { id, cgp, dequeuedAt, executedAt, queuedAt, stage, metadata } = propData;
   const { quorumMet } = useIsProposalPassingQuorum(propData);
+  const trackEvent = useTrackEvent();
 
   const { votes } = useProposalVoteTotals(propData);
 
+  const onProposalClick = useCallback(() => {
+    trackEvent('proposal_viewed', {
+      proposalId: String(id || cgp || metadata.cgp),
+      stage: String(stage),
+    });
+  }, [trackEvent, id, cgp, metadata.cgp, stage]);
+
   const link = id ? `/governance/${id}` : `/governance/cgp-${cgp || metadata.cgp}`;
-  const endTimeValue = getHumanEndTime({
+  const endTimeResult = getHumanEndTime({
     quorumMet,
     executedAt,
     dequeuedAt,
@@ -55,10 +65,10 @@ export function ProposalCard({
     }));
 
   return (
-    <Link href={link} className={clsx('space-y-2.5', className)}>
+    <Link href={link} className={clsx('block space-y-2.5', className)} onClick={onProposalClick}>
       <ProposalBadgeRow propData={propData} />
       {metadata.title && (
-        <h2 className={clsx('max-w-[90%] truncate text-lg font-medium', !isCompact && 'text-lg')}>
+        <h2 className={clsx('truncate text-lg font-medium', !isCompact && 'text-lg')}>
           {metadata.title}
         </h2>
       )}
@@ -69,7 +79,7 @@ export function ProposalCard({
             {barChartData.map((item, index) => (
               <div key={index} className="flex items-center space-x-1">
                 <div style={{ backgroundColor: item.color }} className="h-2 w-2 rounded-full"></div>
-                <div className="text-sm font-medium">{`${item.label} ${item.percentage.toFixed(
+                <div className="text-sm font-medium text-taupe-600">{`${item.label} ${item.percentage.toFixed(
                   1,
                 )}%`}</div>
               </div>
@@ -77,10 +87,10 @@ export function ProposalCard({
           </div>
         </div>
       )}
-      {!isCompact && endTimeValue && (
-        <div className="flex items-center space-x-2">
-          <Image src={ClockIcon} alt="" width={16} height={16} />
-          <div className="text-sm font-medium">{`${endTimeValue}`}</div>
+      {!isCompact && endTimeResult && (
+        <div className="tooltip flex items-center space-x-2 text-left" data-tip={endTimeResult.utc}>
+          <Image src={ClockIcon} alt="" width={16} height={16} className="shrink-0" />
+          <div className="text-[13px] font-medium text-taupe-600">{endTimeResult.text}</div>
         </div>
       )}
     </Link>
@@ -101,16 +111,23 @@ export function ProposalBadgeRow({
   const { proposer } = proposal || {};
   const { cgp } = metadata || {};
 
-  const proposedTimeValue = queuedAt ? new Date(queuedAt).toLocaleDateString() : undefined;
-  const executedTimeValue = executedAt ? new Date(executedAt).toLocaleDateString() : undefined;
+  const queuedMs = queuedAt ? new Date(queuedAt).getTime() : undefined;
+  const executedMs = executedAt ? new Date(executedAt).getTime() : undefined;
+  const proposedTimeValue = queuedMs ? new Date(queuedMs).toLocaleDateString() : undefined;
+  const proposedUtc = queuedMs ? getUTCDateString(queuedMs) : undefined;
+  const executedTimeValue = executedMs ? new Date(executedMs).toLocaleDateString() : undefined;
+  const executedUtc = executedMs ? getUTCDateString(executedMs) : undefined;
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex flex-wrap items-center gap-2">
       <IdBadge cgp={cgp} />
       <IdBadge id={id} />
       <StageBadge stage={stage} />
       {proposedTimeValue && (
-        <div className="text-sm text-taupe-600">{`Proposed ${proposedTimeValue}`}</div>
+        <div
+          className="tooltip text-left text-sm text-taupe-600"
+          data-tip={proposedUtc}
+        >{`Proposed ${proposedTimeValue}`}</div>
       )}
       {showProposer && proposer && (
         <>
@@ -122,14 +139,21 @@ export function ProposalBadgeRow({
         </>
       )}
       {/* this combination keeps it off the index page but will show if not yet executed on proposal page */}
-      {showExecutedTime && !executedTimeValue && id && (
-        <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
-      )}
+      {showExecutedTime &&
+        !executedTimeValue &&
+        id &&
+        stage !== ProposalStage.Expiration &&
+        stage !== ProposalStage.Rejected && (
+          <ApprovalBadge proposalId={id} stage={stage} transactionCount={transactionCount} />
+        )}
       {/* Show one of proposer or executedTimeValue but not both, too crowded */}
       {showExecutedTime && executedTimeValue && !proposer && (
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
-          <div className="hidden text-sm text-taupe-600 sm:block">{`Executed ${executedTimeValue}`}</div>
+          <div
+            className="tooltip hidden text-left text-sm text-taupe-600 sm:block"
+            data-tip={executedUtc}
+          >{`Executed ${executedTimeValue}`}</div>
         </>
       )}
     </div>
@@ -140,6 +164,17 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
   const { proposal, metadata } = propData;
   const discussionUrl = metadata?.url || proposal?.url;
   const cgpUrl = metadata?.cgpUrl;
+  const trackEvent = useTrackEvent();
+
+  const handleDiscussionClick = useCallback(() => {
+    trackEvent('external_link_clicked', { url: discussionUrl, context: 'proposal' });
+  }, [trackEvent, discussionUrl]);
+
+  const handleCgpClick = useCallback(() => {
+    if (cgpUrl) {
+      trackEvent('external_link_clicked', { url: cgpUrl, context: 'cgp' });
+    }
+  }, [trackEvent, cgpUrl]);
 
   if (!discussionUrl) return null;
 
@@ -150,12 +185,17 @@ export function ProposalLinkRow({ propData }: { propData: MergedProposalData }) 
       <A_Blank
         href={discussionUrl}
         className="flex grow items-center gap-2 border border-taupe-300 px-3 py-3"
+        onClick={handleDiscussionClick}
       >
         <SocialLogo type={SocialLinkType.Website} size={18} />
         <span className="grow text-sm font-medium hover:underline">{`View discussion on ${discussionHost}`}</span>
       </A_Blank>
       {cgpUrl && (
-        <A_Blank href={cgpUrl} className="border border-taupe-300 px-3 py-3">
+        <A_Blank
+          href={cgpUrl}
+          className="border border-taupe-300 px-3 py-3"
+          onClick={handleCgpClick}
+        >
           <SocialLogo type={SocialLinkType.Github} size={20} />
         </A_Blank>
       )}
@@ -167,7 +207,7 @@ export function IdBadge({ cgp, id }: { cgp?: number; id?: number }) {
   if (!cgp && !id) return null;
   const idValue = cgp ? `CGP ${cgp}` : `# ${id}`;
   return (
-    <div className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-sm font-light">
+    <div className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-sm font-light text-taupe-600">
       {idValue}
     </div>
   );

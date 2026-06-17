@@ -1,9 +1,17 @@
+import { governanceABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
+import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { ProposalStage } from 'src/features/governance/types';
+import {
+  ACTIVE_PROPOSAL_STAGES,
+  ProposalStage,
+  VoteAmounts,
+  VoteType,
+} from 'src/features/governance/types';
 import { sumProposalVotes } from 'src/features/governance/utils/votes';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 
 export function useHistoricalProposalVoteTotals(id: number) {
@@ -29,23 +37,42 @@ export function useHistoricalProposalVoteTotals(id: number) {
 }
 
 export function useProposalVoteTotals(propData?: MergedProposalData) {
+  const id = propData?.id;
+  const stage = propData?.stage;
+  const proposalVotes = propData?.proposal?.votes;
+  const isActive = !!stage && ACTIVE_PROPOSAL_STAGES.includes(stage);
+
   const {
     isLoading,
     isError,
     error,
     data: votes,
   } = useQuery({
-    queryKey: ['useProposalVoteTotals', propData],
+    queryKey: ['useProposalVoteTotals', id, stage, isActive, proposalVotes],
     queryFn: async () => {
-      const { id, stage, proposal } = propData || {};
       if (!id || !stage || stage < ProposalStage.Approval) return null;
 
-      // First check if proposal data already includes total
-      // This will be the case for active proposals or failed ones
-      if (proposal?.votes) return proposal.votes;
+      // For active proposals, read vote totals directly from chain
+      // This ensures fresh data immediately after voting
+      if (isActive) {
+        logger.debug(`Fetching on-chain vote totals for proposal ${id}`);
+        const [yes, no, abstain] = await celoPublicClient.readContract({
+          address: Addresses.Governance,
+          abi: governanceABI,
+          functionName: 'getVoteTotals',
+          args: [BigInt(id)],
+        });
+        return {
+          [VoteType.Yes]: yes,
+          [VoteType.No]: no,
+          [VoteType.Abstain]: abstain,
+        } as VoteAmounts;
+      }
 
-      // Otherwise we must query for all the vote events
-      // The sumProposalVotes method does this same query so it's used here
+      // For past proposals, use DB data if available
+      if (proposalVotes) return proposalVotes;
+
+      // Otherwise query for all the vote events
       logger.debug(`Fetching proposals votes for ${id}`);
       const { totals } = await sumProposalVotes(id);
       return totals;

@@ -1,5 +1,5 @@
 import { SocialLinks } from 'src/config/types';
-import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/descriptors';
 
 type ValidatorInfo = {
   logo: string;

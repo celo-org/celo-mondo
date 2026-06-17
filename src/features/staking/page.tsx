@@ -50,6 +50,7 @@ import { objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { isAddressEqual } from 'viem';
 import { useAccount } from 'wagmi';
 
@@ -96,7 +97,11 @@ function HeaderSection({
   };
 
   const showTxModal = useTransactionModal();
+  const trackEvent = useTrackEvent();
   const onClickStake = (action?: StakeActionType) => {
+    if (action === StakeActionType.Stake) {
+      trackEvent('stake_button_clicked', { groupAddress: address });
+    }
     showTxModal(mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy, {
       group: address,
       action,
@@ -115,7 +120,7 @@ function HeaderSection({
             <h1 className="overflow-hidden text-ellipsis font-serif text-xl md:text-4xl">
               {group?.name || '...'}
             </h1>
-            <div className="mt-2 flex items-center space-x-1.5 sm:space-x-3">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-3">
               <OutlineButton
                 className="text-sm all:py-1 all:font-normal"
                 onClick={onClickAddress}

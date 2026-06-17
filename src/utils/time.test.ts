@@ -21,8 +21,8 @@ describe('getHumanEndTime', () => {
         quorumMet: null,
       });
 
-      expect(result).toContain('Voting Ended on');
-      expect(result).toContain('(awaiting update)');
+      expect(result?.text).toContain('Voting Ended on');
+      expect(result?.text).toContain('(awaiting update)');
     });
 
     it('should show countdown message for Referendum stage when voting is still active', () => {
@@ -41,8 +41,8 @@ describe('getHumanEndTime', () => {
         quorumMet: null,
       });
 
-      expect(result).toContain('Voting ends in');
-      expect(result).not.toContain('(awaiting update)');
+      expect(result?.text).toContain('Voting ends in');
+      expect(result?.text).not.toContain('(awaiting update)');
     });
 
     it('should show "awaiting update" message for Execution stage when execution window has closed', () => {
@@ -62,8 +62,8 @@ describe('getHumanEndTime', () => {
         quorumMet: null,
       });
 
-      expect(result).toContain('Execution window closed on');
-      expect(result).toContain('(awaiting update)');
+      expect(result?.text).toContain('Execution window closed on');
+      expect(result?.text).toContain('(awaiting update)');
     });
 
     it('should show countdown message for Execution stage when execution window is still open', () => {
@@ -82,8 +82,8 @@ describe('getHumanEndTime', () => {
         quorumMet: null,
       });
 
-      expect(result).toContain('Execution window ends in');
-      expect(result).not.toContain('(awaiting update)');
+      expect(result?.text).toContain('Execution window ends in');
+      expect(result?.text).not.toContain('(awaiting update)');
     });
 
     it('should handle exactly at the boundary (endDate - now === 0)', () => {
@@ -103,7 +103,7 @@ describe('getHumanEndTime', () => {
       });
 
       // At exactly the boundary (0), pastEndTime should be false (0 < 0 is false)
-      expect(result).toContain('Voting ends in');
+      expect(result?.text).toContain('Voting ends in');
     });
 
     it('should handle barely past the end time (negative by 1 second)', () => {
@@ -122,8 +122,8 @@ describe('getHumanEndTime', () => {
         quorumMet: null,
       });
 
-      expect(result).toContain('Voting Ended on');
-      expect(result).toContain('(awaiting update)');
+      expect(result?.text).toContain('Voting Ended on');
+      expect(result?.text).toContain('(awaiting update)');
     });
   });
 });

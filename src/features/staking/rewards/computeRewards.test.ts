@@ -5,6 +5,7 @@ import {
 import { GroupToStake, StakeEvent, StakeEventType } from 'src/features/staking/types';
 import { nowMinusDays } from 'src/test/time';
 import { toWei } from 'src/utils/amount';
+import { describe, expect, it } from 'vitest';
 
 function stakes(activeAmount: number, group = '0x1'): GroupToStake {
   return {

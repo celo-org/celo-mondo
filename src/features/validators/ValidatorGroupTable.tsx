@@ -8,7 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import clsx from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { SearchField } from 'src/components/input/SearchField';
 import { Amount } from 'src/components/numbers/Amount';
@@ -29,9 +29,10 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const NUM_COLLAPSED_GROUPS = 9;
-const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'cta'];
+const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'capacity', 'cta'];
 enum Filter {
   All = 'All Eligible',
   Elected = 'Elected',
@@ -47,6 +48,15 @@ export function ValidatorGroupTable({
   groups: ValidatorGroup[];
 }) {
   const { tab: filter, onTabChange: setFilter } = useTabs<Filter>(Filter.All);
+  const trackEvent = useTrackEvent();
+
+  const handleFilterChange = useCallback(
+    (newFilter: Filter) => {
+      trackEvent('validator_filter_changed', { filter: newFilter });
+      setFilter(newFilter);
+    },
+    [trackEvent, setFilter],
+  );
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
@@ -104,7 +114,11 @@ export function ValidatorGroupTable({
   return (
     <div>
       <div className="flex flex-col items-stretch gap-4 px-4 md:flex-row md:items-end md:justify-between">
-        <TabHeaderFilters activeFilter={filter} setFilter={setFilter} counts={headerCounts} />
+        <TabHeaderFilters
+          activeFilter={filter}
+          setFilter={handleFilterChange}
+          counts={headerCounts}
+        />
         <SearchField
           value={searchQuery}
           setValue={setSearchQuery}
@@ -142,6 +156,7 @@ export function ValidatorGroupTable({
             totalVotes={totalVotes}
             isVisible={collapseTopGroups}
             expand={() => setIsTopGroupsExpanded(true)}
+            colSpan={table.getVisibleLeafColumns().length}
           />
           {table.getRowModel().rows.map((row) => (
             <tr
@@ -153,6 +168,12 @@ export function ValidatorGroupTable({
                   <Link
                     href={`/staking/${row.original.address}`}
                     className="flex items-center gap-4 px-4 py-4"
+                    onClick={() =>
+                      trackEvent('validator_group_viewed', {
+                        groupAddress: row.original.address,
+                        groupName: row.original.name,
+                      })
+                    }
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
@@ -170,11 +191,13 @@ function TopGroupsRow({
   groups,
   isVisible,
   expand,
+  colSpan,
 }: {
   groups: ValidatorGroup[];
   totalVotes: bigint;
   isVisible: boolean;
   expand: () => void;
+  colSpan: number;
 }) {
   const { topGroups, staked, score, elected } = useMemo(() => {
     if (groups.length < NUM_COLLAPSED_GROUPS) return {};
@@ -220,16 +243,14 @@ function TopGroupsRow({
           {(score * 100)?.toFixed(0) + '%'}
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
+        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>-</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
       </tr>
-      <tr
-        className={clsx(
-          'border-y border-taupe-300 bg-primary text-center text-sm text-primary-content',
-          !isVisible && 'hidden',
-        )}
-      >
-        <td colSpan={7}>
-          Improve decentralization and network health by staking with a group below ↓
+      <tr className={clsx(!isVisible && 'hidden')}>
+        <td colSpan={colSpan} className="py-4">
+          <div className="mx-4 whitespace-normal break-words rounded-lg bg-primary px-4 py-3 text-center text-sm text-primary-content sm:mx-8">
+            Improve decentralization and network health by staking with a group below ↓
+          </div>
         </td>
       </tr>
     </>
@@ -239,6 +260,7 @@ function TopGroupsRow({
 function useTableColumns(_totalVotes: bigint) {
   const showTxModal = useTransactionModal();
   const { mode, ui } = useStakingMode();
+  const trackEvent = useTrackEvent();
 
   return useMemo(() => {
     const columnHelper = createColumnHelper<ValidatorGroupRow>();
@@ -284,26 +306,56 @@ function useTableColumns(_totalVotes: bigint) {
         header: 'Elected',
         cell: (props) => <div>{`${props.getValue()} / ${props.row.original.numMembers}`}</div>,
       }),
+      columnHelper.accessor('capacity', {
+        header: 'Capacity',
+        enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const capacityA = rowA.original.capacity;
+          const votesA = rowA.original.votes;
+          const utilizationA = capacityA === 0n ? 0 : Number((votesA * 100n) / capacityA);
+
+          const capacityB = rowB.original.capacity;
+          const votesB = rowB.original.votes;
+          const utilizationB = capacityB === 0n ? 0 : Number((votesB * 100n) / capacityB);
+
+          return utilizationA - utilizationB;
+        },
+        cell: (props) => {
+          const capacity = props.getValue();
+          const votes = props.row.original.votes;
+          const utilizationPercent =
+            capacity === 0n ? 0 : Math.min(Number((votes * 100n) / capacity), 100);
+          return <div>{`${utilizationPercent.toFixed(0)}%`}</div>;
+        },
+      }),
       columnHelper.display({
         id: 'cta',
         header: '',
-        cell: (props) => (
-          <SolidButton
-            onClick={(e) => {
-              e.preventDefault();
-              showTxModal(
-                mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
-                { group: props.row.original.address },
-              );
-            }}
-            className="bg-primary text-primary-content all:btn-neutral"
-          >
-            {ui.action}
-          </SolidButton>
-        ),
+        cell: (props) => {
+          const { votes, capacity } = props.row.original;
+          const isFull = capacity > 0n && votes >= capacity;
+          return (
+            <SolidButton
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                trackEvent('stake_button_clicked', { groupAddress: props.row.original.address });
+                showTxModal(
+                  mode === 'CELO' ? TransactionFlowType.Stake : TransactionFlowType.ChangeStrategy,
+                  { group: props.row.original.address },
+                );
+              }}
+              className="bg-primary all:btn-neutral all:text-primary-content"
+              disabled={isFull}
+              title={isFull ? 'This group has reached maximum capacity' : undefined}
+            >
+              {isFull ? 'Full' : ui.action}
+            </SolidButton>
+          );
+        },
       }),
     ];
-  }, [ui.action, showTxModal, mode]);
+  }, [ui.action, showTxModal, mode, trackEvent]);
 }
 
 function useTableRows({
@@ -357,7 +409,7 @@ function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
   th: 'border-y border-taupe-300 px-4 py-3 first:min-w-12 last:min-w-0 md:min-w-32',
-  td: 'relative border-y border-taupe-300 text-nowrap',
-  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
+  td: 'relative border-y border-taupe-300 sm:whitespace-nowrap',
+  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 sm:whitespace-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };

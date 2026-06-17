@@ -12,6 +12,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
@@ -38,6 +39,12 @@ export const eventsTable = pgTable(
     data: text().notNull().$type<`0x${string}`>(),
     blockNumber: numeric({ mode: 'bigint' }).notNull(),
     transactionHash: varchar({ length: 66 }).notNull(),
+    // First time this row was ingested (set on insert, never overwritten on conflict).
+    ingestedAt: timestamp({ withTimezone: true }).defaultNow(),
+    // Per-provider first-arrival timestamps, e.g.
+    // { alchemy: "2026-06-12T12:15:31.000Z", multibaas: "2026-06-12T12:17:40.000Z" }.
+    // Accumulates providers on conflict; keeps the first timestamp seen per provider.
+    ingestedVia: jsonb().$type<Partial<Record<'alchemy' | 'multibaas' | 'cron', string>>>(),
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
@@ -91,6 +98,7 @@ export const proposalsTable = pgTable(
     executedAt: timestamp({ mode: 'string' }),
     executedAtBlockNumber: numeric({ mode: 'bigint' }),
     quorumVotesRequired: numeric({ mode: 'bigint' }),
+    constitutionThreshold: numeric(),
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
@@ -150,3 +158,23 @@ export const approvalsTable = pgTable(
   ],
 );
 export type Approval = typeof approvalsTable.$inferSelect;
+
+export const analyticsEventsTable = pgTable(
+  'analyticsEvents',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    createdAt: timestamp({ mode: 'string' })
+      .notNull()
+      .default(sql`now()`),
+    eventName: text().notNull(),
+    properties: jsonb().notNull().default('{}'),
+    sessionId: uuid(),
+  },
+  (table) => [
+    index('idx_analytics_events_name_properties').using('gin', table.properties),
+    index('idx_analytics_events_name').on(table.eventName),
+    index('idx_analytics_events_created_at').on(table.createdAt.desc()),
+  ],
+);
+
+export type AnalyticsEvent = typeof analyticsEventsTable.$inferSelect;
