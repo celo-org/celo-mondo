@@ -5,16 +5,19 @@ import { Event } from 'src/app/governance/events';
 import { CacheKeys } from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
-import { votesTable } from 'src/db/schema';
-import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
-import fetchHistoricalMultiSigEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalMultiSigEventsAndSaveToDBProgressively';
+import { eventsTable, votesTable } from 'src/db/schema';
 import updateApprovalsInDB from 'src/features/governance/updateApprovalsInDB';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
-import { IngestSource } from 'src/features/governance/utils/events/ingest';
+import {
+  ingestedViaConflictSet,
+  IngestSource,
+  withIngestionMetadata,
+} from 'src/features/governance/utils/events/ingest';
 import { decodeAndPrepareProposalEvent } from 'src/features/governance/utils/events/proposal';
 import { decodeAndPrepareVoteEvent } from 'src/features/governance/utils/events/vote';
 import { celoPublicClient } from 'src/utils/client';
-import { GetContractEventsParameters } from 'viem';
+import 'src/vendor/polyfill'; // BigInt.prototype.toJSON so bigint args serialize into jsonb
+import { decodeEventLog, GetContractEventsParameters } from 'viem';
 
 type GovernanceEventName = Exclude<
   GetContractEventsParameters<typeof governanceABI>['eventName'],
@@ -33,6 +36,8 @@ export type ParsedEvent = {
   contractAddress: string;
   topics: [`0x${string}`, ...`0x${string}`[]];
   data: `0x${string}`;
+  blockNumber: bigint;
+  transactionHash: `0x${string}`;
   transactionIds: bigint[];
 };
 
@@ -58,37 +63,18 @@ export async function processWebhookEvents(
       event.contractAddress.toLowerCase() === approverMultisigAddress.toLowerCase() &&
       MULTISIG_EVENT_NAMES.has(event.name);
 
+    // Persist the delivered event straight from the webhook payload. Previously every
+    // delivery triggered a cursor->head eth_getLogs scan to ingest events, but public
+    // forno rejects wide ranges ("query exceeds range") and the payload already carries
+    // the full log — so we store it directly. The hourly cron remains the catch-up
+    // backfill that fills any gap from a missed delivery.
+    await saveWebhookEvent(event, isMultiSigEvent, source);
+
     if (isMultiSigEvent) {
-      // Process MultiSig events - use backfill result to capture ALL new transactionIds,
-      // not just the one from the webhook event. This prevents missed approvals when the
-      // backfill advances progress past events that the webhook didn't specifically trigger for.
-      const backfillResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
-        event.name,
-        celoPublicClient,
-        { source },
-      );
-
-      for (const txId of backfillResult.transactionIds) {
-        multisigTxIdsToProcess.add(txId);
-      }
-
-      // Also extract transactionIds from the webhook event itself as a fallback
       for (const txId of event.transactionIds) {
         multisigTxIdsToProcess.add(txId);
       }
     } else {
-      // Process Governance events - capture backfill proposalIds to ensure we update
-      // proposals that the backfill discovered (not just the webhook event itself).
-      const backfillProposalIds = await fetchHistoricalEventsAndSaveToDBProgressively(
-        event.name,
-        celoPublicClient,
-        undefined,
-        source,
-      );
-      for (const id of backfillProposalIds) {
-        proposalIdsToUpdate.add(id);
-      }
-
       const eventData = { topics: event.topics, data: event.data } as unknown as Event;
 
       // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
@@ -124,6 +110,45 @@ export async function processWebhookEvents(
   if (proposalIdsToUpdate.size) {
     await updateProposalsInDB(celoPublicClient, [...proposalIdsToUpdate], 'update');
   }
+}
+
+/**
+ * Stores a single webhook-delivered event into the events table, decoding its
+ * args from topics+data so downstream queries (e.g. args->>'proposalId') keep
+ * working. Dedupes on the (eventName, transactionHash, chainId) primary key and
+ * records ingestion provenance via ingestedVia.
+ */
+async function saveWebhookEvent(event: ParsedEvent, isMultiSig: boolean, source: IngestSource) {
+  let args: Record<string, unknown> = {};
+  try {
+    const decoded = decodeEventLog({
+      abi: isMultiSig ? multiSigABI : governanceABI,
+      topics: event.topics,
+      data: event.data,
+      strict: false,
+    });
+    args = (decoded.args ?? {}) as Record<string, unknown>;
+  } catch {
+    // Persist topics/data even if decoding fails; the cron backfill can self-heal args later.
+  }
+
+  const row = {
+    eventName: event.name,
+    args,
+    address: event.contractAddress,
+    topics: event.topics,
+    data: event.data,
+    blockNumber: event.blockNumber,
+    transactionHash: event.transactionHash,
+  };
+
+  await database
+    .insert(eventsTable)
+    .values(withIngestionMetadata([row], celoPublicClient.chain.id, source))
+    .onConflictDoUpdate({
+      target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+      set: ingestedViaConflictSet,
+    });
 }
 
 async function upsertVotes(rows: (typeof votesTable)['$inferInsert'][]) {

@@ -105,6 +105,8 @@ export async function POST(request: NextRequest): Promise<Response> {
         contractAddress: log.account.address,
         topics,
         data,
+        blockNumber: BigInt(block.number),
+        transactionHash: log.transaction.hash as `0x${string}`,
         transactionIds,
       });
     }
