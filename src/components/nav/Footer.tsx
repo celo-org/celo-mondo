@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { config } from 'src/config/config';
@@ -18,6 +19,10 @@ export function Footer() {
         <div className="text-xs text-taupe-400">
           Powered by <A_Blank href={`${links.blockscoutApi}-docs`}>CeloBlockscout</A_Blank> and{' '}
           <A_Blank href="https://docs.celo.org/network/node/forno">Forno</A_Blank>
+          {' · '}
+          <Link href="/privacy" className="hover:underline">
+            Privacy
+          </Link>
         </div>
         {config.watchBlockNumber && <BlockNumber />}
       </div>

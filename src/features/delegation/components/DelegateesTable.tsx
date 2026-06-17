@@ -87,14 +87,16 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
   const mode = useStakingMode();
   return (
     <div>
-      <div className="flex justify-between">
-        <TabHeaderButton isActive={true} count={rows.length}>
-          Delegates
-        </TabHeaderButton>
-        <div className="flex flex-row gap-2">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full md:w-auto">
+          <TabHeaderButton isActive={true} count={rows.length}>
+            Delegates
+          </TabHeaderButton>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
           {mode.mode === 'CELO' && (
             <SolidButton
-              className="btn-neutral h-full text-xs"
+              className="btn-neutral flex w-full justify-center text-xs sm:w-auto"
               onClick={handleDelegateButtonClick}
             >{`️🗳️ Delegate voting power`}</SolidButton>
           )}
@@ -102,7 +104,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
             value={searchQuery}
             setValue={setSearchQuery}
             placeholder="Search delegates"
-            className="w-full text-sm md:w-64"
+            className="w-full text-sm sm:w-64"
           />
         </div>
       </div>
@@ -137,7 +139,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
                 <td key={cell.id} className={classNames.td}>
                   <Link
                     href={`/delegate/${row.original.address}`}
-                    className="flex px-4 py-4"
+                    className="flex items-center px-2 py-4 sm:px-4"
                     onClick={() => handleDelegateeClick(row.original.address, row.original.name)}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -225,9 +227,9 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-32 xs:max-w-16',
-  td: 'relative border-y border-taupe-300 text-nowrap',
-  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
+  th: 'border-y border-taupe-300 px-2 sm:px-4 py-3 last:pr-3 md:min-w-32 xs:max-w-16',
+  td: 'relative border-y border-taupe-300 sm:whitespace-nowrap',
+  tdTopGroups: 'relative border-y border-taupe-300 px-2 sm:px-4 py-4 sm:whitespace-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };
 function DelegateeTableSkeleton() {

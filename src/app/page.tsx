@@ -13,6 +13,7 @@ import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { bigIntMin } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useStakingMode } from 'src/utils/useStakingMode';
 
 export default function Page() {
@@ -50,6 +51,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
   const showLiquidStakeModal = useTransactionModal(TransactionFlowType.StakeStCELO);
   const { selectMode } = useStakingMode();
+  const isMiniPay = useIsMiniPay();
 
   return (
     <div className="space-y-4">
@@ -65,15 +67,17 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
           >
             Stake
           </SolidButton>
-          <SolidButton
-            onClick={() => {
-              selectMode('stCELO');
-              showLiquidStakeModal();
-            }}
-            className="bg-purple-300 px-4 text-white sm:px-8"
-          >
-            Liquid Stake
-          </SolidButton>
+          {!isMiniPay && (
+            <SolidButton
+              onClick={() => {
+                selectMode('stCELO');
+                showLiquidStakeModal();
+              }}
+              className="bg-purple-300 px-4 text-white sm:px-8"
+            >
+              Liquid Stake
+            </SolidButton>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 sm:gap-8">

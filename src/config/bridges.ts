@@ -1,5 +1,6 @@
 import JumperLogo from 'src/images/logos/jumper-bridge.png';
 import PortalLogo from 'src/images/logos/portal-bridge.jpg';
+import RelayLogo from 'src/images/logos/relay.svg';
 import SquidLogo from 'src/images/logos/squid-router.jpg';
 import USDT0Logo from 'src/images/logos/usdt0.webp';
 import { Bridge } from 'src/types/bridge';
@@ -38,6 +39,15 @@ export const BRIDGES: Bridge[] = [
     href: 'https://portalbridge.com/?fromChain=Ethereum&toChain=Celo&fromToken=ETH&toToken=0x66803FB87aBd4aaC3cbB3fAd7C3aa01f6F3FB207',
     logo: PortalLogo,
     description: 'Wormhole based bridge. Good for wormhole assets on Celo.',
+  },
+  {
+    id: 'relay',
+    name: 'Relay',
+    operator: 'Relay',
+    href: 'https://relay.link/bridge/celo?fromChainId=1&toChainId=42220&fromCurrency=0x0000000000000000000000000000000000000000&toCurrency=0x471EcE3750Da237f93B8E339c536989b8978a438',
+    logo: RelayLogo,
+    description:
+      'Fast, low-cost cross-chain bridge and swap aggregator. Good for quick transfers between Ethereum, L2s, and Celo.',
   },
   {
     id: 'usdt0',

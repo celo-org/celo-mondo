@@ -95,7 +95,7 @@ export default function Page() {
           <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
         {isVoteSigner ? (
-          <div className="align-right flex flex-col items-end">
+          <div className="ph-no-capture align-right flex flex-col items-end">
             <h2 className="font-medium">Vote Signer For</h2>
             <span className="hidden font-mono text-sm md:flex">{signingFor}</span>
             <span className="font-mono text-sm md:hidden">{shortenAddress(signingFor!)}</span>
@@ -217,7 +217,7 @@ function AccountStats({
   totalDelegated?: bigint;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:flex md:items-center md:justify-between">
       <AccountStat
         title="Total locked"
         valueWei={lockedBalances?.locked}
@@ -258,7 +258,7 @@ function StCELOAccountStats({
     [withdrawals, scheduledWithdrawalAmount],
   );
   return (
-    <div className="items-top items-top flex justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4 md:flex md:items-start md:justify-between">
       <AccountStat
         title="Total stCELO"
         valueWei={stCELOBalances.total}
