@@ -3,8 +3,15 @@ import path from 'path';
 import * as utils from 'src/features/delegation/utils';
 import { getValidRequest } from 'src/test/delegatee-registration-utils';
 import { fileURLToPath } from 'url';
-import { expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import { POST } from './route';
+
+// Each test installs its own spies with mockResolvedValueOnce; restore between
+// tests so the per-call mock queue does not leak across tests (vitest 4 no
+// longer resets a re-spied method's queue implicitly).
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory

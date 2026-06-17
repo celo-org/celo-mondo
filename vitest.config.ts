@@ -8,6 +8,12 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 
 export default defineConfig({
   plugins: [react()],
+  // vitest 4 / rolldown-vite transforms via oxc, which otherwise inherits
+  // `jsx: "preserve"` from tsconfig.json (required by Next.js) and fails to
+  // parse. Force the automatic JSX runtime for the test transform instead.
+  oxc: {
+    jsx: { runtime: 'automatic' },
+  },
   test: {
     globals: true,
     globalSetup: ['./src/test/globalSetup.ts'],
