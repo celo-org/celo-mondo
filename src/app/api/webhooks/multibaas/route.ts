@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { sendAlertToSlack } from 'src/config/slackbot';
 import { Address } from 'viem';
-import { WebhookProvider, isActiveWebhookProvider } from '../activeProvider';
 import { type EventName, type ParsedEvent, processWebhookEvents } from '../processWebhookEvents';
 
 type MultibassEvent = {
@@ -27,7 +26,12 @@ type MultibassEvent = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  if (!isActiveWebhookProvider(WebhookProvider.MultiBaas)) {
+  // The MultiBaas provider is enabled by configuring its webhook secret. When the
+  // secret is absent the provider is considered disabled, so we acknowledge (200)
+  // and no-op — this lets Alchemy and MultiBaas run side by side (each gated by
+  // its own secret) without an exclusive provider selector.
+  const secret = process.env.MULTIBAAS_WEBHOOK_SECRET;
+  if (!secret) {
     return new Response(null, { status: 200 });
   }
 
@@ -36,6 +40,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     rawBody,
     request.headers.get('X-MultiBaas-Signature'),
     request.headers.get('X-MultiBaas-Timestamp'),
+    secret,
   );
   if (!body) {
     return new Response(null, { status: 403 });
@@ -103,12 +108,13 @@ function assertSignature(
   payload: string,
   signature: string | null,
   timestamp: string | null,
+  secret: string,
 ): MultibassEvent[] | false {
   if (!payload || !signature || !timestamp) {
     return false;
   }
 
-  const hmac = createHmac('sha256', process.env.MULTIBAAS_WEBHOOK_SECRET!);
+  const hmac = createHmac('sha256', secret);
   hmac.update(Buffer.from(payload));
   hmac.update(timestamp);
   const signature_ = hmac.digest().toString('hex');

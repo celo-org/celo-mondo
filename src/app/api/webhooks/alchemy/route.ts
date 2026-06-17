@@ -3,7 +3,6 @@ import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import { sendAlertToSlack } from 'src/config/slackbot';
 import { decodeEventLog } from 'viem';
-import { WebhookProvider, isActiveWebhookProvider } from '../activeProvider';
 import {
   type EventName,
   MULTISIG_EVENT_NAMES,
@@ -60,18 +59,16 @@ type AlchemyWebhookPayload = {
 };
 
 export async function POST(request: NextRequest): Promise<Response> {
-  if (!isActiveWebhookProvider(WebhookProvider.Alchemy)) {
+  // The Alchemy provider is enabled by configuring its signing key. When the key
+  // is absent the provider is considered disabled, so we acknowledge (200) and
+  // no-op instead of erroring — this lets Alchemy and MultiBaas run side by side
+  // (each gated by its own secret) without an exclusive provider selector.
+  const signingKey = process.env.ALCHEMY_SIGNING_KEY;
+  if (!signingKey) {
     return new Response(null, { status: 200 });
   }
 
   const rawBody = await request.text();
-  const signingKey = process.env.ALCHEMY_SIGNING_KEY;
-  if (!signingKey) {
-    // eslint-disable-next-line no-console
-    console.error('ALCHEMY_SIGNING_KEY env var is not set');
-    return new Response(null, { status: 500 });
-  }
-
   const payload = assertSignature(rawBody, request.headers.get('x-alchemy-signature'), signingKey);
   if (!payload) {
     return new Response(null, { status: 403 });

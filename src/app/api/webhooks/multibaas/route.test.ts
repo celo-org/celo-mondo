@@ -129,14 +129,11 @@ describe('POST /api/webhooks/multibaas', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.MULTIBAAS_WEBHOOK_SECRET = MOCK_WEBHOOK_SECRET;
-    // Default to multibaas so existing tests exercise the full handler.
-    // The feature flag describe block sets/unsets this per test.
-    process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
     mockReadContract.mockResolvedValue(MOCK_APPROVER_MULTISIG);
   });
 
   afterEach(() => {
-    delete process.env.ACTIVE_WEBHOOK_PROVIDER;
+    delete process.env.MULTIBAAS_WEBHOOK_SECRET;
   });
 
   describe('signature verification', () => {
@@ -424,21 +421,23 @@ describe('POST /api/webhooks/multibaas', () => {
     });
   });
 
-  describe('feature flag', () => {
-    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is explicitly set to alchemy', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
+  describe('provider gating (webhook secret presence)', () => {
+    it('processes when the webhook secret is configured', async () => {
+      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
-      const event = makeMultiBaasEvent({ name: 'ProposalQueued' });
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+      });
       const request = createSignedRequest([event]);
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).toHaveBeenCalled();
     });
 
-    it('returns 200 when inactive even without MULTIBAAS_WEBHOOK_SECRET set', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
+    it('no-ops with 200 when the webhook secret is absent (provider disabled)', async () => {
       delete process.env.MULTIBAAS_WEBHOOK_SECRET;
 
       const request = new NextRequest('http://localhost/api/webhooks/multibaas', {
@@ -448,38 +447,8 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-    });
-
-    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is multibaas', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
-      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
-
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-      const request = createSignedRequest([event]);
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).toHaveBeenCalled();
-    });
-
-    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is not set (defaults to multibaas)', async () => {
-      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
-      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
-
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-      const request = createSignedRequest([event]);
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).toHaveBeenCalled();
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
   });
 });

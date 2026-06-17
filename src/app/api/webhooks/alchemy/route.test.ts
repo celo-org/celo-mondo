@@ -146,12 +146,11 @@ describe('POST /api/webhooks/alchemy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.ALCHEMY_SIGNING_KEY = MOCK_SIGNING_KEY;
-    process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
     mockReadContract.mockResolvedValue(MOCK_APPROVER_MULTISIG);
   });
 
   afterEach(() => {
-    delete process.env.ACTIVE_WEBHOOK_PROVIDER;
+    delete process.env.ALCHEMY_SIGNING_KEY;
   });
 
   describe('signature verification', () => {
@@ -176,10 +175,10 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(response.status).toBe(403);
     });
 
-    it('returns 500 when ALCHEMY_SIGNING_KEY is not set', async () => {
+    it('returns 200 and no-ops when ALCHEMY_SIGNING_KEY is not set (provider disabled)', async () => {
       delete process.env.ALCHEMY_SIGNING_KEY;
 
-      const payload = makeAlchemyPayload([]);
+      const payload = makeAlchemyPayload([makeAlchemyLog()]);
       const body = JSON.stringify(payload);
       const request = new NextRequest('http://localhost/api/webhooks/alchemy', {
         method: 'POST',
@@ -188,7 +187,9 @@ describe('POST /api/webhooks/alchemy', () => {
       });
 
       const response = await POST(request);
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(200);
+      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
 
     it('returns 200 when signature is valid', async () => {
@@ -442,34 +443,8 @@ describe('POST /api/webhooks/alchemy', () => {
     });
   });
 
-  describe('feature flag', () => {
-    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is multibaas', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
-
-      const log = makeAlchemyLog();
-      const request = createSignedRequest(makeAlchemyPayload([log]));
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
-      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
-    });
-
-    it('returns 200 when inactive even without ALCHEMY_SIGNING_KEY set', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'multibaas';
-      delete process.env.ALCHEMY_SIGNING_KEY;
-
-      const request = new NextRequest('http://localhost/api/webhooks/alchemy', {
-        method: 'POST',
-        body: '{}',
-      });
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-    });
-
-    it('processes normally when ACTIVE_WEBHOOK_PROVIDER is alchemy', async () => {
-      process.env.ACTIVE_WEBHOOK_PROVIDER = 'alchemy';
+  describe('provider gating (signing key presence)', () => {
+    it('processes when the signing key is configured', async () => {
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
 
       const log = makeAlchemyLog();
@@ -481,8 +456,8 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
     });
 
-    it('returns 200 without processing when ACTIVE_WEBHOOK_PROVIDER is not set (defaults to multibaas)', async () => {
-      delete process.env.ACTIVE_WEBHOOK_PROVIDER;
+    it('no-ops with 200 when the signing key is absent (provider disabled)', async () => {
+      delete process.env.ALCHEMY_SIGNING_KEY;
 
       const log = makeAlchemyLog();
       const request = createSignedRequest(makeAlchemyPayload([log]));
