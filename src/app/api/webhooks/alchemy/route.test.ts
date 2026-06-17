@@ -200,13 +200,7 @@ describe('POST /api/webhooks/alchemy', () => {
   });
 
   describe('MultiSig event processing', () => {
-    it('collects transactionIds from backfill result and decoded args, passes them to updateApprovalsInDB', async () => {
-      const backfillTxIds = [100n, 101n];
-      mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
-        transactionIds: backfillTxIds,
-        confirmationCount: 2,
-        lastEventBlock: 59520678n,
-      });
+    it('collects transactionId from the delivered event and passes it to updateApprovalsInDB', async () => {
       mockDecodeEventLog.mockReturnValue({
         eventName: 'Confirmation',
         args: { sender: '0x1234', transactionId: 102n },
@@ -221,16 +215,10 @@ describe('POST /api/webhooks/alchemy', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
-        'Confirmation',
-        expect.objectContaining({ chain: { id: 42220 } }),
-        { source: 'alchemy' },
-      );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalledTimes(1);
 
       const passedTxIds = mockUpdateApprovalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedTxIds).toEqual(expect.arrayContaining([100n, 101n, 102n]));
-      expect(passedTxIds).toHaveLength(3);
+      expect(passedTxIds).toEqual([102n]);
     });
 
     it('deduplicates transactionIds from backfill and decoded args', async () => {
@@ -257,12 +245,7 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(passedTxIds).toContainEqual(248n);
     });
 
-    it('handles backfill returning transactionIds even when log decoding fails', async () => {
-      mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
-        transactionIds: [200n, 201n],
-        confirmationCount: 2,
-        lastEventBlock: 59520678n,
-      });
+    it('skips approvals when the event cannot be decoded (no transactionId)', async () => {
       mockDecodeEventLog.mockImplementation(() => {
         throw new Error('decode failed');
       });
@@ -276,16 +259,10 @@ describe('POST /api/webhooks/alchemy', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      const passedTxIds = mockUpdateApprovalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedTxIds).toEqual(expect.arrayContaining([200n, 201n]));
+      expect(mockUpdateApprovalsInDB).not.toHaveBeenCalled();
     });
 
     it('processes Revocation events through the same pipeline', async () => {
-      mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
-        transactionIds: [50n],
-        confirmationCount: 0,
-        lastEventBlock: 100n,
-      });
       mockDecodeEventLog.mockReturnValue({
         eventName: 'Revocation',
         args: { sender: '0x1234', transactionId: 50n },
@@ -300,12 +277,7 @@ describe('POST /api/webhooks/alchemy', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
-        'Revocation',
-        expect.anything(),
-        { source: 'alchemy' },
-      );
-      expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
+      expect(mockUpdateApprovalsInDB).toHaveBeenCalledWith(expect.anything(), [50n]);
     });
 
     it('does not call updateApprovalsInDB when no multisig events are present', async () => {
@@ -346,31 +318,10 @@ describe('POST /api/webhooks/alchemy', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
-        'ProposalQueued',
-        expect.anything(),
-        undefined,
-        'alchemy',
-      );
       expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [278n], 'update');
     });
 
-    it('includes proposalIds from governance backfill in updateProposalsInDB call', async () => {
-      mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n, 276n]);
-      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
-
-      const log = makeAlchemyLog();
-      const request = createSignedRequest(makeAlchemyPayload([log]));
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      const passedProposalIds = mockUpdateProposalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedProposalIds).toEqual(expect.arrayContaining([275n, 276n, 278n]));
-      expect(passedProposalIds).toHaveLength(3);
-    });
-
-    it('updates proposals from backfill even when webhook event decoding returns null', async () => {
-      mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n]);
+    it('does not call updateProposalsInDB when the event decodes to neither proposal nor vote', async () => {
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(null);
       mockDecodeAndPrepareVoteEvent.mockResolvedValueOnce([]);
 
@@ -379,7 +330,7 @@ describe('POST /api/webhooks/alchemy', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [275n], 'update');
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
 
     it('handles mixed governance and multisig events in a single webhook', async () => {
@@ -452,7 +403,6 @@ describe('POST /api/webhooks/alchemy', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
     });
 
