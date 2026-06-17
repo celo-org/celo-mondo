@@ -19,7 +19,12 @@ type EventName =
   | 'ProposalUpvoteRevoked'
   | 'ProposalExpired';
 
-export type Event = Awaited<ReturnType<typeof fetchProposalEvents>>[number];
+// Ingestion metadata (ingestedAt/ingestedVia) is write-time provenance, not part
+// of the decoded log that consumers read, so it is excluded from the Event shape.
+export type Event = Omit<
+  Awaited<ReturnType<typeof fetchProposalEvents>>[number],
+  'ingestedAt' | 'ingestedVia'
+>;
 
 export async function fetchProposalEvents(
   chainId: number,
