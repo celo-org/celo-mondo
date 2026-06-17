@@ -5,6 +5,11 @@ import { sql } from 'drizzle-orm';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { blocksProcessedTable, eventsTable } from 'src/db/schema';
+import {
+  IngestSource,
+  ingestedViaConflictSet,
+  withIngestionMetadata,
+} from 'src/features/governance/utils/events/ingest';
 import { assertEvent } from 'src/features/governance/utils/votes';
 import { sleep } from 'src/utils/async';
 import {
@@ -35,6 +40,7 @@ export interface FetchMultiSigEventsOptions {
   targetConfirmations?: number;
   searchDirection?: 'forward' | 'backward';
   saveProgress?: boolean;
+  source?: IngestSource;
 }
 
 export interface FetchMultiSigEventsResult {
@@ -64,6 +70,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
     targetConfirmations,
     searchDirection = 'forward',
     saveProgress = true,
+    source = 'cron',
   } = options;
 
   if (!assertEvent(VALID_MULTISIG_EVENTS, eventName)) {
@@ -205,8 +212,15 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
               try {
                 await database
                   .insert(eventsTable)
-                  .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
-                  .onConflictDoNothing();
+                  .values(withIngestionMetadata(events, client.chain.id, source))
+                  .onConflictDoUpdate({
+                    target: [
+                      eventsTable.eventName,
+                      eventsTable.transactionHash,
+                      eventsTable.chainId,
+                    ],
+                    set: ingestedViaConflictSet,
+                  });
                 saved = true;
               } catch (dbError: any) {
                 saveRetries--;
@@ -237,8 +251,11 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
           try {
             const { count } = await database
               .insert(eventsTable)
-              .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
-              .onConflictDoNothing();
+              .values(withIngestionMetadata(events, client.chain.id, source))
+              .onConflictDoUpdate({
+                target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+                set: ingestedViaConflictSet,
+              });
             console.log({ inserts: count });
             inserted = true;
           } catch (dbError: any) {

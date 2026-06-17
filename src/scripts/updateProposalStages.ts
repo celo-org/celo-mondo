@@ -2,36 +2,46 @@ import 'dotenv/config';
 
 /* eslint no-console: 0 */
 import { governanceABI } from '@celo/abis';
-import { and, eq, inArray, lt } from 'drizzle-orm';
+import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 import { STAGING_MOCK_PROPOSALS_START_ID } from 'src/config/config';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
-import { proposalsTable } from 'src/db/schema';
+import { eventsTable, proposalsTable } from 'src/db/schema';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { getOnChainQuorumRequired } from 'src/features/governance/utils/quorum';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
-async function updateProposalStages() {
+export async function updateProposalStages(
+  client: PublicClient<Transport, Chain>,
+  /**
+   * Client for current-state reads (e.g. getProposalStage).
+   * When the archive node is stale, this is a non-archive node like forno
+   * that is up-to-date with chain head. Historical reads (e.g. quorum calculation)
+   * still go through `client` which must be an archive node.
+   * When not provided, defaults to `client`.
+   */
+  headClient?: PublicClient<Transport, Chain>,
+) {
+  const currentClient = headClient ?? client;
   console.log('Starting proposal stage update...');
 
-  // Setup client using the same env var pattern as other scripts
-  const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
-  const client = createPublicClient({
-    chain: celo,
-    transport: http(archiveNode),
-  }) as PublicClient<Transport, Chain>;
-
-  // 1. Get all proposals in Referendum or Execution stages from DB
-  // These are the only stages that can transition without emitting events
+  // 1. Get all proposals in Referendum, Execution, or Expiration stages from DB
+  // Referendum/Execution can transition without emitting events.
+  // Expiration is included to self-heal proposals that were incorrectly marked as
+  // expired when they were actually executed (contract zeroes data after execution).
   const activeProposals = await database
     .select()
     .from(proposalsTable)
     .where(
       and(
         eq(proposalsTable.chainId, client.chain.id),
-        inArray(proposalsTable.stage, [ProposalStage.Referendum, ProposalStage.Execution]),
+        inArray(proposalsTable.stage, [
+          ProposalStage.Referendum,
+          ProposalStage.Execution,
+          ProposalStage.Expiration,
+        ]),
         lt(proposalsTable.id, STAGING_MOCK_PROPOSALS_START_ID),
       ),
     );
@@ -48,8 +58,8 @@ async function updateProposalStages() {
 
   for (const proposal of activeProposals) {
     try {
-      // Query on-chain stage
-      let onChainStage = (await client.readContract({
+      // Query on-chain stage using the head client (current state, no archive needed)
+      let onChainStage = (await currentClient.readContract({
         abi: governanceABI,
         address: Addresses.Governance,
         functionName: 'getProposalStage',
@@ -60,29 +70,58 @@ async function updateProposalStages() {
         `Proposal ${proposal.id}: DB stage=${proposal.stage}, On-chain stage=${onChainStage}`,
       );
 
-      //  4. Check if proposal should be marked as Rejected (off-chain only stage)
+      //  4. Check if proposal should be marked as Executed or Rejected (off-chain only stages)
+      //  After execution, the Governance contract zeroes all proposal data, causing
+      //  getProposalStage() to return Expiration (5) for executed proposals.
+      //  We must check for a ProposalExecuted event before concluding it expired.
       if (onChainStage === ProposalStage.Expiration) {
-        // Lazy-load votes only when we encounter an expired proposal
-        if (!allVotes) {
-          console.log('Found expired proposal, loading votes for Rejected calculation...');
-          allVotes = await getProposalVotes(client.chain.id);
-        }
+        const [executedEvent] = await database
+          .select({ id: eventsTable.transactionHash })
+          .from(eventsTable)
+          .where(
+            and(
+              eq(eventsTable.eventName, 'ProposalExecuted'),
+              eq(eventsTable.chainId, client.chain.id),
+              eq(sql`(${eventsTable.args}->>'proposalId')::bigint`, BigInt(proposal.id)),
+            ),
+          )
+          .limit(1);
 
-        const votes = allVotes[proposal.id];
-        if (votes) {
-          const yesVotes = votes[VoteType.Yes] || 0n;
-          const noVotes = votes[VoteType.No] || 0n;
-          if (noVotes > yesVotes) {
-            onChainStage = ProposalStage.Rejected;
-            console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
+        if (executedEvent) {
+          onChainStage = ProposalStage.Executed;
+          console.log(`  → Marking as Executed (found ProposalExecuted event)`);
+        } else {
+          // Lazy-load votes only when we encounter a truly expired proposal
+          if (!allVotes) {
+            console.log('Found expired proposal, loading votes for Rejected calculation...');
+            allVotes = await getProposalVotes(client.chain.id);
+          }
+
+          const votes = allVotes[proposal.id];
+          if (votes) {
+            const yesVotes = votes[VoteType.Yes] || 0n;
+            const noVotes = votes[VoteType.No] || 0n;
+            if (noVotes > yesVotes) {
+              onChainStage = ProposalStage.Rejected;
+              console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
+            }
           }
         }
       }
 
       // Only update if stage changed
       if (onChainStage !== proposal.stage) {
-        // 4.1 Get events related to the proposal in order to calculate quorum
-        const { quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal);
+        // 4.1 Get events related to the proposal in order to calculate quorum.
+        // Uses the archive client — may fail if archive node is stale, but that
+        // should not block the stage update itself.
+        let quorumVotesRequired: bigint | undefined;
+        try {
+          ({ quorumVotesRequired } = await getOnChainQuorumRequired(client, proposal));
+        } catch (quorumError) {
+          console.warn(
+            `  ⚠️ Could not calculate quorum for proposal ${proposal.id} (archive node may be stale), skipping quorum update`,
+          );
+        }
 
         // 4.2
         // Tempurature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
@@ -127,13 +166,55 @@ async function updateProposalStages() {
   }
 }
 
-// Run the script
-updateProposalStages()
-  .then(() => {
-    console.log('Script completed successfully');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('Script failed:', error);
-    process.exit(1);
-  });
+/**
+ * Returns the best client for current-state reads (e.g. getProposalStage).
+ * If the archive node is fresh, returns it directly.
+ * If stale (>100 blocks behind), returns a forno-backed client instead.
+ */
+async function getFreshHeadClient(
+  archiveClient: PublicClient<Transport, Chain>,
+): Promise<PublicClient<Transport, Chain>> {
+  const MAX_BLOCK_LAG = 300;
+  try {
+    const publicClient = createPublicClient({
+      chain: celo,
+      transport: http(celo.rpcUrls.default.http[0]),
+    }) as PublicClient<Transport, Chain>;
+    const [privateBlock, publicBlock] = await Promise.all([
+      archiveClient.getBlockNumber(),
+      publicClient.getBlockNumber(),
+    ]);
+    const lag = Number(publicBlock - privateBlock);
+    if (lag > MAX_BLOCK_LAG) {
+      console.warn(
+        `⚠️ Archive node is ${lag} blocks behind (archive: ${privateBlock}, public: ${publicBlock}). Using forno for current-state reads.`,
+      );
+      return publicClient;
+    }
+    console.log(`Archive node is fresh (${lag} blocks behind head)`);
+    return archiveClient;
+  } catch (error) {
+    console.warn('⚠️ Could not verify archive node freshness, using archive client:', error);
+    return archiveClient;
+  }
+}
+
+// Run the script when executed directly
+if (process.argv[1]?.endsWith('updateProposalStages.ts')) {
+  const archiveNode = process.env.PRIVATE_NO_RATE_LIMITED_NODE!;
+  const archiveClient = createPublicClient({
+    chain: celo,
+    transport: http(archiveNode),
+  }) as PublicClient<Transport, Chain>;
+
+  getFreshHeadClient(archiveClient)
+    .then((headClient) => updateProposalStages(archiveClient, headClient))
+    .then(() => {
+      console.log('Script completed successfully');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('Script failed:', error);
+      process.exit(1);
+    });
+}

@@ -8,12 +8,18 @@ import { Addresses } from 'src/config/contracts';
 import { MergedProposalData } from 'src/features/governance/governanceData';
 import { useProposalVoteTotals } from 'src/features/governance/hooks/useProposalVoteTotals';
 import { Proposal, VoteAmounts, VoteType } from 'src/features/governance/types';
-import type { ProposalTransaction } from 'src/features/governance/utils/transactionDecoder';
+import {
+  extractFunctionSignature,
+  type ProposalTransaction,
+} from 'src/features/governance/utils/transactionDecoder';
+import { celoPublicClient } from 'src/utils/client';
 import { logger } from 'src/utils/logger';
 import { fromFixidity } from 'src/utils/numbers';
 import getRuntimeBlock from 'src/utils/runtimeBlock';
-import { PublicClient, fromHex, toHex } from 'viem';
+import { PublicClient } from 'viem';
 import { usePublicClient, useReadContract } from 'wagmi';
+// Re-export for backward compatibility with tests
+export { extractFunctionSignature };
 
 interface ParticipationParameters {
   baseline: number;
@@ -180,7 +186,8 @@ export function useThresholds(
 } {
   const publicClient = usePublicClient();
   const { error, isLoading, data } = useQuery({
-    queryKey: ['useThresholds', publicClient, proposal?.id],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useThresholds', proposal?.id],
     queryFn: async () => {
       return await fetchThresholds(publicClient!, proposal!.id);
     },
@@ -201,8 +208,48 @@ export async function fetchThresholds(
   proposalTransactions?: ProposalTransaction[],
 ) {
   if (!proposalTransactions) {
-    const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
-    proposalTransactions = (await response.json()) as ProposalTransaction[];
+    try {
+      const response = await fetch(`/governance/${proposalId}/api/transactions?decoded=false`);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          proposalTransactions = data as ProposalTransaction[];
+        }
+      }
+    } catch (e) {
+      logger.warn('Failed to fetch proposal transactions from API, falling back to on-chain', e);
+    }
+  }
+
+  // Fallback: fetch transactions directly from the smart contract
+  // Also triggers when API returns empty array (e.g. RPC error for historical blocks)
+  if (!proposalTransactions || proposalTransactions.length === 0) {
+    const proposal = await publicClient.readContract({
+      address: Addresses.Governance,
+      abi: governanceABI,
+      functionName: 'getProposal',
+      args: [BigInt(proposalId)],
+    });
+    const transactionCount = Number(proposal[3]);
+    if (transactionCount > 0) {
+      const baseCall = {
+        address: Addresses.Governance,
+        abi: governanceABI,
+        functionName: 'getProposalTransaction',
+      } as const;
+      const txResults = await publicClient.multicall({
+        allowFailure: false,
+        contracts: Array.from({ length: transactionCount }, (_, i) => ({
+          ...baseCall,
+          args: [BigInt(proposalId), BigInt(i)],
+        })),
+      });
+      proposalTransactions = (txResults as [bigint, `0x${string}`, `0x${string}`][]).map(
+        ([value, to, data], index) => ({ value, to, data, index }),
+      );
+    } else {
+      proposalTransactions = [];
+    }
   }
 
   if (proposalTransactions.length === 0) {
@@ -239,12 +286,45 @@ export async function fetchThresholds(
 }
 
 /**
- *
- * @notice Extracts the first four bytes of a byte array.
- * https://github.com/celo-org/celo-monorepo/blob/master/packages/protocol/contracts/common/ExtractFunctionSignature.sol#L9
+ * Fetches constitution thresholds using celoPublicClient directly,
+ * so it works regardless of wallet connection state.
  */
-export function extractFunctionSignature(input: `0x${string}`): `0x${string}` {
-  if (!input.startsWith('0x')) input = `0x${input}`;
-  const data = fromHex(input, { to: 'bytes' });
-  return toHex(data.subarray(0, 4));
+export function useConstitutionThreshold(proposalId: number | undefined): {
+  isLoading: boolean;
+  data?: number[];
+} {
+  const { isLoading, data } = useQuery({
+    queryKey: ['useConstitutionThreshold', proposalId],
+    queryFn: () => fetchThresholds(celoPublicClient, proposalId!),
+    enabled: Boolean(proposalId),
+    gcTime: GCTime.Default,
+    staleTime: StaleTime.Default,
+  });
+
+  return { isLoading, data };
+}
+
+/**
+ * Returns a human-readable label for a constitution threshold value.
+ * @param threshold - Decimal value (e.g., 0.6, 0.7, 0.8, 0.9)
+ */
+export function getThresholdLabel(threshold: number): { percentage: string; risk: string } {
+  const percentage = `${Math.round(threshold * 100)}%`;
+  if (threshold >= 0.9) return { percentage, risk: 'Critical' };
+  if (threshold >= 0.8) return { percentage, risk: 'High' };
+  if (threshold >= 0.7) return { percentage, risk: 'Medium' };
+  return { percentage, risk: 'Low' };
+}
+
+/**
+ * Returns the maximum threshold from an array and its label.
+ */
+export function getMaxThresholdInfo(thresholds: number[]): {
+  maxThreshold: number;
+  percentage: string;
+  risk: string;
+} {
+  const maxThreshold = Math.max(...thresholds);
+  const { percentage, risk } = getThresholdLabel(maxThreshold);
+  return { maxThreshold, percentage, risk };
 }

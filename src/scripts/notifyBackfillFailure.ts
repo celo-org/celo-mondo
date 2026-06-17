@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { sendAlertToSlack } from '../config/slackbot';
 
 async function main() {

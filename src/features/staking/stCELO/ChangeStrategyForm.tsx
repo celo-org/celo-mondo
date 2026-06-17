@@ -3,6 +3,7 @@ import { SyntheticEvent, useCallback, useEffect, useMemo } from 'react';
 import { IconButton } from 'src/components/buttons/IconButton';
 import { MultiTxFormSubmitButton } from 'src/components/buttons/MultiTxFormSubmitButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
+import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { DropdownMenu } from 'src/components/menus/Dropdown';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { MIN_GROUP_SCORE_FOR_RANDOM, ZERO_ADDRESS } from 'src/config/consts';
@@ -107,8 +108,14 @@ export function ChangeStrategyForm({
               defaultGroup={defaultFormValues?.group ?? ZERO_ADDRESS}
               disabled={isInputDisabled}
             />
-            <div className="px-1">
+            <div className="flex items-center gap-2 px-1">
               <span className="mono">{humanReadableStCelo} stCELO</span>
+              <HelpIcon
+                type="tooltip"
+                text="Your entire stCELO balance can only vote for one group at a time. Changing strategy will revote your full balance to the new group."
+                size={14}
+                position="above"
+              />
             </div>
           </div>
           <MultiTxFormSubmitButton
@@ -155,11 +162,16 @@ function GroupField({
   const sortedGroups = useMemo(() => {
     if (!addressToGroup) return [];
     return Object.values(addressToGroup)
+      .filter((g) => g.validStCeloGroup)
       .map((g) => ({
         ...g,
         score: getGroupStats(g).score,
       }))
-      .sort((a, b) => b.score - a.score);
+      .sort((a, b) => {
+        if (a.address === ZERO_ADDRESS) return -1;
+        if (b.address === ZERO_ADDRESS) return 1;
+        return b.score - a.score;
+      });
   }, [addressToGroup]);
 
   const onClickRandom = useCallback(
@@ -200,18 +212,24 @@ function GroupField({
           </div>
         }
         menuItems={sortedGroups.map((g) => {
+          const isFull = g.address !== ZERO_ADDRESS && g.votes >= g.capacity;
           return (
             <button
               type="button"
-              className="flex w-full cursor-pointer items-center justify-between px-4 py-2 hover:bg-taupe-300/50"
+              className={`flex w-full items-center justify-between px-4 py-2 ${
+                isFull ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-taupe-300/50'
+              }`}
               key={g.address}
-              onClick={() => onClickGroup(g.address)}
+              onClick={() => !isFull && onClickGroup(g.address)}
+              disabled={isFull}
             >
-              <div className="flex items-center space-x-2">
+              <div className="flex min-w-0 items-center space-x-2">
                 <ValidatorGroupLogo address={g.address} size={20} />
-                <span>{cleanGroupName(g.name)}</span>
+                <span className="truncate">{cleanGroupName(g.name)}</span>
               </div>
-              <span>{`${(g.score * 100).toFixed(2)}%`}</span>
+              <span className="shrink-0 pl-2 text-xs text-taupe-600">
+                {isFull ? 'Full' : `${(g.score * 100).toFixed(0)}%`}
+              </span>
             </button>
           );
         })}
@@ -228,6 +246,20 @@ function GroupField({
           disabled={disabled}
         />
       </div>
+      {currentGroup && field.value !== ZERO_ADDRESS && currentGroup.capacity > 0n && (
+        <span className="pl-0.5 text-xs text-taupe-600">
+          Free capacity:{' '}
+          {formatNumberString(
+            fromWei(
+              currentGroup.capacity > currentGroup.votes
+                ? currentGroup.capacity - currentGroup.votes
+                : 0n,
+            ),
+            0,
+          )}{' '}
+          CELO
+        </span>
+      )}
     </div>
   );
 }
@@ -245,6 +277,9 @@ function validateForm(
   const groupDetails = addressToGroup[transferGroup];
   if (!groupDetails) {
     return { group: 'Transfer group not found' };
+  }
+  if (!groupDetails.validStCeloGroup) {
+    return { group: 'Transfer group is not healthy' };
   }
   if (groupDetails.votes >= groupDetails.capacity) {
     return { group: 'Transfer group has max votes' };

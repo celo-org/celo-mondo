@@ -1,6 +1,8 @@
+/* eslint no-console: 0 */
 import 'dotenv/config';
 
 import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalEventsAndSaveToDBProgressively';
+import { selfHealOrphanedProposals } from 'src/features/governance/selfHealOrphanedProposals';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
 import updateVotesInDB from 'src/features/governance/updateVotesInDB';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
@@ -77,6 +79,8 @@ async function main() {
   if (proposalIdsVoteChanged.length) {
     await updateVotesInDB(client.chain.id, [...new Set(proposalIdsVoteChanged)]);
   }
+
+  await selfHealOrphanedProposals(client);
 
   process.exit(0);
 }

@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import { useMemo } from 'react';
+import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { Section } from 'src/components/layout/Section';
@@ -22,7 +23,11 @@ import { RewardsTable } from 'src/features/staking/rewards/RewardsTable';
 import { useStakingRewards } from 'src/features/staking/rewards/useStakingRewards';
 import { ActiveStrategyTable } from 'src/features/staking/stCELO/ActiveStrategyTable';
 import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
-import { useWithdrawals } from 'src/features/staking/stCELO/hooks/useWithdrawals';
+import {
+  PendingStCELOWithdrawal,
+  useWithdrawals,
+} from 'src/features/staking/stCELO/hooks/useWithdrawals';
+import { PendingWithdrawalsTable } from 'src/features/staking/stCELO/PendingWithdrawalsTable';
 import { GroupToStake, StakeActionType, StakingBalances } from 'src/features/staking/types';
 import {
   useActivateStake,
@@ -61,8 +66,9 @@ export default function Page() {
     signingFor,
     groupToStake,
   );
-  const { addressToGroup } = useValidatorGroups();
   const { mode } = useStakingMode();
+  const { addressToGroup } = useValidatorGroups(mode === 'stCELO');
+  const withdrawals = useWithdrawals(address);
 
   const { activateStake } = useActivateStake(() => {
     refetchStakes();
@@ -71,6 +77,14 @@ export default function Page() {
   const totalLocked = getTotalLockedCelo(lockedBalances);
   const totalBalance = (walletBalance || 0n) + totalLocked;
   const totalDelegated = (BigInt(Math.floor(delegations?.totalPercent || 0)) * totalLocked) / 100n;
+
+  if (!addressToGroup) {
+    return (
+      <Section className="mt-6" containerClassName="space-y-6 px-4 max-w-screen-md">
+        <AccountPageSkeleton />
+      </Section>
+    );
+  }
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 px-4 max-w-screen-md">
@@ -81,7 +95,7 @@ export default function Page() {
           <Amount valueWei={totalBalance} className="-mt-1 text-3xl md:text-4xl" />
         </div>
         {isVoteSigner ? (
-          <div className="align-right flex flex-col items-end">
+          <div className="ph-no-capture align-right flex flex-col items-end">
             <h2 className="font-medium">Vote Signer For</h2>
             <span className="hidden font-mono text-sm md:flex">{signingFor}</span>
             <span className="font-mono text-sm md:hidden">{shortenAddress(signingFor!)}</span>
@@ -99,7 +113,11 @@ export default function Page() {
           totalDelegated={totalDelegated}
         />
       ) : (
-        <StCELOAccountStats stCELOBalances={stCELOBalances} address={address} />
+        <StCELOAccountStats
+          stCELOBalances={stCELOBalances}
+          withdrawals={withdrawals.pendingWithdrawals}
+          scheduledWithdrawalAmount={withdrawals.scheduledWithdrawalAmount}
+        />
       )}
       {isVoteSigner || <LockButtons className="flex justify-between md:hidden" mode={mode} />}
       <TableTabs
@@ -111,6 +129,9 @@ export default function Page() {
         addressToDelegatee={addressToDelegatee}
         activateStake={activateStake}
         mode={mode}
+        withdrawals={withdrawals.pendingWithdrawals}
+        isWaitingForNewWithdrawal={withdrawals.isWaitingForNewWithdrawal}
+        scheduledWithdrawalAmount={withdrawals.scheduledWithdrawalAmount}
       />
     </Section>
   );
@@ -137,7 +158,7 @@ function LockButtons({ className, mode }: { className?: string; mode: StakingMod
           <SolidButton
             className="bg-primary text-primary-content"
             onClick={() =>
-              showTxModal(TransactionFlowType.StakeStCELO, { action: StakeActionType.Unstake })
+              showTxModal(TransactionFlowType.UnstakeStCELO, { action: StakeActionType.Unstake })
             }
           >
             <div className="flex items-center space-x-1.5">
@@ -196,7 +217,7 @@ function AccountStats({
   totalDelegated?: bigint;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:flex md:items-center md:justify-between">
       <AccountStat
         title="Total locked"
         valueWei={lockedBalances?.locked}
@@ -222,19 +243,22 @@ function AccountStats({
 
 function StCELOAccountStats({
   stCELOBalances,
-  address,
+  withdrawals,
+  scheduledWithdrawalAmount,
 }: {
   stCELOBalances: ReturnType<typeof useStCELOBalance>['stCELOBalances'];
-  address: Address | undefined;
+  withdrawals: PendingStCELOWithdrawal[];
+  scheduledWithdrawalAmount: bigint;
 }) {
   const { annualProjectedRate } = useAnnualProjectedRate();
-  const withdrawals = useWithdrawals(address);
   const totalWithdrawals = useMemo(
-    () => withdrawals.pendingWithdrawals.reduce((agg, withdrawal) => agg + withdrawal.amount, 0n),
-    [withdrawals],
+    () =>
+      withdrawals.reduce((agg, withdrawal) => agg + withdrawal.amount, 0n) +
+      scheduledWithdrawalAmount,
+    [withdrawals, scheduledWithdrawalAmount],
   );
   return (
-    <div className="items-top items-top flex justify-between">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-4 md:flex md:items-start md:justify-between">
       <AccountStat
         title="Total stCELO"
         valueWei={stCELOBalances.total}
@@ -288,7 +312,15 @@ function AccountStat({
   );
 }
 
-type Tab = 'stakes' | 'rewards' | 'delegations' | 'history';
+function TabBadge({ label }: { label: string }) {
+  return (
+    <div className="grid min-h-[24px] min-w-[24px] place-items-center rounded-full bg-primary px-1 py-1 text-[10px]">
+      {label}
+    </div>
+  );
+}
+
+type Tab = 'stakes' | 'rewards' | 'delegations' | 'history' | 'withdrawals';
 function TableTabs({
   groupToStake,
   addressToGroup,
@@ -298,6 +330,9 @@ function TableTabs({
   addressToDelegatee,
   activateStake,
   mode,
+  withdrawals,
+  isWaitingForNewWithdrawal,
+  scheduledWithdrawalAmount,
 }: {
   groupToStake?: GroupToStake;
   addressToGroup?: AddressTo<ValidatorGroup>;
@@ -307,9 +342,12 @@ function TableTabs({
   addressToDelegatee?: AddressTo<Delegatee>;
   activateStake: (g: Address) => void;
   mode: StakingMode;
+  withdrawals: PendingStCELOWithdrawal[];
+  isWaitingForNewWithdrawal?: boolean;
+  scheduledWithdrawalAmount?: bigint;
 }) {
   const tabs: Tab[] =
-    mode === 'CELO' ? ['stakes', 'rewards', 'delegations', 'history'] : ['stakes', 'history'];
+    mode === 'CELO' ? ['stakes', 'rewards', 'delegations', 'history'] : ['stakes', 'withdrawals'];
   const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
@@ -321,8 +359,16 @@ function TableTabs({
             isActive={tab === tabName}
             onClick={() => onTabChange(tabName)}
           >
-            <span className="text-sm capitalize">
+            <span className=" flex items-center gap-2 text-sm capitalize">
               {tabName === 'stakes' && mode !== 'CELO' ? 'Strategy' : tabName}
+              {tabName === 'withdrawals' &&
+                mode !== 'CELO' &&
+                (() => {
+                  const count =
+                    withdrawals.length +
+                    (scheduledWithdrawalAmount && scheduledWithdrawalAmount > 0n ? 1 : 0);
+                  return count > 0 ? <TabBadge label={count > 10 ? '10+' : `${count}`} /> : null;
+                })()}
             </span>
           </TabHeaderButton>
         ))}
@@ -338,6 +384,13 @@ function TableTabs({
       {tab === 'stakes' && mode === 'stCELO' && (
         <ActiveStrategyTable addressToGroup={addressToGroup} />
       )}
+      {tab === 'withdrawals' && mode === 'stCELO' && (
+        <PendingWithdrawalsTable
+          pendingWithdrawals={withdrawals}
+          isWaitingForNewWithdrawal={isWaitingForNewWithdrawal}
+          scheduledWithdrawalAmount={scheduledWithdrawalAmount}
+        />
+      )}
       {tab === 'rewards' && (
         <RewardsTable groupToReward={groupToReward} addressToGroup={addressToGroup} />
       )}
@@ -349,5 +402,66 @@ function TableTabs({
       )}
       {tab === 'history' && <ProposalVotesHistoryTable />}
     </div>
+  );
+}
+
+function AccountPageSkeleton() {
+  return (
+    <>
+      <SkeletonBlock className="hidden h-8 w-32 sm:block" />
+      {/* Total Balance + buttons */}
+      <div className="items-top flex justify-between">
+        <div className="space-y-1">
+          <SkeletonBlock className="h-5 w-28" />
+          <SkeletonBlock className="h-9 w-48 md:h-10" />
+        </div>
+        <div className="hidden space-x-2 md:flex">
+          <SkeletonBlock className="h-10 w-24 rounded-full" />
+          <SkeletonBlock className="h-10 w-24 rounded-full" />
+          <SkeletonBlock className="h-10 w-28 rounded-full" />
+        </div>
+      </div>
+      {/* Stat boxes */}
+      <div className="flex items-center justify-between">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="space-y-1">
+            <SkeletonBlock className="h-4 w-24" />
+            <SkeletonBlock className="h-7 w-32 md:h-8" />
+            <SkeletonBlock className="h-3 w-20" />
+          </div>
+        ))}
+      </div>
+      {/* Tab headers */}
+      <div className="pt-2">
+        <div className="flex space-x-10 border-b border-taupe-300 pb-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonBlock key={i} className="h-5 w-20" />
+          ))}
+        </div>
+        {/* Table rows */}
+        <table className="mt-2 w-full">
+          <thead>
+            <tr>
+              {['w-24', 'w-20', 'w-16', 'w-16'].map((w, i) => (
+                <th key={i} className="border-y border-taupe-300 px-4 py-3">
+                  <SkeletonBlock className={`h-4 ${w}`} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 5 }).map((_, row) => (
+              <tr key={row}>
+                {['w-28', 'w-20', 'w-16', 'w-20'].map((w, col) => (
+                  <td key={col} className="border-y border-taupe-300 px-4 py-4">
+                    <SkeletonBlock className={`h-5 ${w}`} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

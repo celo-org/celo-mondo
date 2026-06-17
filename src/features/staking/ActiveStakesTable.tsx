@@ -19,6 +19,7 @@ import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
 import { percent } from 'src/utils/math';
 import { objKeys, objLength } from 'src/utils/objects';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 export function ActiveStakesTable({
   groupToStake,
@@ -32,6 +33,7 @@ export function ActiveStakesTable({
   activateStake: (g: Address) => void;
 }) {
   const showStakeModal = useTransactionModal(TransactionFlowType.Stake);
+  const trackEvent = useTrackEvent();
 
   const { chartData, tableData } = useMemo(() => {
     if (!groupToStake || !addressToGroup || !objLength(groupToStake)) {
@@ -76,7 +78,14 @@ export function ActiveStakesTable({
         subHeader={`You don’t currently have any funds staked. Stake with validators to start earning rewards.`}
         className="my-10"
       >
-        <SolidButton onClick={() => showStakeModal()}>Stake CELO</SolidButton>
+        <SolidButton
+          onClick={() => {
+            trackEvent('stake_button_clicked', {});
+            showStakeModal();
+          }}
+        >
+          Stake CELO
+        </SolidButton>
       </HeaderAndSubheader>
     );
   }
@@ -133,7 +142,9 @@ function OptionsDropdown({
   activateStake: (g: Address) => void;
 }) {
   const showTxModal = useTransactionModal();
+  const trackEvent = useTrackEvent();
   const onClickItem = (action: StakeActionType) => {
+    trackEvent('stake_menu_clicked', { action, groupAddress: group });
     showTxModal(TransactionFlowType.Stake, { group, action });
   };
 
@@ -143,7 +154,12 @@ function OptionsDropdown({
       button={<Image src={Ellipsis} width={13} height={13} alt="Options" />}
       menuClasses="flex flex-col items-start space-y-3 p-3 right-0"
       menuItems={[
-        <Link className="underline-offset-2 hover:underline" key={0} href={`/staking/${group}`}>
+        <Link
+          className="underline-offset-2 hover:underline"
+          key={0}
+          href={`/staking/${group}`}
+          onClick={() => trackEvent('validator_group_viewed', { groupAddress: group })}
+        >
           Details
         </Link>,
         ...(isActivatable

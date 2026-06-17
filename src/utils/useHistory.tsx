@@ -9,8 +9,6 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { toast } from 'react-toastify';
-import { useFeatureFlag } from 'src/utils/useFeatureFlag';
 
 // NOTE: inspired by https://github.com/vercel/next.js/discussions/16337
 // but the original post is about next/router which is for nextjs pages
@@ -19,8 +17,6 @@ function useHistoryInternal() {
   const { back: _back } = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const feature = useFeatureFlag();
-
   const back = useCallback(() => {
     if (history.length > 1) {
       // NOTE: `router.back` doesnt trigger the 'popstate' event surprisingly
@@ -36,12 +32,6 @@ function useHistoryInternal() {
     const url = `${pathname}?${searchParams}`;
     setHistory((prevState) => (prevState.at(-1) !== url ? [...prevState, url] : prevState));
   }, [pathname, searchParams]);
-
-  useEffect(() => {
-    if (feature) {
-      toast.info(`Feature ${feature} enabled. To disable close tab or use another.`);
-    }
-  }, [feature, pathname]);
 
   useEffect(() => {
     const listener = (_event: PopStateEvent) => {

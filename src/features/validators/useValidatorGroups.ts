@@ -13,7 +13,8 @@ import { useMemo } from 'react';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, MAX_NUM_ELECTABLE_VALIDATORS, StaleTime, ZERO_ADDRESS } from 'src/config/consts';
 import { Addresses, resolveAddress } from 'src/config/contracts';
-import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
+import GroupHealthABI from 'src/config/stcelo/GroupHealthABI';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/descriptors';
 import useDefaultGroups, {
   useStCeloInDefaultGroups,
 } from 'src/features/staking/stCELO/hooks/useDefaultGroups';
@@ -27,7 +28,8 @@ import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 export function useValidatorGroups(includeStCeloDefault: boolean = false) {
   const publicClient = usePublicClient();
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useValidatorGroups', publicClient],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton; including it causes cache invalidation on navigation
+    queryKey: ['useValidatorGroups'],
     queryFn: () => {
       if (!publicClient) return null;
       logger.debug('Fetching validator groups');
@@ -124,6 +126,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
         votes: 0n,
         lastSlashed: null,
         score: 0,
+        validStCeloGroup: valDetails.validStCeloGroup,
       };
     }
     // Create new validator group member
@@ -324,16 +327,42 @@ async function fetchValidatorDetails(publicClient: PublicClient, addresses: read
     ),
   });
 
+  const groups = [
+    ...new Set(validatorDetailsRaw.map((x) => x.result?.[2]).filter(Boolean)),
+  ] as Address[];
+
+  const healthyGroupsRaw = await publicClient.multicall({
+    allowFailure: false,
+    contracts: groups.map(
+      (addr) =>
+        ({
+          ...GroupHealthABI,
+          functionName: 'isGroupValid',
+          args: [addr],
+        }) as const,
+    ),
+  });
+
+  const healthyGroups = groups.reduce(
+    (acc, group, i) => ({
+      ...acc,
+      [group]: healthyGroupsRaw[i],
+    }),
+    {} as Record<Address, boolean>,
+  );
+
   // https://viem.sh/docs/faq.html#why-is-a-contract-function-return-type-returning-an-array-instead-of-an-object
   return validatorDetailsRaw.map((d, i) => {
     if (!d.result) throw new Error(`Validator details missing for index ${i}`);
     const result = d.result as [Address, Address, Address, bigint, Address];
+    const affiliation = result[2];
     return {
       ecdsaPublicKey: result[0],
       blsPublicKey: result[1],
-      affiliation: result[2],
+      affiliation,
       score: result[3],
       signer: result[4],
+      validStCeloGroup: healthyGroups[affiliation],
     };
   });
 }

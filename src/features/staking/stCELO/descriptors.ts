@@ -7,9 +7,10 @@ export const DEFAULT_STRATEGY: ValidatorGroup = {
   lastSlashed: 0,
   url: 'https://forum.celo.org/t/stcelo-launch-on-friday-feedback-on-our-plan-for-validator-election/3897',
   eligible: true,
-  capacity: 100000000000000000000000000n, // 100 million artifical limit
+  capacity: 100000000000000000000000000n, // 100 million artificial limit
   votes: 0n,
   score: 1,
   // @ts-expect-error -- filled in later
   members: [],
+  validStCeloGroup: true,
 };

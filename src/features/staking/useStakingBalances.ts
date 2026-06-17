@@ -19,7 +19,8 @@ export function useStakingBalances(address?: Address) {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ['useStakingBalances', publicClient, address],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useStakingBalances', address],
     queryFn: async () => {
       if (!address || !publicClient) return null;
       logger.debug('Fetching staking balances');

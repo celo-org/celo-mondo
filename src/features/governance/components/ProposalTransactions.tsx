@@ -5,6 +5,10 @@ import { useState } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { CollapsibleSection } from 'src/components/layout/CollapsibleSection';
 import {
+  getThresholdLabel,
+  useConstitutionThreshold,
+} from 'src/features/governance/hooks/useProposalQuorum';
+import {
   DecodedTransaction,
   getContractName,
   ProposalTransaction,
@@ -13,11 +17,16 @@ import {
 interface ProposalTransactionsProps {
   proposalId: string;
   numTransactions: bigint | undefined;
+  onchainProposalId?: number;
 }
 
 type TransactionResponse = (ProposalTransaction & { decoded: DecodedTransaction })[];
 
-export function ProposalTransactions({ proposalId, numTransactions }: ProposalTransactionsProps) {
+export function ProposalTransactions({
+  proposalId,
+  numTransactions,
+  onchainProposalId,
+}: ProposalTransactionsProps) {
   const {
     data: transactions,
     isLoading,
@@ -36,6 +45,7 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
       return (await response.json()) as TransactionResponse;
     },
   });
+  const { data: thresholds } = useConstitutionThreshold(onchainProposalId);
 
   return (
     <CollapsibleSection title={`Onchain Transactions (${numTransactions})`}>
@@ -49,7 +59,12 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
             </div>
           ) : (
             transactions?.map((transaction, index) => (
-              <TransactionCard key={index} transaction={transaction} index={index} />
+              <TransactionCard
+                key={index}
+                transaction={transaction}
+                index={index}
+                threshold={thresholds?.[index]}
+              />
             ))
           )}
         </div>
@@ -59,11 +74,12 @@ export function ProposalTransactions({ proposalId, numTransactions }: ProposalTr
 }
 
 interface TransactionCardProps {
-  transaction: ProposalTransaction & { decoded: DecodedTransaction };
+  transaction: ProposalTransaction & { decoded?: DecodedTransaction };
   index: number;
+  threshold?: number;
 }
 
-function TransactionCard({ transaction, index }: TransactionCardProps) {
+function TransactionCard({ transaction, index, threshold }: TransactionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const { decoded, error, to, value, data } = transaction;
@@ -81,6 +97,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
 
   const contractName = getContractName(to);
   const hasValue = value > 0n;
+  const thresholdLabel = threshold !== undefined ? getThresholdLabel(threshold) : null;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
@@ -91,9 +108,14 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
           </div>
           <div>
             <h4 className="font-medium text-gray-900">
-              {decoded.functionName || 'Unknown Function'}
+              {decoded?.functionName || 'Unknown Function'}
             </h4>
           </div>
+          {thresholdLabel && (
+            <span className="whitespace-nowrap rounded-full border border-taupe-300 px-2 text-xs font-light text-taupe-600">
+              {thresholdLabel.percentage} threshold
+            </span>
+          )}
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
@@ -103,11 +125,11 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
         </button>
       </div>
 
-      {decoded.description && <p className="mt-2 text-sm text-gray-700">{decoded.description}</p>}
+      {decoded?.description && <p className="mt-2 text-sm text-gray-700">{decoded.description}</p>}
 
       {hasValue && (
         <div className="mt-2 text-sm text-gray-600">
-          <span className="font-medium">Value:</span> {decoded.value || '0'} CELO
+          <span className="font-medium">Value:</span> {decoded?.value || '0'} CELO
         </div>
       )}
 
@@ -125,7 +147,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             </div>
           </div>
 
-          {decoded.args && Object.keys(decoded.args).length > 0 && (
+          {decoded?.args && Object.keys(decoded.args).length > 0 && (
             <div>
               <h5 className="text-sm font-medium text-gray-900">Function Arguments</h5>
               <div className="mt-1 font-mono text-sm text-gray-600">
@@ -151,7 +173,7 @@ function TransactionCard({ transaction, index }: TransactionCardProps) {
             <div>
               <h5 className="text-sm font-medium text-gray-900">Value</h5>
               <div className="mt-1 text-sm text-gray-600">
-                <p>{decoded.value || '0'} CELO</p>
+                <p>{decoded?.value || '0'} CELO</p>
               </div>
             </div>
           )}

@@ -17,6 +17,9 @@ import type { WriteContractMutate } from 'wagmi/query';
 // Special case handling for this common error to provide a more specific error message
 const CHAIN_MISMATCH_ERROR = 'does not match the target chain';
 
+// Buffer to apply on top of gas estimates to account for network fluctuations
+const GAS_LIMIT_MULTIPLIER = 130n; // 1.3x
+
 export function useWriteContractWithReceipt(
   description: string,
   onSuccess?: (receipt: TransactionReceipt) => any,
@@ -35,15 +38,24 @@ export function useWriteContractWithReceipt(
 
   const writeContractWithTxPrep = useCallback(
     async (args: Parameters<WriteContractMutate<Config, unknown>>[0]) => {
+      if (!publicClient) {
+        logger.error('Public client not ready for tx');
+        return;
+      }
+
+      logger.debug('Estimating gas for transaction');
+      const encodedData = encodeFunctionData(args);
+      const estimatedGas = await publicClient.estimateGas({
+        to: args.address,
+        data: encodedData,
+        value: args.value,
+        account: account.address,
+      });
+      const bufferedGas = (estimatedGas * GAS_LIMIT_MULTIPLIER) / 100n;
+
       // Some WalletConnect-ed wallets like Celo Terminal require that the tx be fully populated
       if (account?.connector?.id === WALLET_CONNECT_CONNECTOR_ID) {
-        if (!publicClient) {
-          logger.error('Public client not ready for WalletConnect wallet tx');
-          return;
-        }
-
         logger.debug('Preparing transaction request for WalletConnect wallet');
-        const encodedData = encodeFunctionData(args);
         const request = await publicClient.prepareTransactionRequest({
           to: args.address,
           chainId: args.chainId,
@@ -54,12 +66,17 @@ export function useWriteContractWithReceipt(
         logger.debug('Transaction request prepared, triggering write');
         writeContract({
           ...args,
-          gas: request.gas,
-          gasPrice: request.gasPrice,
+          gas: bufferedGas,
+          ...(request.maxFeePerGas != null
+            ? {
+                maxFeePerGas: request.maxFeePerGas,
+                maxPriorityFeePerGas: request.maxPriorityFeePerGas,
+              }
+            : { gasPrice: request.gasPrice }),
         } as any);
       } else {
         logger.debug('Trigger transaction write');
-        writeContract(args);
+        writeContract({ ...args, gas: bufferedGas });
       }
     },
     [writeContract, publicClient, account],

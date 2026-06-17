@@ -102,14 +102,14 @@ describe('updateApprovalsInDB', () => {
 
     // Mock fetchMultiSigEvents to return Confirmation event, then empty for Revocation
     vi.mocked(fetchMultiSigEvents)
-      .mockResolvedValueOnce([mockConfirmationEvent])
+      .mockResolvedValueOnce([mockConfirmationEvent as any])
       .mockResolvedValueOnce([]);
 
     await updateApprovalsInDB(mockClient as any);
 
     // Verify that insert was called with correct data (rows are inserted individually now)
     expect(database.insert).toHaveBeenCalled();
-    expect(database.values).toHaveBeenCalledWith({
+    expect((database as any).values).toHaveBeenCalledWith({
       chainId: 42220,
       proposalId: Number(proposalId),
       multisigTxId: Number(multisigTxId),
@@ -159,7 +159,7 @@ describe('updateApprovalsInDB', () => {
 
     // Mock fetchMultiSigEvents to return Confirmation event, then empty for Revocation
     vi.mocked(fetchMultiSigEvents)
-      .mockResolvedValueOnce([mockConfirmationEvent])
+      .mockResolvedValueOnce([mockConfirmationEvent as any])
       .mockResolvedValueOnce([]);
 
     const consoleLogSpy = vi.spyOn(console, 'log');
@@ -210,7 +210,7 @@ describe('updateApprovalsInDB', () => {
     // Mock fetchMultiSigEvents to return empty for Confirmation, then Revocation event
     vi.mocked(fetchMultiSigEvents)
       .mockResolvedValueOnce([]) // Confirmation events
-      .mockResolvedValueOnce([mockRevocationEvent]); // Revocation events
+      .mockResolvedValueOnce([mockRevocationEvent as any]); // Revocation events
 
     // Mock database query for existing approval
     vi.mocked(database.select).mockReturnValue({

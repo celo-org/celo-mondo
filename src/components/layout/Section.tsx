@@ -14,7 +14,7 @@ export function Section({
     >
       <div
         className={clsx(
-          'flex w-full flex-col justify-center self-center px-2 sm:px-4',
+          'flex w-full flex-col justify-center self-center px-3 sm:px-4',
           containerClassName,
         )}
       >

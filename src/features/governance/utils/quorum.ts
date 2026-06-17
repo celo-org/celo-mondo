@@ -51,23 +51,27 @@ export async function getOnChainQuorumRequired(
       : lastVoteEvent.blockNumber;
   const state = await getProposalOnChain(client, proposal.id, mostRecentBlockNumber);
 
-  const [rawParticipationParameters, thresholds] = await Promise.all([
+  const proposalTransactions = await getProposalTransactions(
+    proposal.id,
+    proposal.transactionCount || 0,
+    mostRecentBlockNumber,
+  );
+
+  const results = await Promise.allSettled([
     readContract(client, {
       abi: governanceABI,
       address: Addresses.Governance,
       functionName: 'getParticipationParameters',
       blockNumber: mostRecentBlockNumber,
     }),
-    fetchThresholds(
-      client,
-      proposal.id,
-      await getProposalTransactions(
-        proposal.id,
-        proposal.transactionCount || 0,
-        mostRecentBlockNumber,
-      ),
-    ),
+    fetchThresholds(client, proposal.id, proposalTransactions),
   ]);
+
+  if (results[0].status === 'rejected') throw results[0].reason;
+  if (results[1].status === 'rejected') throw results[1].reason;
+
+  const rawParticipationParameters = results[0].value;
+  const thresholds = results[1].value;
 
   const participationParameters = parseParticipationParameters(rawParticipationParameters);
   const quorumVotesRequired = calculateQuorum({
