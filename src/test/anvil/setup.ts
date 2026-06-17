@@ -1,6 +1,5 @@
 import { fetchLogs } from '@viem/anvil';
-import { beforeEach } from 'node:test';
-import { afterEach } from 'vitest';
+import { afterEach, beforeEach } from 'vitest';
 import { ANVIL_BASE_HOST, ANVIL_FORK_URL, FORK_BLOCK_NUMBER } from './constants';
 import { pool, testClient } from './utils';
 
