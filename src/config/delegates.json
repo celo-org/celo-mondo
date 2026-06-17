@@ -1492,5 +1492,19 @@
       "Latam"
     ],
     "description": "The LATAM Hubs are a coordinated network of Local Regional HUBs working to grow the Celo ecosystem across Latin America. Through community building, developer onboarding, education, and real world use cases, the hubs support builders and local communities in shipping applications, generating on-chain activity, and expanding Celo adoption in the region. Operating across multiple countries and in close collaboration, the LATAM Hubs focus on measurable impact, transparency, and long term ecosystem development aligned with Celo's global goals."
+  },
+  "0x6A90b0f458c45A6ccB805455FE1d3A69c93A18Ec": {
+    "name": "Tino",
+    "address": "0x6A90b0f458c45A6ccB805455FE1d3A69c93A18Ec",
+    "logoUri": "/logos/delegatees/0x6A90b0f458c45A6ccB805455FE1d3A69c93A18Ec.jpg",
+    "date": "2026-02-07",
+    "links": {
+      "twitter": "https://x.com/huang_haoer"
+    },
+    "interests": [
+      "Blockchain",
+      "DeFi"
+    ],
+    "description": "Fml"
   }
 }
