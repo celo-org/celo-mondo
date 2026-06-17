@@ -223,6 +223,7 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
         'Confirmation',
         expect.objectContaining({ chain: { id: 42220 } }),
+        { source: 'alchemy' },
       );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalledTimes(1);
 
@@ -301,6 +302,7 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
         'Revocation',
         expect.anything(),
+        { source: 'alchemy' },
       );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
     });
@@ -346,6 +348,8 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
         'ProposalQueued',
         expect.anything(),
+        undefined,
+        'alchemy',
       );
       expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [278n], 'update');
     });

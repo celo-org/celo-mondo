@@ -78,7 +78,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       return new Response(null, { status: 200 });
     }
 
-    await processWebhookEvents(parsedEvents);
+    await processWebhookEvents(parsedEvents, 'multibaas');
     return new Response(null, { status: 200 });
   } catch (err) {
     const error = err as Error;

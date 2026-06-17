@@ -212,6 +212,7 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
         'Confirmation',
         expect.objectContaining({ chain: { id: 42220 } }),
+        { source: 'multibaas' },
       );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalledTimes(1);
 
@@ -287,6 +288,7 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
         'Revocation',
         expect.anything(),
+        { source: 'multibaas' },
       );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
     });
@@ -335,6 +337,8 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
         'ProposalQueued',
         expect.anything(),
+        undefined,
+        'multibaas',
       );
       expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [278n], 'update');
     });

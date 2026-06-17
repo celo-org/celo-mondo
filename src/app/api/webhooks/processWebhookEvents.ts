@@ -10,6 +10,7 @@ import fetchHistoricalEventsAndSaveToDBProgressively from 'src/features/governan
 import fetchHistoricalMultiSigEventsAndSaveToDBProgressively from 'src/features/governance/fetchHistoricalMultiSigEventsAndSaveToDBProgressively';
 import updateApprovalsInDB from 'src/features/governance/updateApprovalsInDB';
 import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
+import { IngestSource } from 'src/features/governance/utils/events/ingest';
 import { decodeAndPrepareProposalEvent } from 'src/features/governance/utils/events/proposal';
 import { decodeAndPrepareVoteEvent } from 'src/features/governance/utils/events/vote';
 import { celoPublicClient } from 'src/utils/client';
@@ -35,7 +36,10 @@ export type ParsedEvent = {
   transactionIds: bigint[];
 };
 
-export async function processWebhookEvents(parsedEvents: ParsedEvent[]): Promise<void> {
+export async function processWebhookEvents(
+  parsedEvents: ParsedEvent[],
+  source: IngestSource,
+): Promise<void> {
   let proposalId: bigint | undefined | null;
   const proposalIdsToUpdate: Set<bigint> = new Set();
   const multisigTxIdsToProcess: Set<bigint> = new Set();
@@ -61,6 +65,7 @@ export async function processWebhookEvents(parsedEvents: ParsedEvent[]): Promise
       const backfillResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
         event.name,
         celoPublicClient,
+        { source },
       );
 
       for (const txId of backfillResult.transactionIds) {
@@ -77,6 +82,8 @@ export async function processWebhookEvents(parsedEvents: ParsedEvent[]): Promise
       const backfillProposalIds = await fetchHistoricalEventsAndSaveToDBProgressively(
         event.name,
         celoPublicClient,
+        undefined,
+        source,
       );
       for (const id of backfillProposalIds) {
         proposalIdsToUpdate.add(id);
