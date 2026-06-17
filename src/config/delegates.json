@@ -1534,5 +1534,19 @@
       "Governance Community Refi Public Goods Regeneration Art Stablecoins Latam Venezuela"
     ],
     "description": "Vida Verde is a regenerative project based in Venezuela that integrates ecotourism, environmental education, art, community, and Web3 technology to build a more conscious and sustainable way of life."
+  },
+  "0x6A90b0f458c45A6ccB805455FE1d3A69c93A18Ec": {
+    "name": "Tino",
+    "address": "0x6A90b0f458c45A6ccB805455FE1d3A69c93A18Ec",
+    "logoUri": "/logos/delegatees/0x6A90b0f458c45A6ccB805455FE1d3A69c93A18Ec.jpg",
+    "date": "2026-02-07",
+    "links": {
+      "twitter": "https://x.com/huang_haoer"
+    },
+    "interests": [
+      "Blockchain",
+      "DeFi"
+    ],
+    "description": "Fml"
   }
 }
