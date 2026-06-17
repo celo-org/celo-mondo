@@ -73,7 +73,8 @@ export async function updateProposalStages(
       //  4. Check if proposal should be marked as Executed or Rejected (off-chain only stages)
       //  After execution, the Governance contract zeroes all proposal data, causing
       //  getProposalStage() to return Expiration (5) for executed proposals.
-      //  We must check for a ProposalExecuted event before concluding it expired.
+      //  We must distinguish a just-executed proposal from a genuinely expired one
+      //  before concluding it expired.
       if (onChainStage === ProposalStage.Expiration) {
         const [executedEvent] = await database
           .select({ id: eventsTable.transactionHash })
@@ -88,23 +89,40 @@ export async function updateProposalStages(
           .limit(1);
 
         if (executedEvent) {
+          // A ProposalExecuted event is ground truth.
           onChainStage = ProposalStage.Executed;
           console.log(`  → Marking as Executed (found ProposalExecuted event)`);
         } else {
-          // Lazy-load votes only when we encounter a truly expired proposal
+          // No event yet. The ProposalExecuted event is ingested into eventsTable
+          // by the hourly backfill cron, while this stage cron runs every 5 minutes.
+          // In the gap between a successful execution and the next backfill, the
+          // event row is absent, so relying on it alone leaves a just-executed
+          // proposal shown as "Expired" for up to ~1 hour.
+          //
+          // Resolve it from votes + on-chain data instead:
+          //  - No > Yes  → Rejected. A proposal that lost can never have been
+          //    executed, so this check must come first (and guards against
+          //    misreading a zeroed slot as Executed).
+          //  - Otherwise, if the contract data is zeroed (proposer == 0x0) the
+          //    proposal was executed and deleted; a genuinely expired-but-
+          //    unexecuted proposal keeps its data (nobody bothers to execute it
+          //    once the window passes).
+          //  - Otherwise it is genuinely expired.
           if (!allVotes) {
             console.log('Found expired proposal, loading votes for Rejected calculation...');
             allVotes = await getProposalVotes(client.chain.id);
           }
 
           const votes = allVotes[proposal.id];
-          if (votes) {
-            const yesVotes = votes[VoteType.Yes] || 0n;
-            const noVotes = votes[VoteType.No] || 0n;
-            if (noVotes > yesVotes) {
-              onChainStage = ProposalStage.Rejected;
-              console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
-            }
+          const yesVotes = votes?.[VoteType.Yes] || 0n;
+          const noVotes = votes?.[VoteType.No] || 0n;
+
+          if (noVotes > yesVotes) {
+            onChainStage = ProposalStage.Rejected;
+            console.log(`  → Marking as Rejected (No: ${noVotes}, Yes: ${yesVotes})`);
+          } else if (await wasProposalExecutedOnChain(currentClient, proposal.id)) {
+            onChainStage = ProposalStage.Executed;
+            console.log(`  → Marking as Executed (proposal data zeroed on-chain)`);
           }
         }
       }
@@ -163,6 +181,36 @@ export async function updateProposalStages(
     console.log('✅ Stage updates complete');
   } else {
     console.log('No stage changes detected');
+  }
+}
+
+/**
+ * Determines whether a proposal that currently reports `Expiration` on-chain was
+ * actually executed (and thus deleted) rather than genuinely expired.
+ *
+ * The Governance contract zeroes a proposal's data on execution, so `getProposal`
+ * returns a zero-address proposer for executed proposals. A genuinely expired but
+ * unexecuted proposal keeps its original proposer. Returns false (treat as expired)
+ * if the read fails, so callers fall back to the existing vote-based logic.
+ */
+async function wasProposalExecutedOnChain(
+  client: PublicClient<Transport, Chain>,
+  proposalId: number,
+): Promise<boolean> {
+  try {
+    const [proposer] = (await client.readContract({
+      abi: governanceABI,
+      address: Addresses.Governance,
+      functionName: 'getProposal',
+      args: [BigInt(proposalId)],
+    })) as readonly [`0x${string}`, ...unknown[]];
+    return /^0x0+$/.test(proposer);
+  } catch (error) {
+    console.warn(
+      `  ⚠️ Could not read on-chain proposal data for ${proposalId}, treating as not-executed:`,
+      error,
+    );
+    return false;
   }
 }
 

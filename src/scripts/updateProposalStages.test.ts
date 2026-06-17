@@ -13,17 +13,36 @@ vi.mock('src/features/governance/utils/quorum', () => ({
   getOnChainQuorumRequired: (...args: unknown[]) => mockGetOnChainQuorumRequired(...args),
 }));
 
-function createMockClient(getProposalStageResponses: Record<number, ProposalStage>) {
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const NON_ZERO_PROPOSER = '0x000000000000000000000000000000000000dEaD';
+
+function createMockClient(
+  getProposalStageResponses: Record<number, ProposalStage>,
+  // Proposal ids whose on-chain data is zeroed (i.e. were executed & deleted).
+  // getProposal returns a zero-address proposer for these. Any id not listed
+  // returns a non-zero proposer (genuinely expired but still present on-chain).
+  executedOnChainIds: number[] = [],
+) {
   return {
     chain: { id: TEST_CHAIN_ID },
-    readContract: vi.fn().mockImplementation(({ args }: { args: [bigint] }) => {
-      const proposalId = Number(args[0]);
-      const stage = getProposalStageResponses[proposalId];
-      if (stage === undefined) {
-        throw new Error(`No mock response for proposal ${proposalId}`);
-      }
-      return Promise.resolve(stage);
-    }),
+    readContract: vi
+      .fn()
+      .mockImplementation(({ functionName, args }: { functionName: string; args: [bigint] }) => {
+        const proposalId = Number(args[0]);
+
+        if (functionName === 'getProposal') {
+          const proposer = executedOnChainIds.includes(proposalId)
+            ? ZERO_ADDRESS
+            : NON_ZERO_PROPOSER;
+          return Promise.resolve([proposer, 0n, 0n, 0n, '', 0n, false]);
+        }
+
+        const stage = getProposalStageResponses[proposalId];
+        if (stage === undefined) {
+          throw new Error(`No mock response for proposal ${proposalId}`);
+        }
+        return Promise.resolve(stage);
+      }),
   } as any;
 }
 
@@ -95,6 +114,22 @@ describe('updateProposalStages', () => {
     expect(await getProposalStage(100)).toBe(ProposalStage.Executed);
   });
 
+  it('self-heals via on-chain check: Execution → Executed when data is zeroed but event not yet ingested', async () => {
+    // Race scenario: proposal was just executed. getProposalStage returns Expiration
+    // (data zeroed), but the hourly backfill has NOT yet ingested ProposalExecuted
+    // into the events table. Without the on-chain fallback this would wrongly show
+    // "Expired" for up to ~1 hour.
+    await insertProposal({ id: 295, stage: ProposalStage.Execution, transactionCount: 3 });
+
+    // No ProposalExecuted event in DB; on-chain stage is Expiration but proposal
+    // data is zeroed (proposer == 0x0) → it was executed, not expired.
+    const client = createMockClient({ 295: ProposalStage.Expiration }, [295]);
+
+    await updateProposalStages(client);
+
+    expect(await getProposalStage(295)).toBe(ProposalStage.Executed);
+  });
+
   it('marks genuine expiration when no ProposalExecuted event exists', async () => {
     await insertProposal({ id: 50, stage: ProposalStage.Execution, transactionCount: 1 });
 
@@ -104,6 +139,24 @@ describe('updateProposalStages', () => {
     await updateProposalStages(client);
 
     expect(await getProposalStage(50)).toBe(ProposalStage.Expiration);
+  });
+
+  it('prefers Rejected over on-chain-executed when No > Yes even if data is zeroed', async () => {
+    // Safety guard: a proposal's contract slot can be zeroed when its dequeue
+    // index is reused. A losing proposal (No > Yes) can never have been executed,
+    // so it must be marked Rejected, not mislabeled Executed from the zeroed slot.
+    await insertProposal({ id: 65, stage: ProposalStage.Execution, transactionCount: 1 });
+    await database.insert((await import('src/db/schema')).votesTable).values([
+      { proposalId: 65, type: VoteType.Yes, count: 5n, chainId: TEST_CHAIN_ID },
+      { proposalId: 65, type: VoteType.No, count: 30n, chainId: TEST_CHAIN_ID },
+    ]);
+
+    // On-chain stage Expiration AND data zeroed (proposer 0x0) — but votes say lost.
+    const client = createMockClient({ 65: ProposalStage.Expiration }, [65]);
+
+    await updateProposalStages(client);
+
+    expect(await getProposalStage(65)).toBe(ProposalStage.Rejected);
   });
 
   it('marks as Rejected when expired with more No votes than Yes', async () => {
