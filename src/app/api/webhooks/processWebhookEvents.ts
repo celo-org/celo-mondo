@@ -13,7 +13,7 @@ import updateProposalsInDB from 'src/features/governance/updateProposalsInDB';
 import { IngestSource } from 'src/features/governance/utils/events/ingest';
 import { decodeAndPrepareProposalEvent } from 'src/features/governance/utils/events/proposal';
 import { decodeAndPrepareVoteEvent } from 'src/features/governance/utils/events/vote';
-import { celoPublicClient } from 'src/utils/client';
+import { celoArchiveClient, celoPublicClient } from 'src/utils/client';
 import { GetContractEventsParameters } from 'viem';
 
 type GovernanceEventName = Exclude<
@@ -62,9 +62,11 @@ export async function processWebhookEvents(
       // Process MultiSig events - use backfill result to capture ALL new transactionIds,
       // not just the one from the webhook event. This prevents missed approvals when the
       // backfill advances progress past events that the webhook didn't specifically trigger for.
+      // Backfill scans event history via eth_getLogs over wide block ranges, which
+      // public forno rejects ("query exceeds range") — use the archive node.
       const backfillResult = await fetchHistoricalMultiSigEventsAndSaveToDBProgressively(
         event.name,
-        celoPublicClient,
+        celoArchiveClient,
         { source },
       );
 
@@ -79,9 +81,11 @@ export async function processWebhookEvents(
     } else {
       // Process Governance events - capture backfill proposalIds to ensure we update
       // proposals that the backfill discovered (not just the webhook event itself).
+      // Backfill scans event history via eth_getLogs over wide block ranges, which
+      // public forno rejects ("query exceeds range") — use the archive node.
       const backfillProposalIds = await fetchHistoricalEventsAndSaveToDBProgressively(
         event.name,
-        celoPublicClient,
+        celoArchiveClient,
         undefined,
         source,
       );

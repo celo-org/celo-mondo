@@ -58,12 +58,13 @@ vi.mock('src/features/governance/utils/events/vote', () => ({
 }));
 
 const mockReadContract = vi.fn();
-vi.mock('src/utils/client', () => ({
-  celoPublicClient: {
+vi.mock('src/utils/client', () => {
+  const client = {
     chain: { id: 42220 },
     readContract: (...args: unknown[]) => mockReadContract(...args),
-  },
-}));
+  };
+  return { celoPublicClient: client, celoArchiveClient: client };
+});
 
 const mockSendAlertToSlack = vi.fn().mockResolvedValue(undefined);
 vi.mock('src/config/slackbot', () => ({
