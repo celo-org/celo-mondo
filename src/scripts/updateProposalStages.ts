@@ -135,17 +135,17 @@ async function updateProposalStages() {
           continue;
         }
 
-        // Get the proposal details to fetch CGP number
+        // Get the proposal details to fetch the CGP number.
         const proposal = activeProposals.find((p) => p.id === update.id);
-        if (!proposal || !proposal.cgp) {
-          console.log(`⚠️  Skipping proposal ${update.id}: no CGP number found`);
+        if (!proposal) {
+          console.log(`⚠️  Skipping proposal ${update.id}: not found in active proposals`);
           continue;
         }
 
         const status = update.stage === ProposalStage.Rejected ? 'REJECTED' : 'EXPIRED';
 
         await triggerGovernanceRepoStatusUpdate({
-          cgpNumber: Number(proposal.cgp),
+          cgpNumber: proposal.cgp,
           onchainId: update.id,
           status,
         });
