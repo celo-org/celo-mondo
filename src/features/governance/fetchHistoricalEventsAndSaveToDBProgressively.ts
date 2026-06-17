@@ -5,6 +5,11 @@ import { resolveAddress } from '@celo/actions';
 import { sql } from 'drizzle-orm';
 import database from 'src/config/database';
 import { blocksProcessedTable, eventsTable } from 'src/db/schema';
+import {
+  IngestSource,
+  ingestedViaConflictSet,
+  withIngestionMetadata,
+} from 'src/features/governance/utils/events/ingest';
 import { assertEvent } from 'src/features/governance/utils/votes';
 import {
   Chain,
@@ -41,6 +46,7 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
   eventName: string,
   client: PublicClient<Transport, Chain>,
   fromBlock?: bigint,
+  source: IngestSource = 'cron',
 ): Promise<bigint[]> {
   if (!assertEvent(VALID_EVENTS, eventName)) {
     console.info('Not a valid event', eventName);
@@ -93,8 +99,11 @@ export default async function fetchHistoricalEventsAndSaveToDBProgressively(
         );
         const { count } = await database
           .insert(eventsTable)
-          .values(events.map((event) => ({ ...event, chainId: client.chain.id })))
-          .onConflictDoNothing();
+          .values(withIngestionMetadata(events, client.chain.id, source))
+          .onConflictDoUpdate({
+            target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+            set: ingestedViaConflictSet,
+          });
         console.log({ inserts: count });
       }
     } catch (e) {

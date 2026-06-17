@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { SkeletonBlock, SkeletonText } from 'src/components/animation/Skeleton';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { BackLink } from 'src/components/buttons/BackLink';
@@ -16,18 +17,17 @@ import {
 } from 'src/features/governance/components/ProposalVoteButtons';
 import {
   PastProposalVoteChart,
-  ProposalQuorumChart,
   ProposalVoteChart,
+  ProposalVoteRequirements,
 } from 'src/features/governance/components/ProposalVoteChart';
 import { ProposalVotersTable } from 'src/features/governance/components/ProposalVotersTable';
 import { MergedProposalData, findProposal } from 'src/features/governance/governanceData';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
-import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
 import { trimToLength } from 'src/utils/strings';
-import { getHumanEndTime } from 'src/utils/time';
+import { ProposalTimeline } from './ProposalTimeline';
 import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
@@ -38,7 +38,7 @@ export function Proposal({ id }: { id: string }) {
   usePageInvariant(isLoading || propData, '/governance', 'Proposal not found');
 
   if (!propData) {
-    return <FullWidthSpinner>Loading proposals</FullWidthSpinner>;
+    return <ProposalDetailSkeleton />;
   }
 
   return (
@@ -83,7 +83,11 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
 
       <div className={`flex flex-col gap-4 pb-4 ${styles.proposal}`}>
         <ErrorBoundaryInline>
-          <ProposalTransactions proposalId={id} numTransactions={proposal?.numTransactions} />
+          <ProposalTransactions
+            proposalId={id}
+            numTransactions={proposal?.numTransactions}
+            onchainProposalId={proposal?.id}
+          />
         </ErrorBoundaryInline>
         {content && <div dangerouslySetInnerHTML={{ __html: content }} className="space-y-4"></div>}
       </div>
@@ -91,17 +95,72 @@ function ProposalContent({ propData, id }: { propData: MergedProposalData; id: s
   );
 }
 
+function ProposalDetailSkeleton() {
+  return (
+    <>
+      {/* Left panel — mirrors ProposalContent */}
+      <div className="min-w-0 space-y-3 lg:max-w-4xl lg:flex-1">
+        <SkeletonText className="w-32" />
+        <SkeletonBlock className="h-8 w-3/4" />
+        <div className="flex items-center space-x-2">
+          <SkeletonBlock className="h-5 w-16 rounded-full" />
+          <SkeletonBlock className="h-5 w-14 rounded-full" />
+          <SkeletonBlock className="h-5 w-20 rounded-full" />
+          <SkeletonText className="w-28" />
+        </div>
+        <SkeletonBlock className="h-12 w-full" />
+        <div className="space-y-3 pt-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <SkeletonText key={i} className={i % 3 === 2 ? 'w-2/3' : 'w-full'} />
+          ))}
+        </div>
+      </div>
+
+      {/* Right panel — mirrors ProposalChainData */}
+      <CollapsibleResponsiveMenu defaultCollapsed>
+        <div className="w-full space-y-4 xl:w-[26rem]">
+          <div className="space-y-4 border-taupe-300 p-3 lg:border">
+            {/* Votes */}
+            <div className="space-y-2">
+              <SkeletonBlock className="h-7 w-16" />
+              <div className="space-y-1.5">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonBlock key={i} className="h-7 w-full" />
+                ))}
+              </div>
+            </div>
+            {/* Vote Requirements */}
+            <div className="space-y-3 border-t border-taupe-300 pt-2">
+              <SkeletonBlock className="h-7 w-36" />
+              <div className="space-y-1">
+                <SkeletonText className="w-20" />
+                <SkeletonText className="w-48" />
+                <SkeletonBlock className="h-5 w-full" />
+              </div>
+              <div className="space-y-1">
+                <SkeletonText className="w-20" />
+                <SkeletonText className="w-48" />
+                <SkeletonBlock className="h-5 w-full" />
+              </div>
+            </div>
+            {/* Timeline */}
+            <div className="space-y-3 py-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <SkeletonBlock className="h-3 w-3 flex-shrink-0 rounded-full" />
+                  <SkeletonText className={i % 2 === 0 ? 'w-24' : 'w-32'} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CollapsibleResponsiveMenu>
+    </>
+  );
+}
+
 function ProposalChainData({ propData }: { propData: MergedProposalData }) {
-  const {
-    id: proposalId,
-    stage,
-    history,
-    queuedAt,
-    dequeuedAt,
-    executedAt,
-    transactionCount,
-  } = propData;
-  const { quorumMet } = useIsProposalPassingQuorum(propData);
+  const { id: proposalId, stage, history, transactionCount } = propData;
 
   if (stage === ProposalStage.None) return null;
 
@@ -111,18 +170,8 @@ function ProposalChainData({ propData }: { propData: MergedProposalData }) {
         {stage === ProposalStage.Queued && <ProposalUpvoteButton proposalId={proposalId} />}
         {stage === ProposalStage.Referendum && <ProposalVoteButtons proposalId={proposalId} />}
         {stage >= ProposalStage.Approval && <ProposalVoteChart propData={propData} />}
-        {stage >= ProposalStage.Approval && <ProposalQuorumChart propData={propData} />}
-        <div className="max-w-[340px] space-y-2">
-          <div className="text-sm text-taupe-600">
-            {getHumanEndTime({
-              stage,
-              queuedAt,
-              dequeuedAt,
-              executedAt,
-              quorumMet,
-            })}
-          </div>
-        </div>
+        {stage >= ProposalStage.Approval && <ProposalVoteRequirements propData={propData} />}
+        <ProposalTimeline propData={propData} />
       </div>
       {stage === ProposalStage.Queued && (
         <div className="border-taupe-300 p-3 lg:block lg:border">

@@ -10,9 +10,9 @@ import {
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
-import { FullWidthSpinner } from 'src/components/animation/Spinner';
+import { SkeletonBlock, SkeletonCircle } from 'src/components/animation/Skeleton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderButton } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
@@ -27,6 +27,7 @@ import { TransactionFlowType } from 'src/features/transactions/TransactionFlowTy
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
 
@@ -34,6 +35,7 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [columnVisibility, setColumnVisibility] = useState({});
   const [sorting, setSorting] = useState<SortingState>([{ id: 'delegatedToBalance', desc: true }]);
+  const trackEvent = useTrackEvent();
   const onSortingChange = (s: SortingState | ((prev: SortingState) => SortingState)) => {
     setSorting(s);
   };
@@ -58,6 +60,21 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
     action: DelegateActionType.Delegate,
   });
 
+  const handleDelegateButtonClick = useCallback(() => {
+    trackEvent('delegate_button_clicked', {});
+    showTxModal();
+  }, [trackEvent, showTxModal]);
+
+  const handleDelegateeClick = useCallback(
+    (delegateeAddress: string, delegateeName?: string) => {
+      trackEvent('delegatee_viewed', {
+        delegateeAddress,
+        delegateeName,
+      });
+    },
+    [trackEvent],
+  );
+
   // Set up responsive column visibility
   const isMobile = useIsMobile();
   useEffect(() => {
@@ -70,22 +87,24 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
   const mode = useStakingMode();
   return (
     <div>
-      <div className="flex justify-between">
-        <TabHeaderButton isActive={true} count={rows.length}>
-          Delegates
-        </TabHeaderButton>
-        <div className="flex flex-row gap-2">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full md:w-auto">
+          <TabHeaderButton isActive={true} count={rows.length}>
+            Delegates
+          </TabHeaderButton>
+        </div>
+        <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
           {mode.mode === 'CELO' && (
             <SolidButton
-              className="btn-neutral h-full text-xs"
-              onClick={() => showTxModal()}
+              className="btn-neutral flex w-full justify-center text-xs sm:w-auto"
+              onClick={handleDelegateButtonClick}
             >{`️🗳️ Delegate voting power`}</SolidButton>
           )}
           <SearchField
             value={searchQuery}
             setValue={setSearchQuery}
             placeholder="Search delegates"
-            className="w-full text-sm md:w-64"
+            className="w-full text-sm sm:w-64"
           />
         </div>
       </div>
@@ -118,7 +137,11 @@ export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
             <tr key={row.id} className={classNames.tr}>
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={classNames.td}>
-                  <Link href={`/delegate/${row.original.address}`} className="flex px-4 py-4">
+                  <Link
+                    href={`/delegate/${row.original.address}`}
+                    className="flex items-center px-2 py-4 sm:px-4"
+                    onClick={() => handleDelegateeClick(row.original.address, row.original.name)}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </Link>
                 </td>
@@ -204,16 +227,72 @@ function useTableRows({
 
 const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
-  th: 'border-y border-taupe-300 px-4 py-3  last:pr-3 md:min-w-32 xs:max-w-16',
-  td: 'relative border-y border-taupe-300 text-nowrap',
-  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 text-nowrap',
+  th: 'border-y border-taupe-300 px-2 sm:px-4 py-3 last:pr-3 md:min-w-32 xs:max-w-16',
+  td: 'relative border-y border-taupe-300 sm:whitespace-nowrap',
+  tdTopGroups: 'relative border-y border-taupe-300 px-2 sm:px-4 py-4 sm:whitespace-nowrap',
   tdDesktopOnly: 'hidden md:table-cell',
 };
+function DelegateeTableSkeleton() {
+  return (
+    <div>
+      <div className="flex justify-between">
+        <SkeletonBlock className="h-6 w-24" />
+        <div className="flex flex-row gap-2">
+          <SkeletonBlock className="h-10 w-full rounded-full md:w-64" />
+        </div>
+      </div>
+      <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
+        <thead>
+          <tr>
+            {['w-20', 'w-16', 'w-12', 'w-20'].map((w, i) => (
+              <th
+                key={i}
+                className={clsx(classNames.th, (i === 1 || i === 2) && 'hidden md:table-cell')}
+              >
+                <SkeletonBlock className={`h-4 ${w}`} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <tr key={i}>
+              <td className={classNames.td}>
+                <div className="flex items-center space-x-2 px-4 py-4">
+                  <SkeletonCircle size={34} />
+                  <SkeletonBlock className="h-5 w-28" />
+                </div>
+              </td>
+              <td className={clsx(classNames.td, 'hidden md:table-cell')}>
+                <div className="flex space-x-2 px-4 py-4">
+                  <SkeletonBlock className="h-5 w-16 rounded-full" />
+                  <SkeletonBlock className="h-5 w-12 rounded-full" />
+                </div>
+              </td>
+              <td className={clsx(classNames.td, 'hidden md:table-cell')}>
+                <div className="flex space-x-3 px-4 py-4">
+                  <SkeletonCircle size={20} />
+                  <SkeletonCircle size={20} />
+                </div>
+              </td>
+              <td className={classNames.td}>
+                <div className="px-4 py-4">
+                  <SkeletonBlock className="h-5 w-24" />
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function DelegateeTableSection() {
   const { delegatees } = useDelegatees();
 
   if (!delegatees) {
-    return <FullWidthSpinner>Loading delegate data</FullWidthSpinner>;
+    return <DelegateeTableSkeleton />;
   }
 
   return (

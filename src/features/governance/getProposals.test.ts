@@ -2,7 +2,7 @@ import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
 import { getProposals } from 'src/features/governance/getProposals';
 import { ProposalStage } from 'src/features/governance/types';
-import { TEST_CHAIN_ID } from 'src/test/database';
+import { client, TEST_CHAIN_ID } from 'src/test/database';
 import { describe, expect, it } from 'vitest';
 
 describe('getProposals', () => {
@@ -29,6 +29,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -95,6 +96,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -131,6 +133,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -163,6 +166,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -228,6 +232,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -264,6 +269,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -296,6 +302,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,
@@ -332,6 +339,33 @@ describe('getProposals', () => {
     `);
   });
 
+  it('handles missing linked proposals gracefully (orphaned pastId)', async () => {
+    // Insert a proposal with no pastId initially
+    await database.insert(proposalsTable).values([
+      {
+        id: 5,
+        author: 'test author',
+        cgp: 5,
+        chainId: TEST_CHAIN_ID,
+        stage: ProposalStage.Referendum,
+        timestamp: 1753277607,
+        title: 'test 5',
+      },
+    ]);
+
+    // Use raw SQL to set pastId to a non-existent proposal, bypassing FK constraint
+    await client.query('ALTER TABLE proposals DISABLE TRIGGER ALL');
+    await client.query('UPDATE proposals SET "pastId" = 999 WHERE id = 5');
+    await client.query('ALTER TABLE proposals ENABLE TRIGGER ALL');
+
+    const proposals = await getProposals(42220);
+    expect(proposals).toHaveLength(1);
+    expect(proposals[0].id).toBe(5);
+    expect(proposals[0].pastId).toBe(999);
+    // History should be empty since the linked proposal doesn't exist
+    expect(proposals[0].history).toEqual([]);
+  });
+
   it('links history properly despite loops on itself (human typos)', async () => {
     await database.insert(proposalsTable).values([
       {
@@ -356,6 +390,7 @@ describe('getProposals', () => {
           "cgpUrl": null,
           "cgpUrlRaw": null,
           "chainId": 42220,
+          "constitutionThreshold": null,
           "deposit": null,
           "dequeuedAt": null,
           "dequeuedAtBlockNumber": null,

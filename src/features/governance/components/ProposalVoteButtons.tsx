@@ -11,12 +11,21 @@ import { VoteAmounts, VoteType } from 'src/features/governance/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
   const { isDequeueReady } = useIsDequeueReady();
+  const trackEvent = useTrackEvent();
 
   const showTxModal = useTransactionModal(TransactionFlowType.Upvote, { proposalId });
+
+  const onUpvoteClick = useCallback(() => {
+    if (proposalId) {
+      trackEvent('upvote_button_clicked', { proposalId });
+    }
+    showTxModal();
+  }, [proposalId, trackEvent, showTxModal]);
 
   return (
     <>
@@ -26,8 +35,9 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
       </div>
       <SolidButton
         className="btn-neutral w-full"
-        onClick={() => showTxModal()}
+        onClick={onUpvoteClick}
         disabled={isDequeueReady}
+        data-testid="upvote-button"
       >{`➕ Upvote`}</SolidButton>
       {isDequeueReady && (
         <p className="max-w-[20rem] text-xs text-gray-600">
@@ -43,6 +53,7 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
   const { votingRecord } = useGovernanceVoteRecord(address, proposalId);
   const { stCELOVotingRecord } = useStCELOVoteRecord(address, proposalId);
   const { mode } = useStakingMode();
+  const trackEvent = useTrackEvent();
 
   const isVoting = useCallback(
     (vote: keyof VoteAmounts) => {
@@ -58,6 +69,9 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
 
   const showTxModal = useTransactionModal();
   const onClick = (vote: VoteType) => {
+    if (proposalId) {
+      trackEvent('vote_button_clicked', { proposalId, voteType: vote });
+    }
     showTxModal(TransactionFlowType.Vote, { proposalId, vote });
   };
 
@@ -71,14 +85,17 @@ export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
         <SolidButton
           className={clsx('btn-neutral grow', isVoting(VoteType.Yes) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.Yes)}
+          data-testid="vote-yes-button"
         >{`👍 Yes`}</SolidButton>
         <SolidButton
           className={clsx('btn-neutral grow', isVoting(VoteType.No) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.No)}
+          data-testid="vote-no-button"
         >{`👎 No`}</SolidButton>
         <SolidButton
           className={clsx('btn-neutral grow', isVoting(VoteType.Abstain) && 'bg-accent text-white')}
           onClick={() => onClick(VoteType.Abstain)}
+          data-testid="vote-abstain-button"
         >{`⚪ Abstain`}</SolidButton>
       </div>
     </>

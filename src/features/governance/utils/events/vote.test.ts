@@ -25,7 +25,7 @@ describe('decodeAndPrepareVoteEvent', () => {
     `);
   });
 
-  it('throws on malformed events', async () => {
+  it('returns empty array on malformed events instead of throwing', async () => {
     const mockEvent: Event = {
       address: '0x0',
       args: {},
@@ -36,10 +36,11 @@ describe('decodeAndPrepareVoteEvent', () => {
       topics: ['0x'],
       transactionHash: '0x',
     };
-    await expect(
-      decodeAndPrepareVoteEvent('ProposalVoted', mockEvent, 42220),
-    ).rejects.toMatchInlineSnapshot(
-      `[Error: Couldnt decode the vote event: {"address":"0x0","args":{},"blockNumber":"123","chainId":42220,"data":"0x","eventName":"ProposalVoted","topics":["0x"],"transactionHash":"0x"}]`,
+    const errorSpy = vi.spyOn(console, 'error').mockReturnValueOnce();
+    await expect(decodeAndPrepareVoteEvent('ProposalVoted', mockEvent, 42220)).resolves.toEqual([]);
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Could not decode vote event, skipping:',
+      expect.any(String),
     );
   });
 

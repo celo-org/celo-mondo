@@ -1,7 +1,7 @@
 import { ImageOrIdenticon } from 'src/components/icons/Identicon';
 import { ZERO_ADDRESS } from 'src/config/consts';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
-import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/desciptors';
+import { DEFAULT_STRATEGY } from 'src/features/staking/stCELO/descriptors';
 import { shortenAddress } from 'src/utils/addresses';
 
 export function ValidatorGroupLogo({ address, size }: { address: Address; size: number }) {

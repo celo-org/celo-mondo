@@ -6,18 +6,16 @@ import { queryCeloBlockscoutLogs } from 'src/features/explorers/blockscout';
 import { TransactionLog } from 'src/features/explorers/types';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { logger } from 'src/utils/logger';
-import { useStakingMode } from 'src/utils/useStakingMode';
 import { decodeEventLog, encodeEventTopics, PublicClient, TransactionReceipt } from 'viem';
 import { useReadContract } from 'wagmi';
 
 export function useStrategy(address?: Address) {
-  const { mode } = useStakingMode();
   const { isLoading, isError, error, data, refetch } = useReadContract({
     ...ManagerABI,
     functionName: 'getAddressStrategy',
     args: [address!],
     query: {
-      enabled: Boolean(address) && mode === 'stCELO',
+      enabled: Boolean(address),
     },
   });
 

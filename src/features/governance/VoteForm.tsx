@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Form, Formik, FormikErrors } from 'formik';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { RadioField } from 'src/components/input/RadioField';
@@ -18,6 +19,7 @@ import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { isNullish } from 'src/utils/typeof';
 import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { useAccount } from 'wagmi';
 
 const initialValues: VoteFormValues = {
@@ -47,11 +49,20 @@ export function VoteForm({
     votingAccount,
     defaultFormValues?.proposalId,
   );
+  const trackEvent = useTrackEvent();
+  const queryClient = useQueryClient();
 
   const { getNextTx, isPlanStarted, onTxSuccess } = useTransactionPlan<VoteFormValues>({
     createTxPlan: (v) => getVoteTxPlan(v, dequeue || [], mode, stCeloVotingPower),
-    onStepSuccess: () => (mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord()),
+    onStepSuccess: () => {
+      mode === 'CELO' ? refetchVoteRecord() : refetchStCELOVoteRecord();
+      void queryClient.invalidateQueries({ queryKey: ['useProposalVoteTotals'] });
+    },
     onPlanSuccess: (v, r) => {
+      trackEvent('vote_completed', {
+        voteType: v.vote,
+        proposalId: v.proposalId,
+      });
       const properties = [
         { label: 'Vote', value: v.vote },
         { label: 'Proposal', value: `#${v.proposalId}` },

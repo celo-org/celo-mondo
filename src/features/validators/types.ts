@@ -12,6 +12,7 @@ export interface ValidatorGroup {
   lastSlashed: number | null; // timestamp
   members: AddressTo<Validator>;
   score: number;
+  validStCeloGroup?: boolean;
 }
 
 export enum ValidatorStatus {

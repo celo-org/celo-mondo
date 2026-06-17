@@ -1,10 +1,16 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
 import { ColoredChartDataItem, StackedBarChart } from 'src/components/charts/StackedBarChart';
+import { HelpIcon } from 'src/components/icons/HelpIcon';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { StageBadge } from 'src/features/governance/components/StageBadge';
 import { MergedProposalData } from 'src/features/governance/governanceData';
-import { useIsProposalPassingQuorum } from 'src/features/governance/hooks/useProposalQuorum';
+import {
+  getMaxThresholdInfo,
+  getThresholdLabel,
+  useConstitutionThreshold,
+  useIsProposalPassingQuorum,
+} from 'src/features/governance/hooks/useProposalQuorum';
 import {
   useHistoricalProposalVoteTotals,
   useProposalVoteTotals,
@@ -104,9 +110,13 @@ function ViewVotes({
           <div key={v} className="relative text-xs">
             <StackedBarChart data={[voteBarChartData[v]]} showBorder={false} height="h-7" />
             <span className="absolute left-2 top-1/2 -translate-y-1/2">{toTitleCase(v)}</span>
-            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
-              <span className="text-gray-500">{formatNumberString(voteBarChartData[v].value)}</span>
-              <span>{voteBarChartData[v].percentage?.toFixed(0) + '%'}</span>
+            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-baseline gap-1.5">
+              <span className="text-sm font-medium">
+                {formatNumberString(voteBarChartData[v].value)}
+              </span>
+              <span className="text-taupe-500 w-[4ch] text-right text-[10px]">
+                {voteBarChartData[v].percentage?.toFixed(0)}%
+              </span>
             </div>
           </div>
         ))}
@@ -115,19 +125,34 @@ function ViewVotes({
   );
 }
 
-export function ProposalQuorumChart({ propData }: { propData: MergedProposalData }) {
+const THRESHOLD_HELP_TEXT =
+  'The constitution threshold defines the minimum Yes/(Yes+No) ratio for a proposal to pass. Abstain votes are excluded. Different operations have different thresholds: 60% for low-risk, up to 90% for critical changes like governance parameters.';
+
+export function ProposalVoteRequirements({ propData }: { propData: MergedProposalData }) {
+  const isPast = propData.stage > ProposalStage.Referendum;
+
+  return (
+    <div className="space-y-3 border-t border-taupe-300 pt-2">
+      <h2 className="font-serif text-2xl">Vote Requirements</h2>
+      <QuorumBar propData={propData} isPast={isPast} />
+      <ThresholdBar propData={propData} isPast={isPast} />
+    </div>
+  );
+}
+
+function QuorumBar({ propData, isPast }: { propData: MergedProposalData; isPast: boolean }) {
   const { votes } = useProposalVoteTotals(propData);
   const { isLoading, quorumMet, quorumVotesRequired } = useIsProposalPassingQuorum(propData);
   const yesVotes = votes?.[VoteType.Yes] || 0n;
   const abstainVotes = votes?.[VoteType.Abstain] || 0n;
   const quorumMeetingVotes = yesVotes + abstainVotes;
 
-  const quorumBarChartData = useMemo(
+  const barData = useMemo(
     () => [
       {
         label: 'Yes Votes',
         value: fromWei(yesVotes),
-        percentage: isLoading ? 0 : percent(yesVotes, quorumVotesRequired || 0n),
+        percentage: isLoading ? 0 : percent(yesVotes, quorumVotesRequired || 1n),
         color: quorumMet ? Color.Mint : Color.Lilac,
       },
       {
@@ -140,38 +165,96 @@ export function ProposalQuorumChart({ propData }: { propData: MergedProposalData
     [yesVotes, isLoading, quorumVotesRequired, quorumMet, abstainVotes],
   );
 
-  const isPastVotingStage = propData.stage > ProposalStage.Referendum;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-baseline justify-between">
+        <span className="text-sm font-medium">Quorum</span>
+        {!isLoading && <PassFailLabel passing={quorumMet} isPast={isPast} />}
+      </div>
+      <span className="text-xs text-taupe-600">
+        {isLoading
+          ? '...loading...'
+          : `${formatNumberString(quorumMeetingVotes, 0, true)} Votes of ${formatNumberString(quorumVotesRequired, 0, true)} Required`}
+      </span>
+      <StackedBarChart data={barData} showBorder={true} height="h-5" className="bg-white" />
+    </div>
+  );
+}
+
+function ThresholdBar({ propData, isPast }: { propData: MergedProposalData; isPast: boolean }) {
+  const { votes } = useProposalVoteTotals(propData);
+
+  // Prefer DB-stored threshold; fall back to on-chain fetch
+  const dbThreshold = propData.constitutionThreshold
+    ? parseFloat(propData.constitutionThreshold)
+    : null;
+  const shouldFetchOnChain = dbThreshold == null;
+  const { data: onChainThresholds } = useConstitutionThreshold(
+    shouldFetchOnChain ? propData.proposal?.id : undefined,
+  );
+
+  const thresholdInfo = dbThreshold
+    ? { maxThreshold: dbThreshold, ...getThresholdLabel(dbThreshold) }
+    : onChainThresholds
+      ? getMaxThresholdInfo(onChainThresholds)
+      : null;
+
+  // Backfill: trigger server-side threshold computation and DB storage
+  const backfilledRef = useRef(false);
+  useEffect(() => {
+    if (onChainThresholds && propData.proposal?.id && !backfilledRef.current) {
+      backfilledRef.current = true;
+      fetch('/api/governance/backfill-threshold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ proposalId: propData.proposal.id }),
+      }).catch(() => {});
+    }
+  }, [onChainThresholds, propData.proposal?.id]);
+
+  const yesVotes = votes?.[VoteType.Yes] || 0n;
+  const noVotes = votes?.[VoteType.No] || 0n;
+  const totalYesNo = yesVotes + noVotes;
+  const yesPct = totalYesNo > 0n ? percent(yesVotes, totalYesNo) : 0;
+  const thresholdPct = thresholdInfo ? thresholdInfo.maxThreshold * 100 : 50;
+  const isPassing = yesPct >= thresholdPct;
+
+  const barData = useMemo(
+    () => [
+      {
+        label: 'Yes',
+        value: yesPct,
+        percentage: thresholdPct > 0 ? Math.min((yesPct / thresholdPct) * 100, 100) : 0,
+        color: isPassing ? Color.Mint : Color.Lilac,
+      },
+    ],
+    [yesPct, thresholdPct, isPassing],
+  );
 
   return (
-    <div className="space-y-2 border-t border-taupe-300 pt-2">
-      <h2 className="font-serif text-2xl">
-        Quorum
-        <em>
-          {isLoading
-            ? ''
-            : quorumMet
-              ? ` — Pass${tense(isPastVotingStage)}`
-              : ` — Fail${tense(isPastVotingStage)}`}
-        </em>
-      </h2>
-      {isLoading}
-      <span className="py-2 text-sm  text-taupe-600">
-        {isLoading ? (
-          '...loading...'
-        ) : (
-          <>
-            {formatNumberString(quorumMeetingVotes, 0, true)} Votes <em>of</em>&nbsp;&nbsp;
-            {formatNumberString(quorumVotesRequired, 0, true)}&nbsp; Required
-          </>
-        )}
+    <div className="space-y-1">
+      <div className="flex items-baseline justify-between">
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-medium">Threshold</span>
+          <HelpIcon text={THRESHOLD_HELP_TEXT} size={14} type="tooltip" />
+        </div>
+        {thresholdInfo && <PassFailLabel passing={isPassing} isPast={isPast} />}
+      </div>
+      <span className="text-xs text-taupe-600">
+        {!thresholdInfo
+          ? '...loading...'
+          : `${yesPct.toFixed(1)}% Yes of ${thresholdInfo.percentage} Required`}
       </span>
-      <StackedBarChart
-        data={quorumBarChartData}
-        showBorder={true}
-        height="h-6"
-        className="bg-white"
-      />
+      <StackedBarChart data={barData} showBorder={true} height="h-5" className="bg-white" />
     </div>
+  );
+}
+
+function PassFailLabel({ passing, isPast }: { passing: boolean; isPast: boolean }) {
+  return (
+    <em className={passing ? 'text-sm text-green-700' : 'text-sm text-red-500'}>
+      {passing ? `Pass${tense(isPast)}` : `Fail${tense(isPast)}`}
+    </em>
   );
 }
 

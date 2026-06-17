@@ -1,6 +1,7 @@
 import { useConnectModal } from '@rainbow-me/rainbowkit';
 import clsx from 'clsx';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { OutlineButton, OutlineButtonClassName } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Identicon } from 'src/components/icons/Identicon';
@@ -15,16 +16,34 @@ import { shortenAddress } from 'src/utils/addresses';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { logger } from 'src/utils/logger';
 import { useAddressToLabel } from 'src/utils/useAddressToLabel';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useIsMiniPay } from 'src/utils/useIsMiniPay';
+import { useStakingMode } from 'src/utils/useStakingMode';
+import { useTrackEvent } from 'src/utils/useTrackEvent';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
 export function WalletDropdown() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { disconnectAsync } = useDisconnect();
+  const { connect, connectors } = useConnect();
+  const isMiniPay = useIsMiniPay();
+  const trackEvent = useTrackEvent();
+  const { mode } = useStakingMode();
+  const previousIsConnected = useRef(isConnected);
+
+  useEffect(() => {
+    if (isConnected && !previousIsConnected.current && address) {
+      trackEvent('wallet_connected', {
+        walletType: connector?.name,
+      });
+    }
+    previousIsConnected.current = isConnected;
+  }, [isConnected, trackEvent, address, connector]);
 
   const onDisconnect = async () => {
     try {
+      trackEvent('wallet_disconnected', {});
       await disconnectAsync();
     } catch (err) {
       logger.error('Error disconnecting wallet', err);
@@ -33,12 +52,31 @@ export function WalletDropdown() {
     }
   };
 
+  const onConnect = () => {
+    openConnectModal?.();
+  };
+
+  useEffect(() => {
+    if (isMiniPay && !isConnected && !address) {
+      const injectedConnector = connectors.find(
+        (c) => c.id === 'injected' || c.name.toLowerCase().includes('injected'),
+      );
+      if (injectedConnector) {
+        connect({ connector: injectedConnector });
+      }
+    }
+  }, [isMiniPay, isConnected, address, connectors, connect]);
+
+  if (isMiniPay && (!address || !isConnected)) {
+    return null;
+  }
+
   return (
     <div className="relative flex justify-end">
       {address && isConnected ? (
         <DropdownModal
           button={() => (
-            <div className="flex items-center justify-center space-x-1">
+            <div className="ph-no-capture flex items-center justify-center space-x-1">
               <Identicon address={address} size={26} />
               <AddressLabel address={address} />
             </div>
@@ -50,7 +88,10 @@ export function WalletDropdown() {
           modalClasses="p-4"
         />
       ) : (
-        <SolidButton className="bg-primary" onClick={openConnectModal}>
+        <SolidButton
+          className={mode === 'stCELO' ? 'bg-purple-300 text-white' : 'bg-yellow-500'}
+          onClick={onConnect}
+        >
           Connect
         </SolidButton>
       )}
@@ -67,6 +108,7 @@ function DropdownContent({
   disconnect: () => any;
   close: () => void;
 }) {
+  const isMiniPay = useIsMiniPay();
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
   const { balance: walletBalance } = useBalance(address);
   const { votingPower } = useGovernanceVotingPower(signingFor);
@@ -82,7 +124,7 @@ function DropdownContent({
 
   return (
     <div className="flex min-w-[18rem] flex-col items-center space-y-3">
-      <div className="flex flex-col items-center">
+      <div className="ph-no-capture flex flex-col items-center">
         <Identicon address={address} size={34} />
         <button title="Click to copy" onClick={onClickCopy} className="flex flex-col text-sm">
           <AddressLabel address={address} hiddenIfNoLabel shortener={() => shortAddress} />
@@ -128,11 +170,16 @@ function DropdownContent({
           value={totalRewards}
         />
       </div>
-      <div className="flex w-full items-center justify-between space-x-4">
+      <div
+        className={clsx(
+          'flex w-full items-center space-x-4',
+          isMiniPay ? 'justify-center' : 'justify-between',
+        )}
+      >
         <Link href="/account">
           <OutlineButton onClick={close}>My Account</OutlineButton>
         </Link>
-        <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>
+        {!isMiniPay && <OutlineButton onClick={disconnect}>Disconnect</OutlineButton>}
       </div>
     </div>
   );
@@ -156,7 +203,9 @@ function ValueRow({
       <div className="flex flex-row justify-between">
         <label className="text-sm">{label} </label>
         {address && (
-          <span className="font-mono text-xs text-taupe-600">&hellip;{address?.slice(-4)}</span>
+          <span className="ph-no-capture font-mono text-xs text-taupe-600">
+            &hellip;{address?.slice(-4)}
+          </span>
         )}
       </div>
       <Amount value={value} valueWei={valueWei} className="text-xl" />

@@ -479,9 +479,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "isPassing": {
-          "name": "isPassing",
-          "type": "boolean",
+        "quorumVotesRequired": {
+          "name": "quorumVotesRequired",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": false
         }

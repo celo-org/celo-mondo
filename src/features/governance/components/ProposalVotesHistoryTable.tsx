@@ -18,7 +18,7 @@ export function ProposalVotesHistoryTable() {
     return <FullWidthSpinner>Loading historical data</FullWidthSpinner>;
   }
 
-  if (!objLength(proposalToVotes!)) {
+  if (!proposalToVotes || !objLength(proposalToVotes)) {
     return (
       <HeaderAndSubheader
         header="No history available"
@@ -34,7 +34,7 @@ export function ProposalVotesHistoryTable() {
 
   return (
     <div className="mt-4 flex flex-col gap-2">
-      {Object.entries(proposalToVotes!)
+      {Object.entries(proposalToVotes ?? {})
         .sort(([a], [b]) => parseInt(b) - parseInt(a))
         .map(([id, votes]) => (
           <PersonalizedProposalCard

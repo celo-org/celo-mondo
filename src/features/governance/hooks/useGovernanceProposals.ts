@@ -50,7 +50,8 @@ export function useGovernanceVotes() {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useGovernanceVotes', publicClient],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useGovernanceVotes'],
     queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching governance votes');
@@ -76,7 +77,8 @@ export function useGovernanceProposals() {
   const votesResults = useGovernanceVotes();
 
   const { isLoading, isError, error, data } = useQuery({
-    queryKey: ['useGovernanceProposals', publicClient],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
+    queryKey: ['useGovernanceProposals'],
     queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
