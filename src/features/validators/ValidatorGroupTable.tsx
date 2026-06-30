@@ -24,7 +24,12 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
-import { cleanGroupName, getGroupStats, isElected } from 'src/features/validators/utils';
+import {
+  cleanGroupName,
+  formatCommission,
+  getGroupStats,
+  isElected,
+} from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
 import { bigIntSum, mean, sum } from 'src/utils/math';
 import { useStakingMode } from 'src/utils/useStakingMode';
@@ -32,7 +37,7 @@ import useTabs from 'src/utils/useTabs';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
 const NUM_COLLAPSED_GROUPS = 9;
-const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'numElected', 'capacity', 'cta'];
+const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'commission', 'numElected', 'capacity', 'cta'];
 enum Filter {
   All = 'All Eligible',
   Elected = 'Elected',
@@ -199,7 +204,7 @@ function TopGroupsRow({
   expand: () => void;
   colSpan: number;
 }) {
-  const { topGroups, staked, score, elected } = useMemo(() => {
+  const { topGroups, staked, score, commission, elected } = useMemo(() => {
     if (groups.length < NUM_COLLAPSED_GROUPS) return {};
     const topGroups = [...groups]
       .sort((a, b) => (b.votes > a.votes ? 1 : -1))
@@ -207,10 +212,11 @@ function TopGroupsRow({
     const topGroupStats = topGroups.map((g) => getGroupStats(g));
     const staked = bigIntSum(topGroups.map((g) => g.votes));
     const score = mean(topGroupStats.map((g) => g.score));
+    const commission = mean(topGroups.map((g) => g.commission));
     const numElected = sum(topGroupStats.map((g) => g.numElected));
     const numValidators = sum(topGroupStats.map((g) => g.numMembers));
     const elected = `${numElected} / ${numValidators}`;
-    return { topGroups, staked, score, elected };
+    return { topGroups, staked, score, commission, elected };
   }, [groups]);
 
   if (!isVisible || !topGroups) return null;
@@ -241,6 +247,9 @@ function TopGroupsRow({
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
           {(score * 100)?.toFixed(0) + '%'}
+        </td>
+        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
+          {formatCommission(commission)}
         </td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
         <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>-</td>
@@ -301,6 +310,11 @@ function useTableColumns(_totalVotes: bigint) {
       columnHelper.accessor('score', {
         header: 'Score',
         cell: (props) => <div>{`${(props.getValue() * 100).toFixed()}%`}</div>,
+      }),
+      columnHelper.accessor('commission', {
+        header: 'Commission',
+        enableSorting: true,
+        cell: (props) => <div>{formatCommission(props.getValue())}</div>,
       }),
       columnHelper.accessor('numElected', {
         header: 'Elected',

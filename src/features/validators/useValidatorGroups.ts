@@ -126,6 +126,7 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
         votes: 0n,
         lastSlashed: null,
         score: 0,
+        commission: 0,
         validStCeloGroup: valDetails.validStCeloGroup,
       };
     }
@@ -189,11 +190,12 @@ async function fetchValidatorGroupInfo(publicClient: PublicClient) {
   // Fetch details about the validator groups
   const groupAddrs = Object.keys(groups) as Address[];
   const groupNames = await fetchNamesForAccounts(publicClient, groupAddrs);
-  const groupSlashTimes = await fetchGroupLastSlashed(publicClient, groupAddrs);
+  const groupDetails = await fetchGroupDetails(publicClient, groupAddrs);
   for (let i = 0; i < groupAddrs.length; i++) {
     const groupAddr = groupAddrs[i];
     groups[groupAddr].name = groupNames[i] || groupAddr.substring(0, 10) + '...';
-    groups[groupAddr].lastSlashed = groupSlashTimes[i];
+    groups[groupAddr].lastSlashed = groupDetails[i].lastSlashed;
+    groups[groupAddr].commission = groupDetails[i].commission;
   }
 
   // Fetch vote-related total amounts
@@ -386,7 +388,7 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
   });
 }
 
-async function fetchGroupLastSlashed(publicClient: PublicClient, addresses: readonly Address[]) {
+async function fetchGroupDetails(publicClient: PublicClient, addresses: readonly Address[]) {
   const results = await publicClient.multicall({
     contracts: addresses.map(
       (addr) =>
@@ -399,12 +401,20 @@ async function fetchGroupLastSlashed(publicClient: PublicClient, addresses: read
     ),
     allowFailure: true,
   });
+  // getValidatorGroup returns: [members, commission, nextCommission,
+  // nextCommissionBlock, sizeHistory, slashingMultiplier, lastSlashed].
+  // commission is the voter reward commission in Fixidity format.
   return results.map((n) => {
     const result = n.result as
       | [Address, bigint, bigint, bigint, bigint[], bigint, bigint]
       | undefined;
-    if (!result || !Array.isArray(result) || result.length < 7) return null;
-    return Number(result[6]) * 1000;
+    if (!result || !Array.isArray(result) || result.length < 7) {
+      return { lastSlashed: null, commission: 0 };
+    }
+    return {
+      lastSlashed: Number(result[6]) * 1000,
+      commission: fromFixidity(result[1]),
+    };
   });
 }
 

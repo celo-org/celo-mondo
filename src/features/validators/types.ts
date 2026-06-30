@@ -12,6 +12,7 @@ export interface ValidatorGroup {
   lastSlashed: number | null; // timestamp
   members: AddressTo<Validator>;
   score: number;
+  commission: number; // voter reward commission as a fraction (0–1)
   validStCeloGroup?: boolean;
 }
 
