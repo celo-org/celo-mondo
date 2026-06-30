@@ -26,6 +26,13 @@ export function getGroupStats(group?: ValidatorGroup) {
   return { numMembers: members.length, numElected: electedMembers.length, score: group.score };
 }
 
+// Formats a voter reward commission (a 0–1 fraction) as a percentage string,
+// trimming trailing zeros so 0.05 -> "5%" and 0.025 -> "2.5%".
+export function formatCommission(commission?: number): string {
+  const percent = (commission ?? 0) * 100;
+  return `${percent.toLocaleString('en-US', { maximumFractionDigits: 2 })}%`;
+}
+
 export function getRemainingCapacityWei(group?: ValidatorGroup): bigint {
   if (!group) return 0n;
 

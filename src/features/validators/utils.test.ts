@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ValidatorGroup } from './types';
-import { getRemainingCapacityWei } from './utils';
+import { formatCommission, getRemainingCapacityWei } from './utils';
 
 const createMockGroup = (capacity: bigint, votes: bigint): ValidatorGroup => ({
   address: '0x123' as Address,
@@ -12,6 +12,7 @@ const createMockGroup = (capacity: bigint, votes: bigint): ValidatorGroup => ({
   lastSlashed: null,
   members: {},
   score: 0.5,
+  commission: 0,
 });
 
 describe('getRemainingCapacity', () => {
@@ -42,5 +43,29 @@ describe('getRemainingCapacity', () => {
   it('handles zero votes', () => {
     const group = createMockGroup(1000n, 0n);
     expect(getRemainingCapacityWei(group)).toBe(1000n);
+  });
+});
+
+describe('formatCommission', () => {
+  it('formats zero commission', () => {
+    expect(formatCommission(0)).toBe('0%');
+  });
+
+  it('formats a whole-number percentage without decimals', () => {
+    expect(formatCommission(0.05)).toBe('5%');
+    expect(formatCommission(0.1)).toBe('10%');
+  });
+
+  it('formats fractional percentages, trimming trailing zeros', () => {
+    expect(formatCommission(0.025)).toBe('2.5%');
+    expect(formatCommission(0.1234)).toBe('12.34%');
+  });
+
+  it('rounds to at most two decimals', () => {
+    expect(formatCommission(0.123456)).toBe('12.35%');
+  });
+
+  it('defaults to 0% when commission is undefined', () => {
+    expect(formatCommission(undefined)).toBe('0%');
   });
 });

@@ -10,6 +10,7 @@ export const DEFAULT_STRATEGY: ValidatorGroup = {
   capacity: 100000000000000000000000000n, // 100 million artificial limit
   votes: 0n,
   score: 1,
+  commission: 0,
   // @ts-expect-error -- filled in later
   members: [],
   validStCeloGroup: true,

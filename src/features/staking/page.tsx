@@ -38,7 +38,7 @@ import ContributionBadge from 'src/features/validators/components/ContributionBa
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
-import { getGroupStats } from 'src/features/validators/utils';
+import { formatCommission, getGroupStats } from 'src/features/validators/utils';
 import { Color } from 'src/styles/Color';
 import { tableClasses } from 'src/styles/common';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -344,6 +344,10 @@ function Members({ group }: { group?: ValidatorGroup }) {
         <div className="flex flex-col">
           <h4 className="text-sm">Group Score</h4>
           <span className="mt-1 font-serif text-xl">{`${(groupStats.score * 100).toFixed(2)}%`}</span>
+        </div>
+        <div className="flex flex-col">
+          <h4 className="text-sm">Commission</h4>
+          <span className="mt-1 font-serif text-xl">{formatCommission(group?.commission)}</span>
         </div>
         <div className="flex flex-col">
           <h4 className="text-sm">Locked CELO</h4>
