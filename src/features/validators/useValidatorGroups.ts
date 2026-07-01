@@ -25,6 +25,23 @@ import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 
+// The voter reward commission introduced by the commission CGP is not yet in
+// the installed @celo/abis (validatorsABI). Minimal fragment for reading it.
+// Returns [current, pending, activationBlock]; current/pending are Fixidity.
+const voterRewardCommissionABI = [
+  {
+    type: 'function',
+    stateMutability: 'view',
+    name: 'getVoterRewardCommission',
+    inputs: [{ name: 'group', type: 'address' }],
+    outputs: [
+      { name: '', type: 'uint256' },
+      { name: '', type: 'uint256' },
+      { name: '', type: 'uint256' },
+    ],
+  },
+] as const;
+
 export function useValidatorGroups(includeStCeloDefault: boolean = false) {
   const publicClient = usePublicClient();
   const { isLoading, isError, error, data } = useQuery({
@@ -389,32 +406,55 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
 }
 
 async function fetchGroupDetails(publicClient: PublicClient, addresses: readonly Address[]) {
-  const results = await publicClient.multicall({
-    contracts: addresses.map(
-      (addr) =>
-        ({
-          address: Addresses.Validators,
-          abi: validatorsABI,
-          functionName: 'getValidatorGroup',
-          args: [addr],
-        }) as const,
-    ),
-    allowFailure: true,
-  });
-  // getValidatorGroup returns: [members, commission, nextCommission,
-  // nextCommissionBlock, sizeHistory, slashingMultiplier, lastSlashed].
-  // commission is the voter reward commission in Fixidity format.
-  return results.map((n) => {
-    const result = n.result as
+  const [groupResults, commissionResults] = await Promise.all([
+    publicClient.multicall({
+      contracts: addresses.map(
+        (addr) =>
+          ({
+            address: Addresses.Validators,
+            abi: validatorsABI,
+            functionName: 'getValidatorGroup',
+            args: [addr],
+          }) as const,
+      ),
+      allowFailure: true,
+    }),
+    publicClient.multicall({
+      contracts: addresses.map(
+        (addr) =>
+          ({
+            address: Addresses.Validators,
+            abi: voterRewardCommissionABI,
+            functionName: 'getVoterRewardCommission',
+            args: [addr],
+          }) as const,
+      ),
+      allowFailure: true,
+    }),
+  ]);
+
+  return addresses.map((_addr, i) => {
+    // getValidatorGroup returns: [members, commission, nextCommission,
+    // nextCommissionBlock, sizeHistory, slashingMultiplier, lastSlashed].
+    // result[1] is the legacy validator-reward commission, NOT what we want;
+    // we only read lastSlashed here.
+    const groupResult = groupResults[i]?.result as
       | [Address, bigint, bigint, bigint, bigint[], bigint, bigint]
       | undefined;
-    if (!result || !Array.isArray(result) || result.length < 7) {
-      return { lastSlashed: null, commission: 0 };
-    }
-    return {
-      lastSlashed: Number(result[6]) * 1000,
-      commission: fromFixidity(result[1]),
-    };
+    const lastSlashed =
+      groupResult && Array.isArray(groupResult) && groupResult.length >= 7
+        ? Number(groupResult[6]) * 1000
+        : null;
+
+    // getVoterRewardCommission returns [current, pending, activationBlock];
+    // current/pending are Fixidity. We display the currently active rate.
+    const commissionResult = commissionResults[i]?.result as
+      | readonly [bigint, bigint, bigint]
+      | undefined;
+    const commission =
+      commissionResult && Array.isArray(commissionResult) ? fromFixidity(commissionResult[0]) : 0;
+
+    return { lastSlashed, commission };
   });
 }
 
