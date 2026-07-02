@@ -63,9 +63,10 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
     opProfitCelo * OP_SHARE_PROFIT_PCT,
   );
 
-  // Net profit is what funds the CELO buyback & burn.
-  const buybackUsd = revenueUsd - (carbonUsd + l1CostUsd + opShareUsd);
-  const buybackCelo = revenueCelo - (carbonCelo + l1CostCelo + opShareCelo);
+  // Net profit goes to the Community Fund (as CELO; the stablecoin portion is
+  // used to acquire CELO per CGP-286). Burning is a separate governance call.
+  const communityFundUsd = revenueUsd - (carbonUsd + l1CostUsd + opShareUsd);
+  const communityFundCelo = revenueCelo - (carbonCelo + l1CostCelo + opShareCelo);
 
   return {
     day: row.day,
@@ -73,8 +74,8 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
     feesCollectedUsd: revenueUsd,
     l1CostUsd,
     feesAfterExpensesUsd: revenueUsd - l1CostUsd,
-    buybackUsd,
-    buybackCelo,
+    communityFundUsd,
+    communityFundCelo,
   };
 }
 
@@ -82,17 +83,17 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
 export function aggregate(days: DailyMetrics[]): PeriodStats {
   const feesCollectedUsd = days.reduce((s, d) => s + d.feesCollectedUsd, 0);
   const feesAfterExpensesUsd = days.reduce((s, d) => s + d.feesAfterExpensesUsd, 0);
-  const celoBoughtAndBurned = days.reduce((s, d) => s + d.buybackCelo, 0);
-  const usdSpentOnBuyback = days.reduce((s, d) => s + d.buybackUsd, 0);
-  // Weighted average buyback price = total USD spent / total CELO bought.
-  const avgBuybackPriceUsd = celoBoughtAndBurned > 0 ? usdSpentOnBuyback / celoBoughtAndBurned : 0;
+  const celoToCommunityFund = days.reduce((s, d) => s + d.communityFundCelo, 0);
+  const usdToCommunityFund = days.reduce((s, d) => s + d.communityFundUsd, 0);
+  // Volume-weighted average CELO price = total USD value / total CELO.
+  const avgCeloPriceUsd = celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0;
 
   return {
     feesCollectedUsd,
     feesAfterExpensesUsd,
-    celoBoughtAndBurned,
-    usdSpentOnBuyback,
-    avgBuybackPriceUsd,
+    celoToCommunityFund,
+    usdToCommunityFund,
+    avgCeloPriceUsd,
   };
 }
 

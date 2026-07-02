@@ -35,8 +35,8 @@ describe('computeDailyMetrics', () => {
     expect(m.feesCollectedUsd).toBeCloseTo(600, 6);
     expect(m.l1CostUsd).toBeCloseTo(50, 6);
     expect(m.feesAfterExpensesUsd).toBeCloseTo(550, 6);
-    expect(m.buybackCelo).toBeCloseTo(4675, 4);
-    expect(m.buybackUsd).toBeCloseTo(467.5, 6);
+    expect(m.communityFundCelo).toBeCloseTo(4675, 4);
+    expect(m.communityFundUsd).toBeCloseTo(467.5, 6);
   });
 
   it('uses hardcoded $1 pegs for stablecoins, ignoring missing Dune USD columns', () => {
@@ -56,18 +56,18 @@ describe('computeDailyMetrics', () => {
     expect(m.celoPriceUsd).toBe(0);
     expect(m.feesCollectedUsd).toBeCloseTo(100, 6);
     // Without a CELO price the CELO-denominated buyback is 0.
-    expect(m.buybackCelo).toBe(0);
+    expect(m.communityFundCelo).toBe(0);
   });
 
   it('keeps losses negative when L1 costs exceed revenue, like report.py', () => {
     // Same day but with 1 ETH of L1 cost = $1000 against $600 revenue.
     const m = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
     expect(m.feesAfterExpensesUsd).toBeCloseTo(-400, 6);
-    expect(m.buybackUsd).toBeLessThan(0);
-    expect(m.buybackCelo).toBeLessThan(0);
+    expect(m.communityFundUsd).toBeLessThan(0);
+    expect(m.communityFundCelo).toBeLessThan(0);
     // OP share falls back to the 2.5%-of-revenue floor on loss days.
     // buyback_usd = 600 - 1000 - max(15, -60) = -415
-    expect(m.buybackUsd).toBeCloseTo(-415, 6);
+    expect(m.communityFundUsd).toBeCloseTo(-415, 6);
   });
 
   it('coerces string values from the Dune JSON payload', () => {
@@ -82,7 +82,7 @@ describe('computeDailyMetrics', () => {
 });
 
 describe('aggregate', () => {
-  it('weights the average buyback price by CELO volume', () => {
+  it('weights the average CELO price by volume', () => {
     const days = [
       { ...computeDailyMetrics(dayRow) },
       // Second day at a higher price: 1000 CELO @ $0.20, no other fees, no costs.
@@ -96,23 +96,23 @@ describe('aggregate', () => {
     ];
     const stats = aggregate(days);
     // avg = total USD spent / total CELO burned
-    expect(stats.avgBuybackPriceUsd).toBeCloseTo(
-      stats.usdSpentOnBuyback / stats.celoBoughtAndBurned,
+    expect(stats.avgCeloPriceUsd).toBeCloseTo(
+      stats.usdToCommunityFund / stats.celoToCommunityFund,
       10,
     );
-    expect(stats.celoBoughtAndBurned).toBeGreaterThan(0);
+    expect(stats.celoToCommunityFund).toBeGreaterThan(0);
   });
 
-  it('returns 0 average when nothing was burned', () => {
-    expect(aggregate([]).avgBuybackPriceUsd).toBe(0);
+  it('returns 0 average when nothing was distributed', () => {
+    expect(aggregate([]).avgCeloPriceUsd).toBe(0);
   });
 
-  it('sums loss days signed and guards the average against non-positive burn', () => {
+  it('sums loss days signed and guards the average against non-positive totals', () => {
     const loss = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
     const stats = aggregate([loss]);
-    expect(stats.usdSpentOnBuyback).toBeLessThan(0);
-    expect(stats.celoBoughtAndBurned).toBeLessThan(0);
-    expect(stats.avgBuybackPriceUsd).toBe(0);
+    expect(stats.usdToCommunityFund).toBeLessThan(0);
+    expect(stats.celoToCommunityFund).toBeLessThan(0);
+    expect(stats.avgCeloPriceUsd).toBe(0);
   });
 });
 

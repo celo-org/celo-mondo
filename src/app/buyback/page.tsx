@@ -58,19 +58,19 @@ function buildMetrics(totals?: PeriodStats, last24h?: PeriodStats | null): Metri
       last24h: fmtUsd(last24h?.feesAfterExpensesUsd),
     },
     {
-      label: 'CELO bought and burned',
-      total: fmtCelo(totals?.celoBoughtAndBurned),
-      last24h: fmtCelo(last24h?.celoBoughtAndBurned),
+      label: 'CELO to the Community Fund',
+      total: fmtCelo(totals?.celoToCommunityFund),
+      last24h: fmtCelo(last24h?.celoToCommunityFund),
     },
     {
-      label: 'USD spent for CELO buyback and burn',
-      total: fmtUsd(totals?.usdSpentOnBuyback),
-      last24h: fmtUsd(last24h?.usdSpentOnBuyback),
+      label: 'USD value sent to the Community Fund',
+      total: fmtUsd(totals?.usdToCommunityFund),
+      last24h: fmtUsd(last24h?.usdToCommunityFund),
     },
     {
-      label: 'Average CELO buyback price',
-      total: fmtPrice(totals?.avgBuybackPriceUsd),
-      last24h: fmtPrice(last24h?.avgBuybackPriceUsd),
+      label: 'Average CELO price',
+      total: fmtPrice(totals?.avgCeloPriceUsd),
+      last24h: fmtPrice(last24h?.avgCeloPriceUsd),
     },
   ];
 }
@@ -82,18 +82,21 @@ export default function Page() {
     <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
       <div className="flex items-center space-x-3">
         <CeloGlyph width={34} height={34} />
-        <H1>CELO Buyback &amp; Burn</H1>
+        <H1>CELO Buyback</H1>
       </div>
 
       <p className="max-w-xl text-sm text-taupe-600">
-        Celo L2 sequencer fees fund an on-going CELO buyback &amp; burn under{' '}
+        Under{' '}
         <A_Blank
           href="https://forum.celo.org/t/celoccelerate-celo-tokenomics-proposal/13147"
           className="underline"
         >
           CELOccelerate (CGP-286)
         </A_Blank>
-        . Figures are derived from the same daily P&amp;L data as the operator distribution report.
+        , Celo L2 sequencer fees — after L1 operating costs and the OP Superchain share — are used
+        to acquire CELO and sent to the Community Fund, where CELO holders govern their use (which
+        may include burning). Figures are derived from the same daily P&amp;L data as the operator
+        distribution report.
       </p>
 
       {isError ? (
@@ -112,7 +115,7 @@ export default function Page() {
 function StatsTable({ metrics }: { metrics: Metric[] }) {
   return (
     <div className="overflow-hidden border border-taupe-300 bg-white">
-      <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-taupe-300 bg-taupe-100 px-4 py-3 text-xs uppercase tracking-wide text-taupe-600 sm:grid-cols-[1fr_9rem_9rem]">
+      <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-taupe-300 bg-taupe-100 px-4 py-3 text-xs uppercase tracking-wide text-taupe-600 sm:grid-cols-[1fr_10rem_10rem]">
         <span>Metric</span>
         <span className="text-right">Total</span>
         <span className="hidden text-right sm:block">Last 24 hrs</span>
@@ -120,13 +123,13 @@ function StatsTable({ metrics }: { metrics: Metric[] }) {
       {metrics.map((m) => (
         <div
           key={m.label}
-          className="grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-taupe-300 px-4 py-3.5 last:border-b-0 sm:grid-cols-[1fr_9rem_9rem]"
+          className="grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-taupe-300 px-4 py-3.5 last:border-b-0 sm:grid-cols-[1fr_10rem_10rem]"
         >
           <span className="text-sm">{m.label}</span>
           <div className="flex flex-col items-end sm:contents">
             <span
               className={clsx(
-                'text-right font-serif text-lg sm:text-xl',
+                'whitespace-nowrap text-right font-serif text-lg sm:text-xl',
                 m.total.negative ? 'text-red-600' : 'text-green-600',
               )}
             >
@@ -134,7 +137,7 @@ function StatsTable({ metrics }: { metrics: Metric[] }) {
             </span>
             <span
               className={clsx(
-                'text-right text-xs text-taupe-600 sm:font-serif sm:text-lg',
+                'whitespace-nowrap text-right text-xs text-taupe-600 sm:font-serif sm:text-lg',
                 m.last24h.negative ? 'sm:text-red-600' : 'sm:text-green-600',
               )}
             >

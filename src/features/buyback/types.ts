@@ -33,19 +33,23 @@ export interface DailyMetrics {
   l1CostUsd: number;
   /** Revenue minus basic (L1) expenses, in USD. */
   feesAfterExpensesUsd: number;
-  /** Net profit distributed to buy back & burn CELO, in USD. */
-  buybackUsd: number;
-  /** Net profit expressed as CELO bought & burned at that day's price. */
-  buybackCelo: number;
+  /**
+   * Net profit destined for the Community Fund, in USD. Per CGP-286 the
+   * stablecoin portion is used to acquire CELO; burning is a separate
+   * governance decision, not part of the distribution.
+   */
+  communityFundUsd: number;
+  /** Net profit expressed as CELO at that day's price. */
+  communityFundCelo: number;
 }
 
 /** Aggregated dashboard figures for a period (all-time or last 24 hrs). */
 export interface PeriodStats {
   feesCollectedUsd: number;
   feesAfterExpensesUsd: number;
-  celoBoughtAndBurned: number;
-  usdSpentOnBuyback: number;
-  avgBuybackPriceUsd: number;
+  celoToCommunityFund: number;
+  usdToCommunityFund: number;
+  avgCeloPriceUsd: number;
 }
 
 /** Full dashboard payload returned by the API route. */
