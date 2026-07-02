@@ -58,12 +58,12 @@ function buildMetrics(totals?: PeriodStats, last24h?: PeriodStats | null): Metri
       last24h: fmtUsd(last24h?.feesAfterExpensesUsd),
     },
     {
-      label: 'CELO to the Community Fund',
+      label: 'CELO accrued for the Community Fund',
       total: fmtCelo(totals?.celoToCommunityFund),
       last24h: fmtCelo(last24h?.celoToCommunityFund),
     },
     {
-      label: 'USD value sent to the Community Fund',
+      label: 'USD value accrued for the Community Fund',
       total: fmtUsd(totals?.usdToCommunityFund),
       last24h: fmtUsd(last24h?.usdToCommunityFund),
     },
@@ -94,9 +94,10 @@ export default function Page() {
           CELOccelerate (CGP-286)
         </A_Blank>
         , Celo L2 sequencer fees — after L1 operating costs and the OP Superchain share — are used
-        to acquire CELO and sent to the Community Fund, where CELO holders govern their use (which
-        may include burning). Figures are derived from the same daily P&amp;L data as the operator
-        distribution report.
+        to acquire CELO for the Community Fund, where CELO holders govern their use (which may
+        include burning). Figures show what has accrued from fees, derived from the same daily
+        P&amp;L data as the operator distribution report; actual transfers to the Community Fund
+        are executed in periodic batches.
       </p>
 
       {isError ? (
