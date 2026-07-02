@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { Section } from 'src/components/layout/Section';
@@ -14,22 +15,34 @@ const price3 = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 3,
 });
 
-function fmtUsd(value?: number): string {
-  return value == null ? '—' : `${usd0.format(Math.round(value))} USD`;
+// A rendered stat cell. Values can legitimately go negative (a day where L1
+// costs exceed revenue is a loss), so the sign travels with the text and the
+// table colors losses red instead of green.
+interface Cell {
+  text: string;
+  negative: boolean;
 }
 
-function fmtCelo(value?: number): string {
-  return value == null ? '—' : `${usd0.format(Math.round(value))} CELO`;
+function cell(text: string, value?: number): Cell {
+  return { text, negative: value != null && value < 0 };
 }
 
-function fmtPrice(value?: number): string {
-  return value == null || value === 0 ? '—' : `${price3.format(value)} USD`;
+function fmtUsd(value?: number): Cell {
+  return cell(value == null ? '—' : `${usd0.format(Math.round(value))} USD`, value);
+}
+
+function fmtCelo(value?: number): Cell {
+  return cell(value == null ? '—' : `${usd0.format(Math.round(value))} CELO`, value);
+}
+
+function fmtPrice(value?: number): Cell {
+  return cell(value == null || value === 0 ? '—' : `${price3.format(value)} USD`, value);
 }
 
 interface Metric {
   label: string;
-  total: string;
-  last24h: string;
+  total: Cell;
+  last24h: Cell;
 }
 
 function buildMetrics(totals?: PeriodStats, last24h?: PeriodStats | null): Metric[] {
@@ -111,11 +124,21 @@ function StatsTable({ metrics }: { metrics: Metric[] }) {
         >
           <span className="text-sm">{m.label}</span>
           <div className="flex flex-col items-end sm:contents">
-            <span className="text-right font-serif text-lg text-green-600 sm:text-xl">
-              {m.total}
+            <span
+              className={clsx(
+                'text-right font-serif text-lg sm:text-xl',
+                m.total.negative ? 'text-red-600' : 'text-green-600',
+              )}
+            >
+              {m.total.text}
             </span>
-            <span className="text-right text-xs text-taupe-600 sm:font-serif sm:text-base sm:text-lg sm:text-green-600">
-              {m.last24h}
+            <span
+              className={clsx(
+                'text-right text-xs text-taupe-600 sm:font-serif sm:text-lg',
+                m.last24h.negative ? 'sm:text-red-600' : 'sm:text-green-600',
+              )}
+            >
+              {m.last24h.text}
             </span>
           </div>
         </div>

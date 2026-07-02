@@ -59,6 +59,17 @@ describe('computeDailyMetrics', () => {
     expect(m.buybackCelo).toBe(0);
   });
 
+  it('keeps losses negative when L1 costs exceed revenue, like report.py', () => {
+    // Same day but with 1 ETH of L1 cost = $1000 against $600 revenue.
+    const m = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
+    expect(m.feesAfterExpensesUsd).toBeCloseTo(-400, 6);
+    expect(m.buybackUsd).toBeLessThan(0);
+    expect(m.buybackCelo).toBeLessThan(0);
+    // OP share falls back to the 2.5%-of-revenue floor on loss days.
+    // buyback_usd = 600 - 1000 - max(15, -60) = -415
+    expect(m.buybackUsd).toBeCloseTo(-415, 6);
+  });
+
   it('coerces string values from the Dune JSON payload', () => {
     const m = computeDailyMetrics({
       ...dayRow,
@@ -94,6 +105,14 @@ describe('aggregate', () => {
 
   it('returns 0 average when nothing was burned', () => {
     expect(aggregate([]).avgBuybackPriceUsd).toBe(0);
+  });
+
+  it('sums loss days signed and guards the average against non-positive burn', () => {
+    const loss = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
+    const stats = aggregate([loss]);
+    expect(stats.usdSpentOnBuyback).toBeLessThan(0);
+    expect(stats.celoBoughtAndBurned).toBeLessThan(0);
+    expect(stats.avgBuybackPriceUsd).toBe(0);
   });
 });
 

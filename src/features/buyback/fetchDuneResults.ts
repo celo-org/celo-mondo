@@ -1,5 +1,4 @@
 import { DuneFeeRow } from 'src/features/buyback/types';
-import { logger } from 'src/utils/logger';
 
 const DUNE_API = 'https://api.dune.com/api/v1';
 
@@ -8,11 +7,7 @@ export const CELO_PNL_QUERY_ID = 6898547;
 
 const PAGE_SIZE = 1000;
 const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
-
-// Re-execute the query when its last run is older than this. 20 hours (not 24)
-// so the daily refresh doesn't drift later each day — triggers only happen on
-// visits, so each refresh lands a bit after the threshold.
-const REFRESH_AFTER_MS = 20 * 60 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 30_000;
 
 interface DuneResultsResponse {
   execution_ended_at?: string;
@@ -27,7 +22,11 @@ export interface DuneFeeResults {
 
 /**
  * Read the latest cached results of the Dune P&L query via the read-only
- * `/results` endpoint. Paginates until the query is exhausted.
+ * `/results` endpoint, so a page visit never spends execution credits. The
+ * query itself is re-executed once a day by the refresh-buyback-dune-query
+ * GitHub Actions cron — deliberately not from this public request path, where
+ * cache-busting traffic could be used to burn Dune credits. Paginates until
+ * the query is exhausted.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
@@ -41,6 +40,7 @@ export async function fetchDuneFeeRows(
     const url = `${DUNE_API}/query/${queryId}/results?limit=${PAGE_SIZE}&offset=${offset}`;
     const response = await fetch(url, {
       headers: { 'X-Dune-API-Key': apiKey },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
 
     if (!response.ok) {
@@ -58,44 +58,4 @@ export async function fetchDuneFeeRows(
   }
 
   return { rows, executionEndedAt };
-}
-
-// Last refresh trigger per server instance. Best-effort dedup only — on
-// serverless each instance has its own copy, but the route's response cache
-// already limits how often the check runs at all.
-let lastTriggeredAtMs = 0;
-
-/**
- * Keep the Dune data at most a day old: if the query's last execution is older
- * than the refresh threshold, kick off a new execution (spends one Dune
- * execution credit). Fire-and-forget from the caller's perspective — the
- * current request still serves the existing results; a later visitor picks up
- * the fresh ones once Dune finishes.
- */
-export async function refreshDuneQueryIfStale(
-  apiKey: string,
-  executionEndedAt: string | null,
-  queryId: number = CELO_PNL_QUERY_ID,
-): Promise<void> {
-  const endedAtMs = executionEndedAt ? Date.parse(executionEndedAt) : 0;
-  if (Number.isFinite(endedAtMs) && Date.now() - endedAtMs < REFRESH_AFTER_MS) return;
-  if (Date.now() - lastTriggeredAtMs < REFRESH_AFTER_MS) return;
-
-  lastTriggeredAtMs = Date.now();
-  try {
-    const response = await fetch(`${DUNE_API}/query/${queryId}/execute`, {
-      method: 'POST',
-      headers: { 'X-Dune-API-Key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ performance: 'medium' }),
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Dune execute ${response.status}: ${body.slice(0, 200)}`);
-    }
-    logger.info(`Triggered Dune query ${queryId} refresh (last run: ${executionEndedAt})`);
-  } catch (error) {
-    // Reset the guard so the next request can retry the trigger.
-    lastTriggeredAtMs = 0;
-    logger.warn('Failed to trigger Dune query refresh', error);
-  }
 }

@@ -1,5 +1,5 @@
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
-import { fetchDuneFeeRows, refreshDuneQueryIfStale } from 'src/features/buyback/fetchDuneResults';
+import { fetchDuneFeeRows } from 'src/features/buyback/fetchDuneResults';
 import { logger } from 'src/utils/logger';
 import { errorToString } from 'src/utils/strings';
 
@@ -15,12 +15,8 @@ export async function GET() {
   try {
     logger.debug('Buyback stats request received');
 
-    const { rows, executionEndedAt } = await fetchDuneFeeRows(apiKey);
+    const { rows } = await fetchDuneFeeRows(apiKey);
     const stats = computeBuybackStats(rows, new Date().toISOString());
-
-    // Serve the current results immediately; if they're older than a day this
-    // kicks off a Dune re-execution so a later visitor gets fresh data.
-    await refreshDuneQueryIfStale(apiKey, executionEndedAt);
 
     logger.debug(`Buyback stats computed from ${rows.length} daily rows`);
 
