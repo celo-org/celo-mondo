@@ -151,7 +151,9 @@ function ErrorNotice() {
 
 function Footnote({ latestDay, updatedAt }: { latestDay?: string | null; updatedAt?: string }) {
   const parts: string[] = [];
-  if (latestDay) parts.push(`Data through ${latestDay}`);
+  // Dune returns the day as a full timestamp ("2026-06-18 00:00:00.000 UTC");
+  // only the date part is meaningful here.
+  if (latestDay) parts.push(`Data through ${latestDay.slice(0, 10)}`);
   if (updatedAt) parts.push(`updated ${new Date(updatedAt).toUTCString()}`);
 
   return (
