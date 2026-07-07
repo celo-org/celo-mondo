@@ -9,14 +9,12 @@ import {
 } from '@tanstack/react-table';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronIcon } from 'src/components/icons/Chevron';
 import { SearchField } from 'src/components/input/SearchField';
 import { Amount } from 'src/components/numbers/Amount';
 
 import Link from 'next/link';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
-import { Circle } from 'src/components/icons/Circle';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
@@ -31,12 +29,10 @@ import {
   isElected,
 } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
-import { bigIntSum, mean, sum } from 'src/utils/math';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
-const NUM_COLLAPSED_GROUPS = 9;
 const DESKTOP_ONLY_COLUMNS = ['votes', 'score', 'commission', 'numElected', 'capacity', 'cta'];
 enum Filter {
   All = 'All Eligible',
@@ -64,22 +60,11 @@ export function ValidatorGroupTable({
   );
 
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [isTopGroupsExpanded, setIsTopGroupsExpanded] = useState<boolean>(false);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [sorting, setSorting] = useState<SortingState>([{ id: 'votes', desc: true }]);
-  const onSortingChange = (s: SortingState | ((prev: SortingState) => SortingState)) => {
-    setIsTopGroupsExpanded(true);
-    setSorting(s);
-  };
-
-  const collapseTopGroups =
-    !isTopGroupsExpanded &&
-    groups.length > NUM_COLLAPSED_GROUPS &&
-    !searchQuery &&
-    filter === Filter.All;
 
   const columns = useTableColumns(totalVotes);
-  const groupRows = useTableRows({ groups, filter, searchQuery, collapseTopGroups });
+  const groupRows = useTableRows({ groups, filter, searchQuery });
   const table = useReactTable<ValidatorGroupRow>({
     data: groupRows,
     columns,
@@ -87,7 +72,7 @@ export function ValidatorGroupTable({
       sorting,
       columnVisibility,
     },
-    onSortingChange,
+    onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -111,10 +96,6 @@ export function ValidatorGroupTable({
       DESKTOP_ONLY_COLUMNS.forEach((c) => table.getColumn(c)?.toggleVisibility(true));
     }
   }, [isMobile, table]);
-
-  useEffect(() => {
-    setIsTopGroupsExpanded(false);
-  }, [filter]);
 
   return (
     <div>
@@ -156,18 +137,8 @@ export function ValidatorGroupTable({
           ))}
         </thead>
         <tbody>
-          <TopGroupsRow
-            groups={groups}
-            totalVotes={totalVotes}
-            isVisible={collapseTopGroups}
-            expand={() => setIsTopGroupsExpanded(true)}
-            colSpan={table.getVisibleLeafColumns().length}
-          />
           {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.original.address}
-              className={clsx(classNames.tr, row.original.isHidden && 'hidden')}
-            >
+            <tr key={row.original.address} className={classNames.tr}>
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className={clsx(classNames.td, '')}>
                   <Link
@@ -189,80 +160,6 @@ export function ValidatorGroupTable({
         </tbody>
       </table>
     </div>
-  );
-}
-
-function TopGroupsRow({
-  groups,
-  isVisible,
-  expand,
-  colSpan,
-}: {
-  groups: ValidatorGroup[];
-  totalVotes: bigint;
-  isVisible: boolean;
-  expand: () => void;
-  colSpan: number;
-}) {
-  const { topGroups, staked, score, commission, elected } = useMemo(() => {
-    if (groups.length < NUM_COLLAPSED_GROUPS) return {};
-    const topGroups = [...groups]
-      .sort((a, b) => (b.votes > a.votes ? 1 : -1))
-      .slice(0, NUM_COLLAPSED_GROUPS);
-    const topGroupStats = topGroups.map((g) => getGroupStats(g));
-    const staked = bigIntSum(topGroups.map((g) => g.votes));
-    const score = mean(topGroupStats.map((g) => g.score));
-    const commission = mean(topGroups.map((g) => g.commission));
-    const numElected = sum(topGroupStats.map((g) => g.numElected));
-    const numValidators = sum(topGroupStats.map((g) => g.numMembers));
-    const elected = `${numElected} / ${numValidators}`;
-    return { topGroups, staked, score, commission, elected };
-  }, [groups]);
-
-  if (!isVisible || !topGroups) return null;
-
-  return (
-    <>
-      <tr className={classNames.tr} onClick={expand}>
-        <td className={classNames.tdTopGroups}>{`1-${NUM_COLLAPSED_GROUPS}`}</td>
-        <td className={classNames.tdTopGroups}>
-          <div className="flex items-center">
-            {topGroups?.slice(0, 5).map((g, i) => (
-              <div key={i} className="relative" style={{ left: -i * 16 }}>
-                <ValidatorGroupLogo key={g.address} address={g.address} size={30} />
-              </div>
-            ))}
-            <div className="relative" style={{ left: -5 * 16 }}>
-              <Circle size={30} className="bg-primary">
-                <span className="text-sm text-primary-content">+4</span>
-              </Circle>
-            </div>
-            <div className="relative" style={{ left: -4 * 16 }}>
-              <ChevronIcon direction="s" width={12} height={12} />
-            </div>
-          </div>
-        </td>
-        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
-          <Amount valueWei={staked} showSymbol={false} decimals={0} className="all:font-sans" />
-        </td>
-        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
-          {(score * 100)?.toFixed(0) + '%'}
-        </td>
-        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>
-          {formatCommission(commission)}
-        </td>
-        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>{elected || ''}</td>
-        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}>-</td>
-        <td className={clsx(classNames.tdTopGroups, classNames.tdDesktopOnly)}></td>
-      </tr>
-      <tr className={clsx(!isVisible && 'hidden')}>
-        <td colSpan={colSpan} className="py-4">
-          <div className="mx-4 whitespace-normal break-words rounded-lg bg-primary px-4 py-3 text-center text-sm text-primary-content sm:mx-8">
-            Improve decentralization and network health by staking with a group below ↓
-          </div>
-        </td>
-      </tr>
-    </>
   );
 }
 
@@ -376,12 +273,10 @@ function useTableRows({
   groups,
   filter,
   searchQuery,
-  collapseTopGroups,
 }: {
   groups: ValidatorGroup[];
   filter: Filter;
   searchQuery: string;
-  collapseTopGroups: boolean;
 }) {
   return useMemo<ValidatorGroupRow[]>(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -404,15 +299,14 @@ function useTableRows({
       .sort((a, b) => (b.votes > a.votes ? 1 : -1));
 
     const groupRows = filteredGroups.map(
-      (g, i): ValidatorGroupRow => ({
+      (g): ValidatorGroupRow => ({
         ...g,
         ...getGroupStats(g),
-        isHidden: collapseTopGroups && i < NUM_COLLAPSED_GROUPS,
         isContributor: Boolean(VALIDATOR_GROUPS[g.address]?.communityContributor),
       }),
     );
     return groupRows;
-  }, [groups, filter, searchQuery, collapseTopGroups]);
+  }, [groups, filter, searchQuery]);
 }
 
 function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {
@@ -424,6 +318,4 @@ const classNames = {
   tr: 'cursor-pointer transition-all hover:bg-purple-50 active:bg-purple-100',
   th: 'border-y border-taupe-300 px-4 py-3 first:min-w-12 last:min-w-0 md:min-w-32',
   td: 'relative border-y border-taupe-300 sm:whitespace-nowrap',
-  tdTopGroups: 'relative border-y border-taupe-300 px-4 py-4 sm:whitespace-nowrap',
-  tdDesktopOnly: 'hidden md:table-cell',
 };
