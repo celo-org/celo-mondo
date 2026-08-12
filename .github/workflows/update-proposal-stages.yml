@@ -12,12 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: yarn-install
         run: |
@@ -34,12 +37,15 @@ jobs:
     needs: [install]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: Update proposal stages (production)
         run: npx tsx src/scripts/updateProposalStages.ts
