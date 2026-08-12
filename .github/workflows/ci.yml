@@ -15,12 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: yarn-install
         # Check out the lockfile from main, reinstall, and then
@@ -39,12 +42,15 @@ jobs:
     needs: [install]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: build
         run: |
@@ -60,12 +66,15 @@ jobs:
     needs: [install]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: validate delegates metadata
         run: |
@@ -82,12 +91,15 @@ jobs:
     needs: [install]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: prettier
         run: |
@@ -104,12 +116,15 @@ jobs:
     needs: [install]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         with:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
       - name: lint
         run: yarn run lint
@@ -127,7 +142,7 @@ jobs:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
       - uses: foundry-rs/foundry-toolchain@v1
       - name: test
         run: yarn run test
@@ -161,7 +176,7 @@ jobs:
           path: |
             **/node_modules
             .yarn/cache
-          key: ${{ runner.os }}-yarn-cache-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
       - name: Run database migrations
         run: yarn migrate
         env:
