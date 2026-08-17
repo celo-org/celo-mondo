@@ -13,6 +13,7 @@ describe('decodeAndPrepareProposalEvent', () => {
       eventName: 'ProposalExecuted',
       topics: ['0x'],
       transactionHash: '0x',
+      logIndex: 0,
     };
     const stdoutSpy = vi.spyOn(console, 'info').mockReturnValueOnce();
     await expect(decodeAndPrepareProposalEvent('WrongEvent', mockEvent)).resolves.toEqual(null);
@@ -34,6 +35,7 @@ describe('decodeAndPrepareProposalEvent', () => {
       eventName: 'ProposalExecuted',
       topics: ['0x'],
       transactionHash: '0x',
+      logIndex: 0,
     };
     const errorSpy = vi.spyOn(console, 'error').mockReturnValueOnce();
     await expect(decodeAndPrepareProposalEvent('ProposalExecuted', mockEvent)).resolves.toEqual(
@@ -58,6 +60,7 @@ describe('decodeAndPrepareProposalEvent', () => {
       blockNumber: 23049026n,
       transactionHash: '0x012932ee24ac083380c0950cab182747501dadfa55dba312de66a919260417fd',
       chainId: 42220,
+      logIndex: 0,
     };
 
     await expect(decodeAndPrepareProposalEvent('ProposalExecuted', mockEvent)).resolves.toBe(143n);

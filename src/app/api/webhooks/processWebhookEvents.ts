@@ -38,6 +38,7 @@ export type ParsedEvent = {
   data: `0x${string}`;
   blockNumber: bigint;
   transactionHash: `0x${string}`;
+  logIndex: number;
   transactionIds: bigint[];
 };
 
@@ -115,8 +116,8 @@ export async function processWebhookEvents(
 /**
  * Stores a single webhook-delivered event into the events table, decoding its
  * args from topics+data so downstream queries (e.g. args->>'proposalId') keep
- * working. Dedupes on the (eventName, transactionHash, chainId) primary key and
- * records ingestion provenance via ingestedVia.
+ * working. Dedupes on the (eventName, transactionHash, logIndex, chainId)
+ * primary key and records ingestion provenance via ingestedVia.
  */
 async function saveWebhookEvent(event: ParsedEvent, isMultiSig: boolean, source: IngestSource) {
   let args: Record<string, unknown> = {};
@@ -140,13 +141,19 @@ async function saveWebhookEvent(event: ParsedEvent, isMultiSig: boolean, source:
     data: event.data,
     blockNumber: event.blockNumber,
     transactionHash: event.transactionHash,
+    logIndex: event.logIndex,
   };
 
   await database
     .insert(eventsTable)
     .values(withIngestionMetadata([row], celoPublicClient.chain.id, source))
     .onConflictDoUpdate({
-      target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+      target: [
+        eventsTable.eventName,
+        eventsTable.transactionHash,
+        eventsTable.logIndex,
+        eventsTable.chainId,
+      ],
       set: ingestedViaConflictSet,
     });
 }

@@ -217,6 +217,7 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
                     target: [
                       eventsTable.eventName,
                       eventsTable.transactionHash,
+                      eventsTable.logIndex,
                       eventsTable.chainId,
                     ],
                     set: ingestedViaConflictSet,
@@ -253,7 +254,12 @@ export default async function fetchHistoricalMultiSigEventsAndSaveToDBProgressiv
               .insert(eventsTable)
               .values(withIngestionMetadata(events, client.chain.id, source))
               .onConflictDoUpdate({
-                target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+                target: [
+                  eventsTable.eventName,
+                  eventsTable.transactionHash,
+                  eventsTable.logIndex,
+                  eventsTable.chainId,
+                ],
                 set: ingestedViaConflictSet,
               });
             console.log({ inserts: count });

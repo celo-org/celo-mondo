@@ -53,6 +53,7 @@ describe('updateProposalsInDB', () => {
       data: '0x' as `0x${string}`,
       blockNumber: 59165954n,
       transactionHash: '0x0000000000000000000000000000000000000000000000000000000000000001',
+      logIndex: 0,
     });
 
     const { default: updateProposalsInDB } = await import(

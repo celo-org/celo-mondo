@@ -14,6 +14,7 @@ describe('decodeAndPrepareVoteEvent', () => {
       eventName: 'ProposalVoted',
       topics: ['0x'],
       transactionHash: '0x',
+      logIndex: 0,
     };
     const stdoutSpy = vi.spyOn(console, 'info').mockReturnValueOnce();
     await expect(decodeAndPrepareVoteEvent('WrongEvent', mockEvent, 42220)).resolves.toEqual([]);
@@ -35,6 +36,7 @@ describe('decodeAndPrepareVoteEvent', () => {
       eventName: 'ProposalVoted',
       topics: ['0x'],
       transactionHash: '0x',
+      logIndex: 0,
     };
     const errorSpy = vi.spyOn(console, 'error').mockReturnValueOnce();
     await expect(decodeAndPrepareVoteEvent('ProposalVoted', mockEvent, 42220)).resolves.toEqual([]);
@@ -64,6 +66,7 @@ describe('decodeAndPrepareVoteEvent', () => {
       blockNumber: 21797791n,
       transactionHash: '0x000063192bc74d7b2cb5cbec73572ff9ae649bbac31ae4704f74fda0ab9727c1',
       chainId: 42220,
+      logIndex: 0,
     };
 
     vi.mock('src/features/governance/utils/votes', async (importActual) => {
