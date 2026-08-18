@@ -6,6 +6,39 @@ export function bigIntReplacer(_key: any, value: any) {
   return value;
 }
 
+// Marker-prefixed BigInt JSON encoding for lossless round-trips across the
+// server -> client component boundary, where RSC serialization downgrades
+// bigint props to plain strings
+const BIGINT_MARKER = '__bigint__:';
+
+// The encoding walks the value manually instead of using a JSON.stringify
+// replacer: src/vendor/polyfill.ts defines BigInt.prototype.toJSON, which
+// JSON.stringify applies before the replacer ever sees the bigint
+function encodeBigints(value: unknown): unknown {
+  if (typeof value === 'bigint') return `${BIGINT_MARKER}${value.toString()}`;
+  if (Array.isArray(value)) return value.map(encodeBigints);
+  if (value && typeof value === 'object') {
+    const encoded: Record<string, unknown> = {};
+    for (const [key, v] of Object.entries(value)) {
+      encoded[key] = encodeBigints(v);
+    }
+    return encoded;
+  }
+  return value;
+}
+
+export function serializeBigints(value: unknown): string {
+  return JSON.stringify(encodeBigints(value));
+}
+
+export function deserializeBigints<T>(json: string): T {
+  return JSON.parse(json, (_key, v) =>
+    typeof v === 'string' && v.startsWith(BIGINT_MARKER)
+      ? BigInt(v.slice(BIGINT_MARKER.length))
+      : v,
+  ) as T;
+}
+
 export function isObject(item: any) {
   return item && typeof item === 'object' && !Array.isArray(item);
 }

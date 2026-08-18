@@ -26,13 +26,28 @@ import { useGovernanceProposals } from 'src/features/governance/hooks/useGoverna
 import { useProposalContent } from 'src/features/governance/hooks/useProposalContent';
 import { ProposalStage } from 'src/features/governance/types';
 import { usePageInvariant } from 'src/utils/navigation';
+import { deserializeBigints } from 'src/utils/objects';
 import { trimToLength } from 'src/utils/strings';
 import { ProposalTimeline } from './ProposalTimeline';
 import { ProposalTransactions } from './ProposalTransactions';
 import styles from './styles.module.css';
 
-export function Proposal({ id }: { id: string }) {
-  const { proposals, isLoading } = useGovernanceProposals();
+export function Proposal({
+  id,
+  initialProposals,
+  initialContent,
+}: {
+  id: string;
+  initialProposals?: string;
+  initialContent?: string;
+}) {
+  // Serialized because RSC prop serialization downgrades bigints to strings
+  const initialData = useMemo(
+    () =>
+      initialProposals ? deserializeBigints<MergedProposalData[]>(initialProposals) : undefined,
+    [initialProposals],
+  );
+  const { proposals, isLoading } = useGovernanceProposals(initialData);
 
   const propData = useMemo(() => findProposal(proposals, id), [proposals, id]);
   usePageInvariant(isLoading || propData, '/governance', 'Proposal not found');
@@ -43,7 +58,7 @@ export function Proposal({ id }: { id: string }) {
 
   return (
     <>
-      <ProposalContent propData={propData} id={id} />
+      <ProposalContent propData={propData} id={id} initialContent={initialContent} />
       {propData.stage !== ProposalStage.None && (
         <CollapsibleResponsiveMenu defaultCollapsed={propData.stage !== ProposalStage.Referendum}>
           <ProposalChainData propData={propData} />
@@ -53,10 +68,18 @@ export function Proposal({ id }: { id: string }) {
   );
 }
 
-function ProposalContent({ propData, id }: { propData: MergedProposalData; id: string }) {
+function ProposalContent({
+  propData,
+  id,
+  initialContent,
+}: {
+  propData: MergedProposalData;
+  id: string;
+  initialContent?: string;
+}) {
   const { proposal, metadata } = propData;
   const title = trimToLength(metadata?.title || `Proposal #${proposal?.id}`, 80);
-  const { content, isLoading } = useProposalContent(metadata);
+  const { content, isLoading } = useProposalContent(metadata, initialContent);
 
   return (
     <div className="space-y-3">
