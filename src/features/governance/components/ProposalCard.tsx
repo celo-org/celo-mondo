@@ -88,9 +88,16 @@ export function ProposalCard({
         </div>
       )}
       {!isCompact && endTimeResult && (
-        <div className="tooltip flex items-center space-x-2 text-left" data-tip={endTimeResult.utc}>
+        <div
+          className="tooltip flex items-center space-x-2 text-left"
+          data-tip={endTimeResult.utc}
+          suppressHydrationWarning
+        >
           <Image src={ClockIcon} alt="" width={16} height={16} className="shrink-0" />
-          <div className="text-[13px] font-medium text-taupe-600">{endTimeResult.text}</div>
+          {/* Server and browser format this in different locales/timezones */}
+          <div className="text-[13px] font-medium text-taupe-600" suppressHydrationWarning>
+            {endTimeResult.text}
+          </div>
         </div>
       )}
     </Link>
@@ -124,9 +131,11 @@ export function ProposalBadgeRow({
       <IdBadge id={id} />
       <StageBadge stage={stage} />
       {proposedTimeValue && (
+        // Server and browser format this in different locales/timezones
         <div
           className="tooltip text-left text-sm text-taupe-600"
           data-tip={proposedUtc}
+          suppressHydrationWarning
         >{`Proposed ${proposedTimeValue}`}</div>
       )}
       {showProposer && proposer && (
@@ -150,9 +159,11 @@ export function ProposalBadgeRow({
       {showExecutedTime && executedTimeValue && !proposer && (
         <>
           <div className="hidden text-xs opacity-50 sm:block">•</div>
+          {/* Server and browser format this in different locales/timezones */}
           <div
             className="tooltip hidden text-left text-sm text-taupe-600 sm:block"
             data-tip={executedUtc}
+            suppressHydrationWarning
           >{`Executed ${executedTimeValue}`}</div>
         </>
       )}

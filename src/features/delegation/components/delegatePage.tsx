@@ -1,4 +1,5 @@
 'use client';
+import { useMemo } from 'react';
 import { FullWidthSpinner } from 'src/components/animation/Spinner';
 import { Section } from 'src/components/layout/Section';
 import { CollapsibleResponsiveMenu } from 'src/components/menus/CollapsibleResponsiveMenu';
@@ -6,11 +7,23 @@ import {
   DelegateeDescription,
   DelegateeDetails,
 } from 'src/features/delegation/components/DelegateeDescription';
-import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
+import { DelegateesData, useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { usePageInvariant } from 'src/utils/navigation';
+import { deserializeBigints } from 'src/utils/objects';
 
-export default function Page({ address }: { address: Address }) {
-  const { addressToDelegatee } = useDelegatees();
+export default function Page({
+  address,
+  initialDelegatees,
+}: {
+  address: Address;
+  initialDelegatees?: string;
+}) {
+  // Serialized because RSC prop serialization downgrades bigints to strings
+  const initialData = useMemo(
+    () => (initialDelegatees ? deserializeBigints<DelegateesData>(initialDelegatees) : undefined),
+    [initialDelegatees],
+  );
+  const { addressToDelegatee } = useDelegatees(initialData);
   const delegatee = addressToDelegatee?.[address];
 
   usePageInvariant(!addressToDelegatee || delegatee, '/delegate', 'Delegate not found');

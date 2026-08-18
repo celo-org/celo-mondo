@@ -7,7 +7,10 @@ import { Addresses } from 'src/config/contracts';
 import { fetchProposalsFromRepo } from 'src/features/governance/fetchFromRepository';
 import type { ProposalWithHistory } from 'src/features/governance/getProposals';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import { getStageEndTimestamp, MergedProposalData } from 'src/features/governance/governanceData';
+import {
+  MergedProposalData,
+  mergeProposalWithChainData,
+} from 'src/features/governance/governanceData';
 import { ProposalMetadata, VoteAmounts, VoteType } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 import { sortByIdThenCGP } from 'src/utils/proposals';
@@ -71,7 +74,7 @@ export function useGovernanceVotes() {
   };
 }
 
-export function useGovernanceProposals() {
+export function useGovernanceProposals(initialProposals?: MergedProposalData[]) {
   const publicClient = usePublicClient();
   const draftsResults = useGovernanceDrafts();
   const votesResults = useGovernanceVotes();
@@ -79,6 +82,10 @@ export function useGovernanceProposals() {
   const { isLoading, isError, error, data } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
     queryKey: ['useGovernanceProposals'],
+    // Server-rendered data (lacking live upvotes/isPassing); marked stale so the
+    // client refetches the full on-chain values right after hydration
+    initialData: initialProposals,
+    initialDataUpdatedAt: 0,
     queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching governance proposals');
@@ -102,43 +109,14 @@ export function useGovernanceProposals() {
             upvotes = upvotesArr.at(queuedId)!;
           }
 
-          return {
-            ...proposal,
-            metadata: {
-              author: proposal.author,
-              cgp: proposal.cgp,
-              cgpUrl: proposal.cgpUrl,
-              cgpUrlRaw: proposal.cgpUrlRaw,
-              stage: proposal.stage,
-              title: proposal.title,
-              timestamp: proposal.timestamp * 1000,
-              timestampExecuted: proposal.executedAt
-                ? new Date(proposal.executedAt).getTime()
-                : null,
-              id: proposal.id,
-              url: proposal.url,
-            },
-            proposal: {
-              deposit: BigInt(proposal.deposit || 0),
-              id: proposal.id,
-              networkWeight: BigInt(proposal.networkWeight || 0),
-              numTransactions: BigInt(proposal.transactionCount || 0),
-              stage: proposal.stage,
-              proposer: proposal.proposer,
-              upvotes,
-              url: proposal.url,
-              expiryTimestamp: getStageEndTimestamp(proposal.stage, proposal.timestamp * 1000),
-              // deprecated field, prefer <root>.queuedAt, dequeuedAt, etc
-              timestamp: proposal.timestamp * 1000,
-              isPassing: await publicClient.readContract({
-                address: Addresses.Governance,
-                abi: governanceABI,
-                args: [BigInt(proposal.id)],
-                functionName: 'isProposalPassing',
-              }),
-              votes: {},
-            },
-          } as MergedProposalData;
+          const isPassing = await publicClient.readContract({
+            address: Addresses.Governance,
+            abi: governanceABI,
+            args: [BigInt(proposal.id)],
+            functionName: 'isProposalPassing',
+          });
+
+          return mergeProposalWithChainData(proposal, { upvotes, isPassing });
         }),
       );
     },
@@ -168,6 +146,11 @@ export function useGovernanceProposals() {
     isLoading,
     isError,
     proposals,
+    // True until the GitHub drafts fetch settles. With server-provided
+    // initialData, isLoading is false from the first render, so existence
+    // checks (e.g. "proposal not found" redirects) must also wait for drafts —
+    // draft-only CGPs are not in the database and only appear once this resolves.
+    isDraftsLoading: !draftsResults.drafts && !draftsResults.isError,
   };
 }
 
@@ -181,18 +164,20 @@ function normalizeProposalVotes(mergedProposalData: MergedProposalData, votes?: 
   if (!mergedProposalData.proposal) return;
 
   const { proposal } = mergedProposalData;
-  proposal.votes = votes ?? {
-    [VoteType.Yes]: 0n,
-    [VoteType.No]: 0n,
-    [VoteType.Abstain]: 0n,
-  };
-
   if (votes) {
+    proposal.votes = votes;
     // Normalize bigint vote totals
     Object.keys(proposal.votes).forEach((voteType) => {
       proposal.votes[voteType as keyof VoteAmounts] = BigInt(
         proposal.votes[voteType as keyof VoteAmounts],
       );
     });
+  } else if (!proposal.votes || !Object.keys(proposal.votes).length) {
+    // Keep any server-provided totals until the live votes query resolves
+    proposal.votes = {
+      [VoteType.Yes]: 0n,
+      [VoteType.No]: 0n,
+      [VoteType.Abstain]: 0n,
+    };
   }
 }

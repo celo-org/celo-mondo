@@ -31,7 +31,10 @@ export function DelegateeDescription({ delegatee }: { delegatee: Delegatee }) {
               className="font-mono text-sm text-taupe-600"
             />
             <span className="text-sm text-taupe-600">•</span>
-            <span className="text-sm text-taupe-600">{`Since ${dateString}`}</span>
+            {/* Server and browser format this in different locales/timezones */}
+            <span className="text-sm text-taupe-600" suppressHydrationWarning>
+              {`Since ${dateString}`}
+            </span>
           </div>
           <div className="mt-1.5 flex flex-wrap items-center space-x-3">
             {Object.entries(delegatee.links).map(([type, href], i) => (

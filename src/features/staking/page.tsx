@@ -36,7 +36,7 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
-import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
+import { useValidatorGroups, ValidatorGroupInfo } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
 import { formatCommission, getGroupStats } from 'src/features/validators/utils';
 import { Color } from 'src/styles/Color';
@@ -46,7 +46,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
-import { objLength } from 'src/utils/objects';
+import { deserializeBigints, objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
@@ -54,9 +54,23 @@ import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { isAddressEqual } from 'viem';
 import { useAccount } from 'wagmi';
 
-export default function Page({ address }: { address: Address }) {
+export default function Page({
+  address,
+  initialValidatorGroups,
+}: {
+  address: Address;
+  initialValidatorGroups?: string;
+}) {
   const account = useAccount();
-  const { addressToGroup } = useValidatorGroups();
+  // Serialized because RSC prop serialization downgrades bigints to strings
+  const initialGroups = useMemo(
+    () =>
+      initialValidatorGroups
+        ? deserializeBigints<ValidatorGroupInfo>(initialValidatorGroups)
+        : undefined,
+    [initialValidatorGroups],
+  );
+  const { addressToGroup } = useValidatorGroups(false, initialGroups);
   const group = addressToGroup?.[address];
   const { groupToStake } = useStakingBalances(account.address);
   const currentStakeInGroup = (group && groupToStake?.[group.address]?.active) ?? 0n;
@@ -135,7 +149,9 @@ function HeaderSection({
               >
                 <div className="flex items-center space-x-1.5">
                   <SlashIcon width={14} height={14} />
-                  <span>
+                  {/* Relative time is computed from Date.now(), which differs
+                      between the server render and hydration */}
+                  <span suppressHydrationWarning>
                     {group?.lastSlashed
                       ? getHumanReadableTimeString(group.lastSlashed)
                       : 'Never slashed'}

@@ -13,7 +13,6 @@ import { LegalRestrict } from 'src/components/police';
 import { WagmiContext } from 'src/config/wagmi';
 import { TransactionModal } from 'src/features/transactions/TransactionModal';
 import { scrubEventUrlProperties } from 'src/utils/posthog';
-import { useIsSsr } from 'src/utils/ssr';
 import ENSProvider from 'src/utils/useAddressToLabel';
 import HistoryProvider from 'src/utils/useHistory';
 import StakingModeProvider from 'src/utils/useStakingMode';
@@ -77,38 +76,25 @@ function PHProvider({ children }: PropsWithChildren) {
 export function App({ children }: PropsWithChildren<any>) {
   return (
     <ErrorBoundary>
-      <SafeHydrate>
-        <PHProvider>
-          <WagmiContext>
-            <HistoryProvider>
-              <StakingModeProvider>
-                <ENSProvider>
-                  <LegalRestrict>
-                    <BodyLayout>{children}</BodyLayout>
-                  </LegalRestrict>
-                  <TransactionModal />
-                  <ErrorBoundaryInline>
-                    <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
-                  </ErrorBoundaryInline>
-                </ENSProvider>
-              </StakingModeProvider>
-            </HistoryProvider>
-          </WagmiContext>
-        </PHProvider>
-      </SafeHydrate>
+      <PHProvider>
+        <WagmiContext>
+          <HistoryProvider>
+            <StakingModeProvider>
+              <ENSProvider>
+                <LegalRestrict>
+                  <BodyLayout>{children}</BodyLayout>
+                </LegalRestrict>
+                <TransactionModal />
+                <ErrorBoundaryInline>
+                  <ToastContainer transition={Zoom} position="bottom-right" limit={12} />
+                </ErrorBoundaryInline>
+              </ENSProvider>
+            </StakingModeProvider>
+          </HistoryProvider>
+        </WagmiContext>
+      </PHProvider>
     </ErrorBoundary>
   );
-}
-
-function SafeHydrate({ children }: PropsWithChildren<any>) {
-  // Avoid SSR for now as it's not needed and it
-  // complicates wallet integrations and media query hooks
-  const isSsr = useIsSsr();
-  if (isSsr) {
-    return <div></div>;
-  } else {
-    return children;
-  }
 }
 
 export function BodyLayout({ children }: PropsWithChildren<any>) {
