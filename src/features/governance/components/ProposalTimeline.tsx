@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 import {
   EXECUTION_STAGE_EXPIRY_TIME,
   QUEUED_STAGE_EXPIRY_TIME,
@@ -272,8 +273,23 @@ function TimelineTime({ timestamp }: { timestamp: number }) {
 }
 
 function ActiveCountdown({ endTime, label }: { endTime: number; label: string }) {
-  const now = Date.now();
-  const remaining = endTime - now;
+  // Which branch renders depends on Date.now(), and an ISR-cached page can be
+  // rendered before endTime but hydrated after it — a structural mismatch
+  // suppressHydrationWarning cannot cover. Until mounted, both the server and
+  // the first client render show the deterministic end timestamp; the live
+  // countdown/past state takes over right after hydration.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return (
+      <div className="text-xs text-taupe-600">
+        <TimelineTime timestamp={endTime} />
+      </div>
+    );
+  }
+
+  const remaining = endTime - Date.now();
   const isPast = remaining < 0;
 
   if (isPast) {
@@ -285,9 +301,7 @@ function ActiveCountdown({ endTime, label }: { endTime: number; label: string })
   }
 
   return (
-    // The remaining duration is computed from Date.now(), which differs
-    // between the server render and hydration
-    <div className="text-xs text-purple-300" suppressHydrationWarning>
+    <div className="text-xs text-purple-300">
       {label === 'Upvoting' ? 'Expires' : 'Ends'} in {getHumanReadableDuration(remaining)}
     </div>
   );

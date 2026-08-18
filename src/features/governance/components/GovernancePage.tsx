@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Fade } from 'src/components/animation/Fade';
 import { SkeletonBlock, SkeletonText } from 'src/components/animation/Skeleton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
@@ -35,21 +35,29 @@ enum Filter {
 // NOTE: 30 days in ms
 const RECENT_TIME_DIFF_MS = 1000 * 60 * 60 * 24 * 30;
 
-const FILTERS: Record<Filter, (proposal: MergedProposalData) => boolean> = {
-  [Filter.Recent]: (p) =>
+// nowMs is passed in (rather than calling Date.now() inline) so the server
+// render and the hydration render agree on list membership near the cutoff
+const FILTERS: Record<Filter, (proposal: MergedProposalData, nowMs: number) => boolean> = {
+  [Filter.Recent]: (p, nowMs) =>
     p.stage > ProposalStage.None &&
     Boolean(p.proposal) &&
-    p.proposal!.timestamp >= Date.now() - RECENT_TIME_DIFF_MS,
+    p.proposal!.timestamp >= nowMs - RECENT_TIME_DIFF_MS,
   [Filter.Voting]: (p) => p.stage === ProposalStage.Referendum,
   [Filter.Upcoming]: (p) => p.stage < ProposalStage.Approval,
   [Filter.History]: (p) => p.stage > ProposalStage.Execution,
 };
 
-export function GovernancePage({ initialProposals }: { initialProposals?: string }) {
+export function GovernancePage({
+  initialProposals,
+  generatedAtMs,
+}: {
+  initialProposals?: string;
+  generatedAtMs?: number;
+}) {
   return (
     <>
       <Section className="mt-4" containerClassName="lg:max-w-screen-md">
-        <ProposalList initialProposals={initialProposals} />
+        <ProposalList initialProposals={initialProposals} generatedAtMs={generatedAtMs} />
       </Section>
       <div className="fixed bottom-10 right-5 hidden md:block">
         <GetInvolvedCtaCard />
@@ -58,8 +66,20 @@ export function GovernancePage({ initialProposals }: { initialProposals?: string
   );
 }
 
-function ProposalList({ initialProposals }: { initialProposals?: string }) {
+function ProposalList({
+  initialProposals,
+  generatedAtMs,
+}: {
+  initialProposals?: string;
+  generatedAtMs?: number;
+}) {
   const isMobile = useIsMobile();
+
+  // The server's generation time keeps the Recent cutoff identical between
+  // the ISR-cached HTML and the hydration render; switch to the live clock
+  // right after mount
+  const [nowMs, setNowMs] = useState(() => generatedAtMs ?? Date.now());
+  useEffect(() => setNowMs(Date.now()), []);
 
   // Serialized because RSC prop serialization downgrades bigints to strings
   const initialData = useMemo(
@@ -82,13 +102,13 @@ function ProposalList({ initialProposals }: { initialProposals?: string }) {
     [trackEvent, onFilterChange],
   );
 
-  const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery });
+  const filteredProposals = useFilteredProposals({ proposals, filter, searchQuery, nowMs });
 
   const headerCounts = useMemo<Record<Filter, number>>(() => {
     const lens = Object.entries(FILTERS).reduce(
       (acc, [key, fn]) => ({
         ...acc,
-        [key]: proposals ? proposals.filter(fn).length : 0,
+        [key]: proposals ? proposals.filter((p) => fn(p, nowMs)).length : 0,
       }),
       {} as Record<Filter, number>,
     );
@@ -97,7 +117,7 @@ function ProposalList({ initialProposals }: { initialProposals?: string }) {
     }
 
     return lens;
-  }, [proposals]);
+  }, [proposals, nowMs]);
 
   return (
     <div className="w-full space-y-5 md:min-w-[38rem]">
@@ -183,13 +203,15 @@ function useFilteredProposals({
   proposals,
   filter,
   searchQuery,
+  nowMs,
 }: {
   proposals: MergedProposalData[];
   filter: Filter;
   searchQuery: string;
+  nowMs: number;
 }) {
   const tabFiltered = useMemo<MergedProposalData[]>(() => {
-    const filtered = filter ? proposals.filter(FILTERS[filter]) : proposals;
+    const filtered = filter ? proposals.filter((p) => FILTERS[filter](p, nowMs)) : proposals;
 
     // NOTE: make sure there's always at least 5 recent proposals
     if (filter === Filter.Recent && filtered.length < 5) {
@@ -206,7 +228,7 @@ function useFilteredProposals({
       }
     }
     return sortByIdThenCGP(filtered);
-  }, [proposals, filter]);
+  }, [proposals, filter, nowMs]);
 
   const query = searchQuery.trim().toLowerCase();
   const queryFilter = useCallback(

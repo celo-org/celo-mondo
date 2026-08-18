@@ -153,8 +153,11 @@ function useAddressToLabelInternal() {
         const lowercased = address.toLowerCase() as Address;
         // NOTE: if address was never fetched, flag to fetch it. Client-only:
         // on the server this would grow the module-level map unboundedly
-        // across requests (fetching happens only in the browser anyway)
-        if (typeof window !== 'undefined' && !debouncedMap[lowercased]) {
+        // across requests (fetching happens only in the browser anyway).
+        // Also check the singleton itself: during the first client render
+        // debouncedMap is still empty, and flagging then would overwrite
+        // names already cached from localStorage.
+        if (typeof window !== 'undefined' && !debouncedMap[lowercased] && !singleton[lowercased]) {
           singleton[lowercased] = FETCH_ME_PLEASE;
         }
 

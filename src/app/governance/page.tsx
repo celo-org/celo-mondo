@@ -24,5 +24,10 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const proposals = await getServerSideProposals(celoPublicClient.chain.id);
-  return <GovernancePage initialProposals={proposals ? serializeBigints(proposals) : undefined} />;
+  return (
+    <GovernancePage
+      initialProposals={proposals ? serializeBigints(proposals) : undefined}
+      generatedAtMs={Date.now()}
+    />
+  );
 }
