@@ -22,8 +22,11 @@ export default function useTabs<Tab extends string>(defaultTab: Tab) {
     const url = new URL(window.location.href);
     if (url.searchParams.get('tab') !== nextTab) {
       url.searchParams.set('tab', nextTab);
-      // Shallow update: keep the URL shareable without re-running the route
-      window.history.pushState(null, '', url);
+      // Shallow replace: keeps the URL shareable without re-running the route.
+      // Replace (not push) so the app's own navigation depth tracking in
+      // useHistory — which only records pathname changes — stays consistent
+      // with the real browser history for BackLink fallbacks.
+      window.history.replaceState(null, '', url);
     }
   }, []);
 

@@ -6,16 +6,25 @@ export function bigIntReplacer(_key: any, value: any) {
   return value;
 }
 
-// Marker-prefixed BigInt JSON encoding for lossless round-trips across the
+// Tagged-object JSON encoding for lossless round-trips across the
 // server -> client component boundary, where RSC serialization downgrades
-// bigint props to plain strings
-const BIGINT_MARKER = '__bigint__:';
-
+// bigint props to plain strings.
+//
+// Bigints and Dates are wrapped in { __serdeType, value } objects rather than
+// marker-prefixed strings: parts of the serialized data (e.g. on-chain account
+// names) are attacker-controlled strings, and a string prefix could be forged
+// to corrupt or crash deserialization. A tagged object cannot be produced by
+// any string value.
+//
 // The encoding walks the value manually instead of using a JSON.stringify
 // replacer: src/vendor/polyfill.ts defines BigInt.prototype.toJSON, which
-// JSON.stringify applies before the replacer ever sees the bigint
+// JSON.stringify applies before the replacer ever sees the bigint.
+const SERDE_TYPE_KEY = '__serdeType';
+const BIGINT_PATTERN = /^-?\d+$/;
+
 function encodeBigints(value: unknown): unknown {
-  if (typeof value === 'bigint') return `${BIGINT_MARKER}${value.toString()}`;
+  if (typeof value === 'bigint') return { [SERDE_TYPE_KEY]: 'bigint', value: value.toString() };
+  if (value instanceof Date) return { [SERDE_TYPE_KEY]: 'date', value: value.toISOString() };
   if (Array.isArray(value)) return value.map(encodeBigints);
   if (value && typeof value === 'object') {
     const encoded: Record<string, unknown> = {};
@@ -32,11 +41,13 @@ export function serializeBigints(value: unknown): string {
 }
 
 export function deserializeBigints<T>(json: string): T {
-  return JSON.parse(json, (_key, v) =>
-    typeof v === 'string' && v.startsWith(BIGINT_MARKER)
-      ? BigInt(v.slice(BIGINT_MARKER.length))
-      : v,
-  ) as T;
+  return JSON.parse(json, (_key, v) => {
+    if (v && typeof v === 'object' && !Array.isArray(v) && typeof v.value === 'string') {
+      if (v[SERDE_TYPE_KEY] === 'bigint' && BIGINT_PATTERN.test(v.value)) return BigInt(v.value);
+      if (v[SERDE_TYPE_KEY] === 'date') return new Date(v.value);
+    }
+    return v;
+  }) as T;
 }
 
 export function isObject(item: any) {

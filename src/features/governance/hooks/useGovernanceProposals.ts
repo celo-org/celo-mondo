@@ -146,6 +146,11 @@ export function useGovernanceProposals(initialProposals?: MergedProposalData[]) 
     isLoading,
     isError,
     proposals,
+    // True until the GitHub drafts fetch settles. With server-provided
+    // initialData, isLoading is false from the first render, so existence
+    // checks (e.g. "proposal not found" redirects) must also wait for drafts —
+    // draft-only CGPs are not in the database and only appear once this resolves.
+    isDraftsLoading: !draftsResults.drafts && !draftsResults.isError,
   };
 }
 
@@ -159,18 +164,20 @@ function normalizeProposalVotes(mergedProposalData: MergedProposalData, votes?: 
   if (!mergedProposalData.proposal) return;
 
   const { proposal } = mergedProposalData;
-  proposal.votes = votes ?? {
-    [VoteType.Yes]: 0n,
-    [VoteType.No]: 0n,
-    [VoteType.Abstain]: 0n,
-  };
-
   if (votes) {
+    proposal.votes = votes;
     // Normalize bigint vote totals
     Object.keys(proposal.votes).forEach((voteType) => {
       proposal.votes[voteType as keyof VoteAmounts] = BigInt(
         proposal.votes[voteType as keyof VoteAmounts],
       );
     });
+  } else if (!proposal.votes || !Object.keys(proposal.votes).length) {
+    // Keep any server-provided totals until the live votes query resolves
+    proposal.votes = {
+      [VoteType.Yes]: 0n,
+      [VoteType.No]: 0n,
+      [VoteType.Abstain]: 0n,
+    };
   }
 }

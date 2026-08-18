@@ -7,15 +7,14 @@ import { serializeBigints } from 'src/utils/objects';
 // Serve a cached page and refresh it in the background at most every 5 minutes
 export const revalidate = 300;
 
-const basicTitleDescription = {
-  title: 'Celo Mondo | Governance',
-  description:
-    'Browse and vote on Celo governance proposals. Participate in shaping the future of the Celo network.',
-};
+const description =
+  'Browse and vote on Celo governance proposals. Participate in shaping the future of the Celo network.';
 
 export const metadata: Metadata = {
-  ...basicTitleDescription,
-  openGraph: basicTitleDescription,
+  // The root layout template appends the "Celo Mondo" branding
+  title: 'Governance',
+  description,
+  openGraph: { title: 'Celo Mondo | Governance', description },
   twitter: {
     title: 'Celo Mondo',
     site: '@celo',

@@ -27,7 +27,7 @@ export async function generateMetadata(props: { params: Params }): Promise<Metad
     description,
     openGraph: {
       title,
-      description: `Delegate to ${displayName} | ${address}`,
+      description,
     },
     twitter: {
       title: shortenAddress(address),

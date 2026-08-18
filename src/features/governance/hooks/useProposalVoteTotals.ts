@@ -42,6 +42,8 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
   const proposalVotes = propData?.proposal?.votes;
   const isActive = !!stage && ACTIVE_PROPOSAL_STAGES.includes(stage);
 
+  const hasVotes = proposalVotes && Object.values(proposalVotes).some((v) => v > 0n);
+
   const {
     isLoading,
     isError,
@@ -49,6 +51,10 @@ export function useProposalVoteTotals(propData?: MergedProposalData) {
     data: votes,
   } = useQuery({
     queryKey: ['useProposalVoteTotals', id, stage, isActive, proposalVotes],
+    // Server-provided totals so vote charts render during SSR; marked stale so
+    // the client refetches fresh on-chain values after hydration
+    initialData: hasVotes ? proposalVotes : undefined,
+    initialDataUpdatedAt: 0,
     queryFn: async () => {
       if (!id || !stage || stage < ProposalStage.Approval) return null;
 

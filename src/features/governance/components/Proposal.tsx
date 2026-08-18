@@ -47,10 +47,10 @@ export function Proposal({
       initialProposals ? deserializeBigints<MergedProposalData[]>(initialProposals) : undefined,
     [initialProposals],
   );
-  const { proposals, isLoading } = useGovernanceProposals(initialData);
+  const { proposals, isLoading, isDraftsLoading } = useGovernanceProposals(initialData);
 
   const propData = useMemo(() => findProposal(proposals, id), [proposals, id]);
-  usePageInvariant(isLoading || propData, '/governance', 'Proposal not found');
+  usePageInvariant(isLoading || isDraftsLoading || propData, '/governance', 'Proposal not found');
 
   if (!propData) {
     return <ProposalDetailSkeleton />;
