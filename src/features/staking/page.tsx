@@ -149,7 +149,9 @@ function HeaderSection({
               >
                 <div className="flex items-center space-x-1.5">
                   <SlashIcon width={14} height={14} />
-                  <span>
+                  {/* Relative time is computed from Date.now(), which differs
+                      between the server render and hydration */}
+                  <span suppressHydrationWarning>
                     {group?.lastSlashed
                       ? getHumanReadableTimeString(group.lastSlashed)
                       : 'Never slashed'}

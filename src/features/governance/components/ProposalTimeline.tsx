@@ -260,7 +260,12 @@ function TimelineTime({ timestamp }: { timestamp: number }) {
   const utcStr = getUTCDateString(timestamp);
 
   return (
-    <span className="tooltip cursor-default text-xs text-taupe-600" data-tip={utcStr}>
+    // Server and browser format this in different locales/timezones
+    <span
+      className="tooltip cursor-default text-xs text-taupe-600"
+      data-tip={utcStr}
+      suppressHydrationWarning
+    >
       {localStr}
     </span>
   );
@@ -280,7 +285,9 @@ function ActiveCountdown({ endTime, label }: { endTime: number; label: string })
   }
 
   return (
-    <div className="text-xs text-purple-300">
+    // The remaining duration is computed from Date.now(), which differs
+    // between the server render and hydration
+    <div className="text-xs text-purple-300" suppressHydrationWarning>
       {label === 'Upvoting' ? 'Expires' : 'Ends'} in {getHumanReadableDuration(remaining)}
     </div>
   );
