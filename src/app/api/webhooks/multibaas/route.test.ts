@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
+import database from 'src/config/database';
 import { Address } from 'viem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
@@ -84,6 +85,7 @@ function makeMultiBaasEvent(overrides: {
   contractAddress?: string;
   inputs?: { name: string; value: string; hashed: boolean; type: string }[];
   rawFields?: string;
+  indexInLog?: number;
 }) {
   return {
     id: 'test-event-id',
@@ -101,7 +103,7 @@ function makeMultiBaasEvent(overrides: {
           name: 'Governance',
           label: 'Governance',
         },
-        indexInLog: 0,
+        indexInLog: overrides.indexInLog ?? 0,
       },
     },
   };
@@ -344,6 +346,46 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(response.status).toBe(200);
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
       expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
+    });
+  });
+
+  describe('event persistence', () => {
+    const insertedRows = () => {
+      const valuesMock = (database as unknown as { values: ReturnType<typeof vi.fn> }).values;
+      return valuesMock.mock.calls.at(-1)?.[0] as { logIndex: number }[];
+    };
+
+    it('persists the block-scoped logIndex from rawFields (hex string)', async () => {
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({
+          topics: ['0x'],
+          data: '0x',
+          blockNumber: '123',
+          transactionHash: '0xaaa',
+          logIndex: '0x1a',
+        }),
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      const rows = insertedRows();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].logIndex).toBe(26);
+    });
+
+    it('falls back to indexInLog when rawFields lacks logIndex', async () => {
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+        indexInLog: 7,
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      expect(insertedRows()[0].logIndex).toBe(7);
     });
   });
 

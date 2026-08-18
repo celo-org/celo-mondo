@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
+import database from 'src/config/database';
 import { Address } from 'viem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
@@ -89,10 +90,11 @@ function makeAlchemyLog(
     address: string;
     txHash: string;
     txStatus: number;
+    index: number;
   }> = {},
 ) {
   return {
-    index: 0,
+    index: overrides.index ?? 0,
     data: overrides.data ?? '0x',
     topics: overrides.topics ?? [
       '0x1bfe527f3548d9258c2512b6689f0acfccdd0557d80a53845db25fc57e93d8fe', // ProposalQueued
@@ -376,6 +378,19 @@ describe('POST /api/webhooks/alchemy', () => {
       expect(response.status).toBe(200);
       expect(mockFetchHistoricalEventsAndSaveToDBProgressively).not.toHaveBeenCalled();
       expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('event persistence', () => {
+    it('persists the block-scoped log index of the delivered log', async () => {
+      const log = makeAlchemyLog({ index: 5 });
+      const response = await POST(createSignedRequest(makeAlchemyPayload([log])));
+
+      expect(response.status).toBe(200);
+      const valuesMock = (database as unknown as { values: ReturnType<typeof vi.fn> }).values;
+      const rows = valuesMock.mock.calls.at(-1)?.[0] as { logIndex: number }[];
+      expect(rows).toHaveLength(1);
+      expect(rows[0].logIndex).toBe(5);
     });
   });
 

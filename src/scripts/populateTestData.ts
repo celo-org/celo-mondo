@@ -81,6 +81,7 @@ function createEvent(
     data: '0x' as `0x${string}`,
     blockNumber: BigInt(blockNumber),
     transactionHash: transactionHash as `0x${string}`,
+    logIndex: 0,
   };
 }
 
@@ -197,6 +198,7 @@ function createConfirmationEvent(
     data: '0x' as `0x${string}`,
     blockNumber: BigInt(blockNumber),
     transactionHash: transactionHash as `0x${string}`,
+    logIndex: 0,
   };
 }
 

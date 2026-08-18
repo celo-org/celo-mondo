@@ -27,6 +27,7 @@ function baseEvent() {
     ],
     data: '0x' as `0x${string}`,
     blockNumber: 69399792n,
+    logIndex: 0,
   };
 }
 
@@ -35,7 +36,12 @@ async function ingest(source: IngestSource) {
     .insert(eventsTable)
     .values(withIngestionMetadata([baseEvent()], TEST_CHAIN_ID, source))
     .onConflictDoUpdate({
-      target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+      target: [
+        eventsTable.eventName,
+        eventsTable.transactionHash,
+        eventsTable.logIndex,
+        eventsTable.chainId,
+      ],
       set: ingestedViaConflictSet,
     });
 }
@@ -122,6 +128,33 @@ describe('event ingestion provenance', () => {
     expect(formatIngestedVia(row.ingestedVia)).toMatch(
       /^alchemy \(\d\d:\d\d:\d\d\), multibaas \(\d\d:\d\d:\d\d\)$/,
     );
+  });
+
+  it('stores two same-name events from one transaction as separate rows', async () => {
+    // A single tx can emit the same event twice (e.g. ProposalVoteRevokedV2 for
+    // two proposals when revoking votes on both at once). Before logIndex joined
+    // the PK, batch-inserting these crashed with "ON CONFLICT DO UPDATE command
+    // cannot affect row a second time".
+    const twin = [
+      { ...baseEvent(), args: { proposalId: '301' }, logIndex: 4 },
+      { ...baseEvent(), args: { proposalId: '302' }, logIndex: 5 },
+    ];
+    await database
+      .insert(eventsTable)
+      .values(withIngestionMetadata(twin, TEST_CHAIN_ID, 'cron'))
+      .onConflictDoUpdate({
+        target: [
+          eventsTable.eventName,
+          eventsTable.transactionHash,
+          eventsTable.logIndex,
+          eventsTable.chainId,
+        ],
+        set: ingestedViaConflictSet,
+      });
+
+    const all = await database.select().from(eventsTable);
+    expect(all).toHaveLength(2);
+    expect(all.map((r) => r.logIndex).sort()).toEqual([4, 5]);
   });
 
   it('order of arrival is reflected: MultiBaas first, then Alchemy', async () => {

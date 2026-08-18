@@ -39,6 +39,10 @@ export const eventsTable = pgTable(
     data: text().notNull().$type<`0x${string}`>(),
     blockNumber: numeric({ mode: 'bigint' }).notNull(),
     transactionHash: varchar({ length: 66 }).notNull(),
+    // Position of the log within its block. Distinguishes multiple events of the
+    // same name emitted by a single transaction (e.g. revoking votes on two
+    // proposals at once). Rows ingested before this column existed hold 0.
+    logIndex: integer().notNull(),
     // First time this row was ingested (set on insert, never overwritten on conflict).
     ingestedAt: timestamp({ withTimezone: true }).defaultNow(),
     // Per-provider first-arrival timestamps, e.g.
@@ -48,7 +52,9 @@ export const eventsTable = pgTable(
   },
   (table) => [
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
-    primaryKey({ columns: [table.eventName, table.transactionHash, table.chainId] }),
+    primaryKey({
+      columns: [table.eventName, table.transactionHash, table.logIndex, table.chainId],
+    }),
 
     index().on(table.blockNumber),
     index().on(table.eventName),
