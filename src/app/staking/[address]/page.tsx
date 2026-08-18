@@ -8,6 +8,14 @@ import { serializeBigints } from 'src/utils/objects';
 // Serve a cached page and refresh it in the background at most every 5 minutes
 export const revalidate = 300;
 
+// Without generateStaticParams, Next treats a dynamic-segment route as fully
+// dynamic and ignores revalidate — every visit would pay the full validator
+// multicall sweep. An empty list lets each visited address be rendered once
+// on demand and then served from the ISR cache.
+export function generateStaticParams() {
+  return [];
+}
+
 type Params = Promise<{ address: Address }>;
 
 export async function generateMetadata(props: { params: Params }): Promise<Metadata> {

@@ -13,6 +13,14 @@ import { serializeBigints } from 'src/utils/objects';
 // Serve a cached page and refresh it in the background at most every 5 minutes
 export const revalidate = 300;
 
+// Without generateStaticParams, Next treats a dynamic-segment route as fully
+// dynamic and ignores revalidate — every visit would pay the full DB + RPC +
+// GitHub render. An empty list keeps builds fast while letting each visited
+// id be rendered once on demand and then served from the ISR cache.
+export function generateStaticParams() {
+  return [];
+}
+
 // id might be just a number as a string or can be cgp-N
 type Params = Promise<{ id: string }>;
 

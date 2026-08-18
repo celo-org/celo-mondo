@@ -118,7 +118,7 @@ function ProposalContent({
   );
 }
 
-function ProposalDetailSkeleton() {
+export function ProposalDetailSkeleton() {
   return (
     <>
       {/* Left panel — mirrors ProposalContent */}
