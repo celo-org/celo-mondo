@@ -22,6 +22,7 @@ export const BRIDGES: Bridge[] = [
     logo: SquidLogo,
     description:
       'Axelar based cross chain DEX. Good for moving stablecoins between chains, or swapping directly between assets.',
+    pinnedIndex: 2,
   },
   {
     id: 'jumper',
@@ -58,3 +59,28 @@ export const BRIDGES: Bridge[] = [
     description: '1:1 transfers of native USDT powered by the Layer Zero OFT. Best for moving USDT',
   },
 ];
+
+// Orders bridges by click count (descending), then name, and then inserts
+// pinned bridges at their fixed positions so curated placements survive
+// analytics-driven reordering.
+export function sortBridgesForDisplay<T extends Bridge & { clickCount: number }>(
+  bridges: T[],
+): T[] {
+  const pinned = bridges
+    .filter((bridge) => bridge.pinnedIndex !== undefined)
+    .sort((a, b) => (a.pinnedIndex ?? 0) - (b.pinnedIndex ?? 0));
+
+  const sorted = bridges
+    .filter((bridge) => bridge.pinnedIndex === undefined)
+    .sort((a, b) => {
+      if (b.clickCount !== a.clickCount) {
+        return b.clickCount - a.clickCount;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+  for (const bridge of pinned) {
+    sorted.splice(Math.min(bridge.pinnedIndex ?? 0, sorted.length), 0, bridge);
+  }
+  return sorted;
+}
