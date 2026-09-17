@@ -130,6 +130,24 @@ describe('event ingestion provenance', () => {
     );
   });
 
+  it('normalizes the contract address to lowercase on the way in', async () => {
+    // MultiBaas delivers checksummed addresses, Alchemy and viem lowercase ones.
+    // The PK does not cover the address, so an un-normalized row keeps whatever
+    // casing the first writer used and then never matches a reader's lowercase
+    // filter.
+    await ingest('multibaas');
+    const row = await readRow();
+
+    expect(row.address).toBe(baseEvent().address.toLowerCase());
+  });
+
+  it('normalizes the address regardless of which provider wrote the row first', async () => {
+    for (const source of ['alchemy', 'multibaas', 'cron'] as IngestSource[]) {
+      const [stamped] = withIngestionMetadata([baseEvent()], TEST_CHAIN_ID, source);
+      expect(stamped.address).toBe(baseEvent().address.toLowerCase());
+    }
+  });
+
   it('stores two same-name events from one transaction as separate rows', async () => {
     // A single tx can emit the same event twice (e.g. ProposalVoteRevokedV2 for
     // two proposals when revoking votes on both at once). Before logIndex joined

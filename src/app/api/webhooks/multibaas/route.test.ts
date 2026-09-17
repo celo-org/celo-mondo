@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
 import database from 'src/config/database';
-import { Address } from 'viem';
+import { Address, getAddress } from 'viem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
 
@@ -352,7 +352,11 @@ describe('POST /api/webhooks/multibaas', () => {
   describe('event persistence', () => {
     const insertedRows = () => {
       const valuesMock = (database as unknown as { values: ReturnType<typeof vi.fn> }).values;
-      return valuesMock.mock.calls.at(-1)?.[0] as { logIndex: number }[];
+      return valuesMock.mock.calls.at(-1)?.[0] as {
+        logIndex: number;
+        address: string;
+        args: Record<string, unknown>;
+      }[];
     };
 
     it('persists the block-scoped logIndex from rawFields (hex string)', async () => {
@@ -373,6 +377,48 @@ describe('POST /api/webhooks/multibaas', () => {
       const rows = insertedRows();
       expect(rows).toHaveLength(1);
       expect(rows[0].logIndex).toBe(26);
+    });
+
+    it('stores the contract address lowercased whatever casing the provider sent', async () => {
+      // MultiBaas delivers checksummed addresses. Readers filter on a lowercase
+      // address, so a checksummed row is invisible to them.
+      const event = makeMultiBaasEvent({
+        name: 'Confirmation',
+        contractAddress: MOCK_APPROVER_MULTISIG,
+        inputs: [{ name: 'transactionId', value: '274', hashed: false, type: 'uint256' }],
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      expect(insertedRows()[0].address).toBe(MOCK_APPROVER_MULTISIG.toLowerCase());
+    });
+
+    it('decodes multisig owner-management events against the multisig ABI', async () => {
+      // OwnerAddition is not an approval event, but it is emitted by the
+      // multisig — decoding it against the governance ABI fails and persists an
+      // empty args object.
+      const newOwner = '0xc85639289d4bbb5f90e380a0f4db6b77a2f777bf';
+      const event = makeMultiBaasEvent({
+        name: 'OwnerAddition',
+        contractAddress: MOCK_APPROVER_MULTISIG,
+        rawFields: JSON.stringify({
+          topics: [
+            '0xf39e6e1eb0edcf53c221607b54b00cd28f3196fed0a24994dc308b8f611b682d',
+            `0x000000000000000000000000${newOwner.slice(2)}`,
+          ],
+          data: '0x',
+        }),
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      const row = insertedRows()[0];
+      expect(row.args).toEqual({ owner: getAddress(newOwner) });
+      // owner events carry no multisig transaction id, so no approval work
+      expect(mockUpdateApprovalsInDB).not.toHaveBeenCalled();
     });
 
     it('falls back to indexInLog when rawFields lacks logIndex', async () => {

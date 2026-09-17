@@ -64,6 +64,13 @@
       "when": 1785942610650,
       "tag": "0008_events_log_index_pk",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789652490578,
+      "tag": "0009_normalize_event_address_casing",
+      "breakpoints": true
     }
   ]
 }

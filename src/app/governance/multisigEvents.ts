@@ -18,7 +18,9 @@ export async function fetchMultiSigEvents(
   const filters: SQL[] = [
     eq(eventsTable.chainId, chainId),
     eq(eventsTable.eventName, event),
-    eq(eventsTable.address, multisigAddress.toLowerCase()),
+    // Compare on lower(address): ingestion normalizes new rows, but rows written
+    // before that normalization existed may still hold a checksummed address.
+    sql`lower(${eventsTable.address}) = ${multisigAddress.toLowerCase()}`,
   ];
 
   if (transactionId !== undefined) {
