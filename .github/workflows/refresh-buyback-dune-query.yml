@@ -1,0 +1,24 @@
+name: Refresh Buyback Dune Query
+
+# Re-executes the Dune P&L query (id 6898547) that powers the /buyback
+# dashboard, so its data is at most a day old. The app itself only reads the
+# query's cached results and never spends execution credits.
+
+on:
+  schedule:
+    # Run daily at 05:30 UTC (after the previous UTC day is complete and
+    # Dune's ingestion has caught up)
+    - cron: '30 5 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  execute-query:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Dune query 6898547
+        run: |
+          curl --fail-with-body -X POST "https://api.dune.com/api/v1/query/6898547/execute" \
+            -H "X-Dune-API-Key: ${{ secrets.DUNE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"performance": "medium"}'
