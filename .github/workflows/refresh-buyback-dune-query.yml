@@ -1,0 +1,63 @@
+name: Refresh Buyback Dune Query
+
+# Re-executes the Dune P&L query (id 6898547) that powers the /buyback
+# dashboard, so its data is at most a day old. The app itself only reads the
+# query's cached results and never spends execution credits.
+
+on:
+  schedule:
+    # Run daily at 05:30 UTC (after the previous UTC day is complete and
+    # Dune's ingestion has caught up)
+    - cron: '30 5 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  execute-query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Execute Dune query 6898547 and wait for it to finish
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API: https://api.dune.com/api/v1
+        run: |
+          set -euo pipefail
+
+          execution_id=$(curl --fail-with-body -sS --retry 3 --retry-all-errors --retry-delay 5 \
+            -X POST "$DUNE_API/query/6898547/execute" \
+            -H "X-Dune-API-Key: $DUNE_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{"performance": "medium"}' | jq -r '.execution_id // empty')
+          if [ -z "$execution_id" ]; then
+            echo "Dune did not return an execution id" >&2
+            exit 1
+          fi
+          echo "Dune execution $execution_id started"
+
+          # /execute only enqueues the run. Poll until Dune reports a terminal
+          # state (as report.py's wait_for_execution does) so a failed or stuck
+          # refresh shows up as a failed workflow instead of silently stale data.
+          for _ in $(seq 1 60); do
+            # A transient API hiccup should not fail the refresh; try again next tick.
+            if ! status=$(curl --fail-with-body -sS "$DUNE_API/execution/$execution_id/status" \
+              -H "X-Dune-API-Key: $DUNE_API_KEY"); then
+              echo "Status check failed, retrying..."
+              sleep 10
+              continue
+            fi
+            state=$(echo "$status" | jq -r '.state')
+            if [ "$(echo "$status" | jq -r '.is_execution_finished')" = "true" ]; then
+              if [ "$state" != "QUERY_STATE_COMPLETED" ]; then
+                echo "Dune execution $execution_id ended with state $state" >&2
+                exit 1
+              fi
+              echo "Dune execution $execution_id completed"
+              exit 0
+            fi
+            echo "State: $state, waiting..."
+            sleep 10
+          done
+
+          echo "Timed out waiting for Dune execution $execution_id" >&2
+          exit 1
