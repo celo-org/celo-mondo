@@ -15,10 +15,39 @@ on:
 jobs:
   execute-query:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Execute Dune query 6898547
+      - name: Execute Dune query 6898547 and wait for it to finish
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          DUNE_API: https://api.dune.com/api/v1
         run: |
-          curl --fail-with-body -X POST "https://api.dune.com/api/v1/query/6898547/execute" \
-            -H "X-Dune-API-Key: ${{ secrets.DUNE_API_KEY }}" \
+          set -euo pipefail
+
+          execution_id=$(curl --fail-with-body -sS -X POST "$DUNE_API/query/6898547/execute" \
+            -H "X-Dune-API-Key: $DUNE_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"performance": "medium"}'
+            -d '{"performance": "medium"}' | jq -r '.execution_id')
+          echo "Dune execution $execution_id started"
+
+          # /execute only enqueues the run. Poll until Dune reports a terminal
+          # state (as report.py's wait_for_execution does) so a failed or stuck
+          # refresh shows up as a failed workflow instead of silently stale data.
+          for _ in $(seq 1 60); do
+            status=$(curl --fail-with-body -sS "$DUNE_API/execution/$execution_id/status" \
+              -H "X-Dune-API-Key: $DUNE_API_KEY")
+            state=$(echo "$status" | jq -r '.state')
+            if [ "$(echo "$status" | jq -r '.is_execution_finished')" = "true" ]; then
+              if [ "$state" != "QUERY_STATE_COMPLETED" ]; then
+                echo "Dune execution $execution_id ended with state $state" >&2
+                exit 1
+              fi
+              echo "Dune execution $execution_id completed"
+              exit 0
+            fi
+            echo "State: $state, waiting..."
+            sleep 10
+          done
+
+          echo "Timed out waiting for Dune execution $execution_id" >&2
+          exit 1
