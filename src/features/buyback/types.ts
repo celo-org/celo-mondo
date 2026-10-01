@@ -15,6 +15,11 @@ export interface DuneFeeRow {
   fee_USDC: number | string | null;
   fee_CELO_usd: number | string | null;
   fee_EURm_usd: number | string | null;
+  /**
+   * USD value of fees paid in any other fee currency. The query excludes COPm
+   * here because Dune's price feed for it is off by about three orders of
+   * magnitude, which used to inflate this column by thousands of dollars.
+   */
   others_usd: number | string | null;
   batcher_cost_eth: number | string | null;
   proposer_cost_eth: number | string | null;
@@ -25,6 +30,7 @@ export interface DuneFeeRow {
 
 /** Derived P&L for a single day. */
 export interface DailyMetrics {
+  /** UTC calendar day (YYYY-MM-DD). */
   day: string;
   celoPriceUsd: number;
   /** Total fee revenue in USD (CELO fees + stablecoin fees). */
@@ -43,7 +49,7 @@ export interface DailyMetrics {
   communityFundCelo: number;
 }
 
-/** Aggregated dashboard figures for a period (all-time or last 24 hrs). */
+/** Aggregated dashboard figures for a period (the whole window or a single day). */
 export interface PeriodStats {
   feesCollectedUsd: number;
   feesAfterExpensesUsd: number;
@@ -54,8 +60,14 @@ export interface PeriodStats {
 
 /** Full dashboard payload returned by the API route. */
 export interface BuybackStats {
+  /** Totals for every complete day from `sinceDay` through `latestDay`. */
   totals: PeriodStats;
-  last24h: PeriodStats | null;
+  /** Figures for `latestDay` alone, or null when no priced day is available. */
+  latestDayStats: PeriodStats | null;
+  /** First day counted: the day after the CGP-287 cutoff (YYYY-MM-DD). */
+  sinceDay: string;
+  /** Most recent complete day with price data (YYYY-MM-DD), if any. */
   latestDay: string | null;
-  updatedAt: string;
+  /** When Dune last finished executing the query (ISO timestamp), if known. */
+  updatedAt: string | null;
 }

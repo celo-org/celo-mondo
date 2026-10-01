@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import Link from 'next/link';
 import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { Section } from 'src/components/layout/Section';
@@ -42,35 +43,35 @@ function fmtPrice(value?: number): Cell {
 interface Metric {
   label: string;
   total: Cell;
-  last24h: Cell;
+  latestDay: Cell;
 }
 
-function buildMetrics(totals?: PeriodStats, last24h?: PeriodStats | null): Metric[] {
+function buildMetrics(totals?: PeriodStats, latestDay?: PeriodStats | null): Metric[] {
   return [
     {
       label: 'Fees collected',
       total: fmtUsd(totals?.feesCollectedUsd),
-      last24h: fmtUsd(last24h?.feesCollectedUsd),
+      latestDay: fmtUsd(latestDay?.feesCollectedUsd),
     },
     {
       label: 'Fees after basic expenses',
       total: fmtUsd(totals?.feesAfterExpensesUsd),
-      last24h: fmtUsd(last24h?.feesAfterExpensesUsd),
+      latestDay: fmtUsd(latestDay?.feesAfterExpensesUsd),
     },
     {
       label: 'CELO accrued for the Community Fund',
       total: fmtCelo(totals?.celoToCommunityFund),
-      last24h: fmtCelo(last24h?.celoToCommunityFund),
+      latestDay: fmtCelo(latestDay?.celoToCommunityFund),
     },
     {
       label: 'USD value accrued for the Community Fund',
       total: fmtUsd(totals?.usdToCommunityFund),
-      last24h: fmtUsd(last24h?.usdToCommunityFund),
+      latestDay: fmtUsd(latestDay?.usdToCommunityFund),
     },
     {
       label: 'Average CELO price',
       total: fmtPrice(totals?.avgCeloPriceUsd),
-      last24h: fmtPrice(last24h?.avgCeloPriceUsd),
+      latestDay: fmtPrice(latestDay?.avgCeloPriceUsd),
     },
   ];
 }
@@ -96,8 +97,13 @@ export default function Page() {
         , Celo L2 sequencer fees — after L1 operating costs and the OP Superchain share — are used
         to acquire CELO for the Community Fund, where CELO holders govern their use (which may
         include burning). Figures show what has accrued from fees, derived from the same daily
-        P&amp;L data as the operator distribution report; actual transfers to the Community Fund
-        are executed in periodic batches.
+        P&amp;L data as the operator distribution report; actual transfers to the Community Fund are
+        executed in periodic batches. Totals start the day after{' '}
+        <Link href="/governance/287" className="underline">
+          CGP-287
+        </Link>
+        , which already returned all earlier sequencer revenue to the Community Fund in one
+        transfer.
       </p>
 
       {isError ? (
@@ -105,10 +111,14 @@ export default function Page() {
       ) : isLoading ? (
         <StatsSkeleton />
       ) : (
-        <StatsTable metrics={buildMetrics(stats?.totals, stats?.last24h)} />
+        <StatsTable metrics={buildMetrics(stats?.totals, stats?.latestDayStats)} />
       )}
 
-      <Footnote latestDay={stats?.latestDay} updatedAt={stats?.updatedAt} />
+      <Footnote
+        sinceDay={stats?.sinceDay}
+        latestDay={stats?.latestDay}
+        updatedAt={stats?.updatedAt}
+      />
     </Section>
   );
 }
@@ -119,7 +129,7 @@ function StatsTable({ metrics }: { metrics: Metric[] }) {
       <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 border-b border-taupe-300 bg-taupe-100 px-4 py-3 text-xs uppercase tracking-wide text-taupe-600 sm:grid-cols-[1fr_10rem_10rem]">
         <span>Metric</span>
         <span className="text-right">Total</span>
-        <span className="hidden text-right sm:block">Last 24 hrs</span>
+        <span className="hidden text-right sm:block">Latest day</span>
       </div>
       {metrics.map((m) => (
         <div
@@ -139,10 +149,10 @@ function StatsTable({ metrics }: { metrics: Metric[] }) {
             <span
               className={clsx(
                 'whitespace-nowrap text-right text-xs text-taupe-600 sm:font-serif sm:text-lg',
-                m.last24h.negative ? 'sm:text-red-600' : 'sm:text-green-600',
+                m.latestDay.negative ? 'sm:text-red-600' : 'sm:text-green-600',
               )}
             >
-              {m.last24h.text}
+              {m.latestDay.text}
             </span>
           </div>
         </div>
@@ -176,12 +186,18 @@ function ErrorNotice() {
   );
 }
 
-function Footnote({ latestDay, updatedAt }: { latestDay?: string | null; updatedAt?: string }) {
+function Footnote({
+  sinceDay,
+  latestDay,
+  updatedAt,
+}: {
+  sinceDay?: string;
+  latestDay?: string | null;
+  updatedAt?: string | null;
+}) {
   const parts: string[] = [];
-  // Dune returns the day as a full timestamp ("2026-06-18 00:00:00.000 UTC");
-  // only the date part is meaningful here.
-  if (latestDay) parts.push(`Data through ${latestDay.slice(0, 10)}`);
-  if (updatedAt) parts.push(`updated ${new Date(updatedAt).toUTCString()}`);
+  if (sinceDay && latestDay) parts.push(`Data ${sinceDay} to ${latestDay} (UTC days)`);
+  if (updatedAt) parts.push(`Dune refreshed ${new Date(updatedAt).toUTCString()}`);
 
   return (
     <p className="text-center text-xs text-taupe-600">

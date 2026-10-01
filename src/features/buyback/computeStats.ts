@@ -3,16 +3,61 @@ import { BuybackStats, DailyMetrics, DuneFeeRow, PeriodStats } from 'src/feature
 // Constants mirror scripts/sequencer-fees/report.py (celo-monorepo, CGP-286).
 // Stablecoins are valued at their USD peg; EURm keeps Dune's forex price.
 const STABLE_PEGS = { USDT: 1.0, USDC: 1.0, USDm: 1.0 } as const;
-// Carbon Fund fraction is 0% after CGP-288 paused those payments.
+// Carbon Fund fraction is 0% after CGP-288 paused those payments. report.py reads
+// it live from FeeHandler.getCarbonFraction(); the dashboard pins the current
+// value so it needs no RPC.
 const CARBON_FRACTION = 0.0;
 // OP Superchain revenue share: max(2.5% of revenue, 15% of profit-after-L1).
 const OP_SHARE_REVENUE_PCT = 0.025;
 const OP_SHARE_PROFIT_PCT = 0.15;
 
+/**
+ * CGP-287 returned every sequencer fee earned on or before this day to
+ * Governance in a single transfer. report.py clamps its reporting window to the
+ * day after it so that revenue is never counted twice; the dashboard does the
+ * same for its totals.
+ */
+export const CGP_287_CUTOFF_DATE = '2026-04-08';
+
+/**
+ * Carbon Fund share actually taken inside the dashboard window. The FeeHandler
+ * applies the carbon fraction when fees are distributed, not when they accrue,
+ * and only one distribution ran before CGP-288 zeroed the fraction (block
+ * 66408166, 2026-05-09): on 2026-04-20 it sent 12,429.15 CELO, 963.17 USDT,
+ * 1.66 USDC, 11.54 USDm and 0.17 EURm to the Carbon Fund
+ * (0xCe10d577295d34782815919843a3a4ef70Dc33ce), e.g. CELO tx
+ * 0x5b540e987f5a816aeba5a72dab5e6e67d43d14914b4b59a01f9dde2ad9cf4ac5.
+ * Valued at that day's prices (CELO $0.08377, stablecoins at peg, EURm at
+ * Dune's forex price) the share is 24,086.79 CELO / $2,017.75. The per-day
+ * P&L cannot express a distribution-time deduction, so it is subtracted from
+ * the window totals as a constant.
+ */
+export const CARBON_FUND_SHARE_IN_WINDOW = { celo: 24086.7871, usd: 2017.75 } as const;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 function num(value: number | string | null | undefined): number {
   if (value === null || value === undefined || value === '') return 0;
   const n = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(n) ? n : 0;
+}
+
+/** Format a date as a UTC calendar day (YYYY-MM-DD). */
+export function toUtcDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/** The UTC calendar day after the given one. */
+export function nextUtcDay(day: string): string {
+  return toUtcDay(new Date(Date.parse(`${day}T00:00:00Z`) + DAY_MS));
+}
+
+/**
+ * Dune returns the day as a full timestamp ("2026-06-18 00:00:00.000 UTC");
+ * only the date part is meaningful. Mirrors report.py's `parse_day`.
+ */
+export function parseDay(day: string | null | undefined): string {
+  return (day ?? '').slice(0, 10);
 }
 
 /**
@@ -69,7 +114,7 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
   const communityFundCelo = revenueCelo - (carbonCelo + l1CostCelo + opShareCelo);
 
   return {
-    day: row.day,
+    day: parseDay(row.day),
     celoPriceUsd,
     feesCollectedUsd: revenueUsd,
     l1CostUsd,
@@ -98,23 +143,59 @@ export function aggregate(days: DailyMetrics[]): PeriodStats {
 }
 
 /**
- * Turn raw Dune rows into the dashboard payload: all-time totals plus the most
- * recent day as the "last 24 hrs" figure.
+ * Remove the Carbon Fund's realised share from the Community Fund totals. Fees
+ * collected and fees after expenses are untouched: carbon is a distribution of
+ * net revenue, not an operating cost.
  */
-export function computeBuybackStats(rows: DuneFeeRow[], updatedAt: string): BuybackStats {
+export function deductCarbonFundShare(totals: PeriodStats): PeriodStats {
+  const celoToCommunityFund = totals.celoToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.celo;
+  const usdToCommunityFund = totals.usdToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.usd;
+  return {
+    ...totals,
+    celoToCommunityFund,
+    usdToCommunityFund,
+    avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
+  };
+}
+
+export interface ComputeBuybackStatsOptions {
+  /** When Dune last finished executing the query, if known. */
+  executionEndedAt: string | null;
+  /** Current time; injectable for tests. Defaults to now. */
+  now?: Date;
+}
+
+/**
+ * Turn raw Dune rows into the dashboard payload: totals for the CELOccelerate
+ * window plus the most recent complete day.
+ *
+ * The window mirrors report.py's defaults: it starts the day after the CGP-287
+ * cutoff and ends yesterday (UTC). Today's bucket is dropped because it is still
+ * filling and Dune's `prices.day` has no entry for it yet, so it would read as
+ * zero revenue.
+ */
+export function computeBuybackStats(
+  rows: DuneFeeRow[],
+  options: ComputeBuybackStatsOptions,
+): BuybackStats {
+  const sinceDay = nextUtcDay(CGP_287_CUTOFF_DATE);
+  const todayUtc = toUtcDay(options.now ?? new Date());
+
   const days = rows
     .map(computeDailyMetrics)
-    .filter((d) => Boolean(d.day))
+    .filter((d) => d.day >= sinceDay && d.day < todayUtc)
     .sort((a, b) => a.day.localeCompare(b.day));
 
-  const totals = aggregate(days);
-  const latest = days.length > 0 ? days[days.length - 1] : null;
-  const last24h = latest ? aggregate([latest]) : null;
+  // A day Dune has not priced yet (prices.day lags by up to a day) shows up as
+  // all zeros, so the "latest day" figure uses the newest day with a CELO price.
+  const priced = days.filter((d) => d.celoPriceUsd > 0);
+  const latest = priced.length > 0 ? priced[priced.length - 1] : null;
 
   return {
-    totals,
-    last24h,
+    totals: deductCarbonFundShare(aggregate(days)),
+    latestDayStats: latest ? aggregate([latest]) : null,
+    sinceDay,
     latestDay: latest?.day ?? null,
-    updatedAt,
+    updatedAt: options.executionEndedAt,
   };
 }

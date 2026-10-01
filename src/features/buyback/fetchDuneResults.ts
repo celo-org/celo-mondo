@@ -5,7 +5,10 @@ const DUNE_API = 'https://api.dune.com/api/v1';
 // Celo Mainnet sequencer-fee P&L query (same source as report.py).
 export const CELO_PNL_QUERY_ID = 6898547;
 
-const PAGE_SIZE = 1000;
+// Dune bills /results by datapoints per request and rejects pages above the
+// plan's allowance with HTTP 402; 100 rows x 17 columns stays under it on the
+// plan the dashboard key uses, and the whole history is only a few pages.
+const PAGE_SIZE = 100;
 const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
 const FETCH_TIMEOUT_MS = 30_000;
 

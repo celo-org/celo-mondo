@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { aggregate, computeBuybackStats, computeDailyMetrics } from './computeStats';
+import {
+  CGP_287_CUTOFF_DATE,
+  aggregate,
+  computeBuybackStats,
+  computeDailyMetrics,
+  nextUtcDay,
+  parseDay,
+} from './computeStats';
 import { DuneFeeRow } from './types';
 
 // A single day: 1000 CELO fees @ $0.10, 500 USDT fees, and $50 of L1 cost.
@@ -116,25 +123,91 @@ describe('aggregate', () => {
   });
 });
 
+describe('parseDay', () => {
+  it('keeps only the date part of a Dune timestamp', () => {
+    expect(parseDay('2026-06-18 00:00:00.000 UTC')).toBe('2026-06-18');
+    expect(parseDay(null)).toBe('');
+  });
+});
+
+describe('nextUtcDay', () => {
+  it('rolls over month boundaries in UTC', () => {
+    expect(nextUtcDay('2026-04-30')).toBe('2026-05-01');
+    expect(nextUtcDay(CGP_287_CUTOFF_DATE)).toBe('2026-04-09');
+  });
+});
+
 describe('computeBuybackStats', () => {
-  it('sorts by day and exposes the latest day as last 24 hrs', () => {
+  // Options for a run on 2026-05-03: yesterday (05-02) is the newest complete day.
+  const options = {
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+
+  it('sorts by day and exposes the newest complete day separately', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-05-02', fee_CELO_usd: 200 },
       { ...dayRow, day: '2026-05-01' },
     ];
-    const stats = computeBuybackStats(rows, '2026-05-03T00:00:00.000Z');
+    const stats = computeBuybackStats(rows, options);
     expect(stats.latestDay).toBe('2026-05-02');
-    // last24h equals the aggregate of only the latest day
+    // latestDayStats equals the aggregate of only the latest day
     const latestOnly = aggregate([computeDailyMetrics(rows[0])]);
-    expect(stats.last24h?.feesCollectedUsd).toBeCloseTo(latestOnly.feesCollectedUsd, 6);
+    expect(stats.latestDayStats?.feesCollectedUsd).toBeCloseTo(latestOnly.feesCollectedUsd, 6);
     // totals sum both days
-    expect(stats.totals.feesCollectedUsd).toBeGreaterThan(stats.last24h!.feesCollectedUsd);
+    expect(stats.totals.feesCollectedUsd).toBeGreaterThan(stats.latestDayStats!.feesCollectedUsd);
+  });
+
+  it('starts the window the day after the CGP-287 cutoff, like report.py', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-07' },
+      { ...dayRow, day: CGP_287_CUTOFF_DATE },
+      { ...dayRow, day: '2026-04-09' },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.sinceDay).toBe('2026-04-09');
+    // Only the post-cutoff day counts: 600 USD of fees, not 1800.
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+    expect(stats.latestDay).toBe('2026-04-09');
+  });
+
+  it("drops today's partial bucket and only counts complete UTC days", () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02' },
+      // Today's row: still filling, and unpriced because prices.day lags.
+      { ...dayRow, day: '2026-05-03', fee_CELO_usd: 0, fee_USDT: 0 },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('uses the newest priced day as the latest day when the last row has no CELO price', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 0 },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.latestDayStats?.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('normalizes Dune day timestamps to calendar days', () => {
+    const stats = computeBuybackStats([{ ...dayRow, day: '2026-05-02 00:00:00.000 UTC' }], options);
+    expect(stats.latestDay).toBe('2026-05-02');
+  });
+
+  it('reports the Dune execution time as updatedAt, or null when unknown', () => {
+    expect(computeBuybackStats([dayRow], options).updatedAt).toBe(options.executionEndedAt);
+    expect(
+      computeBuybackStats([dayRow], { ...options, executionEndedAt: null }).updatedAt,
+    ).toBeNull();
   });
 
   it('ignores rows without a day', () => {
-    const stats = computeBuybackStats([{ ...dayRow, day: '' }], 'now');
+    const stats = computeBuybackStats([{ ...dayRow, day: '' }], options);
     expect(stats.latestDay).toBeNull();
-    expect(stats.last24h).toBeNull();
+    expect(stats.latestDayStats).toBeNull();
     expect(stats.totals.feesCollectedUsd).toBe(0);
   });
 });

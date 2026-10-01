@@ -1,0 +1,85 @@
+{
+  "window": {
+    "from": "2026-04-09",
+    "to": "2026-09-17",
+    "blockA": 63792042,
+    "blockB": 77788842
+  },
+  "sequencerFeeVault": "0x4200000000000000000000000000000000000011",
+  "feeHandler": "0xcD437749E43A154C07F3553504c68fBfD56B8778",
+  "operationsSafe": "0x7A1E98FC9a008107DbD1f430a05Ace8cf6f3FE19",
+  "carbonFund": "0xCe10d577295d34782815919843a3a4ef70Dc33ce",
+  "balancesAtA": {
+    "vault_CELO": 300879.02225047327,
+    "fh_CELO": 74984.86864866357,
+    "fh_USDT": 5523.546035,
+    "fh_USDC": 10.941113,
+    "fh_USDm": 65.0420439816242,
+    "fh_EURm": 1.021599039293793
+  },
+  "balancesAtB": {
+    "vault_CELO": 190.00698602932158,
+    "fh_CELO": 1742.9657377727513,
+    "fh_USDT": 403.163914,
+    "fh_USDC": 0.474572,
+    "fh_USDm": 1.042220563984796,
+    "fh_EURm": 0.002488286592791988
+  },
+  "vaultWithdrawnCelo": 1681007.9095412996,
+  "vaultWithdrawals": [
+    {
+      "block": 69910716,
+      "tx": "0x9853ee18ac41f125155012f23b784e37f10d2deb39800c606e5bb4e44fab5d7f",
+      "amount": 852397.4646728929
+    },
+    {
+      "block": 73263006,
+      "tx": "0xcd7de31b8366c89104a5e4fff512b53ca338b198530d63805acae42a3bf087ca",
+      "amount": 374585.453358726
+    },
+    {
+      "block": 74042616,
+      "tx": "0x6026e5df80c3565231e178ad06de67c8c43a1070ee00fc266f19cda695d9af9a",
+      "amount": 73289.17028667059
+    },
+    {
+      "block": 75242581,
+      "tx": "0x2334c4985dcbd681585c38741a95c16877a009ee25818f689551d722353b5758",
+      "amount": 100283.4036512582
+    },
+    {
+      "block": 76446043,
+      "tx": "0x336543d6d7dcba3cc7fca4ce8807f7ed65c3a1bb61f1971070389c6b02aec7a3",
+      "amount": 127235.36404935468
+    },
+    {
+      "block": 77778526,
+      "tx": "0xd6e28aa98f1349a5cebaed80a51af77dd2cc913cc47662040b8bd3f10dd7b4fd",
+      "amount": 153217.05352239715
+    }
+  ],
+  "feeHandlerToSafe": {
+    "CELO": 3341835.98226302,
+    "USDT": 250652.60674,
+    "USDC": 354.3796,
+    "USDm": 2251.33860971456,
+    "EURm": 28.381069791853736
+  },
+  "feeHandlerToCarbon": {
+    "CELO": 12429.149129606412,
+    "USDT": 963.170338,
+    "USDC": 1.655353,
+    "USDm": 11.535505244964627,
+    "EURm": 0.16980632413168445
+  },
+  "carbonFractionZeroSince": {
+    "cgp288_block": 66408166,
+    "cgp288_time": "2026-05-09T06:42:04+00:00"
+  },
+  "cgp287Settlement": {
+    "tx": "0xfbe1dac031726b6f580b561bfc2a80262b9529d09e4463fc3600cc74dce31a86",
+    "block": 63177657,
+    "time": "2026-04-01T21:20:15Z",
+    "celo": 1748950.0
+  }
+}

@@ -15,8 +15,8 @@ export async function GET() {
   try {
     logger.debug('Buyback stats request received');
 
-    const { rows } = await fetchDuneFeeRows(apiKey);
-    const stats = computeBuybackStats(rows, new Date().toISOString());
+    const { rows, executionEndedAt } = await fetchDuneFeeRows(apiKey);
+    const stats = computeBuybackStats(rows, { executionEndedAt });
 
     logger.debug(`Buyback stats computed from ${rows.length} daily rows`);
 
