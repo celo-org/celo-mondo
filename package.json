@@ -95,7 +95,8 @@
   "resolutions": {
     "bignumber.js": "9.1.2",
     "zustand": "^4.4",
-    "bn.js": "^5.2.1"
+    "bn.js": "^5.2.1",
+    "postcss": "^8.5.23"
   },
   "scripts": {
     "prepare": "husky",
