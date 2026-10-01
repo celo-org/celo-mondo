@@ -1,7 +1,6 @@
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
 import { fetchDuneFeeRows } from 'src/features/buyback/fetchDuneResults';
 import { logger } from 'src/utils/logger';
-import { errorToString } from 'src/utils/strings';
 
 export const revalidate = 900; // Cache response for 15 minutes
 
@@ -22,9 +21,8 @@ export async function GET() {
 
     return Response.json(stats);
   } catch (error) {
+    // Keep Dune's response out of the public body; the detail is in the log.
     logger.error('Buyback stats error', error);
-    return new Response(`Unable to load buyback stats: ${errorToString(error)}`, {
-      status: 500,
-    });
+    return new Response('Unable to load buyback stats', { status: 500 });
   }
 }

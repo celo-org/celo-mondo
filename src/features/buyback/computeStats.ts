@@ -5,7 +5,10 @@ import { BuybackStats, DailyMetrics, DuneFeeRow, PeriodStats } from 'src/feature
 const STABLE_PEGS = { USDT: 1.0, USDC: 1.0, USDm: 1.0 } as const;
 // Carbon Fund fraction is 0% after CGP-288 paused those payments. report.py reads
 // it live from FeeHandler.getCarbonFraction(); the dashboard pins the current
-// value so it needs no RPC.
+// value so it needs no RPC. If governance changes it, verify with
+// `cast call 0xcD437749E43A154C07F3553504c68fBfD56B8778 "getCarbonFraction()(uint256)"`
+// and update this constant; the realData test pins the on-chain value at the
+// end of its window.
 const CARBON_FRACTION = 0.0;
 // OP Superchain revenue share: max(2.5% of revenue, 15% of profit-after-L1).
 const OP_SHARE_REVENUE_PCT = 0.025;
@@ -32,9 +35,14 @@ export const CGP_287_CUTOFF_DATE = '2026-04-08';
  * P&L cannot express a distribution-time deduction, so it is subtracted from
  * the window totals as a constant.
  */
-export const CARBON_FUND_SHARE_IN_WINDOW = { celo: 24086.7871, usd: 2017.75 } as const;
+export const CARBON_FUND_SHARE_IN_WINDOW = {
+  day: '2026-04-20',
+  celo: 24086.7871,
+  usd: 2017.75,
+} as const;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function num(value: number | string | null | undefined): number {
   if (value === null || value === undefined || value === '') return 0;
@@ -54,10 +62,13 @@ export function nextUtcDay(day: string): string {
 
 /**
  * Dune returns the day as a full timestamp ("2026-06-18 00:00:00.000 UTC");
- * only the date part is meaningful. Mirrors report.py's `parse_day`.
+ * only the date part is meaningful. Mirrors report.py's `parse_day`, but
+ * returns an empty string for anything that is not a calendar day so such rows
+ * are dropped instead of being compared lexicographically.
  */
 export function parseDay(day: string | null | undefined): string {
-  return (day ?? '').slice(0, 10);
+  const date = (day ?? '').slice(0, 10);
+  return DAY_PATTERN.test(date) ? date : '';
 }
 
 /**
@@ -143,11 +154,13 @@ export function aggregate(days: DailyMetrics[]): PeriodStats {
 }
 
 /**
- * Remove the Carbon Fund's realised share from the Community Fund totals. Fees
- * collected and fees after expenses are untouched: carbon is a distribution of
- * net revenue, not an operating cost.
+ * Remove the Carbon Fund's realised share from the Community Fund totals when
+ * the day it was paid falls inside the aggregated days. Fees collected and fees
+ * after expenses are untouched: carbon is a distribution of net revenue, not an
+ * operating cost.
  */
-export function deductCarbonFundShare(totals: PeriodStats): PeriodStats {
+export function deductCarbonFundShare(totals: PeriodStats, days: DailyMetrics[]): PeriodStats {
+  if (!days.some((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day)) return totals;
   const celoToCommunityFund = totals.celoToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.celo;
   const usdToCommunityFund = totals.usdToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.usd;
   return {
@@ -186,13 +199,15 @@ export function computeBuybackStats(
     .filter((d) => d.day >= sinceDay && d.day < todayUtc)
     .sort((a, b) => a.day.localeCompare(b.day));
 
-  // A day Dune has not priced yet (prices.day lags by up to a day) shows up as
-  // all zeros, so the "latest day" figure uses the newest day with a CELO price.
+  // A day Dune has not priced yet (prices.day lags by up to a day) shows up
+  // with zero fees but still carries its L1 costs, so both the single-day
+  // figure and the totals stop at the newest day with a CELO price.
   const priced = days.filter((d) => d.celoPriceUsd > 0);
   const latest = priced.length > 0 ? priced[priced.length - 1] : null;
+  const counted = latest ? days.filter((d) => d.day <= latest.day) : [];
 
   return {
-    totals: deductCarbonFundShare(aggregate(days)),
+    totals: deductCarbonFundShare(aggregate(counted), counted),
     latestDayStats: latest ? aggregate([latest]) : null,
     sinceDay,
     latestDay: latest?.day ?? null,

@@ -13,8 +13,11 @@ const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
 const FETCH_TIMEOUT_MS = 30_000;
 
 interface DuneResultsResponse {
+  execution_id?: string;
   execution_ended_at?: string;
-  result?: { rows?: DuneFeeRow[] };
+  /** Offset of the next page; absent on the last page. */
+  next_offset?: number;
+  result?: { rows?: DuneFeeRow[]; metadata?: { total_row_count?: number } };
 }
 
 export interface DuneFeeResults {
@@ -28,19 +31,28 @@ export interface DuneFeeResults {
  * `/results` endpoint, so a page visit never spends execution credits. The
  * query itself is re-executed once a day by the refresh-buyback-dune-query
  * GitHub Actions cron — deliberately not from this public request path, where
- * cache-busting traffic could be used to burn Dune credits. Paginates until
- * the query is exhausted.
+ * cache-busting traffic could be used to burn Dune credits.
+ *
+ * The first page names the execution it came from and every later page is read
+ * from that execution, so a refresh that completes mid-pagination cannot mix
+ * two result sets. Throws rather than returning a partial history.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
 ): Promise<DuneFeeResults> {
   const rows: DuneFeeRow[] = [];
+  let executionId: string | null = null;
   let executionEndedAt: string | null = null;
-  let offset = 0;
+  let totalRowCount: number | null = null;
+  let offset: number | null = 0;
 
-  while (rows.length < MAX_ROWS) {
-    const url = `${DUNE_API}/query/${queryId}/results?limit=${PAGE_SIZE}&offset=${offset}`;
+  while (offset !== null) {
+    if (rows.length >= MAX_ROWS) {
+      throw new Error(`Dune query ${queryId} returned more than ${MAX_ROWS} rows`);
+    }
+    const path = executionId ? `execution/${executionId}/results` : `query/${queryId}/results`;
+    const url = `${DUNE_API}/${path}?limit=${PAGE_SIZE}&offset=${offset}`;
     const response = await fetch(url, {
       headers: { 'X-Dune-API-Key': apiKey },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -52,13 +64,27 @@ export async function fetchDuneFeeRows(
     }
 
     const data = (await response.json()) as DuneResultsResponse;
+    executionId ??= data.execution_id ?? null;
     executionEndedAt ??= data.execution_ended_at ?? null;
+    totalRowCount ??= data.result?.metadata?.total_row_count ?? null;
     const batch = data.result?.rows ?? [];
     rows.push(...batch);
+    offset = nextOffset(data, offset, batch.length);
+  }
 
-    if (batch.length < PAGE_SIZE) break;
-    offset += batch.length;
+  if (totalRowCount !== null && rows.length < totalRowCount) {
+    throw new Error(`Dune returned ${rows.length} of ${totalRowCount} rows for query ${queryId}`);
   }
 
   return { rows, executionEndedAt };
+}
+
+/**
+ * Dune marks the last page by omitting `next_offset`. Fall back to the page
+ * size when the field is missing so an API change cannot silently truncate the
+ * history to one page.
+ */
+function nextOffset(data: DuneResultsResponse, offset: number, batchLength: number): number | null {
+  if (typeof data.next_offset === 'number') return data.next_offset;
+  return batchLength === PAGE_SIZE ? offset + batchLength : null;
 }

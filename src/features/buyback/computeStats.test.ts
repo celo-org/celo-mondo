@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CARBON_FUND_SHARE_IN_WINDOW,
   CGP_287_CUTOFF_DATE,
   aggregate,
   computeBuybackStats,
@@ -86,6 +87,21 @@ describe('computeDailyMetrics', () => {
     } as unknown as DuneFeeRow);
     expect(m.feesCollectedUsd).toBeCloseTo(600, 6);
   });
+
+  it('treats null, empty and non-numeric strings as zero', () => {
+    const m = computeDailyMetrics({
+      ...dayRow,
+      fee_USDT: null,
+      fee_USDm: '',
+      fee_USDC: 'NaN',
+      others_usd: 'n/a',
+      EigenDA_cost_eth: 'Infinity',
+    } as unknown as DuneFeeRow);
+    // Only the CELO fees and the batcher cost survive.
+    expect(m.feesCollectedUsd).toBeCloseTo(100, 6);
+    expect(m.l1CostUsd).toBeCloseTo(50, 6);
+    expect(Number.isFinite(m.communityFundCelo)).toBe(true);
+  });
 });
 
 describe('aggregate', () => {
@@ -126,7 +142,14 @@ describe('aggregate', () => {
 describe('parseDay', () => {
   it('keeps only the date part of a Dune timestamp', () => {
     expect(parseDay('2026-06-18 00:00:00.000 UTC')).toBe('2026-06-18');
+    expect(parseDay('2026-06-18')).toBe('2026-06-18');
     expect(parseDay(null)).toBe('');
+  });
+
+  it('rejects anything that is not a calendar day', () => {
+    expect(parseDay('not-a-date')).toBe('');
+    expect(parseDay('2026/06/18')).toBe('');
+    expect(parseDay('18-06-2026 00:00')).toBe('');
   });
 });
 
@@ -182,14 +205,35 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
   });
 
-  it('uses the newest priced day as the latest day when the last row has no CELO price', () => {
+  it('stops both the latest day and the totals at the newest priced day', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-05-01' },
-      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 0 },
+      // Complete but not yet priced by Dune: zero fees, but the L1 cost is there.
+      { ...dayRow, day: '2026-05-02', fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0 },
     ];
     const stats = computeBuybackStats(rows, options);
     expect(stats.latestDay).toBe('2026-05-01');
     expect(stats.latestDayStats?.feesCollectedUsd).toBeCloseTo(600, 6);
+    // The unpriced day's $50 of L1 cost must not drag the totals down.
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(550, 6);
+    expect(stats.totals.usdToCommunityFund).toBeCloseTo(467.5, 6);
+  });
+
+  it('counts a day as complete only once the next UTC day has started', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    const atMidnight = computeBuybackStats(rows, {
+      ...options,
+      now: new Date('2026-05-02T00:00:00.000Z'),
+    });
+    expect(atMidnight.latestDay).toBe('2026-05-01');
+    const justAfter = computeBuybackStats(rows, {
+      ...options,
+      now: new Date('2026-05-03T00:00:00.000Z'),
+    });
+    expect(justAfter.latestDay).toBe('2026-05-02');
   });
 
   it('normalizes Dune day timestamps to calendar days', () => {
@@ -204,10 +248,86 @@ describe('computeBuybackStats', () => {
     ).toBeNull();
   });
 
-  it('ignores rows without a day', () => {
-    const stats = computeBuybackStats([{ ...dayRow, day: '' }], options);
+  it('ignores rows without a usable day', () => {
+    const stats = computeBuybackStats(
+      [
+        { ...dayRow, day: '' },
+        { ...dayRow, day: 'garbage' },
+      ],
+      options,
+    );
     expect(stats.latestDay).toBeNull();
     expect(stats.latestDayStats).toBeNull();
     expect(stats.totals.feesCollectedUsd).toBe(0);
+  });
+
+  it('returns zeros, not a negative carbon deduction, for an empty window', () => {
+    const stats = computeBuybackStats([], options);
+    expect(stats.totals.celoToCommunityFund).toBe(0);
+    expect(stats.totals.usdToCommunityFund).toBe(0);
+    expect(stats.totals.avgCeloPriceUsd).toBe(0);
+  });
+});
+
+describe('Carbon Fund share deduction', () => {
+  const options = {
+    executionEndedAt: null,
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+
+  it('is applied once when the payout day is inside the window', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-19' },
+      { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
+      { ...dayRow, day: '2026-04-21' },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    // Three identical days: 3 x 4675 CELO and 3 x 467.5 USD before the deduction.
+    expect(stats.totals.celoToCommunityFund).toBeCloseTo(
+      3 * 4675 - CARBON_FUND_SHARE_IN_WINDOW.celo,
+      4,
+    );
+    expect(stats.totals.usdToCommunityFund).toBeCloseTo(
+      3 * 467.5 - CARBON_FUND_SHARE_IN_WINDOW.usd,
+      4,
+    );
+    // Fees collected and fees after expenses are a different matter.
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(3 * 600, 6);
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(3 * 550, 6);
+    // The single-day figure is never reduced.
+    expect(stats.latestDayStats?.celoToCommunityFund).toBeCloseTo(4675, 4);
+  });
+
+  it('recomputes the average price from the deducted totals', () => {
+    const stats = computeBuybackStats(
+      Array.from({ length: 10 }, (_, i) => ({
+        ...dayRow,
+        day: `2026-04-${String(15 + i).padStart(2, '0')}`,
+      })),
+      options,
+    );
+    expect(stats.totals.avgCeloPriceUsd).toBeCloseTo(
+      stats.totals.usdToCommunityFund / stats.totals.celoToCommunityFund,
+      10,
+    );
+  });
+
+  it('is skipped when the payout day is outside the window', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-21' },
+      { ...dayRow, day: '2026-04-22' },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.totals.celoToCommunityFund).toBeCloseTo(2 * 4675, 4);
+    expect(stats.totals.usdToCommunityFund).toBeCloseTo(2 * 467.5, 6);
+  });
+
+  it('reports a loss rather than hiding it when the deduction exceeds the accrual', () => {
+    const stats = computeBuybackStats(
+      [{ ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day }],
+      options,
+    );
+    expect(stats.totals.celoToCommunityFund).toBeLessThan(0);
+    expect(stats.totals.avgCeloPriceUsd).toBe(0);
   });
 });

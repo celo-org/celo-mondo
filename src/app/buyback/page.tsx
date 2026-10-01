@@ -28,12 +28,19 @@ function cell(text: string, value?: number): Cell {
   return { text, negative: value != null && value < 0 };
 }
 
+// Round before deriving the sign so a value like -0.4 renders as "0", not "-0" in red.
+function fmtWhole(value: number | undefined, unit: string): Cell {
+  if (value == null) return cell('—');
+  const rounded = Math.round(value) || 0;
+  return cell(`${usd0.format(rounded)} ${unit}`, rounded);
+}
+
 function fmtUsd(value?: number): Cell {
-  return cell(value == null ? '—' : `${usd0.format(Math.round(value))} USD`, value);
+  return fmtWhole(value, 'USD');
 }
 
 function fmtCelo(value?: number): Cell {
-  return cell(value == null ? '—' : `${usd0.format(Math.round(value))} CELO`, value);
+  return fmtWhole(value, 'CELO');
 }
 
 function fmtPrice(value?: number): Cell {
@@ -180,8 +187,9 @@ function StatsSkeleton() {
 function ErrorNotice() {
   return (
     <div className="border border-taupe-300 bg-white p-6 text-center text-sm text-taupe-600">
-      Buyback stats are unavailable right now. The dashboard needs a Dune API key (
-      <span className="font-mono">DUNE_API_KEY</span>) to be configured on the server.
+      Buyback stats are temporarily unavailable. The server needs a Dune API key (
+      <span className="font-mono">DUNE_API_KEY</span>) and a reachable Dune API; please try again
+      later.
     </div>
   );
 }
@@ -197,7 +205,10 @@ function Footnote({
 }) {
   const parts: string[] = [];
   if (sinceDay && latestDay) parts.push(`Data ${sinceDay} to ${latestDay} (UTC days)`);
-  if (updatedAt) parts.push(`Dune refreshed ${new Date(updatedAt).toUTCString()}`);
+  const refreshed = updatedAt ? new Date(updatedAt) : null;
+  if (refreshed && !Number.isNaN(refreshed.getTime())) {
+    parts.push(`Dune refreshed ${refreshed.toUTCString()}`);
+  }
 
   return (
     <p className="text-center text-xs text-taupe-600">

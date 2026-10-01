@@ -57,10 +57,12 @@ describe('GET /api/buyback', () => {
     expect(body.totals.celoToCommunityFund).toBeGreaterThan(0);
   });
 
-  it('returns 500 with the reason when Dune cannot be read', async () => {
+  it('returns a generic 500 when Dune cannot be read, keeping the detail out of the body', async () => {
     mockFetchDuneFeeRows.mockRejectedValueOnce(new Error('Dune API 402: Payment Required'));
     const response = await get();
     expect(response.status).toBe(500);
-    expect(await response.text()).toContain('Dune API 402');
+    const body = await response.text();
+    expect(body).toBe('Unable to load buyback stats');
+    expect(body).not.toContain('402');
   });
 });

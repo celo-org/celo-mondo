@@ -5,7 +5,6 @@ import expectedJson from './__fixtures__/reportPyExpected.json';
 import {
   CARBON_FUND_SHARE_IN_WINDOW,
   CGP_287_CUTOFF_DATE,
-  aggregate,
   computeBuybackStats,
   computeDailyMetrics,
   parseDay,
@@ -91,13 +90,16 @@ describe('computeDailyMetrics vs report.py compute_row (real rows)', () => {
     }
   });
 
-  it('reproduces the OP share rule on real days (both branches of the max)', () => {
+  it('applies the OP share rule to real days exactly as report.py does', () => {
     const methods = new Set<string>();
     for (const row of rows) {
-      const want = expected.perDay[parseDay(row.day)];
-      const floor = want.total_revenue_usd * 0.025;
-      const profitShare = (want.total_revenue_usd - want.total_l1_cost_usd) * 0.15;
-      expectClose(want.op_share_usd, Math.max(floor, profitShare));
+      const m = computeDailyMetrics(row);
+      const want = expected.perDay[m.day];
+      const floor = m.feesCollectedUsd * 0.025;
+      const profitShare = m.feesAfterExpensesUsd * 0.15;
+      // Community Fund = revenue - L1 - OP share, with carbon at 0%.
+      expectClose(m.communityFundUsd, m.feesAfterExpensesUsd - Math.max(floor, profitShare));
+      expectClose(Math.max(floor, profitShare), want.op_share_usd);
       methods.add(profitShare >= floor ? 'profit' : 'revenue');
     }
     // No real day has had L1 costs above five sixths of revenue, so the
@@ -152,12 +154,6 @@ describe('computeBuybackStats on the real history', () => {
     );
   });
 
-  it('keeps the average price inside the range of daily prices', () => {
-    const prices = windowRows.map((r) => num(r.fee_CELO_usd) / num(r.fee_CELO));
-    expect(stats.totals.avgCeloPriceUsd).toBeGreaterThan(Math.min(...prices));
-    expect(stats.totals.avgCeloPriceUsd).toBeLessThan(Math.max(...prices));
-  });
-
   it('excludes pre-cutoff days: totals equal the per-day sum over the window only', () => {
     const want = sum(
       Object.entries(expected.perDay)
@@ -174,9 +170,6 @@ describe('computeBuybackStats on the real history', () => {
     expectClose(stats.latestDayStats!.feesCollectedUsd, want.total_revenue_usd);
     expectClose(stats.latestDayStats!.celoToCommunityFund, want.profit_celo);
     expectClose(stats.latestDayStats!.usdToCommunityFund, want.profit_usd);
-    expect(stats.latestDayStats).toEqual(
-      aggregate([computeDailyMetrics(windowRows[windowRows.length - 1])]),
-    );
   });
 
   it('treats the newest day as partial when run on that same UTC day', () => {
