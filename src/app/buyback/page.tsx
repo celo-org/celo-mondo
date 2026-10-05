@@ -103,10 +103,10 @@ export default function Page() {
         </A_Blank>
         , Celo L2 sequencer fees — after L1 operating costs and the OP Superchain share — are used
         to acquire CELO for the Community Fund, where CELO holders govern their use (which may
-        include burning). Figures show what has accrued from fees, derived from the same daily
-        P&amp;L data as the operator distribution report; actual transfers to the Community Fund are
-        executed in periodic batches. Totals leave out earlier revenue, which was already returned
-        to the Community Fund in a single transfer of 1,748,950 CELO (see{' '}
+        include burning). Figures are estimates computed from gross daily fee P&amp;L, the same data
+        as the operator distribution report, not settled amounts; actual transfers to the Community
+        Fund are executed in periodic batches. Totals leave out earlier revenue, which was already
+        returned to the Community Fund in a single transfer of 1,748,950 CELO (see{' '}
         <Link href="/governance/cgp-234" className="underline">
           CGP-234
         </Link>
