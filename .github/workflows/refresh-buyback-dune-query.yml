@@ -24,7 +24,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          execution_id=$(curl --fail-with-body -sS --retry 3 --retry-all-errors --retry-delay 5 \
+          # No automatic retry here: the request is not idempotent, and resending
+          # it after a lost response would enqueue (and bill) a second execution
+          # while only the last id is polled. A failed start fails the run.
+          execution_id=$(curl --fail-with-body -sS \
             -X POST "$DUNE_API/query/6898547/execute" \
             -H "X-Dune-API-Key: $DUNE_API_KEY" \
             -H "Content-Type: application/json" \
