@@ -1,4 +1,5 @@
 import { DuneFeeRow } from 'src/features/buyback/types';
+import { z } from 'zod';
 
 const DUNE_API = 'https://api.dune.com/api/v1';
 
@@ -14,6 +15,44 @@ const MAX_PAGES = MAX_ROWS / PAGE_SIZE;
 const FETCH_TIMEOUT_MS = 30_000;
 const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 
+const amount = z.number().finite();
+// Columns the query fills through a LEFT JOIN are null on a day with no such
+// cost (or price) row. Every other column is a sum and always has a value.
+const joinedAmount = amount.nullable();
+
+/**
+ * The columns the dashboard reads, as Dune returns them: doubles as JSON
+ * numbers. A column that is missing, renamed or of another type must fail the
+ * read: treated leniently it would count as zero and understate fees or costs
+ * on a dashboard that looks healthy.
+ */
+const duneFeeRowSchema = z.object({
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}/, 'not a day'),
+  fee_CELO: amount,
+  fee_USDT: amount,
+  fee_USDm: amount,
+  fee_EURm: amount,
+  fee_USDC: amount,
+  fee_CELO_usd: amount,
+  fee_EURm_usd: amount,
+  others_usd: amount,
+  batcher_cost_eth: joinedAmount,
+  proposer_cost_eth: joinedAmount,
+  challenger_cost_eth: joinedAmount,
+  EigenDA_cost_eth: joinedAmount,
+  eth_price_usd: joinedAmount,
+}) satisfies z.ZodType<DuneFeeRow>;
+
+/** Validate result rows, naming the first offending row and column. */
+export function parseDuneFeeRows(rows: unknown, queryId: number): DuneFeeRow[] {
+  const parsed = z.array(duneFeeRowSchema).safeParse(rows);
+  if (parsed.success) return parsed.data;
+  const [issue] = parsed.error.issues;
+  throw new Error(
+    `Dune query ${queryId} returned a malformed row (${issue.path.join('.')}: ${issue.message})`,
+  );
+}
+
 interface DuneResultsResponse {
   /** Terminal state of the execution the results belong to. */
   state?: string;
@@ -22,7 +61,7 @@ interface DuneResultsResponse {
   execution_ended_at?: string;
   /** Offset of the next page; absent on the last page. */
   next_offset?: number;
-  result?: { rows?: DuneFeeRow[]; metadata?: { total_row_count?: number } };
+  result?: { rows?: unknown; metadata?: { total_row_count?: number } };
 }
 
 /** One validated page of results. */
@@ -53,8 +92,9 @@ export interface DuneFeeResults {
  * The first page names the execution it came from and every later page is read
  * from that execution, so a refresh that completes mid-pagination cannot mix
  * two result sets. The read either returns the whole history or throws: a page
- * whose execution did not complete, a page that does not advance, and a row
- * count that differs from the one Dune reports are all errors.
+ * whose execution did not complete, a malformed row, a page that does not
+ * advance, and a row count that differs from the one Dune reports are all
+ * errors.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
@@ -122,12 +162,12 @@ async function fetchPage(url: string, apiKey: string, queryId: number): Promise<
   }
 
   const data = (await response.json()) as DuneResultsResponse;
-  const rows = data.result?.rows;
-  if (data.state !== COMPLETED_STATE || !Array.isArray(rows)) {
+  if (data.state !== COMPLETED_STATE || !Array.isArray(data.result?.rows)) {
     throw new Error(
       `Dune query ${queryId} has no completed result (state ${data.state ?? 'missing'})`,
     );
   }
+  const rows = parseDuneFeeRows(data.result.rows, queryId);
 
   const totalRowCount = data.result?.metadata?.total_row_count;
   return {

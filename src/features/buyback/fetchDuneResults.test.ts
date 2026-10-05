@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CELO_PNL_QUERY_ID, fetchDuneFeeRows } from './fetchDuneResults';
+import fanOutRows from './__fixtures__/duneEigenDaFanOutRows.json';
+import realRows from './__fixtures__/duneFeeRows.json';
+import { CELO_PNL_QUERY_ID, fetchDuneFeeRows, parseDuneFeeRows } from './fetchDuneResults';
 import { DuneFeeRow } from './types';
 
 const row = (day: string): DuneFeeRow => ({
@@ -20,7 +22,10 @@ const row = (day: string): DuneFeeRow => ({
   eth_price_usd: 1000,
 });
 
-const fullPage = (label = 'x') => Array.from({ length: 100 }, (_, i) => row(`${label}${i}`));
+// Distinct, valid UTC days: every row Dune returns has one.
+const dayAt = (index: number) =>
+  new Date(Date.UTC(2026, 0, 1) + index * 86_400_000).toISOString().slice(0, 10);
+const fullPage = (firstDay = 0) => Array.from({ length: 100 }, (_, i) => row(dayAt(firstDay + i)));
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -79,11 +84,11 @@ describe('fetchDuneFeeRows', () => {
 
   it('follows next_offset and reads later pages from the execution named by the first', async () => {
     fetchMock
-      .mockResolvedValueOnce(page(fullPage('a'), 243, { next_offset: 100 }))
-      .mockResolvedValueOnce(page(fullPage('b'), 243, { next_offset: 200 }))
+      .mockResolvedValueOnce(page(fullPage(0), 243, { next_offset: 100 }))
+      .mockResolvedValueOnce(page(fullPage(100), 243, { next_offset: 200 }))
       .mockResolvedValueOnce(
         page(
-          fullPage('c').slice(0, 43),
+          fullPage(200).slice(0, 43),
           243,
           // A refresh finished meanwhile; the pinned read must not care.
           { execution_id: '01OTHER' },
@@ -102,8 +107,8 @@ describe('fetchDuneFeeRows', () => {
 
   it('needs no extra request when the history is an exact multiple of the page size', async () => {
     fetchMock
-      .mockResolvedValueOnce(page(fullPage('a'), 200, { next_offset: 100 }))
-      .mockResolvedValueOnce(page(fullPage('b'), 200));
+      .mockResolvedValueOnce(page(fullPage(0), 200, { next_offset: 100 }))
+      .mockResolvedValueOnce(page(fullPage(100), 200));
 
     const { rows } = await fetchDuneFeeRows('k');
 
@@ -121,7 +126,7 @@ describe('fetchDuneFeeRows', () => {
         }),
       )
       .mockResolvedValueOnce(
-        page([row('last')], 101, {
+        page([row(dayAt(100))], 101, {
           execution_started_at: 'second-start',
           execution_ended_at: 'second-end',
         }),
@@ -146,6 +151,86 @@ describe('fetchDuneFeeRows', () => {
     expect(calledUrls()[0]).toContain('/query/42/results');
   });
 
+  describe('row validation', () => {
+    const valid = row('2026-05-01');
+    const withRow = (candidate: unknown) => page([candidate as DuneFeeRow], 1);
+
+    it('accepts every real row the query has returned, including the fan-out copies', () => {
+      expect(parseDuneFeeRows(realRows, CELO_PNL_QUERY_ID)).toHaveLength(realRows.length);
+      expect(parseDuneFeeRows(fanOutRows, CELO_PNL_QUERY_ID)).toHaveLength(3);
+    });
+
+    it('accepts Dune timestamps as days and drops columns the dashboard does not read', async () => {
+      fetchMock.mockResolvedValueOnce(
+        withRow({ ...valid, day: '2026-05-01 00:00:00.000 UTC', fee_USDT_usd: 12.5 }),
+      );
+      const { rows } = await fetchDuneFeeRows('k');
+      expect(rows).toEqual([{ ...valid, day: '2026-05-01 00:00:00.000 UTC' }]);
+    });
+
+    it.each([
+      'batcher_cost_eth',
+      'proposer_cost_eth',
+      'challenger_cost_eth',
+      'EigenDA_cost_eth',
+      'eth_price_usd',
+    ] as const)('allows null in %s, which the query fills through a LEFT JOIN', async (column) => {
+      fetchMock.mockResolvedValueOnce(withRow({ ...valid, [column]: null }));
+      const { rows } = await fetchDuneFeeRows('k');
+      expect(rows[0][column]).toBeNull();
+    });
+
+    it.each([
+      'fee_CELO',
+      'fee_USDT',
+      'fee_CELO_usd',
+      'others_usd',
+      'eth_price_usd',
+      'day',
+    ] as const)(
+      'rejects a result in which %s is missing, as after a column rename',
+      async (column) => {
+        const renamed: Record<string, unknown> = { ...valid, [`${column}_v2`]: valid[column] };
+        delete renamed[column];
+        fetchMock.mockResolvedValueOnce(withRow(renamed));
+        await expect(fetchDuneFeeRows('k')).rejects.toThrow(`malformed row (0.${column}:`);
+      },
+    );
+
+    it.each([
+      ['a null fee', { fee_CELO: null }, '0.fee_CELO'],
+      ['a numeric string', { fee_USDT: '500' }, '0.fee_USDT'],
+      ['text', { fee_CELO_usd: 'n/a' }, '0.fee_CELO_usd'],
+      ['a boolean', { batcher_cost_eth: true }, '0.batcher_cost_eth'],
+      ['a non-day', { day: 'yesterday' }, '0.day'],
+      ['a null day', { day: null }, '0.day'],
+    ])('rejects %s in a column', async (_label, change, path) => {
+      fetchMock.mockResolvedValueOnce(withRow({ ...valid, ...change }));
+      await expect(fetchDuneFeeRows('k')).rejects.toThrow(`malformed row (${path}:`);
+    });
+
+    it('names the offending row when a later one is malformed', async () => {
+      fetchMock.mockResolvedValueOnce(
+        page(
+          [
+            valid,
+            row('2026-05-02'),
+            { ...row('2026-05-03'), others_usd: undefined } as unknown as DuneFeeRow,
+          ],
+          3,
+        ),
+      );
+      await expect(fetchDuneFeeRows('k')).rejects.toThrow('malformed row (2.others_usd:');
+    });
+
+    it('rejects a malformed row on a later page instead of returning the first pages', async () => {
+      fetchMock
+        .mockResolvedValueOnce(page(fullPage(), 101, { next_offset: 100 }))
+        .mockResolvedValueOnce(withRow({ ...row(dayAt(100)), fee_CELO: 'oops' }));
+      await expect(fetchDuneFeeRows('k')).rejects.toThrow('malformed row (0.fee_CELO:');
+    });
+  });
+
   describe('refuses anything short of a complete, completed history', () => {
     it('surfaces HTTP errors such as the 402 datapoint cap with the response body', async () => {
       fetchMock.mockResolvedValueOnce(
@@ -163,12 +248,12 @@ describe('fetchDuneFeeRows', () => {
       'QUERY_STATE_COMPLETED_PARTIAL',
       'QUERY_STATE_EXECUTING',
     ])('a 200 response whose execution is %s', async (state) => {
-      fetchMock.mockResolvedValueOnce(page([row('a')], 1, { state }));
+      fetchMock.mockResolvedValueOnce(page([row(dayAt(0))], 1, { state }));
       await expect(fetchDuneFeeRows('k')).rejects.toThrow(`no completed result (state ${state})`);
     });
 
     it('a response without a state or without a result payload', async () => {
-      fetchMock.mockResolvedValueOnce(jsonResponse({ result: { rows: [row('a')] } }));
+      fetchMock.mockResolvedValueOnce(jsonResponse({ result: { rows: [row(dayAt(0))] } }));
       await expect(fetchDuneFeeRows('k')).rejects.toThrow('no completed result (state missing)');
 
       fetchMock.mockResolvedValueOnce(
@@ -188,7 +273,7 @@ describe('fetchDuneFeeRows', () => {
     });
 
     it('fewer rows than Dune says the execution has', async () => {
-      fetchMock.mockResolvedValueOnce(page([row('a'), row('b')], 543));
+      fetchMock.mockResolvedValueOnce(page([row(dayAt(0)), row(dayAt(1))], 543));
       await expect(fetchDuneFeeRows('k')).rejects.toThrow('Dune returned 2 of 543 rows');
     });
 
@@ -200,7 +285,7 @@ describe('fetchDuneFeeRows', () => {
 
     it('a response that does not report its row count', async () => {
       fetchMock.mockResolvedValueOnce(
-        jsonResponse({ state: 'QUERY_STATE_COMPLETED', result: { rows: [row('a')] } }),
+        jsonResponse({ state: 'QUERY_STATE_COMPLETED', result: { rows: [row(dayAt(0))] } }),
       );
       await expect(fetchDuneFeeRows('k')).rejects.toThrow('did not report its row count');
     });
