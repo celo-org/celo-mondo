@@ -137,16 +137,16 @@ describe('fetchDuneFeeRows', () => {
     expect(result.executionEndedAt).toBe('first-end');
   });
 
-  it('returns null timestamps when Dune does not report them, and an empty history as empty', async () => {
-    fetchMock.mockResolvedValueOnce(page([], 0));
+  it('returns null timestamps when Dune does not report them', async () => {
+    fetchMock.mockResolvedValueOnce(page([row(dayAt(0))], 1));
     const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows('k');
-    expect(rows).toEqual([]);
+    expect(rows).toHaveLength(1);
     expect(executionStartedAt).toBeNull();
     expect(executionEndedAt).toBeNull();
   });
 
   it('lets the caller target a different query id', async () => {
-    fetchMock.mockResolvedValueOnce(page([], 0));
+    fetchMock.mockResolvedValueOnce(page([row(dayAt(0))], 1));
     await fetchDuneFeeRows('k', 42);
     expect(calledUrls()[0]).toContain('/query/42/results');
   });
@@ -270,6 +270,12 @@ describe('fetchDuneFeeRows', () => {
         .mockResolvedValueOnce(page(fullPage(), 150, { next_offset: 100 }))
         .mockResolvedValueOnce(jsonResponse({ state: 'QUERY_STATE_FAILED' }));
       await expect(fetchDuneFeeRows('k')).rejects.toThrow('state QUERY_STATE_FAILED');
+    });
+
+    it('a completed execution with no rows at all', async () => {
+      // What a broken query edit or an upstream data failure looks like.
+      fetchMock.mockResolvedValueOnce(page([], 0));
+      await expect(fetchDuneFeeRows('k')).rejects.toThrow('completed with no rows');
     });
 
     it('fewer rows than Dune says the execution has', async () => {

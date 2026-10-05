@@ -93,8 +93,8 @@ export interface DuneFeeResults {
  * from that execution, so a refresh that completes mid-pagination cannot mix
  * two result sets. The read either returns the whole history or throws: a page
  * whose execution did not complete, a malformed row, a page that does not
- * advance, and a row count that differs from the one Dune reports are all
- * errors.
+ * advance, a row count that differs from the one Dune reports, and an empty
+ * result are all errors.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
@@ -136,6 +136,11 @@ export async function fetchDuneFeeRows(
   }
   if (rows.length !== totalRowCount) {
     throw new Error(`Dune returned ${rows.length} of ${totalRowCount} rows for query ${queryId}`);
+  }
+  // The query has returned a row per day since L2 genesis, so a completed but
+  // empty result means the query or its sources broke, not that nothing happened.
+  if (rows.length === 0) {
+    throw new Error(`Dune query ${queryId} completed with no rows`);
   }
 
   return {
