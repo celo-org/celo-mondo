@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuybackStats } from './types';
-import { selectBuybackView, useBuybackStats } from './useBuybackStats';
+import { isBuybackDataStale, selectBuybackView, useBuybackStats } from './useBuybackStats';
 
 const stats: BuybackStats = {
   totals: {
@@ -52,6 +52,34 @@ describe('selectBuybackView', () => {
   it('keeps showing loaded figures, with or without a later error', () => {
     expect(selectBuybackView(true, false)).toBe('stats');
     expect(selectBuybackView(true, true)).toBe('stats');
+  });
+});
+
+describe('isBuybackDataStale', () => {
+  const executed = '2026-05-02T05:31:00.000Z';
+
+  it('is false while the daily refresh is on schedule', () => {
+    expect(isBuybackDataStale(executed, new Date('2026-05-02T06:00:00.000Z'))).toBe(false);
+    // Just before the next day's run has landed, plus some slack.
+    expect(isBuybackDataStale(executed, new Date('2026-05-03T17:30:00.000Z'))).toBe(false);
+  });
+
+  it('is true once a refresh has clearly been missed', () => {
+    expect(isBuybackDataStale(executed, new Date('2026-05-03T17:32:00.000Z'))).toBe(true);
+    expect(isBuybackDataStale(executed, new Date('2026-05-20T00:00:00.000Z'))).toBe(true);
+  });
+
+  it('accepts the microsecond timestamps Dune returns', () => {
+    expect(
+      isBuybackDataStale('2026-05-02T05:31:00.014698Z', new Date('2026-05-09T00:00:00.000Z')),
+    ).toBe(true);
+  });
+
+  it('says nothing when the execution time is unknown or malformed', () => {
+    const now = new Date('2026-05-20T00:00:00.000Z');
+    expect(isBuybackDataStale(null, now)).toBe(false);
+    expect(isBuybackDataStale(undefined, now)).toBe(false);
+    expect(isBuybackDataStale('not a date', now)).toBe(false);
   });
 });
 

@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { BuybackStats } from 'src/features/buyback/types';
 
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+// The Dune query is re-executed once a day, so anything older than a day and a
+// half has missed a refresh.
+const STALE_AFTER_MS = 36 * 60 * 60 * 1000;
 
 export type BuybackView = 'stats' | 'error' | 'loading';
 
@@ -21,6 +24,17 @@ export interface BuybackStatsState {
 export function selectBuybackView(hasStats: boolean, isError: boolean): BuybackView {
   if (hasStats) return 'stats';
   return isError ? 'error' : 'loading';
+}
+
+/**
+ * Whether the figures come from a Dune execution old enough that a daily
+ * refresh must have failed. The server keeps serving its last good result
+ * through an outage, so this is the only signal a reader gets.
+ */
+export function isBuybackDataStale(updatedAt: string | null | undefined, now: Date): boolean {
+  if (!updatedAt) return false;
+  const executedAt = new Date(updatedAt).getTime();
+  return !Number.isNaN(executedAt) && now.getTime() - executedAt > STALE_AFTER_MS;
 }
 
 export function useBuybackStats(): BuybackStatsState {

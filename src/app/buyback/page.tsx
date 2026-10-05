@@ -8,7 +8,7 @@ import { Section } from 'src/components/layout/Section';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { H1 } from 'src/components/text/headers';
 import { PeriodStats } from 'src/features/buyback/types';
-import { useBuybackStats } from 'src/features/buyback/useBuybackStats';
+import { isBuybackDataStale, useBuybackStats } from 'src/features/buyback/useBuybackStats';
 
 const usd0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const price3 = new Intl.NumberFormat('en-US', {
@@ -154,12 +154,14 @@ function StatsTable({ metrics }: { metrics: Metric[] }) {
             >
               {m.total.text}
             </span>
+            {/* Below `sm` the column header is hidden, so the value names its own period. */}
             <span
               className={clsx(
-                'whitespace-nowrap text-right text-xs text-taupe-600 sm:font-serif sm:text-lg',
-                m.latestDay.negative ? 'sm:text-red-600' : 'sm:text-green-600',
+                'whitespace-nowrap text-right text-xs sm:font-serif sm:text-lg',
+                m.latestDay.negative ? 'text-red-600' : 'text-taupe-600 sm:text-green-600',
               )}
             >
+              <span className="sm:hidden">Latest day: </span>
               {m.latestDay.text}
             </span>
           </div>
@@ -213,6 +215,7 @@ function Footnote({
     parts.push(`Dune refreshed ${refreshed.toUTCString()}`);
   }
   if (refreshFailed) parts.push('latest update failed, showing the last loaded figures');
+  if (isBuybackDataStale(updatedAt, new Date())) parts.push('data may be out of date');
 
   return (
     <p className="text-center text-xs text-taupe-600">
