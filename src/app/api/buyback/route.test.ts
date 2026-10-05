@@ -4,6 +4,11 @@ import { computeBuybackStats } from 'src/features/buyback/computeStats';
 import { DuneFeeRow } from 'src/features/buyback/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The real unstable_cache needs Next's request store; a pass-through keeps the
+// handler testable while still recording how the cache is configured.
+const unstableCache = vi.hoisted(() => vi.fn(<T>(fn: T): T => fn));
+vi.mock('next/cache', () => ({ unstable_cache: unstableCache }));
+
 const mockFetchDuneFeeRows = vi.fn();
 vi.mock('src/features/buyback/fetchDuneResults', () => ({
   fetchDuneFeeRows: (...args: unknown[]) => mockFetchDuneFeeRows(...args),
@@ -33,6 +38,19 @@ async function get() {
 }
 
 describe('GET /api/buyback', () => {
+  it('caches the Dune read explicitly for 15 minutes and never prerenders', async () => {
+    const route = await import('./route');
+    expect(route.dynamic).toBe('force-dynamic');
+    expect(unstableCache).toHaveBeenCalledTimes(1);
+    const [, keyParts, options] = unstableCache.mock.calls[0] as unknown as [
+      unknown,
+      string[],
+      { revalidate: number },
+    ];
+    expect(keyParts).toEqual(['buyback-stats']);
+    expect(options).toEqual({ revalidate: 900 });
+  });
+
   it('returns 503 when no Dune key is configured', async () => {
     vi.stubEnv('DUNE_API_KEY', '');
     const response = await get();
@@ -47,7 +65,9 @@ describe('GET /api/buyback', () => {
     const response = await get();
 
     expect(response.status).toBe(200);
+    // The key is read from the environment, never passed through the cache key.
     expect(mockFetchDuneFeeRows).toHaveBeenCalledWith('test-key');
+    expect(mockFetchDuneFeeRows).toHaveBeenCalledTimes(1);
     const body = await response.json();
     const want = computeBuybackStats(rows, { executionEndedAt, now: new Date() });
     expect(body).toEqual(JSON.parse(JSON.stringify(want)));
