@@ -24,16 +24,29 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ -z "${DUNE_API_KEY:-}" ]; then
+            echo "The DUNE_API_KEY secret is not set" >&2
+            exit 1
+          fi
+
           # No automatic retry here: the request is not idempotent, and resending
           # it after a lost response would enqueue (and bill) a second execution
-          # while only the last id is polled. A failed start fails the run.
-          execution_id=$(curl --fail-with-body -sS \
+          # while only the last id is polled. A failed start fails the run. The
+          # body is kept so Dune's reason is in the log when it refuses.
+          http_code=$(curl -sS --max-time 30 -o execute.json -w '%{http_code}' \
             -X POST "$DUNE_API/query/6898547/execute" \
             -H "X-Dune-API-Key: $DUNE_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"performance": "medium"}' | jq -r '.execution_id // empty')
+            -d '{"performance": "medium"}')
+          if [ "$http_code" != "200" ]; then
+            echo "Dune refused to start the execution (HTTP $http_code):" >&2
+            cat execute.json >&2
+            exit 1
+          fi
+          execution_id=$(jq -r '.execution_id // empty' execute.json)
           if [ -z "$execution_id" ]; then
-            echo "Dune did not return an execution id" >&2
+            echo "Dune did not return an execution id:" >&2
+            cat execute.json >&2
             exit 1
           fi
           echo "Dune execution $execution_id started"
@@ -43,7 +56,8 @@ jobs:
           # refresh shows up as a failed workflow instead of silently stale data.
           for _ in $(seq 1 60); do
             # A transient API hiccup should not fail the refresh; try again next tick.
-            if ! status=$(curl --fail-with-body -sS "$DUNE_API/execution/$execution_id/status" \
+            if ! status=$(curl --fail-with-body -sS --max-time 30 \
+              "$DUNE_API/execution/$execution_id/status" \
               -H "X-Dune-API-Key: $DUNE_API_KEY"); then
               echo "Status check failed, retrying..."
               sleep 10
@@ -52,7 +66,8 @@ jobs:
             state=$(echo "$status" | jq -r '.state')
             if [ "$(echo "$status" | jq -r '.is_execution_finished')" = "true" ]; then
               if [ "$state" != "QUERY_STATE_COMPLETED" ]; then
-                echo "Dune execution $execution_id ended with state $state" >&2
+                echo "Dune execution $execution_id ended with state $state:" >&2
+                echo "$status" >&2
                 exit 1
               fi
               echo "Dune execution $execution_id completed"
