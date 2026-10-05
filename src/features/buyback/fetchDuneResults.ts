@@ -11,8 +11,11 @@ export const CELO_PNL_QUERY_ID = 6898547;
 const PAGE_SIZE = 100;
 const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
 const FETCH_TIMEOUT_MS = 30_000;
+const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 
 interface DuneResultsResponse {
+  /** Terminal state of the execution the results belong to. */
+  state?: string;
   execution_id?: string;
   execution_started_at?: string;
   execution_ended_at?: string;
@@ -38,7 +41,10 @@ export interface DuneFeeResults {
  *
  * The first page names the execution it came from and every later page is read
  * from that execution, so a refresh that completes mid-pagination cannot mix
- * two result sets. Throws rather than returning a partial history.
+ * two result sets. Throws rather than returning a partial history, and rejects
+ * a page whose execution did not complete: Dune answers 200 for failed,
+ * cancelled, expired and partial executions too, with the rows missing, which
+ * would otherwise read as a valid dashboard of zeros.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
@@ -68,11 +74,16 @@ export async function fetchDuneFeeRows(
     }
 
     const data = (await response.json()) as DuneResultsResponse;
+    const batch = data.result?.rows;
+    if (data.state !== COMPLETED_STATE || !Array.isArray(batch)) {
+      throw new Error(
+        `Dune query ${queryId} has no completed result (state ${data.state ?? 'missing'})`,
+      );
+    }
     executionId ??= data.execution_id ?? null;
     executionStartedAt ??= data.execution_started_at ?? null;
     executionEndedAt ??= data.execution_ended_at ?? null;
     totalRowCount ??= data.result?.metadata?.total_row_count ?? null;
-    const batch = data.result?.rows ?? [];
     rows.push(...batch);
     offset = nextOffset(data, offset, batch.length);
   }

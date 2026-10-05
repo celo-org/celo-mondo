@@ -20,8 +20,10 @@ const row = (day: string): DuneFeeRow => ({
   eth_price_usd: 1000,
 });
 
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
+// Every real Dune results page carries the execution state; default it to the
+// completed state so each test only spells out what it is about.
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify({ state: 'QUERY_STATE_COMPLETED', ...body }), {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -163,6 +165,39 @@ describe('fetchDuneFeeRows', () => {
     );
     await expect(fetchDuneFeeRows('k')).rejects.toThrow('more than 10000 rows');
     expect(fetchMock).toHaveBeenCalledTimes(100);
+  });
+
+  it.each([
+    'QUERY_STATE_FAILED',
+    'QUERY_STATE_CANCELLED',
+    'QUERY_STATE_EXPIRED',
+    'QUERY_STATE_COMPLETED_PARTIAL',
+    'QUERY_STATE_EXECUTING',
+  ])('rejects a 200 response whose execution is %s', async (state) => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ state, result: { rows: [row('a')] } }));
+    await expect(fetchDuneFeeRows('k')).rejects.toThrow(`no completed result (state ${state})`);
+  });
+
+  it('rejects a response without a state or without a result payload', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ result: { rows: [row('a')] } }), { status: 200 }),
+    );
+    await expect(fetchDuneFeeRows('k')).rejects.toThrow('no completed result (state missing)');
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ error: 'execution failed' }));
+    await expect(fetchDuneFeeRows('k')).rejects.toThrow('no completed result');
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ result: {} }));
+    await expect(fetchDuneFeeRows('k')).rejects.toThrow('no completed result');
+  });
+
+  it('rejects a later page that is not completed instead of returning the first pages', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse({ result: { rows: Array.from({ length: 100 }, () => row('x')) } }),
+      )
+      .mockResolvedValueOnce(jsonResponse({ state: 'QUERY_STATE_FAILED' }));
+    await expect(fetchDuneFeeRows('k')).rejects.toThrow('state QUERY_STATE_FAILED');
   });
 
   it('lets the caller target a different query id', async () => {
