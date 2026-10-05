@@ -1,4 +1,4 @@
-// Types for the CELO buyback & burn dashboard.
+// Types for the CELO buyback dashboard.
 //
 // Numbers mirror the per-day P&L computed by the sequencer-fee distribution
 // tooling in celo-monorepo (scripts/sequencer-fees, CGP-233 "CELOccelerate").

@@ -118,7 +118,7 @@ describe('aggregate', () => {
       }),
     ];
     const stats = aggregate(days);
-    // avg = total USD spent / total CELO burned
+    // avg = total USD value accrued / total CELO accrued
     expect(stats.avgCeloPriceUsd).toBeCloseTo(
       stats.usdToCommunityFund / stats.celoToCommunityFund,
       10,
