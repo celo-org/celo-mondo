@@ -10,6 +10,7 @@ export const CELO_PNL_QUERY_ID = 6898547;
 // plan the dashboard key uses, and the whole history is only a few pages.
 const PAGE_SIZE = 100;
 const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
+const MAX_PAGES = MAX_ROWS / PAGE_SIZE;
 const FETCH_TIMEOUT_MS = 30_000;
 const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 
@@ -22,6 +23,16 @@ interface DuneResultsResponse {
   /** Offset of the next page; absent on the last page. */
   next_offset?: number;
   result?: { rows?: DuneFeeRow[]; metadata?: { total_row_count?: number } };
+}
+
+/** One validated page of results. */
+interface DunePage {
+  rows: DuneFeeRow[];
+  executionId: string | null;
+  executionStartedAt: string | null;
+  executionEndedAt: string | null;
+  totalRowCount: number | null;
+  nextOffset: number | null;
 }
 
 export interface DuneFeeResults {
@@ -41,66 +52,91 @@ export interface DuneFeeResults {
  *
  * The first page names the execution it came from and every later page is read
  * from that execution, so a refresh that completes mid-pagination cannot mix
- * two result sets. Throws rather than returning a partial history, and rejects
- * a page whose execution did not complete: Dune answers 200 for failed,
- * cancelled, expired and partial executions too, with the rows missing, which
- * would otherwise read as a valid dashboard of zeros.
+ * two result sets. The read either returns the whole history or throws: a page
+ * whose execution did not complete, a page that does not advance, and a row
+ * count that differs from the one Dune reports are all errors.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
 ): Promise<DuneFeeResults> {
   const rows: DuneFeeRow[] = [];
-  let executionId: string | null = null;
-  let executionStartedAt: string | null = null;
-  let executionEndedAt: string | null = null;
-  let totalRowCount: number | null = null;
+  let first: DunePage | null = null;
   let offset: number | null = 0;
 
-  while (offset !== null) {
-    if (rows.length >= MAX_ROWS) {
+  for (let page = 0; offset !== null; page++) {
+    if (page >= MAX_PAGES) {
       throw new Error(`Dune query ${queryId} returned more than ${MAX_ROWS} rows`);
     }
-    const path = executionId ? `execution/${executionId}/results` : `query/${queryId}/results`;
-    const url = `${DUNE_API}/${path}?limit=${PAGE_SIZE}&offset=${offset}`;
-    const response = await fetch(url, {
-      headers: { 'X-Dune-API-Key': apiKey },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
+    const path: string = first
+      ? `execution/${first.executionId}/results`
+      : `query/${queryId}/results`;
+    const current: DunePage = await fetchPage(
+      `${DUNE_API}/${path}?limit=${PAGE_SIZE}&offset=${offset}`,
+      apiKey,
+      queryId,
+    );
+    first ??= current;
+    rows.push(...current.rows);
 
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Dune API ${response.status}: ${body.slice(0, 200)}`);
+    if (current.nextOffset !== null) {
+      if (current.nextOffset <= offset) {
+        throw new Error(`Dune query ${queryId} paging did not advance past offset ${offset}`);
+      }
+      if (first.executionId === null) {
+        throw new Error(`Dune query ${queryId} has more pages but named no execution to read`);
+      }
     }
-
-    const data = (await response.json()) as DuneResultsResponse;
-    const batch = data.result?.rows;
-    if (data.state !== COMPLETED_STATE || !Array.isArray(batch)) {
-      throw new Error(
-        `Dune query ${queryId} has no completed result (state ${data.state ?? 'missing'})`,
-      );
-    }
-    executionId ??= data.execution_id ?? null;
-    executionStartedAt ??= data.execution_started_at ?? null;
-    executionEndedAt ??= data.execution_ended_at ?? null;
-    totalRowCount ??= data.result?.metadata?.total_row_count ?? null;
-    rows.push(...batch);
-    offset = nextOffset(data, offset, batch.length);
+    offset = current.nextOffset;
   }
 
-  if (totalRowCount !== null && rows.length < totalRowCount) {
+  const totalRowCount = first?.totalRowCount ?? null;
+  if (totalRowCount === null) {
+    throw new Error(`Dune query ${queryId} did not report its row count`);
+  }
+  if (rows.length !== totalRowCount) {
     throw new Error(`Dune returned ${rows.length} of ${totalRowCount} rows for query ${queryId}`);
   }
 
-  return { rows, executionStartedAt, executionEndedAt };
+  return {
+    rows,
+    executionStartedAt: first?.executionStartedAt ?? null,
+    executionEndedAt: first?.executionEndedAt ?? null,
+  };
 }
 
 /**
- * Dune marks the last page by omitting `next_offset`. Fall back to the page
- * size when the field is missing so an API change cannot silently truncate the
- * history to one page.
+ * Fetch and validate one page. Dune answers 200 for failed, cancelled, expired
+ * and partial executions too, with the rows missing, which would otherwise
+ * read as a valid dashboard of zeros.
  */
-function nextOffset(data: DuneResultsResponse, offset: number, batchLength: number): number | null {
-  if (typeof data.next_offset === 'number') return data.next_offset;
-  return batchLength === PAGE_SIZE ? offset + batchLength : null;
+async function fetchPage(url: string, apiKey: string, queryId: number): Promise<DunePage> {
+  const response = await fetch(url, {
+    headers: { 'X-Dune-API-Key': apiKey },
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`Dune API ${response.status}: ${body.slice(0, 200)}`);
+  }
+
+  const data = (await response.json()) as DuneResultsResponse;
+  const rows = data.result?.rows;
+  if (data.state !== COMPLETED_STATE || !Array.isArray(rows)) {
+    throw new Error(
+      `Dune query ${queryId} has no completed result (state ${data.state ?? 'missing'})`,
+    );
+  }
+
+  const totalRowCount = data.result?.metadata?.total_row_count;
+  return {
+    rows,
+    executionId: data.execution_id ?? null,
+    executionStartedAt: data.execution_started_at ?? null,
+    executionEndedAt: data.execution_ended_at ?? null,
+    totalRowCount: typeof totalRowCount === 'number' ? totalRowCount : null,
+    // Dune marks the last page by omitting next_offset.
+    nextOffset: typeof data.next_offset === 'number' ? data.next_offset : null,
+  };
 }
