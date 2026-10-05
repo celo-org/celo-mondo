@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CARBON_FUND_SHARE_IN_WINDOW,
-  CGP_287_CUTOFF_DATE,
+  SETTLED_REVENUE_CUTOFF_DATE,
   aggregate,
   computeBuybackStats,
   computeDailyMetrics,
@@ -156,7 +156,7 @@ describe('parseDay', () => {
 describe('nextUtcDay', () => {
   it('rolls over month boundaries in UTC', () => {
     expect(nextUtcDay('2026-04-30')).toBe('2026-05-01');
-    expect(nextUtcDay(CGP_287_CUTOFF_DATE)).toBe('2026-04-09');
+    expect(nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE)).toBe('2026-04-09');
   });
 });
 
@@ -181,10 +181,10 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.feesCollectedUsd).toBeGreaterThan(stats.latestDayStats!.feesCollectedUsd);
   });
 
-  it('starts the window the day after the CGP-287 cutoff, like report.py', () => {
+  it('starts the window the day after the settled-revenue cutoff, like report.py', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-04-07' },
-      { ...dayRow, day: CGP_287_CUTOFF_DATE },
+      { ...dayRow, day: SETTLED_REVENUE_CUTOFF_DATE },
       { ...dayRow, day: '2026-04-09' },
     ];
     const stats = computeBuybackStats(rows, options);

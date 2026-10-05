@@ -4,7 +4,7 @@ import onchain from './__fixtures__/onchainWindow.json';
 import expectedJson from './__fixtures__/reportPyExpected.json';
 import {
   CARBON_FUND_SHARE_IN_WINDOW,
-  CGP_287_CUTOFF_DATE,
+  SETTLED_REVENUE_CUTOFF_DATE,
   computeBuybackStats,
   computeDailyMetrics,
   parseDay,
@@ -58,7 +58,7 @@ describe('fixture integrity', () => {
     expect(windowRows).toHaveLength(expected.windowTotals.days);
     expect(windowRows[0].day).toContain(WINDOW.from);
     expect(windowRows[windowRows.length - 1].day).toContain(WINDOW.to);
-    expect(rows.some((r) => parseDay(r.day) <= CGP_287_CUTOFF_DATE)).toBe(true);
+    expect(rows.some((r) => parseDay(r.day) <= SETTLED_REVENUE_CUTOFF_DATE)).toBe(true);
     expect(rows.some((r) => parseDay(r.day) === '2025-03-26')).toBe(true);
   });
 
@@ -129,7 +129,7 @@ describe('computeBuybackStats on the real history', () => {
   };
   const stats = computeBuybackStats(rows, options);
 
-  it('sums exactly the report.py window (day after CGP-287 cutoff through latest day)', () => {
+  it('sums exactly the report.py window (day after the cutoff through latest day)', () => {
     expect(stats.sinceDay).toBe(WINDOW.from);
     expect(stats.latestDay).toBe(WINDOW.to);
     expectClose(stats.totals.feesCollectedUsd, expected.windowTotals.total_revenue_usd);
@@ -243,13 +243,13 @@ describe('on-chain reconciliation of the Dune revenue (archive node, window bloc
   });
 
   it('the carbon fraction was zeroed inside the window, after the only carbon payout', () => {
-    expect(onchain.carbonFractionZeroSince.cgp288_time.slice(0, 10)).toBe('2026-05-09');
-    expect(onchain.carbonFractionZeroSince.cgp288_block).toBeGreaterThan(64785395);
-    expect(onchain.carbonFractionZeroSince.cgp288_block).toBeLessThan(WINDOW.blockB);
+    expect(onchain.carbonFractionZeroSince.time.slice(0, 10)).toBe('2026-05-09');
+    expect(onchain.carbonFractionZeroSince.block).toBeGreaterThan(64785395);
+    expect(onchain.carbonFractionZeroSince.block).toBeLessThan(WINDOW.blockB);
   });
 
-  it('CGP-287 settled pre-cutoff revenue before the window starts', () => {
-    expect(onchain.cgp287Settlement.time.slice(0, 10) <= CGP_287_CUTOFF_DATE).toBe(true);
-    expect(onchain.cgp287Settlement.celo).toBeCloseTo(1_748_950, 0);
+  it('pre-cutoff revenue was returned to the Community Fund before the window starts', () => {
+    expect(onchain.revenueReturn.time.slice(0, 10) <= SETTLED_REVENUE_CUTOFF_DATE).toBe(true);
+    expect(onchain.revenueReturn.celo).toBeCloseTo(1_748_950, 0);
   });
 });

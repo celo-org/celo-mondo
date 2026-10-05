@@ -1,7 +1,7 @@
 // Types for the CELO buyback & burn dashboard.
 //
 // Numbers mirror the per-day P&L computed by the sequencer-fee distribution
-// tooling in celo-monorepo (scripts/sequencer-fees, CGP-286 "CELOccelerate").
+// tooling in celo-monorepo (scripts/sequencer-fees, CGP-233 "CELOccelerate").
 // The dashboard is driven entirely by the Dune P&L query (id 6898547) — the
 // same daily fee/cost dataset the operator report reads.
 
@@ -40,7 +40,7 @@ export interface DailyMetrics {
   /** Revenue minus basic (L1) expenses, in USD. */
   feesAfterExpensesUsd: number;
   /**
-   * Net profit destined for the Community Fund, in USD. Per CGP-286 the
+   * Net profit destined for the Community Fund, in USD. Per CGP-233 the
    * stablecoin portion is used to acquire CELO; burning is a separate
    * governance decision, not part of the distribution.
    */
@@ -64,7 +64,7 @@ export interface BuybackStats {
   totals: PeriodStats;
   /** Figures for `latestDay` alone, or null when no priced day is available. */
   latestDayStats: PeriodStats | null;
-  /** First day counted: the day after the CGP-287 cutoff (YYYY-MM-DD). */
+  /** First day counted: the day after the settled-revenue cutoff (YYYY-MM-DD). */
   sinceDay: string;
   /** Most recent complete day with price data (YYYY-MM-DD), if any. */
   latestDay: string | null;

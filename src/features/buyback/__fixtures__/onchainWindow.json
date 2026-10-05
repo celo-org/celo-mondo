@@ -73,13 +73,17 @@
     "EURm": 0.16980632413168445
   },
   "carbonFractionZeroSince": {
-    "cgp288_block": 66408166,
-    "cgp288_time": "2026-05-09T06:42:04+00:00"
+    "block": 66408166,
+    "time": "2026-05-09T06:42:04+00:00",
+    "cgp": 236,
+    "proposalId": 288
   },
-  "cgp287Settlement": {
+  "revenueReturn": {
     "tx": "0xfbe1dac031726b6f580b561bfc2a80262b9529d09e4463fc3600cc74dce31a86",
     "block": 63177657,
     "time": "2026-04-01T21:20:15Z",
-    "celo": 1748950.0
+    "celo": 1748950.0,
+    "cgp": 234,
+    "proposalId": 287
   }
 }

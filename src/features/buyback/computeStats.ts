@@ -1,9 +1,11 @@
 import { BuybackStats, DailyMetrics, DuneFeeRow, PeriodStats } from 'src/features/buyback/types';
 
-// Constants mirror scripts/sequencer-fees/report.py (celo-monorepo, CGP-286).
+// Constants mirror scripts/sequencer-fees/report.py (celo-monorepo). That script
+// names proposals by their on-chain id ("CGP-286/287/288"); the CGP numbers
+// are 233 (CELOccelerate), 234 and 236, which is what this module uses.
 // Stablecoins are valued at their USD peg; EURm keeps Dune's forex price.
 const STABLE_PEGS = { USDT: 1.0, USDC: 1.0, USDm: 1.0 } as const;
-// Carbon Fund fraction is 0% after CGP-288 paused those payments. report.py reads
+// Carbon Fund fraction is 0% after CGP-236 paused those payments. report.py reads
 // it live from FeeHandler.getCarbonFraction(); the dashboard pins the current
 // value so it needs no RPC. If governance changes it, verify with
 // `cast call 0xcD437749E43A154C07F3553504c68fBfD56B8778 "getCarbonFraction()(uint256)"`
@@ -15,17 +17,18 @@ const OP_SHARE_REVENUE_PCT = 0.025;
 const OP_SHARE_PROFIT_PCT = 0.15;
 
 /**
- * CGP-287 returned every sequencer fee earned on or before this day to
- * Governance in a single transfer. report.py clamps its reporting window to the
- * day after it so that revenue is never counted twice; the dashboard does the
- * same for its totals.
+ * Sequencer revenue earned on or before this day was already returned to the
+ * Community Fund in one transfer of 1,748,950 CELO, documented in CGP-234
+ * (on-chain proposal 287). report.py calls this the CGP-287 cutoff and clamps
+ * its reporting window to the day after it so that revenue is never counted
+ * twice; the dashboard does the same for its totals.
  */
-export const CGP_287_CUTOFF_DATE = '2026-04-08';
+export const SETTLED_REVENUE_CUTOFF_DATE = '2026-04-08';
 
 /**
  * Carbon Fund share actually taken inside the dashboard window. The FeeHandler
  * applies the carbon fraction when fees are distributed, not when they accrue,
- * and only one distribution ran before CGP-288 zeroed the fraction (block
+ * and only one distribution ran before CGP-236 zeroed the fraction (block
  * 66408166, 2026-05-09): on 2026-04-20 it sent 12,429.15 CELO, 963.17 USDT,
  * 1.66 USDC, 11.54 USDm and 0.17 EURm to the Carbon Fund
  * (0xCe10d577295d34782815919843a3a4ef70Dc33ce), e.g. CELO tx
@@ -120,7 +123,7 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
   );
 
   // Net profit goes to the Community Fund (as CELO; the stablecoin portion is
-  // used to acquire CELO per CGP-286). Burning is a separate governance call.
+  // used to acquire CELO per CGP-233). Burning is a separate governance call.
   const communityFundUsd = revenueUsd - (carbonUsd + l1CostUsd + opShareUsd);
   const communityFundCelo = revenueCelo - (carbonCelo + l1CostCelo + opShareCelo);
 
@@ -182,16 +185,16 @@ export interface ComputeBuybackStatsOptions {
  * Turn raw Dune rows into the dashboard payload: totals for the CELOccelerate
  * window plus the most recent complete day.
  *
- * The window mirrors report.py's defaults: it starts the day after the CGP-287
- * cutoff and ends yesterday (UTC). Today's bucket is dropped because it is still
- * filling and Dune's `prices.day` has no entry for it yet, so it would read as
- * zero revenue.
+ * The window mirrors report.py's defaults: it starts the day after the
+ * settled-revenue cutoff and ends yesterday (UTC). Today's bucket is dropped
+ * because it is still filling and Dune's `prices.day` has no entry for it yet,
+ * so it would read as zero revenue.
  */
 export function computeBuybackStats(
   rows: DuneFeeRow[],
   options: ComputeBuybackStatsOptions,
 ): BuybackStats {
-  const sinceDay = nextUtcDay(CGP_287_CUTOFF_DATE);
+  const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
   const todayUtc = toUtcDay(options.now ?? new Date());
 
   const days = rows
