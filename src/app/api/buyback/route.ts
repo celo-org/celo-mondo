@@ -12,15 +12,25 @@ export const dynamic = 'force-dynamic';
 
 const CACHE_SECONDS = 15 * 60;
 
+/** The configured Dune key, or undefined when it is unset or blank. */
+function getDuneApiKey(): string | undefined {
+  return process.env.DUNE_API_KEY?.trim() || undefined;
+}
+
 /**
  * One Dune read plus the P&L computation, cached across requests and server
  * instances for 15 minutes, so page visits and React Query refetches reuse a
- * single result instead of each paging through Dune. Errors are thrown, and a
- * thrown call is not cached.
+ * single result instead of each paging through Dune.
+ *
+ * A failed read is never stored. With nothing cached yet it surfaces as an
+ * error; once an entry exists, Next serves it while refreshing in the
+ * background and keeps it if that refresh fails, so an outage shows the last
+ * good figures. Their age stays visible: `updatedAt` is Dune's execution time
+ * and the page flags data that has gone stale.
  */
 const getCachedBuybackStats = unstable_cache(
   async (): Promise<BuybackStats> => {
-    const apiKey = process.env.DUNE_API_KEY;
+    const apiKey = getDuneApiKey();
     if (!apiKey) throw new Error('DUNE_API_KEY not configured');
 
     const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows(apiKey);
@@ -32,7 +42,7 @@ const getCachedBuybackStats = unstable_cache(
 );
 
 export async function GET() {
-  if (!process.env.DUNE_API_KEY) {
+  if (!getDuneApiKey()) {
     logger.warn('Buyback stats requested but DUNE_API_KEY is not configured');
     return new Response('DUNE_API_KEY not configured', { status: 503 });
   }

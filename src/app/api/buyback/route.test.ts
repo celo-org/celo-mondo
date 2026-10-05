@@ -1,5 +1,6 @@
 // @vitest-environment node
 import duneFeeRows from 'src/features/buyback/__fixtures__/duneFeeRows.json';
+import reportPyExpected from 'src/features/buyback/__fixtures__/reportPyExpected.json';
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
 import { DuneFeeRow } from 'src/features/buyback/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -52,12 +53,19 @@ describe('GET /api/buyback', () => {
     expect(options).toEqual({ revalidate: 900 });
   });
 
-  it('returns 503 when no Dune key is configured', async () => {
-    vi.stubEnv('DUNE_API_KEY', '');
+  it.each(['', '   ', '\n'])('returns 503 when the Dune key is %j', async (key) => {
+    vi.stubEnv('DUNE_API_KEY', key);
     const response = await get();
     expect(response.status).toBe(503);
     expect(await response.text()).toContain('DUNE_API_KEY');
     expect(mockFetchDuneFeeRows).not.toHaveBeenCalled();
+  });
+
+  it('strips stray whitespace from the key before using it', async () => {
+    vi.stubEnv('DUNE_API_KEY', ' test-key\n');
+    mockFetchDuneFeeRows.mockResolvedValueOnce({ rows, executionStartedAt, executionEndedAt });
+    expect((await get()).status).toBe(200);
+    expect(mockFetchDuneFeeRows).toHaveBeenCalledWith('test-key');
   });
 
   it('serves the stats computed from the Dune rows, stamped with the execution time', async () => {
@@ -80,6 +88,10 @@ describe('GET /api/buyback', () => {
     expect(body.sinceDay).toBe('2026-04-09');
     // The query ran on 2026-09-17, so that day's row is partial and left out.
     expect(body.latestDay).toBe('2026-09-16');
+    // Independent of computeBuybackStats: report.py's own sums for those days.
+    const { total_revenue_usd, total_l1_cost_usd } = reportPyExpected.windowTotals;
+    expect(body.totals.feesCollectedUsd).toBeCloseTo(total_revenue_usd, 6);
+    expect(body.totals.feesAfterExpensesUsd).toBeCloseTo(total_revenue_usd - total_l1_cost_usd, 6);
     expect(body.totals.celoToCommunityFund).toBeGreaterThan(0);
   });
 
