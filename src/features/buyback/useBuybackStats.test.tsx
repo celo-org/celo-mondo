@@ -1,9 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { PropsWithChildren } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BuybackStats } from './types';
-import { isBuybackDataStale, selectBuybackView, useBuybackStats } from './useBuybackStats';
+import {
+  isBuybackDataStale,
+  selectBuybackView,
+  useBuybackStats,
+  useIsBuybackDataStale,
+} from './useBuybackStats';
 
 const stats: BuybackStats = {
   totals: {
@@ -83,6 +88,81 @@ describe('isBuybackDataStale', () => {
   });
 });
 
+describe('useIsBuybackDataStale', () => {
+  const HOUR = 60 * 60 * 1000;
+  const mountedAt = new Date('2026-05-03T12:00:00.000Z');
+  const hoursAgo = (hours: number) => new Date(mountedAt.getTime() - hours * HOUR).toISOString();
+
+  beforeEach(() => {
+    vi.useFakeTimers({ now: mountedAt });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('turns true when the threshold passes on a page left open, with no new data', () => {
+    // 35 hours old at mount: one hour short of stale.
+    const { result } = renderHook(() => useIsBuybackDataStale(hoursAgo(35)));
+    expect(result.current).toBe(false);
+
+    act(() => vi.advanceTimersByTime(59 * 60 * 1000));
+    expect(result.current).toBe(false);
+
+    act(() => vi.advanceTimersByTime(2 * 60 * 1000));
+    expect(result.current).toBe(true);
+  });
+
+  it('is true straight away for data that is already stale', () => {
+    const { result } = renderHook(() => useIsBuybackDataStale(hoursAgo(40)));
+    expect(result.current).toBe(true);
+  });
+
+  it('clears when fresher data arrives and re-arms for the new threshold', () => {
+    const { result, rerender } = renderHook(({ at }) => useIsBuybackDataStale(at), {
+      initialProps: { at: hoursAgo(40) },
+    });
+    expect(result.current).toBe(true);
+
+    rerender({ at: hoursAgo(1) });
+    expect(result.current).toBe(false);
+
+    act(() => vi.advanceTimersByTime(34 * HOUR));
+    expect(result.current).toBe(false);
+    act(() => vi.advanceTimersByTime(2 * HOUR));
+    expect(result.current).toBe(true);
+  });
+
+  it('notices data that became stale while the tab sat open before it arrived', () => {
+    const { result, rerender } = renderHook(
+      ({ at }: { at: string | null }) => useIsBuybackDataStale(at),
+      { initialProps: { at: null as string | null } },
+    );
+    expect(result.current).toBe(false);
+
+    // Fifty hours pass with nothing loaded, then a forty-hour-old execution
+    // arrives. Measured from the mount time it would look fresh.
+    act(() => vi.advanceTimersByTime(50 * HOUR));
+    rerender({ at: new Date(mountedAt.getTime() + 10 * HOUR).toISOString() });
+    act(() => vi.advanceTimersByTime(10));
+    expect(result.current).toBe(true);
+  });
+
+  it('stays false and sets no timer without a usable execution time', () => {
+    const { result } = renderHook(() => useIsBuybackDataStale('not a date'));
+    act(() => vi.advanceTimersByTime(100 * HOUR));
+    expect(result.current).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('cancels its timer on unmount', () => {
+    const { unmount } = renderHook(() => useIsBuybackDataStale(hoursAgo(1)));
+    expect(vi.getTimerCount()).toBe(1);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
 describe('useBuybackStats', () => {
   it('goes from loading to stats on a successful load', async () => {
     fetchMock.mockResolvedValue(ok());
@@ -92,6 +172,8 @@ describe('useBuybackStats', () => {
     await waitFor(() => expect(result.current.view).toBe('stats'));
     expect(result.current.stats).toEqual(stats);
     expect(result.current.refreshFailed).toBe(false);
+    // The fixture's execution time is long past, so the stale flag follows it.
+    expect(result.current.isStale).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith('/api/buyback');
   });
 

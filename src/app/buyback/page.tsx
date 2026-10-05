@@ -8,7 +8,7 @@ import { Section } from 'src/components/layout/Section';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { H1 } from 'src/components/text/headers';
 import { PeriodStats } from 'src/features/buyback/types';
-import { isBuybackDataStale, useBuybackStats } from 'src/features/buyback/useBuybackStats';
+import { useBuybackStats } from 'src/features/buyback/useBuybackStats';
 
 const usd0 = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 const price3 = new Intl.NumberFormat('en-US', {
@@ -84,7 +84,7 @@ function buildMetrics(totals?: PeriodStats, latestDay?: PeriodStats | null): Met
 }
 
 export default function Page() {
-  const { stats, view, refreshFailed } = useBuybackStats();
+  const { stats, view, refreshFailed, isStale } = useBuybackStats();
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
@@ -126,6 +126,7 @@ export default function Page() {
         latestDay={stats?.latestDay}
         updatedAt={stats?.updatedAt}
         refreshFailed={refreshFailed}
+        isStale={isStale}
       />
     </Section>
   );
@@ -202,11 +203,13 @@ function Footnote({
   latestDay,
   updatedAt,
   refreshFailed,
+  isStale,
 }: {
   sinceDay?: string;
   latestDay?: string | null;
   updatedAt?: string | null;
   refreshFailed?: boolean;
+  isStale?: boolean;
 }) {
   const parts: string[] = [];
   if (sinceDay && latestDay) parts.push(`Data ${sinceDay} to ${latestDay} (UTC days)`);
@@ -215,7 +218,7 @@ function Footnote({
     parts.push(`Dune refreshed ${refreshed.toUTCString()}`);
   }
   if (refreshFailed) parts.push('latest update failed, showing the last loaded figures');
-  if (isBuybackDataStale(updatedAt, new Date())) parts.push('data may be out of date');
+  if (isStale) parts.push('data may be out of date');
 
   return (
     <p className="text-center text-xs text-taupe-600">
