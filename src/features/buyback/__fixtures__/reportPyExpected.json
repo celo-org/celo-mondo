@@ -2221,16 +2221,16 @@
     }
   },
   "windowTotals": {
-    "total_revenue_usd": 589857.1784495708,
-    "total_revenue_celo": 8128048.404071081,
-    "total_l1_cost_usd": 7808.42980172274,
-    "total_l1_cost_celo": 102521.15151943223,
-    "op_share_usd": 87307.3122971772,
-    "op_share_celo": 1203829.0878827474,
-    "profit_usd": 494741.4363506708,
-    "profit_celo": 6821698.164668902,
-    "days": 162,
+    "total_revenue_usd": 586631.4130943519,
+    "total_revenue_celo": 8087085.943101275,
+    "total_l1_cost_usd": 7789.3872660176185,
+    "total_l1_cost_celo": 102279.33940984242,
+    "op_share_usd": 86826.30387425014,
+    "op_share_celo": 1197720.9905537148,
+    "profit_usd": 492015.7219540842,
+    "profit_celo": 6787085.613137717,
+    "days": 161,
     "from": "2026-04-09",
-    "to": "2026-09-17"
+    "to": "2026-09-16"
   }
 }

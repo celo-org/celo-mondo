@@ -5,6 +5,7 @@ import {
   aggregate,
   computeBuybackStats,
   computeDailyMetrics,
+  firstIncompleteDay,
   nextUtcDay,
   parseDay,
 } from './computeStats';
@@ -160,6 +161,70 @@ describe('nextUtcDay', () => {
   });
 });
 
+describe('firstIncompleteDay', () => {
+  const now = new Date('2026-05-05T12:00:00.000Z');
+
+  it('is the day the Dune execution started, however much later the request comes', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T05:30:00.000Z',
+        executionEndedAt: '2026-05-02T05:31:00.000Z',
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('uses the start, not the end, when an execution straddles midnight', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T23:59:50.000Z',
+        executionEndedAt: '2026-05-03T00:00:10.000Z',
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('parses the microsecond timestamps Dune returns', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T11:56:25.407379Z',
+        executionEndedAt: '2026-05-02T11:58:22.014698Z',
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('falls back to the end time when the start is unknown', () => {
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T05:31:00.000Z', now })).toBe(
+      '2026-05-03',
+    );
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: null,
+        executionEndedAt: '2026-05-03T05:31:00.000Z',
+        now,
+      }),
+    ).toBe('2026-05-03');
+  });
+
+  it('falls back to today when Dune reports no usable execution time', () => {
+    expect(firstIncompleteDay({ executionEndedAt: null, now })).toBe('2026-05-05');
+    expect(
+      firstIncompleteDay({ executionStartedAt: 'soon', executionEndedAt: 'not a date', now }),
+    ).toBe('2026-05-05');
+  });
+
+  it('never goes past today, even if the execution time is ahead of the clock', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-06T00:00:01.000Z',
+        executionEndedAt: '2026-05-06T00:00:09.000Z',
+        now,
+      }),
+    ).toBe('2026-05-05');
+  });
+});
+
 describe('computeBuybackStats', () => {
   // Options for a run on 2026-05-03: yesterday (05-02) is the newest complete day.
   const options = {
@@ -203,6 +268,42 @@ describe('computeBuybackStats', () => {
     const stats = computeBuybackStats(rows, options);
     expect(stats.latestDay).toBe('2026-05-02');
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it("never counts the execution day's priced partial row, even after midnight", () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      // The query ran at 05:30 on 05-02, so this row holds 5.5 hours of fees.
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    const executed = {
+      executionStartedAt: '2026-05-02T05:30:00.000Z',
+      executionEndedAt: '2026-05-02T05:31:00.000Z',
+    };
+    for (const now of [
+      '2026-05-02T06:00:00.000Z',
+      '2026-05-03T00:00:00.000Z',
+      '2026-05-09T12:00:00.000Z',
+    ]) {
+      const stats = computeBuybackStats(rows, { ...executed, now: new Date(now) });
+      expect(stats.latestDay, now).toBe('2026-05-01');
+      expect(stats.totals.feesCollectedUsd, now).toBeCloseTo(600, 6);
+    }
+  });
+
+  it('counts that day once a later execution covers it in full', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-02' },
+      { ...dayRow, day: '2026-05-03' },
+    ];
+    const stats = computeBuybackStats(rows, {
+      executionStartedAt: '2026-05-03T05:30:00.000Z',
+      executionEndedAt: '2026-05-03T05:31:00.000Z',
+      now: new Date('2026-05-03T06:00:00.000Z'),
+    });
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(1200, 6);
   });
 
   it('stops both the latest day and the totals at the newest priced day', () => {

@@ -23,9 +23,9 @@ const getCachedBuybackStats = unstable_cache(
     const apiKey = process.env.DUNE_API_KEY;
     if (!apiKey) throw new Error('DUNE_API_KEY not configured');
 
-    const { rows, executionEndedAt } = await fetchDuneFeeRows(apiKey);
+    const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows(apiKey);
     logger.debug(`Buyback stats computed from ${rows.length} daily rows`);
-    return computeBuybackStats(rows, { executionEndedAt });
+    return computeBuybackStats(rows, { executionStartedAt, executionEndedAt });
   },
   ['buyback-stats'],
   { revalidate: CACHE_SECONDS },

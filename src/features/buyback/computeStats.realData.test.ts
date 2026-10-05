@@ -11,8 +11,9 @@ import {
 } from './computeStats';
 import { DuneFeeRow } from './types';
 
-// Real rows of Dune query 6898547 (execution 2026-09-17) and the values
-// report.py's compute_row produces for them. See __fixtures__/README.md.
+// Real rows of Dune query 6898547 (executed 2026-09-17 16:29 UTC, so its last
+// row is a partial day) and the values report.py's compute_row produces for
+// them. See __fixtures__/README.md.
 const rows = duneFeeRowsJson as DuneFeeRow[];
 const expected = expectedJson as {
   perDay: Record<
@@ -38,7 +39,7 @@ const expected = expectedJson as {
     profit_usd: number;
     profit_celo: number;
   };
-  duneExecution: { execution_ended_at: string };
+  duneExecution: { execution_started_at: string; execution_ended_at: string };
 };
 
 const WINDOW = onchain.window;
@@ -124,6 +125,7 @@ describe('computeDailyMetrics vs report.py compute_row (real rows)', () => {
 
 describe('computeBuybackStats on the real history', () => {
   const options = {
+    executionStartedAt: expected.duneExecution.execution_started_at,
     executionEndedAt: expected.duneExecution.execution_ended_at,
     now: new Date('2026-09-18T06:00:00.000Z'),
   };
@@ -172,15 +174,30 @@ describe('computeBuybackStats on the real history', () => {
     expectClose(stats.latestDayStats!.usdToCommunityFund, want.profit_usd);
   });
 
-  it('treats the newest day as partial when run on that same UTC day', () => {
-    const sameDay = computeBuybackStats(rows, {
+  it("never counts the execution day's partial row, however long ago it ran", () => {
+    // The fixture's last row is the day the query ran on, and Dune priced it.
+    const last = computeDailyMetrics(rows[rows.length - 1]);
+    expect(last.day).toBe('2026-09-17');
+    expect(last.celoPriceUsd).toBeGreaterThan(0);
+
+    const weekLater = computeBuybackStats(rows, {
       ...options,
-      now: new Date('2026-09-17T23:59:59Z'),
+      now: new Date('2026-09-25T00:00:00.000Z'),
     });
-    expect(sameDay.latestDay).toBe('2026-09-16');
+    expect(weekLater.latestDay).toBe(WINDOW.to);
+    expectClose(weekLater.totals.feesCollectedUsd, stats.totals.feesCollectedUsd);
+  });
+
+  it('counts that day once a later execution covers it in full', () => {
+    const refreshed = computeBuybackStats(rows, {
+      executionStartedAt: '2026-09-18T05:30:00.000Z',
+      executionEndedAt: '2026-09-18T05:31:00.000Z',
+      now: new Date('2026-09-18T06:00:00.000Z'),
+    });
+    expect(refreshed.latestDay).toBe('2026-09-17');
     expectClose(
-      sameDay.totals.feesCollectedUsd,
-      stats.totals.feesCollectedUsd - expected.perDay[WINDOW.to].total_revenue_usd,
+      refreshed.totals.feesCollectedUsd,
+      stats.totals.feesCollectedUsd + expected.perDay['2026-09-17'].total_revenue_usd,
     );
   });
 
@@ -192,6 +209,9 @@ describe('computeBuybackStats on the real history', () => {
 describe('on-chain reconciliation of the Dune revenue (archive node, window blocks)', () => {
   // report.py's accrual formula: what reached (or still sits in) the fee sinks
   // during the window, read at the boundary blocks, plus what was withdrawn.
+  // Block B is the first block of the day after the window, so both sides cover
+  // the same complete UTC days.
+  type Stable = 'USDT' | 'USDC' | 'USDm' | 'EURm';
   const a = onchain.balancesAtA;
   const b = onchain.balancesAtB;
   const accruedCelo =
@@ -200,32 +220,36 @@ describe('on-chain reconciliation of the Dune revenue (archive node, window bloc
     (a.vault_CELO + a.fh_CELO) +
     onchain.vaultWithdrawnCelo +
     onchain.feeHandlerToSafe.CELO;
-  const accruedStable = (sym: 'USDT' | 'USDC' | 'USDm' | 'EURm') =>
+  const accruedStable = (sym: Stable) =>
     b[`fh_${sym}`] - a[`fh_${sym}`] + onchain.feeHandlerToSafe[sym];
+  // Tips paid in a fee stablecoin land in the SequencerFeeVault as ERC-20s,
+  // which it cannot sweep, so they never reach the Safe.
+  const stranded = (sym: Stable) =>
+    onchain.vaultStrandedStables[sym].atB - onchain.vaultStrandedStables[sym].atA;
   const gross = (field: keyof DuneFeeRow) => sum(windowRows.map((r) => num(r[field])));
 
-  it('CELO fees in Dune equal on-chain inflow plus the carbon share within 0.1%', () => {
+  it('CELO fees in Dune equal on-chain inflow plus the carbon share within 0.01%', () => {
     const grossCelo = gross('fee_CELO');
     const reconciled = accruedCelo + onchain.feeHandlerToCarbon.CELO;
-    expect(Math.abs(grossCelo - reconciled) / grossCelo).toBeLessThan(0.001);
+    expect(Math.abs(grossCelo - reconciled) / grossCelo).toBeLessThan(0.0001);
     expect(grossCelo).toBeGreaterThan(4_000_000);
   });
 
-  it('USDT and USDC fees in Dune match on-chain inflow plus the carbon share within 0.1%', () => {
-    for (const sym of ['USDT', 'USDC'] as const) {
-      const g = gross(`fee_${sym}`);
-      const reconciled = accruedStable(sym) + onchain.feeHandlerToCarbon[sym];
-      expect(Math.abs(g - reconciled) / g, sym).toBeLessThan(0.001);
-    }
+  it('stablecoin fees equal FeeHandler inflow + carbon share + what is stranded in the vault', () => {
+    const residual = (sym: Stable) =>
+      gross(`fee_${sym}`) - (accruedStable(sym) + onchain.feeHandlerToCarbon[sym] + stranded(sym));
+    // 245k USDT reconciles to about 10 USDT; USDm and EURm reconcile exactly.
+    expect(Math.abs(residual('USDT')) / gross('fee_USDT')).toBeLessThan(0.0001);
+    expect(Math.abs(residual('USDC'))).toBeLessThan(2);
+    expect(Math.abs(residual('USDm'))).toBeLessThan(0.01);
+    expect(Math.abs(residual('EURm'))).toBeLessThan(0.01);
   });
 
-  it('USDm and EURm differ only by dust', () => {
-    expect(
-      Math.abs(gross('fee_USDm') - (accruedStable('USDm') + onchain.feeHandlerToCarbon.USDm)),
-    ).toBeLessThan(50);
-    expect(
-      Math.abs(gross('fee_EURm') - (accruedStable('EURm') + onchain.feeHandlerToCarbon.EURm)),
-    ).toBeLessThan(10);
+  it('the stranded stablecoins are a negligible share of the revenue shown', () => {
+    const strandedUsd =
+      stranded('USDT') + stranded('USDC') + stranded('USDm') + stranded('EURm') * 1.2;
+    expect(strandedUsd).toBeGreaterThan(0);
+    expect(strandedUsd / expected.windowTotals.total_revenue_usd).toBeLessThan(0.001);
   });
 
   it('the Carbon Fund share constant is the on-chain transfers valued at that day prices', () => {

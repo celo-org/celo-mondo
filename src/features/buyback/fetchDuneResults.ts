@@ -14,6 +14,7 @@ const FETCH_TIMEOUT_MS = 30_000;
 
 interface DuneResultsResponse {
   execution_id?: string;
+  execution_started_at?: string;
   execution_ended_at?: string;
   /** Offset of the next page; absent on the last page. */
   next_offset?: number;
@@ -22,6 +23,8 @@ interface DuneResultsResponse {
 
 export interface DuneFeeResults {
   rows: DuneFeeRow[];
+  /** When Dune started the execution these rows come from (ISO timestamp), if known. */
+  executionStartedAt: string | null;
   /** When Dune last finished executing the query (ISO timestamp), if known. */
   executionEndedAt: string | null;
 }
@@ -43,6 +46,7 @@ export async function fetchDuneFeeRows(
 ): Promise<DuneFeeResults> {
   const rows: DuneFeeRow[] = [];
   let executionId: string | null = null;
+  let executionStartedAt: string | null = null;
   let executionEndedAt: string | null = null;
   let totalRowCount: number | null = null;
   let offset: number | null = 0;
@@ -65,6 +69,7 @@ export async function fetchDuneFeeRows(
 
     const data = (await response.json()) as DuneResultsResponse;
     executionId ??= data.execution_id ?? null;
+    executionStartedAt ??= data.execution_started_at ?? null;
     executionEndedAt ??= data.execution_ended_at ?? null;
     totalRowCount ??= data.result?.metadata?.total_row_count ?? null;
     const batch = data.result?.rows ?? [];
@@ -76,7 +81,7 @@ export async function fetchDuneFeeRows(
     throw new Error(`Dune returned ${rows.length} of ${totalRowCount} rows for query ${queryId}`);
   }
 
-  return { rows, executionEndedAt };
+  return { rows, executionStartedAt, executionEndedAt };
 }
 
 /**

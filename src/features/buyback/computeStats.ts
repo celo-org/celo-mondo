@@ -175,10 +175,37 @@ export function deductCarbonFundShare(totals: PeriodStats, days: DailyMetrics[])
 }
 
 export interface ComputeBuybackStatsOptions {
+  /**
+   * When Dune started executing the query, if known. This is when its snapshot
+   * of the chain was taken, so that UTC day is only partly in the results.
+   */
+  executionStartedAt?: string | null;
   /** When Dune last finished executing the query, if known. */
   executionEndedAt: string | null;
   /** Current time; injectable for tests. Defaults to now. */
   now?: Date;
+}
+
+/** UTC calendar day of an ISO timestamp, or null when it is missing or malformed. */
+function utcDayOf(timestamp: string | null | undefined): string | null {
+  if (!timestamp) return null;
+  const date = new Date(timestamp);
+  return Number.isNaN(date.getTime()) ? null : toUtcDay(date);
+}
+
+/**
+ * The first UTC day the Dune results do not cover in full. Every row on or
+ * after it is dropped.
+ *
+ * The results are a snapshot taken when the query ran, so the day it ran on is
+ * partial for as long as that execution is the latest one, no matter how much
+ * time passes afterwards. The request clock is only an upper bound and the
+ * fallback when Dune reports no execution time.
+ */
+export function firstIncompleteDay(options: ComputeBuybackStatsOptions): string {
+  const todayUtc = toUtcDay(options.now ?? new Date());
+  const snapshotDay = utcDayOf(options.executionStartedAt) ?? utcDayOf(options.executionEndedAt);
+  return snapshotDay !== null && snapshotDay < todayUtc ? snapshotDay : todayUtc;
 }
 
 /**
@@ -186,20 +213,21 @@ export interface ComputeBuybackStatsOptions {
  * window plus the most recent complete day.
  *
  * The window mirrors report.py's defaults: it starts the day after the
- * settled-revenue cutoff and ends yesterday (UTC). Today's bucket is dropped
- * because it is still filling and Dune's `prices.day` has no entry for it yet,
- * so it would read as zero revenue.
+ * settled-revenue cutoff and ends with the last complete UTC day in the Dune
+ * results (report.py's `--to yesterday`, taken relative to the execution rather
+ * than the request). The bucket of the day the query ran on is still filling,
+ * priced or not, and is dropped.
  */
 export function computeBuybackStats(
   rows: DuneFeeRow[],
   options: ComputeBuybackStatsOptions,
 ): BuybackStats {
   const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
-  const todayUtc = toUtcDay(options.now ?? new Date());
+  const cutoffDay = firstIncompleteDay(options);
 
   const days = rows
     .map(computeDailyMetrics)
-    .filter((d) => d.day >= sinceDay && d.day < todayUtc)
+    .filter((d) => d.day >= sinceDay && d.day < cutoffDay)
     .sort((a, b) => a.day.localeCompare(b.day));
 
   // A day Dune has not priced yet (prices.day lags by up to a day) shows up

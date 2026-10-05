@@ -42,14 +42,16 @@ describe('fetchDuneFeeRows', () => {
   it('reads the cached results with the API key and stops after a short page', async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse({
+        execution_started_at: '2026-09-17T16:29:45.379407Z',
         execution_ended_at: '2026-09-17T16:29:54.146577Z',
         result: { rows: [row('2026-09-16'), row('2026-09-17')] },
       }),
     );
 
-    const { rows, executionEndedAt } = await fetchDuneFeeRows('secret');
+    const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows('secret');
 
     expect(rows.map((r) => r.day)).toEqual(['2026-09-16', '2026-09-17']);
+    expect(executionStartedAt).toBe('2026-09-17T16:29:45.379407Z');
     expect(executionEndedAt).toBe('2026-09-17T16:29:54.146577Z');
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
@@ -93,8 +95,9 @@ describe('fetchDuneFeeRows', () => {
 
   it('returns null when Dune does not report an execution time', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ result: { rows: [] } }));
-    const { rows, executionEndedAt } = await fetchDuneFeeRows('k');
+    const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows('k');
     expect(rows).toEqual([]);
+    expect(executionStartedAt).toBeNull();
     expect(executionEndedAt).toBeNull();
   });
 

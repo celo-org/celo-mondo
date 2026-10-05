@@ -19,6 +19,7 @@ vi.mock('src/utils/logger', () => ({
 }));
 
 const rows = duneFeeRows as DuneFeeRow[];
+const executionStartedAt = '2026-09-17T16:29:45.379407Z';
 const executionEndedAt = '2026-09-17T16:29:54.146577Z';
 
 beforeEach(() => {
@@ -60,7 +61,7 @@ describe('GET /api/buyback', () => {
   });
 
   it('serves the stats computed from the Dune rows, stamped with the execution time', async () => {
-    mockFetchDuneFeeRows.mockResolvedValueOnce({ rows, executionEndedAt });
+    mockFetchDuneFeeRows.mockResolvedValueOnce({ rows, executionStartedAt, executionEndedAt });
 
     const response = await get();
 
@@ -69,11 +70,16 @@ describe('GET /api/buyback', () => {
     expect(mockFetchDuneFeeRows).toHaveBeenCalledWith('test-key');
     expect(mockFetchDuneFeeRows).toHaveBeenCalledTimes(1);
     const body = await response.json();
-    const want = computeBuybackStats(rows, { executionEndedAt, now: new Date() });
+    const want = computeBuybackStats(rows, {
+      executionStartedAt,
+      executionEndedAt,
+      now: new Date(),
+    });
     expect(body).toEqual(JSON.parse(JSON.stringify(want)));
     expect(body.updatedAt).toBe(executionEndedAt);
     expect(body.sinceDay).toBe('2026-04-09');
-    expect(body.latestDay).toBe('2026-09-17');
+    // The query ran on 2026-09-17, so that day's row is partial and left out.
+    expect(body.latestDay).toBe('2026-09-16');
     expect(body.totals.celoToCommunityFund).toBeGreaterThan(0);
   });
 
