@@ -209,6 +209,24 @@ describe('fetchDuneFeeRows', () => {
       await expect(fetchDuneFeeRows('k')).rejects.toThrow(`malformed row (${path}:`);
     });
 
+    it.each(['2026-99-99', '2026-02-30', '2026-05-01garbage', '2026-05-012 00:00:00.000 UTC'])(
+      'rejects %j as a day: shaped like one but not a real, cleanly delimited date',
+      async (day) => {
+        fetchMock.mockResolvedValueOnce(withRow({ ...valid, day }));
+        await expect(fetchDuneFeeRows('k')).rejects.toThrow(
+          'malformed row (0.day: not a UTC calendar day)',
+        );
+      },
+    );
+
+    it.each(['2026-05-01', '2026-05-01T00:00:00Z', '2028-02-29 00:00:00.000 UTC'])(
+      'accepts %j as a day',
+      async (day) => {
+        fetchMock.mockResolvedValueOnce(withRow({ ...valid, day }));
+        expect((await fetchDuneFeeRows('k')).rows[0].day).toBe(day);
+      },
+    );
+
     it('names the offending row when a later one is malformed', async () => {
       fetchMock.mockResolvedValueOnce(
         page(

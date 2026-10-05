@@ -45,7 +45,8 @@ export const CARBON_FUND_SHARE_IN_WINDOW = {
 } as const;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+// A calendar day, alone or followed by a time (Dune appends " 00:00:00.000 UTC").
+const DAY_PATTERN = /^(\d{4}-\d{2}-\d{2})(?:$|[ T])/;
 
 function num(value: number | string | null | undefined): number {
   if (value === null || value === undefined || value === '') return 0;
@@ -66,12 +67,17 @@ export function nextUtcDay(day: string): string {
 /**
  * Dune returns the day as a full timestamp ("2026-06-18 00:00:00.000 UTC");
  * only the date part is meaningful. Mirrors report.py's `parse_day`, but
- * returns an empty string for anything that is not a calendar day so such rows
- * are dropped instead of being compared lexicographically.
+ * returns an empty string for anything that is not a real UTC calendar day
+ * ("2026-99-99", "2026-02-30", "2026-05-01garbage"), since days are compared
+ * as strings and a value that only looks like one would land on the wrong
+ * side of a boundary.
  */
 export function parseDay(day: string | null | undefined): string {
-  const date = (day ?? '').slice(0, 10);
-  return DAY_PATTERN.test(date) ? date : '';
+  const match = DAY_PATTERN.exec(day ?? '');
+  if (!match) return '';
+  const date = new Date(`${match[1]}T00:00:00Z`);
+  // The round trip rejects impossible dates the Date parser would roll over.
+  return !Number.isNaN(date.getTime()) && toUtcDay(date) === match[1] ? match[1] : '';
 }
 
 /** A day's L1 operating costs in ETH: batcher + proposer + challenger + EigenDA. */
@@ -209,8 +215,44 @@ function utcDayOf(timestamp: string | null | undefined): string | null {
  */
 export function firstIncompleteDay(options: ComputeBuybackStatsOptions): string {
   const todayUtc = toUtcDay(options.now ?? new Date());
-  const snapshotDay = utcDayOf(options.executionStartedAt) ?? utcDayOf(options.executionEndedAt);
+  const snapshotDay = snapshotDayOf(options);
   return snapshotDay !== null && snapshotDay < todayUtc ? snapshotDay : todayUtc;
+}
+
+/** The UTC day Dune took its snapshot on, when it reports an execution time. */
+function snapshotDayOf(options: ComputeBuybackStatsOptions): string | null {
+  return utcDayOf(options.executionStartedAt) ?? utcDayOf(options.executionEndedAt);
+}
+
+/** The UTC calendar day before the given one. */
+function previousUtcDay(day: string): string {
+  return toUtcDay(new Date(Date.parse(`${day}T00:00:00Z`) - DAY_MS));
+}
+
+/**
+ * Refuse a history that does not cover the window day by day.
+ *
+ * The totals are permanent sums from `sinceDay`, so a result that starts late
+ * (a `LIMIT` added to the query), skips a day (an upstream gap) or stops early
+ * would be summed as if it were whole while the page still says "since
+ * `sinceDay`". Every day from `sinceDay` through `throughDay` must be present.
+ * `throughDay` is null when Dune reported no execution time: what the snapshot
+ * should reach is then unknown, and only the start and the gaps are checked.
+ */
+function assertWindowCovered(days: string[], sinceDay: string, throughDay: string | null): void {
+  if (days.length === 0) {
+    throw new Error(`Dune history has no rows from ${sinceDay} on`);
+  }
+  let expected = sinceDay;
+  for (const day of days) {
+    if (day !== expected) {
+      throw new Error(`Dune history has no row for ${expected}`);
+    }
+    expected = nextUtcDay(expected);
+  }
+  if (throughDay !== null && days[days.length - 1] < throughDay) {
+    throw new Error(`Dune history has no row for ${expected}`);
+  }
 }
 
 // Columns that describe the day itself. Rows for one day must agree on all of
@@ -255,10 +297,16 @@ export function mergeSameDayRows(day: string, rows: DuneFeeRow[]): DuneFeeRow {
 /**
  * The rows that count: one per UTC day in [sinceDay, cutoffDay). Rows without
  * a usable day are skipped, but a result in which no row has one is refused: a
- * renamed column would otherwise yield a dashboard of zeros. So is a counted
- * day whose L1 costs have no ETH price.
+ * renamed column would otherwise yield a dashboard of zeros. So are a window
+ * that is not covered day by day through `throughDay` and a counted day whose
+ * L1 costs have no ETH price.
  */
-function selectWindowRows(rows: DuneFeeRow[], sinceDay: string, cutoffDay: string): DuneFeeRow[] {
+function selectWindowRows(
+  rows: DuneFeeRow[],
+  sinceDay: string,
+  cutoffDay: string,
+  throughDay: string | null,
+): DuneFeeRow[] {
   const dated = rows
     .map((row) => ({ row, day: parseDay(row.day) }))
     .filter(({ day }) => day !== '');
@@ -270,6 +318,10 @@ function selectWindowRows(rows: DuneFeeRow[], sinceDay: string, cutoffDay: strin
   for (const { row, day } of dated) {
     if (day < sinceDay || day >= cutoffDay) continue;
     byDay.set(day, [...(byDay.get(day) ?? []), row]);
+  }
+  // Before the first day of the window has completed there is nothing to cover.
+  if (cutoffDay > sinceDay) {
+    assertWindowCovered([...byDay.keys()].sort(), sinceDay, throughDay);
   }
   return [...byDay].map(([day, group]) => {
     const row = group.length === 1 ? group[0] : mergeSameDayRows(day, group);
@@ -298,8 +350,10 @@ export function computeBuybackStats(
 ): BuybackStats {
   const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
   const cutoffDay = firstIncompleteDay(options);
+  // With a known snapshot day, the history must reach the day before the cutoff.
+  const throughDay = snapshotDayOf(options) !== null ? previousUtcDay(cutoffDay) : null;
 
-  const entries = selectWindowRows(rows, sinceDay, cutoffDay)
+  const entries = selectWindowRows(rows, sinceDay, cutoffDay, throughDay)
     .map((row) => ({ row, metrics: computeDailyMetrics(row) }))
     .sort((a, b) => a.metrics.day.localeCompare(b.metrics.day));
   const days = entries.map(({ metrics }) => metrics);

@@ -208,6 +208,37 @@ describe('computeBuybackStats on the real history', () => {
   });
 });
 
+describe('coverage of the real history', () => {
+  const options = {
+    executionStartedAt: expected.duneExecution.execution_started_at,
+    executionEndedAt: expected.duneExecution.execution_ended_at,
+    now: new Date('2026-09-18T06:00:00.000Z'),
+  };
+
+  it('has a row for every day of the window', () => {
+    const days = windowRows.map((r) => parseDay(r.day));
+    expect(new Set(days).size).toBe(days.length);
+    expect(days).toHaveLength(
+      (Date.parse(`${WINDOW.to}T00:00:00Z`) - Date.parse(`${WINDOW.from}T00:00:00Z`)) / 86_400_000 +
+        1,
+    );
+  });
+
+  it('is refused when a single real day is dropped', () => {
+    const gapped = rows.filter((r) => parseDay(r.day) !== '2026-07-04');
+    expect(() => computeBuybackStats(gapped, options)).toThrow('no row for 2026-07-04');
+  });
+
+  it('is refused when only the most recent rows come back', () => {
+    expect(() => computeBuybackStats(rows.slice(-100), options)).toThrow('no row for 2026-04-09');
+  });
+
+  it('is refused when the last complete day is missing', () => {
+    const short = rows.filter((r) => parseDay(r.day) !== WINDOW.to);
+    expect(() => computeBuybackStats(short, options)).toThrow(`no row for ${WINDOW.to}`);
+  });
+});
+
 describe('the EigenDA fan-out in the real query results', () => {
   // The query returns 2025-09-10 three times: one copy per EigenDA payment.
   const fanOut = fanOutRowsJson as DuneFeeRow[];

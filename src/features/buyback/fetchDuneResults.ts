@@ -1,3 +1,4 @@
+import { parseDay } from 'src/features/buyback/computeStats';
 import { DuneFeeRow } from 'src/features/buyback/types';
 import { z } from 'zod';
 
@@ -27,7 +28,8 @@ const joinedAmount = amount.nullable();
  * on a dashboard that looks healthy.
  */
 const duneFeeRowSchema = z.object({
-  day: z.string().regex(/^\d{4}-\d{2}-\d{2}/, 'not a day'),
+  // A real calendar day, optionally followed by a time, as the computation reads it.
+  day: z.string().refine((value) => parseDay(value) !== '', 'not a UTC calendar day'),
   fee_CELO: amount,
   fee_USDT: amount,
   fee_USDm: amount,
