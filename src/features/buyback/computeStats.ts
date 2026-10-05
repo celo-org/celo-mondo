@@ -74,6 +74,16 @@ export function parseDay(day: string | null | undefined): string {
   return DAY_PATTERN.test(date) ? date : '';
 }
 
+/** A day's L1 operating costs in ETH: batcher + proposer + challenger + EigenDA. */
+function l1CostEth(row: DuneFeeRow): number {
+  return (
+    num(row.batcher_cost_eth) +
+    num(row.proposer_cost_eth) +
+    num(row.challenger_cost_eth) +
+    num(row.EigenDA_cost_eth)
+  );
+}
+
 /**
  * Compute the derived P&L for a single day, faithful to report.py's
  * `compute_row`. USD↔CELO conversions use that day's CELO price so aggregates
@@ -101,13 +111,8 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
   const revenueCelo = celoPriceUsd > 0 ? revenueUsd / celoPriceUsd : 0;
 
   // L1 operating costs, converted from ETH at this day's ETH price.
-  const l1Eth =
-    num(row.batcher_cost_eth) +
-    num(row.proposer_cost_eth) +
-    num(row.challenger_cost_eth) +
-    num(row.EigenDA_cost_eth);
   const ethPriceUsd = num(row.eth_price_usd);
-  const l1CostUsd = l1Eth * ethPriceUsd;
+  const l1CostUsd = l1CostEth(row) * ethPriceUsd;
   const l1CostCelo = celoPriceUsd > 0 ? l1CostUsd / celoPriceUsd : 0;
 
   const carbonUsd = revenueUsd * CARBON_FRACTION;
@@ -250,7 +255,8 @@ export function mergeSameDayRows(day: string, rows: DuneFeeRow[]): DuneFeeRow {
 /**
  * The rows that count: one per UTC day in [sinceDay, cutoffDay). Rows without
  * a usable day are skipped, but a result in which no row has one is refused: a
- * renamed column would otherwise yield a dashboard of zeros.
+ * renamed column would otherwise yield a dashboard of zeros. So is a counted
+ * day whose L1 costs have no ETH price.
  */
 function selectWindowRows(rows: DuneFeeRow[], sinceDay: string, cutoffDay: string): DuneFeeRow[] {
   const dated = rows
@@ -265,9 +271,15 @@ function selectWindowRows(rows: DuneFeeRow[], sinceDay: string, cutoffDay: strin
     if (day < sinceDay || day >= cutoffDay) continue;
     byDay.set(day, [...(byDay.get(day) ?? []), row]);
   }
-  return [...byDay].map(([day, group]) =>
-    group.length === 1 ? group[0] : mergeSameDayRows(day, group),
-  );
+  return [...byDay].map(([day, group]) => {
+    const row = group.length === 1 ? group[0] : mergeSameDayRows(day, group);
+    // Costs that cannot be valued would drop out of the P&L and overstate the
+    // day's profit, so a counted day must come with the price to value them.
+    if (l1CostEth(row) > 0 && num(row.eth_price_usd) <= 0) {
+      throw new Error(`Dune has L1 costs but no ETH price for ${day}`);
+    }
+    return row;
+  });
 }
 
 /**

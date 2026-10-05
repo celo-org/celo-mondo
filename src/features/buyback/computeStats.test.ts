@@ -435,6 +435,27 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
   });
 
+  it('refuses a counted day whose L1 costs have no ETH price', () => {
+    for (const eth_price_usd of [null, 0]) {
+      expect(() =>
+        computeBuybackStats([{ ...dayRow, day: '2026-05-01', eth_price_usd }], options),
+      ).toThrow('L1 costs but no ETH price for 2026-05-01');
+    }
+  });
+
+  it('accepts a missing ETH price when there is nothing to value, or outside the window', () => {
+    const noCosts = { batcher_cost_eth: null, proposer_cost_eth: 0, EigenDA_cost_eth: null };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2025-09-10', eth_price_usd: null },
+      { ...dayRow, day: '2026-05-01', ...noCosts, eth_price_usd: null },
+      // The execution day is dropped before any of this is looked at.
+      { ...dayRow, day: '2026-05-03', eth_price_usd: null },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(600, 6);
+  });
+
   it('accepts rows in any order', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-05-02', fee_CELO_usd: 200 },
