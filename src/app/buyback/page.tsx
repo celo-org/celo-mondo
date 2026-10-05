@@ -84,7 +84,7 @@ function buildMetrics(totals?: PeriodStats, latestDay?: PeriodStats | null): Met
 }
 
 export default function Page() {
-  const { stats, isLoading, isError } = useBuybackStats();
+  const { stats, view, refreshFailed } = useBuybackStats();
 
   return (
     <Section className="mt-6" containerClassName="space-y-6 max-w-screen-md">
@@ -113,9 +113,9 @@ export default function Page() {
         ).
       </p>
 
-      {isError ? (
+      {view === 'error' ? (
         <ErrorNotice />
-      ) : isLoading ? (
+      ) : view === 'loading' ? (
         <StatsSkeleton />
       ) : (
         <StatsTable metrics={buildMetrics(stats?.totals, stats?.latestDayStats)} />
@@ -125,6 +125,7 @@ export default function Page() {
         sinceDay={stats?.sinceDay}
         latestDay={stats?.latestDay}
         updatedAt={stats?.updatedAt}
+        refreshFailed={refreshFailed}
       />
     </Section>
   );
@@ -198,10 +199,12 @@ function Footnote({
   sinceDay,
   latestDay,
   updatedAt,
+  refreshFailed,
 }: {
   sinceDay?: string;
   latestDay?: string | null;
   updatedAt?: string | null;
+  refreshFailed?: boolean;
 }) {
   const parts: string[] = [];
   if (sinceDay && latestDay) parts.push(`Data ${sinceDay} to ${latestDay} (UTC days)`);
@@ -209,6 +212,7 @@ function Footnote({
   if (refreshed && !Number.isNaN(refreshed.getTime())) {
     parts.push(`Dune refreshed ${refreshed.toUTCString()}`);
   }
+  if (refreshFailed) parts.push('latest update failed, showing the last loaded figures');
 
   return (
     <p className="text-center text-xs text-taupe-600">
