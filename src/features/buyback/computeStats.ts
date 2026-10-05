@@ -299,9 +299,10 @@ export function computeBuybackStats(
   const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
   const cutoffDay = firstIncompleteDay(options);
 
-  const days = selectWindowRows(rows, sinceDay, cutoffDay)
-    .map(computeDailyMetrics)
-    .sort((a, b) => a.day.localeCompare(b.day));
+  const entries = selectWindowRows(rows, sinceDay, cutoffDay)
+    .map((row) => ({ row, metrics: computeDailyMetrics(row) }))
+    .sort((a, b) => a.metrics.day.localeCompare(b.metrics.day));
+  const days = entries.map(({ metrics }) => metrics);
 
   // A day Dune has not priced yet (prices.day lags by up to a day) shows up
   // with zero fees but still carries its L1 costs, so both the single-day
@@ -309,6 +310,21 @@ export function computeBuybackStats(
   const priced = days.filter((d) => d.celoPriceUsd > 0);
   const latest = priced.length > 0 ? priced[priced.length - 1] : null;
   const counted = latest ? days.filter((d) => d.day <= latest.day) : [];
+
+  // Trailing unpriced days are cut off above. One in the middle cannot be: its
+  // USD figures would count while its CELO figures read zero, so the totals
+  // would disagree with each other. Nothing can be converted without the
+  // day's CELO price, so such a day is refused unless it is entirely empty.
+  const unpriced = entries.find(
+    ({ row, metrics }) =>
+      latest !== null &&
+      metrics.day < latest.day &&
+      metrics.celoPriceUsd <= 0 &&
+      (num(row.fee_CELO) > 0 || metrics.feesCollectedUsd !== 0 || metrics.l1CostUsd !== 0),
+  );
+  if (unpriced) {
+    throw new Error(`Dune has fees or costs but no CELO price for ${unpriced.metrics.day}`);
+  }
 
   return {
     totals: deductCarbonFundShare(aggregate(counted), counted),

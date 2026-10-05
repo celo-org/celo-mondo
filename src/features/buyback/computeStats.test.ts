@@ -350,6 +350,37 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.usdToCommunityFund).toBeCloseTo(467.5, 6);
   });
 
+  it('refuses an unpriced day in the middle of the window that has fees or costs', () => {
+    const priced = { ...dayRow, day: '2026-05-02' };
+    const cases: [string, Partial<DuneFeeRow>][] = [
+      // Stablecoin fees only: USD revenue with no CELO price to convert it.
+      ['stablecoin fees', { fee_CELO: 0, fee_CELO_usd: 0, batcher_cost_eth: 0 }],
+      // CELO fees Dune could not price.
+      ['unpriced CELO fees', { fee_CELO_usd: 0, fee_USDT: 0, batcher_cost_eth: 0 }],
+      // Nothing but L1 costs.
+      ['L1 costs', { fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0 }],
+    ];
+    for (const [label, change] of cases) {
+      const rows: DuneFeeRow[] = [{ ...dayRow, day: '2026-05-01', ...change }, priced];
+      expect(() => computeBuybackStats(rows, options), label).toThrow(
+        'no CELO price for 2026-05-01',
+      );
+    }
+  });
+
+  it('accepts an entirely empty day in the middle of the window', () => {
+    const empty = { fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0, batcher_cost_eth: 0 };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-30' },
+      { ...dayRow, day: '2026-05-01', ...empty },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(1200, 6);
+    expect(stats.totals.celoToCommunityFund).toBeCloseTo(2 * 4675, 4);
+  });
+
   it('counts a day as complete only once the next UTC day has started', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-05-01' },
