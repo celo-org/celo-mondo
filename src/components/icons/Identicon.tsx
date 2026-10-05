@@ -1,6 +1,6 @@
 import jazzicon from '@metamask/jazzicon';
 import Image from 'next/image';
-import { CSSProperties, PureComponent } from 'react';
+import { CSSProperties, memo, useEffect, useState } from 'react';
 import { Circle } from 'src/components/icons/Circle';
 import { ONE_ADDRESS, ZERO_ADDRESS } from 'src/config/consts';
 import { isValidAddress, normalizeAddress } from 'src/utils/addresses';
@@ -17,30 +17,29 @@ function addressToSeed(address: string) {
   return parseInt(addrStub, 16);
 }
 
-export class Identicon extends PureComponent<Props> {
-  render() {
-    const { address, size: _size, styles } = this.props;
-    const size = _size ?? 34;
+function IdenticonComponent({ address, size: _size, styles }: Props) {
+  const size = _size ?? 34;
+  // jazzicon builds a DOM element with document APIs, so it only runs on the
+  // client; the server renders an empty placeholder of the same dimensions
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
-    if (!isValidAddress(address)) return null;
-
+  useEffect(() => {
+    if (!container || !isValidAddress(address)) return;
     const jazziconResult = jazzicon(size, addressToSeed(address));
+    container.innerHTML = '';
+    container.appendChild(jazziconResult);
+  }, [container, address, size]);
 
-    return (
-      <div className="flex w-fit items-center justify-center rounded-full border border-taupe-300">
-        <div
-          style={{ height: size, width: size, ...styles }}
-          ref={(nodeElement) => {
-            if (nodeElement) {
-              nodeElement.innerHTML = '';
-              nodeElement.appendChild(jazziconResult);
-            }
-          }}
-        ></div>
-      </div>
-    );
-  }
+  if (!isValidAddress(address)) return null;
+
+  return (
+    <div className="flex w-fit items-center justify-center rounded-full border border-taupe-300">
+      <div style={{ height: size, width: size, ...styles }} ref={setContainer}></div>
+    </div>
+  );
 }
+
+export const Identicon = memo(IdenticonComponent);
 
 export function ImageOrIdenticon({
   imgSrc,

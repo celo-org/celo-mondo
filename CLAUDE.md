@@ -31,7 +31,7 @@ Off-chain stages (not in Solidity): `Executed(6)`, `Withdrawn(7)`, `Rejected(8)`
 
 1. **Check on-chain stage**: `cast call 0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972 "getProposalStage(uint256)(uint256)" <PROPOSAL_ID> --rpc-url https://forno.celo.org`
 2. **Check DB stage**: `SELECT id, stage FROM proposals WHERE id = <PROPOSAL_ID>;`
-3. **If they differ, check the archive node**: `cast block latest --rpc-url "https://internal-forno.dont-share.rc1-us-west1.celo-testnet.org" -f number` vs `cast block latest --rpc-url https://forno.celo.org -f number` — if the private node's block is significantly lower, it's stale
+3. **If they differ, check the archive node**: `cast block latest --rpc-url "https://rpc.ankr.com/celo" -f number` vs `cast block latest --rpc-url https://forno.celo.org -f number` — if the private node's block is significantly lower, it's stale
 4. **Check cron logs**: `gh run list --workflow="update-proposal-stages.yml" --limit 5` then `gh run view <RUN_ID> --log | grep "Proposal <ID>"`
 5. **Stage durations** (hardcoded in `src/config/consts.ts`, must match on-chain): Queued=28d, Referendum=7d, Execution=3d. Verify with: `cast call 0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972 "getReferendumStageDuration()(uint256)" --rpc-url https://forno.celo.org`
 

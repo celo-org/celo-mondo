@@ -45,6 +45,7 @@ function insertEvent(
     data: '0x' as `0x${string}`,
     blockNumber: 59165954n,
     transactionHash: txHash,
+    logIndex: 0,
   });
 }
 

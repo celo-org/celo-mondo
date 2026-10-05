@@ -21,11 +21,12 @@ import { SocialLogoLink } from 'src/components/logos/SocialLogo';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
-import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
+import { DelegateesData, useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useIsMobile } from 'src/styles/mediaQueries';
+import { deserializeBigints } from 'src/utils/objects';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 
@@ -288,8 +289,13 @@ function DelegateeTableSkeleton() {
   );
 }
 
-export function DelegateeTableSection() {
-  const { delegatees } = useDelegatees();
+export function DelegateeTableSection({ initialDelegatees }: { initialDelegatees?: string }) {
+  // Serialized because RSC prop serialization downgrades bigints to strings
+  const initialData = useMemo(
+    () => (initialDelegatees ? deserializeBigints<DelegateesData>(initialDelegatees) : undefined),
+    [initialDelegatees],
+  );
+  const { delegatees } = useDelegatees(initialData);
 
   if (!delegatees) {
     return <DelegateeTableSkeleton />;

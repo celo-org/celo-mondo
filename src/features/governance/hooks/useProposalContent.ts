@@ -5,10 +5,13 @@ import { fetchProposalContent } from 'src/features/governance/fetchFromRepositor
 import { ProposalMetadata } from 'src/features/governance/types';
 import { logger } from 'src/utils/logger';
 
-export function useProposalContent(metadata?: ProposalMetadata) {
+export function useProposalContent(metadata?: ProposalMetadata, initialContent?: string) {
   const cgpNumber = metadata?.cgp;
   const { isLoading, isError, error, data } = useQuery({
     queryKey: ['useProposalContent', cgpNumber],
+    // Server-rendered markup; marked stale so the client revalidates after hydration
+    initialData: initialContent,
+    initialDataUpdatedAt: 0,
     queryFn: () => {
       if (!cgpNumber) return null;
       logger.debug('Fetching proposal content', cgpNumber);

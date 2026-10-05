@@ -73,7 +73,7 @@ function createEvent(
     chainId: celo.id,
     eventName: eventName as any,
     args,
-    address: '0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972' as `0x${string}`,
+    address: '0xD533Ca259b330c7A88f74E000a3FaEa2d63B7972'.toLowerCase() as `0x${string}`,
     topics: [
       `0x${'0'.repeat(64)}` as `0x${string}`,
       `0x${proposalId.toString(16).padStart(64, '0')}` as `0x${string}`,
@@ -81,6 +81,7 @@ function createEvent(
     data: '0x' as `0x${string}`,
     blockNumber: BigInt(blockNumber),
     transactionHash: transactionHash as `0x${string}`,
+    logIndex: 0,
   };
 }
 
@@ -197,6 +198,7 @@ function createConfirmationEvent(
     data: '0x' as `0x${string}`,
     blockNumber: BigInt(blockNumber),
     transactionHash: transactionHash as `0x${string}`,
+    logIndex: 0,
   };
 }
 

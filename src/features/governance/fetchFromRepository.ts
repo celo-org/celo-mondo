@@ -109,7 +109,15 @@ async function fetchFromProxy(cgpNumber: number) {
 
 export async function fetchProposalContent(cgpNumber: number) {
   const yaml = await fetchFromProxy(cgpNumber);
-  const fileParts = separateYamlFrontMatter(yaml);
+  return parseProposalContent(yaml, cgpNumber);
+}
+
+/**
+ * Converts a raw CGP markdown file (with YAML front matter) into sanitized HTML.
+ * Shared by the client content hook and server rendering.
+ */
+export function parseProposalContent(rawFile: string, cgpNumber: number) {
+  const fileParts = separateYamlFrontMatter(rawFile);
   if (!fileParts) throw new Error('Failed to parse proposal content');
   const markup = markdownToHtml(fileParts.body);
   if (isNullish(markup)) throw new Error('Failed to convert markdown to html');

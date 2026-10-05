@@ -5,6 +5,7 @@ import {
   PropsWithChildren,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
@@ -79,7 +80,11 @@ function useLocalLookup() {
 function useAddressToLabelInternal() {
   const publicClient = usePublicClient();
   const localLookup = useLocalLookup();
-  const [debouncedMap, setDebouncedMap] = useState<ENSMap>(singleton);
+  // Start empty so the server render and the hydration render agree (the
+  // singleton is seeded from localStorage, which the server cannot see);
+  // the cache is synced right after mount
+  const [debouncedMap, setDebouncedMap] = useState<ENSMap>({});
+  useEffect(() => setDebouncedMap({ ...singleton }), []);
   // NOTE: for now 2 seconds seemed fine, it's sufficient for the UX and
   // gives *plenty* of time to batch calls, could lower it more.
   // NOTE: we're making sure we force singleton to be a new ref by destructuring
@@ -146,8 +151,13 @@ function useAddressToLabelInternal() {
         // NOTE: lowercase for easier graphql matching
         // because celonames lowercases addresses
         const lowercased = address.toLowerCase() as Address;
-        // NOTE: if address was never fetched, flag to fetch it
-        if (!debouncedMap[lowercased]) {
+        // NOTE: if address was never fetched, flag to fetch it. Client-only:
+        // on the server this would grow the module-level map unboundedly
+        // across requests (fetching happens only in the browser anyway).
+        // Also check the singleton itself: during the first client render
+        // debouncedMap is still empty, and flagging then would overwrite
+        // names already cached from localStorage.
+        if (typeof window !== 'undefined' && !debouncedMap[lowercased] && !singleton[lowercased]) {
           singleton[lowercased] = FETCH_ME_PLEASE;
         }
 

@@ -43,6 +43,5 @@ export enum ValidatorGroupStatus {
 export interface ValidatorGroupRow extends ValidatorGroup {
   numElected: number;
   numMembers: number;
-  isHidden: boolean;
   isContributor: boolean;
 }

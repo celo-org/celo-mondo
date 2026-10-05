@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   createContext,
   PropsWithChildren,
@@ -16,7 +16,6 @@ function useHistoryInternal() {
   const [history, setHistory] = useState<string[]>([]);
   const { back: _back } = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const back = useCallback(() => {
     if (history.length > 1) {
       // NOTE: `router.back` doesnt trigger the 'popstate' event surprisingly
@@ -29,9 +28,11 @@ function useHistoryInternal() {
   }, [_back, history]);
 
   useEffect(() => {
-    const url = `${pathname}?${searchParams}`;
+    // Query params are read from window (not useSearchParams) so this provider
+    // does not force a client-side rendering bailout on statically rendered pages
+    const url = `${pathname}${window.location.search}`;
     setHistory((prevState) => (prevState.at(-1) !== url ? [...prevState, url] : prevState));
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   useEffect(() => {
     const listener = (_event: PopStateEvent) => {

@@ -8,7 +8,7 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ChevronIcon } from 'src/components/icons/Chevron';
 import { Section } from 'src/components/layout/Section';
 import { H1 } from 'src/components/text/headers';
-import { BRIDGES } from 'src/config/bridges';
+import { BRIDGES, sortBridgesForDisplay } from 'src/config/bridges';
 import { Bridge } from 'src/types/bridge';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { getBridgeClickedCounts } from '../actions';
@@ -32,17 +32,11 @@ export default function Page() {
           };
         });
 
-        const sorted = bridgesWithCounts.sort((a, b) => {
-          // First sort by click count (descending)
-          if (b.clickCount !== a.clickCount) {
-            return b.clickCount - a.clickCount;
-          }
-          // Then sort by name (ascending)
-          return a.name.localeCompare(b.name);
-        });
-        setSortedBridges(sorted);
+        setSortedBridges(sortBridgesForDisplay(bridgesWithCounts));
       } catch (error) {
-        setSortedBridges(BRIDGES.map((bridge) => ({ ...bridge, clickCount: 0 })));
+        setSortedBridges(
+          sortBridgesForDisplay(BRIDGES.map((bridge) => ({ ...bridge, clickCount: 0 }))),
+        );
       } finally {
         setLoading(false);
       }

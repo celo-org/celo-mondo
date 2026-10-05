@@ -21,6 +21,48 @@ export function findProposal(proposals: MergedProposalData[] | undefined, id: st
     return undefined;
   }
 }
+/**
+ * Builds the MergedProposalData shape used across the app from a DB proposal row.
+ * On-chain-only values (upvotes, isPassing) are injected by the caller: the client
+ * hook reads them from the chain, while server rendering passes defaults and lets
+ * the client refresh them after hydration.
+ */
+export function mergeProposalWithChainData(
+  proposal: ProposalWithHistory,
+  chainData: { upvotes: bigint; isPassing: boolean },
+): MergedProposalData {
+  return {
+    ...proposal,
+    metadata: {
+      author: proposal.author,
+      cgp: proposal.cgp,
+      cgpUrl: proposal.cgpUrl,
+      cgpUrlRaw: proposal.cgpUrlRaw,
+      stage: proposal.stage,
+      title: proposal.title,
+      timestamp: proposal.timestamp * 1000,
+      timestampExecuted: proposal.executedAt ? new Date(proposal.executedAt).getTime() : null,
+      id: proposal.id,
+      url: proposal.url,
+    },
+    proposal: {
+      deposit: BigInt(proposal.deposit || 0),
+      id: proposal.id,
+      networkWeight: BigInt(proposal.networkWeight || 0),
+      numTransactions: BigInt(proposal.transactionCount || 0),
+      stage: proposal.stage,
+      proposer: proposal.proposer,
+      upvotes: chainData.upvotes,
+      url: proposal.url,
+      expiryTimestamp: getStageEndTimestamp(proposal.stage, proposal.timestamp * 1000),
+      // deprecated field, prefer <root>.queuedAt, dequeuedAt, etc
+      timestamp: proposal.timestamp * 1000,
+      isPassing: chainData.isPassing,
+      votes: {},
+    },
+  } as MergedProposalData;
+}
+
 export type MergedProposalData = ProposalWithHistory &
   (
     | { proposal: Proposal; metadata?: ProposalMetadata; history?: undefined }
