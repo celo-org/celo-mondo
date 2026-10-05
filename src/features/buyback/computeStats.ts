@@ -209,6 +209,25 @@ export function firstIncompleteDay(options: ComputeBuybackStatsOptions): string 
 }
 
 /**
+ * Compute every row's P&L, refusing input that would produce wrong totals
+ * without any sign of it: a result whose rows carry no usable day (a renamed
+ * column would otherwise yield a dashboard of zeros) and more than one row for
+ * a day (a join fan-out in the query would double that day).
+ */
+function toDailyMetrics(rows: DuneFeeRow[]): DailyMetrics[] {
+  const days = rows.map(computeDailyMetrics).filter((d) => d.day !== '');
+  if (rows.length > 0 && days.length === 0) {
+    throw new Error('Dune rows carry no usable day');
+  }
+  const seen = new Set<string>();
+  for (const { day } of days) {
+    if (seen.has(day)) throw new Error(`Dune returned more than one row for ${day}`);
+    seen.add(day);
+  }
+  return days;
+}
+
+/**
  * Turn raw Dune rows into the dashboard payload: totals for the CELOccelerate
  * window plus the most recent complete day.
  *
@@ -225,8 +244,7 @@ export function computeBuybackStats(
   const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
   const cutoffDay = firstIncompleteDay(options);
 
-  const days = rows
-    .map(computeDailyMetrics)
+  const days = toDailyMetrics(rows)
     .filter((d) => d.day >= sinceDay && d.day < cutoffDay)
     .sort((a, b) => a.day.localeCompare(b.day));
 

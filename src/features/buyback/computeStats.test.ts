@@ -349,17 +349,45 @@ describe('computeBuybackStats', () => {
     ).toBeNull();
   });
 
-  it('ignores rows without a usable day', () => {
+  it('ignores individual rows without a usable day', () => {
     const stats = computeBuybackStats(
       [
         { ...dayRow, day: '' },
         { ...dayRow, day: 'garbage' },
+        { ...dayRow, day: '2026-05-01' },
       ],
       options,
     );
-    expect(stats.latestDay).toBeNull();
-    expect(stats.latestDayStats).toBeNull();
-    expect(stats.totals.feesCollectedUsd).toBe(0);
+    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('refuses a result in which no row has a usable day', () => {
+    // What a renamed or dropped `day` column looks like.
+    const rows = [
+      { ...dayRow, day: undefined },
+      { ...dayRow, day: null },
+    ] as unknown as DuneFeeRow[];
+    expect(() => computeBuybackStats(rows, options)).toThrow('no usable day');
+  });
+
+  it('refuses two rows for the same day instead of double counting it', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01 00:00:00.000 UTC' },
+      { ...dayRow, day: '2026-05-01' },
+    ];
+    expect(() => computeBuybackStats(rows, options)).toThrow('more than one row for 2026-05-01');
+  });
+
+  it('accepts rows in any order', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 200 },
+      { ...dayRow, day: '2026-04-30' },
+      { ...dayRow, day: '2026-05-01' },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600 + 600 + 700, 6);
   });
 
   it('returns zeros, not a negative carbon deduction, for an empty window', () => {
