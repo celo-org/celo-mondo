@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import fanOutRowsJson from './__fixtures__/duneEigenDaFanOutRows.json';
 import duneFeeRowsJson from './__fixtures__/duneFeeRows.json';
 import onchain from './__fixtures__/onchainWindow.json';
 import expectedJson from './__fixtures__/reportPyExpected.json';
@@ -7,6 +8,7 @@ import {
   SETTLED_REVENUE_CUTOFF_DATE,
   computeBuybackStats,
   computeDailyMetrics,
+  mergeSameDayRows,
   parseDay,
 } from './computeStats';
 import { DuneFeeRow } from './types';
@@ -203,6 +205,38 @@ describe('computeBuybackStats on the real history', () => {
 
   it('passes the Dune execution time through unchanged', () => {
     expect(stats.updatedAt).toBe('2026-09-17T16:29:54.146577Z');
+  });
+});
+
+describe('the EigenDA fan-out in the real query results', () => {
+  // The query returns 2025-09-10 three times: one copy per EigenDA payment.
+  const fanOut = fanOutRowsJson as DuneFeeRow[];
+
+  it('is three copies of one day that differ only in the EigenDA payment', () => {
+    expect(fanOut).toHaveLength(3);
+    expect(new Set(fanOut.map((r) => parseDay(r.day)))).toEqual(new Set(['2025-09-10']));
+    expect(new Set(fanOut.map((r) => r.fee_CELO)).size).toBe(1);
+    expect(new Set(fanOut.map((r) => r.EigenDA_cost_eth)).size).toBe(3);
+  });
+
+  it('merges to the revenue once and the payments summed', () => {
+    const merged = mergeSameDayRows('2025-09-10', fanOut);
+    expect(merged.fee_CELO).toBe(fanOut[0].fee_CELO);
+    expectClose(num(merged.EigenDA_cost_eth), 0.001 + 0.01 + 0.298);
+    // Naively summing the copies would triple that day's revenue.
+    const naive = sum(fanOut.map((r) => computeDailyMetrics(r).feesCollectedUsd));
+    expectClose(naive, 3 * computeDailyMetrics(merged).feesCollectedUsd);
+  });
+
+  it('leaves the dashboard untouched, since that day precedes the window', () => {
+    const options = {
+      executionStartedAt: expected.duneExecution.execution_started_at,
+      executionEndedAt: expected.duneExecution.execution_ended_at,
+      now: new Date('2026-09-18T06:00:00.000Z'),
+    };
+    expect(computeBuybackStats([...fanOut, ...rows], options)).toEqual(
+      computeBuybackStats(rows, options),
+    );
   });
 });
 

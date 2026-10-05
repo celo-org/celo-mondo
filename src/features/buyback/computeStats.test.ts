@@ -6,6 +6,7 @@ import {
   computeBuybackStats,
   computeDailyMetrics,
   firstIncompleteDay,
+  mergeSameDayRows,
   nextUtcDay,
   parseDay,
 } from './computeStats';
@@ -159,6 +160,35 @@ describe('nextUtcDay', () => {
     expect(nextUtcDay('2026-04-30')).toBe('2026-05-01');
     expect(nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE)).toBe('2026-04-09');
   });
+});
+
+describe('mergeSameDayRows', () => {
+  it('keeps the day-level columns once and sums the EigenDA costs', () => {
+    const merged = mergeSameDayRows('2026-05-01', [
+      { ...dayRow, EigenDA_cost_eth: 0.001 },
+      { ...dayRow, EigenDA_cost_eth: '0.01' },
+      { ...dayRow, EigenDA_cost_eth: 0.298 },
+    ] as unknown as DuneFeeRow[]);
+    expect(merged.EigenDA_cost_eth).toBeCloseTo(0.309, 12);
+    expect({ ...merged, EigenDA_cost_eth: null }).toEqual({ ...dayRow, EigenDA_cost_eth: null });
+  });
+
+  it('treats numbers and their string forms as the same value', () => {
+    const merged = mergeSameDayRows('2026-05-01', [
+      dayRow,
+      { ...dayRow, fee_CELO: '1000', eth_price_usd: '1000' } as unknown as DuneFeeRow,
+    ]);
+    expect(merged.fee_CELO).toBe(1000);
+  });
+
+  it.each(['fee_CELO', 'fee_CELO_usd', 'batcher_cost_eth', 'eth_price_usd'] as const)(
+    'refuses copies that differ in %s',
+    (column) => {
+      expect(() =>
+        mergeSameDayRows('2026-05-01', [dayRow, { ...dayRow, [column]: 123.456 }]),
+      ).toThrow('conflicting rows for 2026-05-01');
+    },
+  );
 });
 
 describe('firstIncompleteDay', () => {
@@ -371,12 +401,38 @@ describe('computeBuybackStats', () => {
     expect(() => computeBuybackStats(rows, options)).toThrow('no usable day');
   });
 
-  it('refuses two rows for the same day instead of double counting it', () => {
+  it('counts a day once when the query fans it out per EigenDA payment', () => {
+    // Same revenue on each copy, a different EigenDA payment on each.
     const rows: DuneFeeRow[] = [
-      { ...dayRow, day: '2026-05-01 00:00:00.000 UTC' },
+      { ...dayRow, day: '2026-05-01 00:00:00.000 UTC', EigenDA_cost_eth: 0.01 },
+      { ...dayRow, day: '2026-05-01 00:00:00.000 UTC', EigenDA_cost_eth: 0.02 },
+      { ...dayRow, day: '2026-05-01', EigenDA_cost_eth: null },
+    ];
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+    // L1 = batcher $50 + EigenDA (0.01 + 0.02) ETH x $1000 = $80.
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(520, 6);
+    expect(stats.latestDay).toBe('2026-05-01');
+  });
+
+  it('refuses same-day rows that disagree on anything but the EigenDA cost', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-01', fee_USDT: 501 },
+    ];
+    expect(() => computeBuybackStats(rows, options)).toThrow('conflicting rows for 2026-05-01');
+  });
+
+  it('is not disturbed by duplicated or conflicting days outside the window', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2025-09-10', EigenDA_cost_eth: 0.001 },
+      { ...dayRow, day: '2025-09-10', EigenDA_cost_eth: 0.298 },
+      { ...dayRow, day: '2025-09-11' },
+      { ...dayRow, day: '2025-09-11', fee_USDT: 9 },
       { ...dayRow, day: '2026-05-01' },
     ];
-    expect(() => computeBuybackStats(rows, options)).toThrow('more than one row for 2026-05-01');
+    const stats = computeBuybackStats(rows, options);
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
   });
 
   it('accepts rows in any order', () => {

@@ -208,23 +208,66 @@ export function firstIncompleteDay(options: ComputeBuybackStatsOptions): string 
   return snapshotDay !== null && snapshotDay < todayUtc ? snapshotDay : todayUtc;
 }
 
+// Columns that describe the day itself. Rows for one day must agree on all of
+// them; only the EigenDA cost may differ (see mergeSameDayRows).
+const DAY_LEVEL_COLUMNS = [
+  'fee_CELO',
+  'fee_USDT',
+  'fee_USDm',
+  'fee_EURm',
+  'fee_USDC',
+  'fee_CELO_usd',
+  'fee_EURm_usd',
+  'others_usd',
+  'batcher_cost_eth',
+  'proposer_cost_eth',
+  'challenger_cost_eth',
+  'eth_price_usd',
+] as const satisfies readonly (keyof DuneFeeRow)[];
+
 /**
- * Compute every row's P&L, refusing input that would produce wrong totals
- * without any sign of it: a result whose rows carry no usable day (a renamed
- * column would otherwise yield a dashboard of zeros) and more than one row for
- * a day (a join fan-out in the query would double that day).
+ * Collapse several rows for one day into one.
+ *
+ * The Dune query joins one row per EigenDA payment onto the day's revenue, so
+ * a day with several payments comes back several times, each copy carrying the
+ * full revenue and one payment (2025-09-10 has three). Summing the copies
+ * would multiply that day's revenue; the day is its revenue once plus the sum
+ * of the EigenDA costs. Rows that disagree on anything else are not that
+ * fan-out, and are refused rather than guessed at.
  */
-function toDailyMetrics(rows: DuneFeeRow[]): DailyMetrics[] {
-  const days = rows.map(computeDailyMetrics).filter((d) => d.day !== '');
-  if (rows.length > 0 && days.length === 0) {
+export function mergeSameDayRows(day: string, rows: DuneFeeRow[]): DuneFeeRow {
+  const [first, ...rest] = rows;
+  const conflicting = rest.some((row) =>
+    DAY_LEVEL_COLUMNS.some((column) => num(row[column]) !== num(first[column])),
+  );
+  if (conflicting) throw new Error(`Dune returned conflicting rows for ${day}`);
+  return {
+    ...first,
+    EigenDA_cost_eth: rows.reduce((total, row) => total + num(row.EigenDA_cost_eth), 0),
+  };
+}
+
+/**
+ * The rows that count: one per UTC day in [sinceDay, cutoffDay). Rows without
+ * a usable day are skipped, but a result in which no row has one is refused: a
+ * renamed column would otherwise yield a dashboard of zeros.
+ */
+function selectWindowRows(rows: DuneFeeRow[], sinceDay: string, cutoffDay: string): DuneFeeRow[] {
+  const dated = rows
+    .map((row) => ({ row, day: parseDay(row.day) }))
+    .filter(({ day }) => day !== '');
+  if (rows.length > 0 && dated.length === 0) {
     throw new Error('Dune rows carry no usable day');
   }
-  const seen = new Set<string>();
-  for (const { day } of days) {
-    if (seen.has(day)) throw new Error(`Dune returned more than one row for ${day}`);
-    seen.add(day);
+
+  const byDay = new Map<string, DuneFeeRow[]>();
+  for (const { row, day } of dated) {
+    if (day < sinceDay || day >= cutoffDay) continue;
+    byDay.set(day, [...(byDay.get(day) ?? []), row]);
   }
-  return days;
+  return [...byDay].map(([day, group]) =>
+    group.length === 1 ? group[0] : mergeSameDayRows(day, group),
+  );
 }
 
 /**
@@ -244,8 +287,8 @@ export function computeBuybackStats(
   const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
   const cutoffDay = firstIncompleteDay(options);
 
-  const days = toDailyMetrics(rows)
-    .filter((d) => d.day >= sinceDay && d.day < cutoffDay)
+  const days = selectWindowRows(rows, sinceDay, cutoffDay)
+    .map(computeDailyMetrics)
     .sort((a, b) => a.day.localeCompare(b.day));
 
   // A day Dune has not priced yet (prices.day lags by up to a day) shows up
