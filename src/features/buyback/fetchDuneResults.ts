@@ -76,6 +76,15 @@ interface DunePage {
   nextOffset: number | null;
 }
 
+/** Which execution a query's cached results currently come from. */
+export interface DuneExecution {
+  executionId: string;
+  /** When Dune started that execution (ISO timestamp), if known. */
+  executionStartedAt: string | null;
+  /** When it finished (ISO timestamp), if known. */
+  executionEndedAt: string | null;
+}
+
 export interface DuneFeeResults {
   rows: DuneFeeRow[];
   /** When Dune started the execution these rows come from (ISO timestamp), if known. */
@@ -85,22 +94,47 @@ export interface DuneFeeResults {
 }
 
 /**
- * Read the latest cached results of the Dune P&L query via the read-only
- * `/results` endpoint, so a page visit never spends execution credits. The
- * query itself is re-executed once a day by the refresh-buyback-dune-query
- * GitHub Actions cron — deliberately not from this public request path, where
- * cache-busting traffic could be used to burn Dune credits.
+ * Which execution the query's cached results currently come from, read with a
+ * single-row page. Dune bills results by datapoints, so this is the cheap way
+ * to learn whether a new execution has landed since the history was last read.
+ */
+export async function fetchLatestExecution(
+  apiKey: string,
+  queryId: number = CELO_PNL_QUERY_ID,
+): Promise<DuneExecution> {
+  const page = await fetchPage(
+    `${DUNE_API}/query/${queryId}/results?limit=1&offset=0`,
+    apiKey,
+    queryId,
+  );
+  if (page.executionId === null) {
+    throw new Error(`Dune query ${queryId} named no execution for its results`);
+  }
+  return {
+    executionId: page.executionId,
+    executionStartedAt: page.executionStartedAt,
+    executionEndedAt: page.executionEndedAt,
+  };
+}
+
+/**
+ * Read the full results of the Dune P&L query via the read-only `/results`
+ * endpoints, so a page visit never spends execution credits. The query itself
+ * is re-executed once a day by the refresh-buyback-dune-query GitHub Actions
+ * cron — deliberately not from this public request path, where cache-busting
+ * traffic could be used to burn Dune credits.
  *
- * The first page names the execution it came from and every later page is read
- * from that execution, so a refresh that completes mid-pagination cannot mix
- * two result sets. The read either returns the whole history or throws: a page
- * whose execution did not complete, a malformed row, a page that does not
- * advance, a row count that differs from the one Dune reports, and an empty
- * result are all errors.
+ * Every page is read from one execution: the one given, or the one the first
+ * page names, so a refresh that completes mid-pagination cannot mix two result
+ * sets. The read either returns the whole history or throws: a page whose
+ * execution did not complete, a malformed row, a page that does not advance, a
+ * row count that differs from the one Dune reports, and an empty result are
+ * all errors.
  */
 export async function fetchDuneFeeRows(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
+  executionId: string | null = null,
 ): Promise<DuneFeeResults> {
   const rows: DuneFeeRow[] = [];
   let first: DunePage | null = null;
@@ -110,9 +144,8 @@ export async function fetchDuneFeeRows(
     if (page >= MAX_PAGES) {
       throw new Error(`Dune query ${queryId} returned more than ${MAX_ROWS} rows`);
     }
-    const path: string = first
-      ? `execution/${first.executionId}/results`
-      : `query/${queryId}/results`;
+    const pinned = executionId ?? first?.executionId ?? null;
+    const path: string = pinned ? `execution/${pinned}/results` : `query/${queryId}/results`;
     const current: DunePage = await fetchPage(
       `${DUNE_API}/${path}?limit=${PAGE_SIZE}&offset=${offset}`,
       apiKey,
@@ -125,7 +158,7 @@ export async function fetchDuneFeeRows(
       if (current.nextOffset <= offset) {
         throw new Error(`Dune query ${queryId} paging did not advance past offset ${offset}`);
       }
-      if (first.executionId === null) {
+      if (executionId === null && first.executionId === null) {
         throw new Error(`Dune query ${queryId} has more pages but named no execution to read`);
       }
     }

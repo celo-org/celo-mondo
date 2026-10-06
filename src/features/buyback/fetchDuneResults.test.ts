@@ -2,7 +2,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fanOutRows from './__fixtures__/duneEigenDaFanOutRows.json';
 import realRows from './__fixtures__/duneFeeRows.json';
-import { CELO_PNL_QUERY_ID, fetchDuneFeeRows, parseDuneFeeRows } from './fetchDuneResults';
+import {
+  CELO_PNL_QUERY_ID,
+  fetchDuneFeeRows,
+  fetchLatestExecution,
+  parseDuneFeeRows,
+} from './fetchDuneResults';
 import { DuneFeeRow } from './types';
 
 const row = (day: string): DuneFeeRow => ({
@@ -59,7 +64,51 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('fetchLatestExecution', () => {
+  it('reads one row of the latest results and reports which execution they come from', async () => {
+    fetchMock.mockResolvedValueOnce(
+      page([row('2026-09-16')], 558, {
+        next_offset: 1,
+        execution_started_at: '2026-09-17T16:29:45.379407Z',
+        execution_ended_at: '2026-09-17T16:29:54.146577Z',
+      }),
+    );
+    const latest = await fetchLatestExecution('k');
+    expect(latest).toEqual({
+      executionId: '01EXEC',
+      executionStartedAt: '2026-09-17T16:29:45.379407Z',
+      executionEndedAt: '2026-09-17T16:29:54.146577Z',
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(calledUrls()[0]).toBe(
+      `https://api.dune.com/api/v1/query/${CELO_PNL_QUERY_ID}/results?limit=1&offset=0`,
+    );
+  });
+
+  it('refuses a result that names no execution', async () => {
+    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1, { execution_id: undefined }));
+    await expect(fetchLatestExecution('k')).rejects.toThrow('named no execution');
+  });
+
+  it('refuses an execution that did not complete, like the history read', async () => {
+    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1, { state: 'QUERY_STATE_FAILED' }));
+    await expect(fetchLatestExecution('k')).rejects.toThrow('state QUERY_STATE_FAILED');
+  });
+});
+
 describe('fetchDuneFeeRows', () => {
+  it('reads every page from the given execution when one is named', async () => {
+    fetchMock
+      .mockResolvedValueOnce(page(fullPage(0), 150, { next_offset: 100, execution_id: '01OLD' }))
+      .mockResolvedValueOnce(page(fullPage(100).slice(0, 50), 150, { execution_id: '01OLD' }));
+    const { rows } = await fetchDuneFeeRows('k', CELO_PNL_QUERY_ID, '01GIVEN');
+    expect(rows).toHaveLength(150);
+    expect(calledUrls()).toEqual([
+      'https://api.dune.com/api/v1/execution/01GIVEN/results?limit=100&offset=0',
+      'https://api.dune.com/api/v1/execution/01GIVEN/results?limit=100&offset=100',
+    ]);
+  });
+
   it('reads the cached results with the API key in a single request', async () => {
     fetchMock.mockResolvedValueOnce(
       page([row('2026-09-16'), row('2026-09-17')], 2, {
