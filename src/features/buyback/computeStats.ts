@@ -1,8 +1,9 @@
 import { BuybackStats, DailyMetrics, DuneFeeRow, PeriodStats } from 'src/features/buyback/types';
 
-// Constants mirror scripts/sequencer-fees/report.py (celo-monorepo). That script
-// names proposals by their on-chain id ("CGP-286/287/288"); the CGP numbers
-// are 233 (CELOccelerate), 234 and 236, which is what this module uses.
+// Constants mirror scripts/sequencer-fees/report.py (celo-monorepo). Proposals
+// are named by CGP number: CGP-233 is CELOccelerate (on-chain proposal 286),
+// CGP-234 the return of pre-cutoff revenue (proposal 287) and CGP-236 the
+// carbon-fund pause (proposal 288).
 // Stablecoins are valued at their USD peg; EURm keeps Dune's forex price.
 const STABLE_PEGS = { USDT: 1.0, USDC: 1.0, USDm: 1.0 } as const;
 // Carbon Fund fraction is 0% after CGP-236 paused those payments. report.py reads
@@ -19,8 +20,8 @@ const OP_SHARE_PROFIT_PCT = 0.15;
 /**
  * Sequencer revenue earned on or before this day was already returned to the
  * Community Fund in one transfer of 1,748,950 CELO, documented in CGP-234
- * (on-chain proposal 287). report.py calls this the CGP-287 cutoff and clamps
- * its reporting window to the day after it so that revenue is never counted
+ * (on-chain proposal 287). report.py (`CGP_234_CUTOFF_DATE`) clamps its
+ * reporting window to the day after it so that revenue is never counted
  * twice; the dashboard does the same for its totals.
  */
 export const SETTLED_REVENUE_CUTOFF_DATE = '2026-04-08';
