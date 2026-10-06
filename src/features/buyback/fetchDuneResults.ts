@@ -136,8 +136,10 @@ export async function fetchLatestExecution(
     queryId,
     { metadataOnly: true },
   );
+  // A response with no execution id is unusable like a garbled one: a
+  // transient problem to retry on the short clock, not a verdict on anything.
   if (page.executionId === null) {
-    throw new Error(`Dune query ${queryId} named no execution for its results`);
+    throw new DuneRequestError(`Dune query ${queryId} named no execution for its results`, null);
   }
   return {
     executionId: page.executionId,

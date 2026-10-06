@@ -92,9 +92,11 @@ describe('fetchLatestExecution', () => {
     expect((await fetchLatestExecution('k')).executionId).toBe('01EXEC');
   });
 
-  it('refuses a result that names no execution', async () => {
+  it('refuses a result that names no execution, as something to retry soon', async () => {
     fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1, { execution_id: undefined }));
-    await expect(fetchLatestExecution('k')).rejects.toThrow('named no execution');
+    const error = await fetchLatestExecution('k').catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(DuneRequestError);
+    expect((error as Error).message).toContain('named no execution');
   });
 
   it('reports a failed or running execution by id and state instead of throwing', async () => {
