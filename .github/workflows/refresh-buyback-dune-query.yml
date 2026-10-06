@@ -3,6 +3,9 @@ name: Refresh Buyback Dune Query
 # Re-executes the Dune P&L query (id 6898547) that powers the /buyback
 # dashboard, so its data is at most a day old. The app itself only reads the
 # query's cached results and never spends execution credits.
+#
+# Needs the DUNE_API_KEY repository secret: a key of a Dune account that may
+# execute queries and has datapoint budget left for one execution a day.
 
 on:
   schedule:
@@ -29,15 +32,29 @@ jobs:
             exit 1
           fi
 
+          # Every execution is billed, so do nothing if one already ran today
+          # (a manual run, say). One row of the latest results says which day
+          # that was; if this check itself fails, just go ahead and execute.
+          today=$(date -u +%Y-%m-%d)
+          if curl -sS --max-time 30 -f -o latest.json \
+               "$DUNE_API/query/6898547/results?limit=1" \
+               -H "X-Dune-API-Key: $DUNE_API_KEY" \
+             && [ "$(jq -r '.state' latest.json)" = "QUERY_STATE_COMPLETED" ] \
+             && [ "$(jq -r '.execution_started_at // "" | .[:10]' latest.json)" = "$today" ]; then
+            echo "Dune already executed the query today ($(jq -r '.execution_started_at' latest.json)); nothing to do"
+            exit 0
+          fi
+
           # No automatic retry here: the request is not idempotent, and resending
           # it after a lost response would enqueue (and bill) a second execution
           # while only the last id is polled. A failed start fails the run. The
-          # body is kept so Dune's reason is in the log when it refuses.
+          # body is kept so Dune's reason is in the log when it refuses. The
+          # default engine tier is used: Dune rejects "medium" and "large".
           http_code=$(curl -sS --max-time 30 -o execute.json -w '%{http_code}' \
             -X POST "$DUNE_API/query/6898547/execute" \
             -H "X-Dune-API-Key: $DUNE_API_KEY" \
             -H "Content-Type: application/json" \
-            -d '{"performance": "medium"}')
+            -d '{}')
           if [ "$http_code" != "200" ]; then
             echo "Dune refused to start the execution (HTTP $http_code):" >&2
             cat execute.json >&2
