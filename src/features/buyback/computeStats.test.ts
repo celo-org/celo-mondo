@@ -572,16 +572,20 @@ describe('computeBuybackStats', () => {
       { ...dayRow, day: '2026-05-01' },
       { ...dayRow, day: '2026-05-02' },
     ];
-    const atMidnight = statsFor(rows, {
-      ...options,
-      now: new Date('2026-05-02T00:00:00.000Z'),
+    // Executed a second before midnight: 05-02 is still filling.
+    const beforeMidnight = statsFor(rows, {
+      executionStartedAt: '2026-05-02T23:59:59.000Z',
+      executionEndedAt: '2026-05-03T00:00:09.000Z',
+      now: new Date('2026-05-03T00:01:00.000Z'),
     });
-    expect(atMidnight.latestDay).toBe('2026-05-01');
-    const justAfter = statsFor(rows, {
-      ...options,
-      now: new Date('2026-05-03T00:00:00.000Z'),
+    expect(beforeMidnight.latestDay).toBe('2026-05-01');
+    // Executed a few seconds into the next day: 05-02 is complete.
+    const afterMidnight = statsFor(rows, {
+      executionStartedAt: '2026-05-03T00:00:05.000Z',
+      executionEndedAt: '2026-05-03T00:00:15.000Z',
+      now: new Date('2026-05-03T00:01:00.000Z'),
     });
-    expect(justAfter.latestDay).toBe('2026-05-02');
+    expect(afterMidnight.latestDay).toBe('2026-05-02');
   });
 
   it('normalizes Dune day timestamps to calendar days', () => {
@@ -596,6 +600,18 @@ describe('computeBuybackStats', () => {
     expect(statsFor([dayRow], { ...options, ...garbled }).updatedAt).toBe(
       garbled.executionStartedAt,
     );
+    // So is an end time ahead of the clock, which would hide staleness.
+    const future = {
+      executionStartedAt: '2026-05-03T05:30:00.000Z',
+      executionEndedAt: '2026-05-04T05:31:00.000Z',
+    };
+    expect(statsFor([dayRow], { ...options, ...future }).updatedAt).toBe(future.executionStartedAt);
+    // A little clock skew is tolerated.
+    const skewed = {
+      executionStartedAt: '2026-05-03T05:30:00.000Z',
+      executionEndedAt: '2026-05-03T12:03:00.000Z',
+    };
+    expect(statsFor([dayRow], { ...options, ...skewed }).updatedAt).toBe(skewed.executionEndedAt);
   });
 
   // In these tests the window runs through quiet filler days, so the latest
@@ -756,6 +772,11 @@ describe('window coverage', () => {
       { executionEndedAt: null },
       { executionStartedAt: null, executionEndedAt: null },
       { executionStartedAt: 'soon', executionEndedAt: 'not a date' },
+      // Both ahead of the clock (2026-05-10 here): a glitch, not a snapshot.
+      {
+        executionStartedAt: '2026-05-11T05:30:00.000Z',
+        executionEndedAt: '2026-05-11T05:31:00.000Z',
+      },
     ]) {
       expect(() =>
         computeBuybackStats(whole, { ...times, now: new Date('2026-05-10T12:00:00.000Z') }),
@@ -787,7 +808,11 @@ describe('Carbon Fund share deduction', () => {
       { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
       { ...dayRow, day: '2026-04-21' },
     ];
-    const stats = statsFor(rows, { ...options, now: new Date('2026-04-22T12:00:00.000Z') });
+    const stats = statsFor(rows, {
+      executionStartedAt: '2026-04-22T05:30:00.000Z',
+      executionEndedAt: '2026-04-22T05:31:00.000Z',
+      now: new Date('2026-04-22T12:00:00.000Z'),
+    });
     // Three identical days: 3 x 4675 CELO and 3 x 467.5 USD before the deduction.
     expect(stats.totals.celoToCommunityFund).toBeCloseTo(
       3 * 4675 - CARBON_FUND_SHARE_IN_WINDOW.celo,

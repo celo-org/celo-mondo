@@ -204,6 +204,9 @@ export interface ComputeBuybackStatsOptions {
 
 // An ISO-8601 UTC timestamp as Dune writes it ("2026-10-02T11:56:25.407379Z").
 const TIMESTAMP_PATTERN = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|\+00:00)$/;
+// Dune's clock and ours may disagree by a little; a timestamp further ahead
+// than this is a glitch, and used for freshness it would hide staleness.
+const CLOCK_SKEW_MS = 5 * 60 * 1000;
 
 /**
  * UTC calendar day of an ISO timestamp, or null when it is missing or not a
@@ -236,9 +239,25 @@ export function firstIncompleteDay(options: ComputeBuybackStatsOptions): string 
   return snapshotDay !== null && snapshotDay < todayUtc ? snapshotDay : todayUtc;
 }
 
-/** The UTC day Dune took its snapshot on, when it reports an execution time. */
+/**
+ * The execution timestamps that can be relied on: well formed, with a real
+ * date and time, and not ahead of the clock. The end time comes first since
+ * it is what "refreshed at" means on the page.
+ */
+function usableTimestamps(options: ComputeBuybackStatsOptions): string[] {
+  const now = (options.now ?? new Date()).getTime();
+  return [options.executionEndedAt, options.executionStartedAt].filter(
+    (t): t is string =>
+      typeof t === 'string' && utcDayOf(t) !== null && Date.parse(t) <= now + CLOCK_SKEW_MS,
+  );
+}
+
+/** The UTC day Dune took its snapshot on, when it reports a usable execution time. */
 function snapshotDayOf(options: ComputeBuybackStatsOptions): string | null {
-  return utcDayOf(options.executionStartedAt) ?? utcDayOf(options.executionEndedAt);
+  const usable = usableTimestamps(options);
+  const dayIfUsable = (t: string | null | undefined) =>
+    t && usable.includes(t) ? utcDayOf(t) : null;
+  return dayIfUsable(options.executionStartedAt) ?? dayIfUsable(options.executionEndedAt);
 }
 
 /** The UTC calendar day before the given one. */
@@ -455,9 +474,7 @@ export function computeBuybackStats(
     latestDayStats: latest ? aggregate([latest]) : null,
     sinceDay,
     latestDay: latest?.day ?? null,
-    // The first timestamp that parses; at least one does, as checked above.
-    updatedAt:
-      [options.executionEndedAt, options.executionStartedAt].find((t) => utcDayOf(t) !== null) ??
-      '',
+    // The first usable timestamp; there is one, as checked above.
+    updatedAt: usableTimestamps(options)[0] ?? '',
   };
 }
