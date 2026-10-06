@@ -1,4 +1,4 @@
-import { unstable_cache } from 'next/cache';
+import { revalidateTag, unstable_cache } from 'next/cache';
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
 import {
   DuneRequestError,
@@ -132,7 +132,7 @@ const getLatestExecutionOutcome = unstable_cache(
 );
 
 /**
- * The stats to serve: a cheap one-row probe for the execution Dune currently
+ * The current stats: a cheap one-row probe for the execution Dune currently
  * serves, then that execution's stats. Cached across requests and server
  * instances per 15-minute bucket, so page visits and React Query refetches
  * share one probe, and the first request of a bucket sees a new execution at
@@ -140,12 +140,10 @@ const getLatestExecutionOutcome = unstable_cache(
  *
  * A failure is never stored here; it surfaces as an error for the request
  * that hit it, and the next request in the bucket tries again (cheaply: the
- * attempt caches below remember what failed). A new execution replaces the
- * served figures only once its history has been read and validated. Their
- * age stays visible: `updatedAt` is Dune's execution time and the page flags
- * data that has gone stale.
+ * attempt caches above remember what failed). A new execution replaces the
+ * served figures only once its history has been read and validated.
  */
-const getServedStats = unstable_cache(
+const getFreshStats = unstable_cache(
   async (servedBucket: string): Promise<BuybackStats> => {
     const bucket = bucketOf(Date.now(), TRANSIENT_SECONDS);
     const probe = await getLatestExecutionOutcome(bucket);
@@ -162,9 +160,30 @@ const getServedStats = unstable_cache(
     logger.debug(`Buyback stats served for bucket ${servedBucket} from ${probe.executionId}`);
     return outcome.stats;
   },
-  ['buyback-served-stats', DEPLOYMENT],
+  ['buyback-fresh-stats', DEPLOYMENT],
   { revalidate: PROBE_SECONDS },
 );
+
+const LAST_GOOD_TAG = `buyback-last-good-${DEPLOYMENT}`;
+
+/**
+ * The last figures that were served, kept without expiry so that an outage
+ * or an unusable new execution shows them instead of an error. Refreshed by
+ * tag whenever a fresh computation produced something different. Their age
+ * stays visible: `updatedAt` is Dune's execution time and the page flags data
+ * that has gone stale.
+ */
+const getLastGoodStats = unstable_cache(
+  () => getFreshStats(bucketOf(Date.now(), PROBE_SECONDS)),
+  ['buyback-last-good', DEPLOYMENT],
+  { revalidate: false, tags: [LAST_GOOD_TAG] },
+);
+
+/** Make the last-good entry follow a fresh result that differs from it. */
+async function rememberAsLastGood(stats: BuybackStats): Promise<void> {
+  const stored = await getLastGoodStats().catch(() => null);
+  if (stored === null || stored.updatedAt !== stats.updatedAt) revalidateTag(LAST_GOOD_TAG);
+}
 
 export async function GET() {
   if (!process.env.DUNE_API_KEY?.trim()) {
@@ -172,12 +191,19 @@ export async function GET() {
     return new Response('DUNE_API_KEY not configured', { status: 503 });
   }
 
+  logger.debug('Buyback stats request received');
   try {
-    logger.debug('Buyback stats request received');
-    return Response.json(await getServedStats(bucketOf(Date.now(), PROBE_SECONDS)));
+    const stats = await getFreshStats(bucketOf(Date.now(), PROBE_SECONDS));
+    await rememberAsLastGood(stats);
+    return Response.json(stats);
   } catch (error) {
     // Keep Dune's response out of the public body; the detail is in the log.
     logger.error('Buyback stats error', error);
+    const lastGood = await getLastGoodStats().catch(() => null);
+    if (lastGood !== null) {
+      logger.warn(`Buyback stats: serving the last good figures (${lastGood.updatedAt})`);
+      return Response.json(lastGood);
+    }
     return new Response('Unable to load buyback stats', { status: 500 });
   }
 }
