@@ -336,9 +336,13 @@ function selectWindowRows(
       throw new Error(`Dune has L1 costs but no ETH price for ${day}`);
     }
     // EURm is the one fee currency valued by Dune's price feed rather than a
-    // peg; without that price its fees would silently drop out of revenue.
+    // peg; without that price its fees would silently drop out of revenue,
+    // and a value without fees behind it would be counted as revenue.
     if (num(row.fee_EURm) > 0 && num(row.fee_EURm_usd) <= 0) {
       throw new Error(`Dune has EURm fees but no EURm price for ${day}`);
+    }
+    if (num(row.fee_EURm_usd) > 0 && num(row.fee_EURm) <= 0) {
+      throw new Error(`Dune has an EURm value but no EURm fees for ${day}`);
     }
     return row;
   });

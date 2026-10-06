@@ -514,6 +514,14 @@ describe('computeBuybackStats', () => {
     }
   });
 
+  it('refuses an EURm value with no EURm fees behind it', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01', fee_EURm: 0, fee_EURm_usd: 3.3 },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    expect(() => statsFor(rows, options)).toThrow('EURm value but no EURm fees for 2026-05-01');
+  });
+
   it('refuses EURm fees that Dune did not value', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-05-01', fee_EURm: 3, fee_EURm_usd: 0 },
