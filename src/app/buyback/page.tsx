@@ -191,9 +191,7 @@ function StatsSkeleton() {
 function ErrorNotice() {
   return (
     <div className="border border-taupe-300 bg-white p-6 text-center text-sm text-taupe-600">
-      Buyback stats are temporarily unavailable. The server needs a Dune API key (
-      <span className="font-mono">DUNE_API_KEY</span>) and a reachable Dune API; please try again
-      later.
+      Buyback stats are temporarily unavailable; please try again later.
     </div>
   );
 }

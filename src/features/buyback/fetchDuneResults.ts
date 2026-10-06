@@ -2,51 +2,32 @@ import { parseDay } from 'src/features/buyback/computeStats';
 import { DuneFeeRow } from 'src/features/buyback/types';
 import { z } from 'zod';
 
-const DUNE_API = 'https://api.dune.com/api/v1';
+export const DUNE_API = 'https://api.dune.com/api/v1';
 
 // Celo Mainnet sequencer-fee P&L query (same source as report.py).
 export const CELO_PNL_QUERY_ID = 6898547;
 
 // Dune bills /results by datapoints per request and rejects pages above the
-// plan's allowance with HTTP 402; 100 rows x 17 columns stays under it on the
-// plan the dashboard key uses, and the whole history is only a few pages.
+// plan's allowance with HTTP 402; 100 rows x 17 columns stays under it on
+// every plan, and the whole history is only a few pages.
 const PAGE_SIZE = 100;
 const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
 const MAX_PAGES = MAX_ROWS / PAGE_SIZE;
 const FETCH_TIMEOUT_MS = 30_000;
-/** Tag on every cached Dune response, so they can be dropped together. */
-export const DUNE_CACHE_TAG = 'buyback-dune';
 
-/** How long Next may keep a Dune response in its Data Cache, if at all. */
-export interface ReadOptions {
-  cacheSeconds?: number;
-}
 export const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 // An execution in one of these states may still complete; anything else that
 // is not completed (failed, cancelled, expired, partial) never will.
-const PENDING_STATES = new Set(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING']);
-
-/**
- * Throw for an execution that is not completed: as a request error, to be
- * retried soon, while it may still complete; as a verdict once it never will.
- */
-export function assertCompleted(execution: { executionId: string; state: string }): void {
-  if (execution.state === COMPLETED_STATE) return;
-  if (PENDING_STATES.has(execution.state)) {
-    throw new DuneRequestError(
-      `Dune execution ${execution.executionId} is still running (state ${execution.state})`,
-      null,
-    );
-  }
-  throw new Error(
-    `Dune execution ${execution.executionId} has no completed result (state ${execution.state})`,
-  );
-}
+export const PENDING_STATES: ReadonlySet<string> = new Set([
+  'QUERY_STATE_PENDING',
+  'QUERY_STATE_EXECUTING',
+]);
 
 /**
  * A request to Dune that did not get a usable answer: a network failure, a
- * timeout or a non-2xx status. Unlike a validation failure, this says nothing
- * about the execution itself and is worth retrying soon.
+ * timeout, a non-2xx status or a body that is not a JSON object. Unlike a
+ * validation failure, this says nothing about the execution itself and is
+ * worth retrying.
  */
 export class DuneRequestError extends Error {
   constructor(
@@ -55,6 +36,48 @@ export class DuneRequestError extends Error {
   ) {
     super(message);
     this.name = 'DuneRequestError';
+  }
+}
+
+/**
+ * Call a Dune endpoint and return its JSON body as an object. Anything short
+ * of that is a `DuneRequestError`: a network failure or timeout, a non-2xx
+ * status (with the start of Dune's reason in the message), a truncated or
+ * garbled body, or a body that parses but is not an object.
+ */
+export async function requestDune(
+  path: string,
+  apiKey: string,
+  { method = 'GET', body }: { method?: 'GET' | 'POST'; body?: string } = {},
+): Promise<Record<string, unknown>> {
+  try {
+    const response = await fetch(`${DUNE_API}/${path}`, {
+      method,
+      headers: {
+        'X-Dune-API-Key': apiKey,
+        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      },
+      ...(body === undefined ? {} : { body }),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new DuneRequestError(
+        `Dune API ${response.status}: ${text.slice(0, 200)}`,
+        response.status,
+      );
+    }
+    const parsed: unknown = await response.json();
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      throw new DuneRequestError(
+        `Dune API returned a ${parsed === null ? 'null' : typeof parsed} body`,
+        null,
+      );
+    }
+    return parsed as Record<string, unknown>;
+  } catch (error) {
+    if (error instanceof DuneRequestError) throw error;
+    throw new DuneRequestError(`Dune API unreachable: ${String(error)}`, null);
   }
 }
 
@@ -102,13 +125,13 @@ export function parseDuneFeeRows(rows: unknown, queryId: number): DuneFeeRow[] {
 
 interface DuneResultsResponse {
   /** Terminal state of the execution the results belong to. */
-  state?: string;
-  execution_id?: string;
-  execution_started_at?: string;
-  execution_ended_at?: string;
+  state?: unknown;
+  execution_id?: unknown;
+  execution_started_at?: unknown;
+  execution_ended_at?: unknown;
   /** Offset of the next page; absent on the last page. */
-  next_offset?: number;
-  result?: { rows?: unknown; metadata?: { total_row_count?: number } };
+  next_offset?: unknown;
+  result?: { rows?: unknown; metadata?: { total_row_count?: unknown } };
 }
 
 /** One validated page of results. */
@@ -122,7 +145,7 @@ interface DunePage {
   nextOffset: number | null;
 }
 
-/** Which execution a query's cached results currently come from. */
+/** Which execution a query's results currently come from. */
 export interface DuneExecution {
   executionId: string;
   /** Its state as Dune reports it; only a completed execution has results. */
@@ -142,27 +165,22 @@ export interface DuneFeeResults {
 }
 
 /**
- * Which execution the query's cached results currently come from, read with a
+ * Which execution the query's results currently come from, read with a
  * single-row page. Dune bills results by datapoints, so this is the cheap way
- * to learn whether a new execution has landed since the history was last read.
+ * to learn whether, and when, the query was last executed.
  */
 export async function fetchLatestExecution(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
-  { cacheSeconds }: ReadOptions = {},
 ): Promise<DuneExecution> {
   // Only the execution metadata matters here. Neither the state nor the row
   // is judged, so a failed execution or one with unusable rows still gets an
-  // id, and the history read's cached verdict on it is honoured instead of
-  // failing afresh on every probe.
-  const page = await fetchPage(
-    `${DUNE_API}/query/${queryId}/results?limit=1&offset=0`,
-    apiKey,
-    queryId,
-    { metadataOnly: true, cacheSeconds },
-  );
+  // id and a state for the caller to decide on.
+  const page = await fetchPage(`query/${queryId}/results?limit=1&offset=0`, apiKey, queryId, {
+    metadataOnly: true,
+  });
   // A response with no execution id is unusable like a garbled one: a
-  // transient problem to retry on the short clock, not a verdict on anything.
+  // transient problem, not a verdict on anything.
   if (page.executionId === null) {
     throw new DuneRequestError(`Dune query ${queryId} named no execution for its results`, null);
   }
@@ -176,10 +194,10 @@ export async function fetchLatestExecution(
 
 /**
  * Read the full results of the Dune P&L query via the read-only `/results`
- * endpoints, so a page visit never spends execution credits. The query itself
- * is re-executed once a day by the refresh-buyback-dune-query GitHub Actions
- * cron — deliberately not from this public request path, where cache-busting
- * traffic could be used to burn Dune credits.
+ * endpoints. The daily refresh (src/scripts/refreshBuybackStats.ts) is the
+ * only caller: the app serves what that refresh stored and never talks to
+ * Dune itself, so page traffic can neither spend Dune credits nor be left
+ * waiting on Dune.
  *
  * Every page is read from one execution: the one given, or the one the first
  * page names, so a refresh that completes mid-pagination cannot mix two result
@@ -192,7 +210,6 @@ export async function fetchDuneFeeRows(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
   executionId: string | null = null,
-  { cacheSeconds }: ReadOptions = {},
 ): Promise<DuneFeeResults> {
   const rows: DuneFeeRow[] = [];
   let first: DunePage | null = null;
@@ -205,10 +222,9 @@ export async function fetchDuneFeeRows(
     const pinned = executionId ?? first?.executionId ?? null;
     const path: string = pinned ? `execution/${pinned}/results` : `query/${queryId}/results`;
     const current: DunePage = await fetchPage(
-      `${DUNE_API}/${path}?limit=${PAGE_SIZE}&offset=${offset}`,
+      `${path}?limit=${PAGE_SIZE}&offset=${offset}`,
       apiKey,
       queryId,
-      { cacheSeconds },
     );
     first ??= current;
     rows.push(...current.rows);
@@ -250,46 +266,13 @@ export async function fetchDuneFeeRows(
  * read as a valid dashboard of zeros.
  */
 async function fetchPage(
-  url: string,
+  path: string,
   apiKey: string,
   queryId: number,
-  { metadataOnly = false, cacheSeconds }: { metadataOnly?: boolean } & ReadOptions = {},
+  { metadataOnly = false }: { metadataOnly?: boolean } = {},
 ): Promise<DunePage> {
-  let data: DuneResultsResponse;
-  try {
-    // With cacheSeconds, Next keeps a successful response in its Data Cache
-    // under this URL for that long, so the same page is not billed again;
-    // failures are never kept.
-    const response = await fetch(url, {
-      headers: { 'X-Dune-API-Key': apiKey },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      ...(cacheSeconds === undefined
-        ? { cache: 'no-store' as const }
-        : { next: { revalidate: cacheSeconds, tags: [DUNE_CACHE_TAG] } }),
-    });
-    if (!response.ok) {
-      const body = await response.text();
-      throw new DuneRequestError(
-        `Dune API ${response.status}: ${body.slice(0, 200)}`,
-        response.status,
-      );
-    }
-    // A truncated or garbled body is a transport problem too, not a verdict on
-    // the execution; so is a body that parses but is not the expected object.
-    const parsed: unknown = await response.json();
-    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-      throw new DuneRequestError(
-        `Dune API returned a ${parsed === null ? 'null' : typeof parsed} body`,
-        null,
-      );
-    }
-    data = parsed as DuneResultsResponse;
-  } catch (error) {
-    if (error instanceof DuneRequestError) throw error;
-    throw new DuneRequestError(`Dune API unreachable: ${String(error)}`, null);
-  }
-
-  const state = data.state ?? 'missing';
+  const data: DuneResultsResponse = await requestDune(path, apiKey);
+  const state = typeof data.state === 'string' ? data.state : 'missing';
   if (metadataOnly) {
     return pageFrom(data, state, []);
   }
@@ -306,12 +289,13 @@ async function fetchPage(
 
 function pageFrom(data: DuneResultsResponse, state: string, rows: DuneFeeRow[]): DunePage {
   const totalRowCount = data.result?.metadata?.total_row_count;
+  const text = (value: unknown) => (typeof value === 'string' ? value : null);
   return {
     rows,
     state,
-    executionId: data.execution_id ?? null,
-    executionStartedAt: data.execution_started_at ?? null,
-    executionEndedAt: data.execution_ended_at ?? null,
+    executionId: text(data.execution_id),
+    executionStartedAt: text(data.execution_started_at),
+    executionEndedAt: text(data.execution_ended_at),
     totalRowCount: typeof totalRowCount === 'number' ? totalRowCount : null,
     // Dune marks the last page by omitting next_offset.
     nextOffset: typeof data.next_offset === 'number' ? data.next_offset : null,

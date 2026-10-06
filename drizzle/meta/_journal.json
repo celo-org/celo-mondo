@@ -71,6 +71,13 @@
       "when": 1789652490578,
       "tag": "0009_normalize_event_address_casing",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791290968237,
+      "tag": "0010_buyback_stats",
+      "breakpoints": true
     }
   ]
 }

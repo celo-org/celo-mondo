@@ -5,10 +5,10 @@ import realRows from './__fixtures__/duneFeeRows.json';
 import {
   CELO_PNL_QUERY_ID,
   DuneRequestError,
-  assertCompleted,
   fetchDuneFeeRows,
   fetchLatestExecution,
   parseDuneFeeRows,
+  requestDune,
 } from './fetchDuneResults';
 import { DuneFeeRow } from './types';
 
@@ -66,6 +66,36 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe('requestDune', () => {
+  it('sends a POST with a JSON body and returns the parsed object', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ execution_id: '01NEW', state: 'QUERY_STATE_PENDING' }),
+    );
+    const data = await requestDune('query/42/execute', 'secret', { method: 'POST', body: '{}' });
+    expect(data).toEqual({ execution_id: '01NEW', state: 'QUERY_STATE_PENDING' });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://api.dune.com/api/v1/query/42/execute');
+    expect(init.method).toBe('POST');
+    expect(init.body).toBe('{}');
+    expect(init.headers).toEqual({
+      'X-Dune-API-Key': 'secret',
+      'Content-Type': 'application/json',
+    });
+  });
+
+  it('reports a refusal with its status and the start of the body', async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(`{"error":"${'x'.repeat(300)}"}`, { status: 402 }),
+    );
+    const error = await requestDune('query/42/execute', 'k', { method: 'POST', body: '{}' }).catch(
+      (e: unknown) => e,
+    );
+    expect(error).toBeInstanceOf(DuneRequestError);
+    expect((error as DuneRequestError).status).toBe(402);
+    expect((error as Error).message).toHaveLength('Dune API 402: '.length + 200);
+  });
+});
+
 describe('fetchLatestExecution', () => {
   it('reads one row of the latest results and reports which execution they come from', async () => {
     fetchMock.mockResolvedValueOnce(
@@ -108,42 +138,6 @@ describe('fetchLatestExecution', () => {
   });
 });
 
-describe('assertCompleted', () => {
-  it('passes a completed execution', () => {
-    expect(() =>
-      assertCompleted({ executionId: '01X', state: 'QUERY_STATE_COMPLETED' }),
-    ).not.toThrow();
-  });
-
-  it.each(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING'])(
-    'reports a %s execution as something to retry soon',
-    (state) => {
-      let error: unknown;
-      try {
-        assertCompleted({ executionId: '01X', state });
-      } catch (e) {
-        error = e;
-      }
-      expect(error).toBeInstanceOf(DuneRequestError);
-      expect((error as Error).message).toContain('still running');
-    },
-  );
-
-  it.each(['QUERY_STATE_FAILED', 'QUERY_STATE_CANCELLED', 'QUERY_STATE_EXPIRED'])(
-    'reports a %s execution as a verdict',
-    (state) => {
-      let error: unknown;
-      try {
-        assertCompleted({ executionId: '01X', state });
-      } catch (e) {
-        error = e;
-      }
-      expect(error).not.toBeInstanceOf(DuneRequestError);
-      expect((error as Error).message).toContain('no completed result');
-    },
-  );
-});
-
 describe('fetchDuneFeeRows', () => {
   it('reads every page from the given execution when one is named', async () => {
     fetchMock
@@ -175,23 +169,10 @@ describe('fetchDuneFeeRows', () => {
     expect(url).toBe(
       `https://api.dune.com/api/v1/query/${CELO_PNL_QUERY_ID}/results?limit=100&offset=0`,
     );
+    expect(init.method).toBe('GET');
     expect(init.headers).toEqual({ 'X-Dune-API-Key': 'secret' });
+    expect(init.body).toBeUndefined();
     expect(init.signal).toBeInstanceOf(AbortSignal);
-    // Without a cache lifetime the read bypasses Next's Data Cache.
-    expect(init.cache).toBe('no-store');
-    expect(init.next).toBeUndefined();
-  });
-
-  it('asks Next to keep a successful response for the given lifetime, tagged', async () => {
-    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1));
-    await fetchDuneFeeRows('secret', CELO_PNL_QUERY_ID, null, { cacheSeconds: 604_800 });
-    const [, init] = fetchMock.mock.calls[0];
-    expect(init.cache).toBeUndefined();
-    expect(init.next).toEqual({ revalidate: 604_800, tags: ['buyback-dune'] });
-
-    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1));
-    await fetchLatestExecution('secret', CELO_PNL_QUERY_ID, { cacheSeconds: 300 });
-    expect(fetchMock.mock.calls[1][1].next).toEqual({ revalidate: 300, tags: ['buyback-dune'] });
   });
 
   it('follows next_offset and reads later pages from the execution named by the first', async () => {

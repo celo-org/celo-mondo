@@ -1,0 +1,84 @@
+name: Refresh Buyback Stats
+
+# Daily refresh of the /buyback dashboard: re-executes the Dune P&L query
+# (id 6898547), reads and validates its results, computes the figures and
+# stores them in the production and staging databases, which /api/buyback
+# serves. The app itself never talks to Dune, so page traffic can neither
+# spend execution credits nor be left waiting on Dune.
+#
+# Needs the DUNE_API_KEY repository secret: a key of a Dune account that may
+# execute the query and has datapoint budget left for one execution and one
+# read of its results a day.
+
+on:
+  schedule:
+    # Daily at 05:30 UTC, after the previous UTC day is complete and Dune's
+    # ingestion has caught up. Must match REFRESH_TIME_UTC in
+    # src/scripts/refreshBuybackStats.ts.
+    - cron: '30 5 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Execute even if Dune ran the query recently or already today'
+        type: boolean
+        default: false
+
+# One run at a time: two overlapping runs would both decide to execute before
+# either execution finished, then both would start a billed execution. The
+# second waits and sees the first one's result.
+concurrency:
+  group: refresh-buyback-stats
+  cancel-in-progress: false
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: yarn-install
+        run: |
+          yarn install --immutable
+          CHANGES=$(git status -s)
+          if [[ ! -z $CHANGES ]]; then
+            echo "Changes found: $CHANGES"
+            git diff
+            exit 1
+          fi
+
+  refresh:
+    runs-on: ubuntu-latest
+    needs: [install]
+    # Waiting for a Dune execution is bounded to 10 minutes in the script,
+    # and a run may wait for one that was already running before its own.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: Refresh buyback stats (production and staging)
+        run: npx tsx src/scripts/refreshBuybackStats.ts
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          POSTGRES_URL_STAGING: ${{ secrets.POSTGRES_URL_STAGING }}
+          FORCE: ${{ inputs.force }}
+          CI: true

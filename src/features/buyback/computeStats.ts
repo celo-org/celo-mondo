@@ -232,6 +232,17 @@ function utcDayOf(timestamp: string | null | undefined): string | null {
 }
 
 /**
+ * A Dune execution timestamp as a Date, or null when it is missing or not a
+ * real UTC timestamp (see `utcDayOf`): a value the Date parser would accept
+ * but roll over or read in another zone must not stand in for a real run.
+ */
+export function parseUtcTimestamp(timestamp: string | null | undefined): Date | null {
+  if (utcDayOf(timestamp) === null) return null;
+  const parsed = new Date(timestamp as string);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
  * The first UTC day the Dune results do not cover in full. Every row on or
  * after it is dropped.
  *
