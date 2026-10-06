@@ -76,14 +76,24 @@ describe('planRefresh', () => {
   });
 
   it('ignores an execution from the future instead of standing down for it', () => {
-    const future = execution('QUERY_STATE_COMPLETED', '2026-09-18T05:41:00Z');
+    const future = execution('QUERY_STATE_COMPLETED', '2026-09-18T05:45:01Z');
     expect(planRefresh(future, scheduled)).toMatchObject({
       kind: 'execute',
       reason: expect.stringContaining('in the future'),
     });
     expect(
-      planRefresh(execution('QUERY_STATE_EXECUTING', '2026-09-18T05:41:00Z'), manual).kind,
+      planRefresh(execution('QUERY_STATE_EXECUTING', '2026-09-18T05:45:01Z'), manual).kind,
     ).toBe('execute');
+  });
+
+  it('reads a start time a few seconds ahead of its own clock as just now', () => {
+    // Dune's clock may run slightly ahead; a run queued right behind an
+    // execution must not start a second one.
+    const justNow = execution('QUERY_STATE_COMPLETED', '2026-09-18T05:40:10Z');
+    expect(planRefresh(justNow, manual)).toMatchObject({ kind: 'use', executionId: '01EXEC' });
+    expect(planRefresh(justNow, scheduled)).toMatchObject({ kind: 'use', executionId: '01EXEC' });
+    const running = execution('QUERY_STATE_EXECUTING', '2026-09-18T05:44:59Z');
+    expect(planRefresh(running, scheduled)).toMatchObject({ kind: 'await', executionId: '01EXEC' });
   });
 
   it.each(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING'])(
@@ -202,8 +212,20 @@ function serve(routes: Routes) {
   fetchMock = duneApi(routes);
   vi.stubGlobal('fetch', fetchMock);
 }
-const refresh = (context = scheduled, databases: Database[] = [testDatabase]) =>
-  refreshBuybackStats({ apiKey: 'k', databases, log, pollIntervalMs: 0, ...context });
+const refresh = (
+  { now: at, ...context } = scheduled,
+  databases: Database[] = [testDatabase],
+  options: { waitTimeoutMs?: number; clock?: () => Date } = {},
+) =>
+  refreshBuybackStats({
+    apiKey: 'k',
+    databases,
+    log,
+    pollIntervalMs: 0,
+    clock: () => at,
+    ...options,
+    ...context,
+  });
 const storedRows = () => testDatabase.select().from(buybackStatsTable);
 
 beforeEach(() => {
@@ -370,6 +392,77 @@ describe('refreshBuybackStats', () => {
     const execute = order.findIndex((c) => c.startsWith('POST'));
     expect(lastEarlyPoll).toBeGreaterThanOrEqual(0);
     expect(execute).toBeGreaterThan(lastEarlyPoll);
+  });
+
+  it('runs the scheduled refresh even if the early execution never finishes', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        {
+          state: 'QUERY_STATE_EXECUTING',
+          execution_id: '01EARLY',
+          execution_started_at: '2026-09-18T05:20:00Z',
+        },
+      ],
+      'GET execution/01EARLY/status': [{ execution_id: '01EARLY', state: 'QUERY_STATE_EXECUTING' }],
+      ...executeNew,
+      'GET execution/01NEW/status': [status('QUERY_STATE_COMPLETED')],
+      ...pagesOf('01NEW', rows),
+    });
+
+    await refresh(scheduled, [testDatabase], { waitTimeoutMs: 0 });
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01NEW']);
+    expect(log).toHaveBeenCalledWith('Timed out waiting for Dune execution 01EARLY; executing');
+  });
+
+  it('replaces an execution it waited for that never finishes', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        { state: 'QUERY_STATE_PENDING', execution_id: '01STUCK', execution_started_at: startedAt },
+      ],
+      'GET execution/01STUCK/status': [{ execution_id: '01STUCK', state: 'QUERY_STATE_PENDING' }],
+      ...executeNew,
+      'GET execution/01NEW/status': [status('QUERY_STATE_COMPLETED')],
+      ...pagesOf('01NEW', rows),
+    });
+
+    await refresh(manual, [testDatabase], { waitTimeoutMs: 0 });
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01NEW']);
+  });
+
+  it('fails without storing anything when its own execution never finishes', async () => {
+    serve({
+      ...yesterdays,
+      ...executeNew,
+      'GET execution/01NEW/status': [status('QUERY_STATE_EXECUTING')],
+    });
+    await expect(refresh(scheduled, [testDatabase], { waitTimeoutMs: 0 })).rejects.toThrow(
+      'Timed out waiting for Dune execution 01NEW',
+    );
+    expect(await storedRows()).toHaveLength(0);
+  });
+
+  it('judges the new execution against the time after waiting, not the time the run started', async () => {
+    // Planning happened at 05:40; the early execution took until 05:51 and
+    // the replacement ran at 05:52, well beyond the clock skew allowed
+    // against the start time.
+    const times = ['2026-09-18T05:40:00Z', '2026-09-18T05:52:30Z'].map((t) => new Date(t));
+    let reads = 0;
+    const clock = () => times[Math.min(reads++, times.length - 1)];
+    const lateStart = '2026-09-18T05:52:00.000000Z';
+    const lateEnd = '2026-09-18T05:52:20.000000Z';
+    serve({
+      ...yesterdays,
+      ...executeNew,
+      'GET execution/01NEW/status': [status('QUERY_STATE_COMPLETED')],
+      ...pagesOf('01NEW', rows, { execution_started_at: lateStart, execution_ended_at: lateEnd }),
+    });
+
+    const stats = await refresh(scheduled, [testDatabase], { clock });
+
+    expect(stats.updatedAt).toBe(lateEnd);
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01NEW']);
   });
 
   it('executes when the latest execution cannot be read', async () => {

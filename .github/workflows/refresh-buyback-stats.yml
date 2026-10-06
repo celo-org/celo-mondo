@@ -74,6 +74,22 @@ jobs:
             .yarn/cache
           key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
 
+      # The script itself only requires the production database (staging is
+      # optional for local runs), so an unset secret is caught here instead
+      # of quietly refreshing one database and reporting success.
+      - name: Check that every secret is set
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          POSTGRES_URL_STAGING: ${{ secrets.POSTGRES_URL_STAGING }}
+        run: |
+          for name in DUNE_API_KEY POSTGRES_URL POSTGRES_URL_STAGING; do
+            if [ -z "${!name}" ]; then
+              echo "The $name secret is not set" >&2
+              exit 1
+            fi
+          done
+
       - name: Refresh buyback stats (production and staging)
         run: npx tsx src/scripts/refreshBuybackStats.ts
         env:

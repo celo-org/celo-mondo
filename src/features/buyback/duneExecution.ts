@@ -16,6 +16,14 @@ export interface ExecutionOutcome {
   completed: boolean;
 }
 
+/** The execution was still running when the wait ran out. */
+export class DuneWaitTimeoutError extends Error {
+  constructor(readonly executionId: string) {
+    super(`Timed out waiting for Dune execution ${executionId}`);
+    this.name = 'DuneWaitTimeoutError';
+  }
+}
+
 export interface WaitOptions {
   pollIntervalMs?: number;
   timeoutMs?: number;
@@ -48,8 +56,9 @@ export async function executeDuneQuery(apiKey: string, queryId: number): Promise
 /**
  * Poll an execution's status until Dune reports it finished, as report.py's
  * wait_for_execution does. A failed request or an unreadable status body is
- * retried on the next tick. A run still going when the timeout passes is an
- * error, so a stuck refresh fails loudly instead of leaving stale data.
+ * retried on the next tick. A run still going when the timeout passes is a
+ * `DuneWaitTimeoutError`, so a stuck refresh fails loudly instead of leaving
+ * stale data, or is replaced when the caller can do that.
  */
 export async function waitForExecution(
   apiKey: string,
@@ -63,9 +72,7 @@ export async function waitForExecution(
       return { executionId, state, completed: state === COMPLETED_STATE };
     }
     if (state !== null) log?.(`State: ${state}, waiting...`);
-    if (Date.now() >= deadline) {
-      throw new Error(`Timed out waiting for Dune execution ${executionId}`);
-    }
+    if (Date.now() >= deadline) throw new DuneWaitTimeoutError(executionId);
     await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
   }
 }
