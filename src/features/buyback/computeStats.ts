@@ -46,6 +46,10 @@ export const CARBON_FUND_SHARE_IN_WINDOW = {
 } as const;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// Dune's prices.day fills in a day or so after the day ends, so the newest day
+// or two in a result may still be unpriced. A longer unpriced tail with activity
+// is a broken price join, not lag, and dropping it would hide real revenue.
+const MAX_UNPRICED_TAIL_DAYS = 2;
 // A calendar day, alone or followed by a time (Dune appends " 00:00:00.000 UTC").
 const DAY_PATTERN = /^(\d{4}-\d{2}-\d{2})(?:$|[ T])/;
 
@@ -373,14 +377,22 @@ export function computeBuybackStats(
   // With no priced day at all, every day with activity is such a day: a
   // history that lost its prices must not pass as an empty dashboard.
   const lastCountedDay = latest?.day ?? cutoffDay;
-  const unpriced = entries.find(
+  const unpricedWithActivity = entries.filter(
     ({ row, metrics }) =>
-      metrics.day < lastCountedDay &&
       metrics.celoPriceUsd <= 0 &&
       (num(row.fee_CELO) > 0 || metrics.feesCollectedUsd !== 0 || metrics.l1CostUsd !== 0),
   );
+  const unpriced = unpricedWithActivity.find(({ metrics }) => metrics.day < lastCountedDay);
   if (unpriced) {
     throw new Error(`Dune has fees or costs but no CELO price for ${unpriced.metrics.day}`);
+  }
+  // The tail being cut off must be price lag, which is short; anything longer
+  // would silently drop real activity while `updatedAt` keeps looking fresh.
+  const tail = unpricedWithActivity.filter(({ metrics }) => metrics.day >= lastCountedDay);
+  if (tail.length > MAX_UNPRICED_TAIL_DAYS) {
+    throw new Error(
+      `Dune has fees or costs but no CELO price for ${tail.length} days through ${tail[tail.length - 1].metrics.day}`,
+    );
   }
 
   return {

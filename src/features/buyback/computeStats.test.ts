@@ -416,6 +416,37 @@ describe('computeBuybackStats', () => {
     }
   });
 
+  it('tolerates up to two trailing unpriced days of activity as price lag', () => {
+    const late = {
+      executionStartedAt: '2026-05-05T05:30:00.000Z',
+      executionEndedAt: '2026-05-05T05:31:00.000Z',
+      now: new Date('2026-05-05T12:00:00.000Z'),
+    };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02' },
+      { ...dayRow, day: '2026-05-03', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-04', fee_CELO_usd: 0 },
+    ];
+    const stats = statsFor(rows, late);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('refuses a longer unpriced tail with activity', () => {
+    const late = {
+      executionStartedAt: '2026-05-06T05:30:00.000Z',
+      executionEndedAt: '2026-05-06T05:31:00.000Z',
+      now: new Date('2026-05-06T12:00:00.000Z'),
+    };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02' },
+      { ...dayRow, day: '2026-05-03', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-04', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-05', fee_CELO_usd: 0 },
+    ];
+    expect(() => statsFor(rows, late)).toThrow('no CELO price for 3 days through 2026-05-05');
+  });
+
   it('refuses a history with activity but no CELO price on any day', () => {
     // What a query edit that drops the price join would look like.
     const rows: DuneFeeRow[] = [
