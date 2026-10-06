@@ -280,12 +280,14 @@ const DAY_LEVEL_COLUMNS = [
 /**
  * Collapse several rows for one day into one.
  *
- * The Dune query joins one row per EigenDA payment onto the day's revenue, so
- * a day with several payments comes back several times, each copy carrying the
- * full revenue and one payment (2025-09-10 has three). Summing the copies
- * would multiply that day's revenue; the day is its revenue once plus the sum
- * of the EigenDA costs. Rows that disagree on anything else are not that
- * fan-out, and are refused rather than guessed at.
+ * Until version 6 (2026-10-06) the Dune query joined one row per EigenDA
+ * payment onto the day's revenue, so a day with several payments came back
+ * several times, each copy carrying the full revenue and one payment
+ * (2025-09-10 came back three times). The query now sums the payments per
+ * day, but should that join ever fan out again, summing the copies would
+ * multiply the day's revenue; the day is its revenue once plus the sum of the
+ * EigenDA costs. Rows that disagree on anything else are not that fan-out,
+ * and are refused rather than guessed at.
  */
 export function mergeSameDayRows(day: string, rows: DuneFeeRow[]): DuneFeeRow {
   const [first, ...rest] = rows;
