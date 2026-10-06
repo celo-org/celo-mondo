@@ -201,6 +201,34 @@ describe('GET /api/buyback', () => {
     expect(body).not.toContain('402');
   });
 
+  it('does not read, let alone cache, the pages of an execution that is still running', async () => {
+    const first = await (await get()).json();
+    mockFetchDuneFeeRows.mockClear();
+
+    mockFetchLatestExecution.mockResolvedValue({
+      ...execution,
+      executionId: '01RUNNING',
+      state: 'QUERY_STATE_EXECUTING',
+    });
+    const during = await get();
+    expect(during.status).toBe(200);
+    expect(await during.json()).toEqual(first);
+    expect(mockFetchDuneFeeRows).not.toHaveBeenCalled();
+  });
+
+  it('treats a failed latest execution as unusable and keeps the last good figures', async () => {
+    const first = await (await get()).json();
+    mockFetchDuneFeeRows.mockClear();
+
+    mockFetchLatestExecution.mockResolvedValue({
+      ...execution,
+      executionId: '01FAILED',
+      state: 'QUERY_STATE_FAILED',
+    });
+    expect(await (await get()).json()).toEqual(first);
+    expect(mockFetchDuneFeeRows).not.toHaveBeenCalled();
+  });
+
   it('returns a generic 500 when the probe itself fails and nothing good was loaded before', async () => {
     mockFetchLatestExecution.mockRejectedValue(new Error('Dune API 402: Payment Required'));
     const response = await get();

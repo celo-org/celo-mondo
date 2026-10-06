@@ -5,6 +5,7 @@ import realRows from './__fixtures__/duneFeeRows.json';
 import {
   CELO_PNL_QUERY_ID,
   DuneRequestError,
+  assertCompleted,
   fetchDuneFeeRows,
   fetchLatestExecution,
   parseDuneFeeRows,
@@ -105,6 +106,42 @@ describe('fetchLatestExecution', () => {
       expect(await fetchLatestExecution('k')).toMatchObject({ executionId: '01EXEC', state });
     }
   });
+});
+
+describe('assertCompleted', () => {
+  it('passes a completed execution', () => {
+    expect(() =>
+      assertCompleted({ executionId: '01X', state: 'QUERY_STATE_COMPLETED' }),
+    ).not.toThrow();
+  });
+
+  it.each(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING'])(
+    'reports a %s execution as something to retry soon',
+    (state) => {
+      let error: unknown;
+      try {
+        assertCompleted({ executionId: '01X', state });
+      } catch (e) {
+        error = e;
+      }
+      expect(error).toBeInstanceOf(DuneRequestError);
+      expect((error as Error).message).toContain('still running');
+    },
+  );
+
+  it.each(['QUERY_STATE_FAILED', 'QUERY_STATE_CANCELLED', 'QUERY_STATE_EXPIRED'])(
+    'reports a %s execution as a verdict',
+    (state) => {
+      let error: unknown;
+      try {
+        assertCompleted({ executionId: '01X', state });
+      } catch (e) {
+        error = e;
+      }
+      expect(error).not.toBeInstanceOf(DuneRequestError);
+      expect((error as Error).message).toContain('no completed result');
+    },
+  );
 });
 
 describe('fetchDuneFeeRows', () => {

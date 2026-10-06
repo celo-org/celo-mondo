@@ -21,10 +21,27 @@ export const DUNE_CACHE_TAG = 'buyback-dune';
 export interface ReadOptions {
   cacheSeconds?: number;
 }
-const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
+export const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 // An execution in one of these states may still complete; anything else that
 // is not completed (failed, cancelled, expired, partial) never will.
 const PENDING_STATES = new Set(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING']);
+
+/**
+ * Throw for an execution that is not completed: as a request error, to be
+ * retried soon, while it may still complete; as a verdict once it never will.
+ */
+export function assertCompleted(execution: { executionId: string; state: string }): void {
+  if (execution.state === COMPLETED_STATE) return;
+  if (PENDING_STATES.has(execution.state)) {
+    throw new DuneRequestError(
+      `Dune execution ${execution.executionId} is still running (state ${execution.state})`,
+      null,
+    );
+  }
+  throw new Error(
+    `Dune execution ${execution.executionId} has no completed result (state ${execution.state})`,
+  );
+}
 
 /**
  * A request to Dune that did not get a usable answer: a network failure, a

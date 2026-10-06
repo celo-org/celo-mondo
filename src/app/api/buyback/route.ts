@@ -1,6 +1,10 @@
 import { revalidateTag, unstable_cache } from 'next/cache';
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
-import { fetchDuneFeeRows, fetchLatestExecution } from 'src/features/buyback/fetchDuneResults';
+import {
+  assertCompleted,
+  fetchDuneFeeRows,
+  fetchLatestExecution,
+} from 'src/features/buyback/fetchDuneResults';
 import { BuybackStats } from 'src/features/buyback/types';
 import { logger } from 'src/utils/logger';
 
@@ -46,6 +50,9 @@ async function computeFreshStats(): Promise<BuybackStats> {
   if (!apiKey) throw new Error('DUNE_API_KEY not configured');
 
   const latest = await fetchLatestExecution(apiKey, undefined, { cacheSeconds: PROBE_SECONDS });
+  // Only a completed execution's pages are immutable and may be kept for a
+  // week; the pages of one still running would be replayed as they were.
+  assertCompleted(latest);
   const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows(
     apiKey,
     undefined,
