@@ -344,6 +344,30 @@ describe('firstIncompleteDay', () => {
     ).toBe('2026-05-05');
   });
 
+  it.each([
+    '0',
+    '2026-02-30T00:00:00Z',
+    '2026-05-02T24:00:00Z',
+    '2026-05-02T05:60:00Z',
+    '2026-05-02 05:30:00',
+    '2026-05-02T05:30:00',
+    '2026-05-02T05:30:00+02:00',
+  ])('does not take %j for a usable execution time, though Date would parse it', (value) => {
+    expect(firstIncompleteDay({ executionStartedAt: value, executionEndedAt: value, now })).toBe(
+      '2026-05-05',
+    );
+  });
+
+  it('accepts the +00:00 spelling of UTC as well', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T05:30:00+00:00',
+        executionEndedAt: null,
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
   it('never goes past today, even if the execution time is ahead of the clock', () => {
     expect(
       firstIncompleteDay({
@@ -670,16 +694,17 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600 + 600 + 700, 6);
   });
 
-  it('returns zeros, not a negative carbon deduction, before the first window day completes', () => {
-    const stats = computeBuybackStats([], {
-      executionStartedAt: '2026-04-09T05:30:00.000Z',
-      executionEndedAt: '2026-04-09T05:31:00.000Z',
-      now: new Date('2026-04-09T12:00:00.000Z'),
-    });
-    expect(stats.totals.celoToCommunityFund).toBe(0);
-    expect(stats.totals.usdToCommunityFund).toBe(0);
-    expect(stats.totals.avgCeloPriceUsd).toBe(0);
-    expect(stats.latestDay).toBeNull();
+  it('refuses a snapshot that predates the reporting window', () => {
+    // A wrong timestamp, not an early run: the window opened months ago.
+    for (const started of ['2026-04-09T05:30:00.000Z', '2025-03-26T00:00:00.000Z']) {
+      expect(() =>
+        computeBuybackStats([], {
+          executionStartedAt: started,
+          executionEndedAt: started,
+          now: new Date('2026-05-03T12:00:00.000Z'),
+        }),
+      ).toThrow('predates the reporting window');
+    }
   });
 });
 

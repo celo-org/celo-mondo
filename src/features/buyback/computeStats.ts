@@ -202,11 +202,23 @@ export interface ComputeBuybackStatsOptions {
   now?: Date;
 }
 
-/** UTC calendar day of an ISO timestamp, or null when it is missing or malformed. */
+// An ISO-8601 UTC timestamp as Dune writes it ("2026-10-02T11:56:25.407379Z").
+const TIMESTAMP_PATTERN = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|\+00:00)$/;
+
+/**
+ * UTC calendar day of an ISO timestamp, or null when it is missing or not a
+ * real UTC timestamp. The Date parser would accept "0" or roll "2026-02-30"
+ * over into March; a day taken from such a value could land before the
+ * window and empty it, so only a well-formed timestamp with a real date and
+ * time counts.
+ */
 function utcDayOf(timestamp: string | null | undefined): string | null {
-  if (!timestamp) return null;
-  const date = new Date(timestamp);
-  return Number.isNaN(date.getTime()) ? null : toUtcDay(date);
+  const match = TIMESTAMP_PATTERN.exec(timestamp ?? '');
+  if (!match) return null;
+  const [, date, hours, minutes, seconds] = match;
+  if (Number(hours) > 23 || Number(minutes) > 59 || Number(seconds) > 59) return null;
+  const day = parseDay(date);
+  return day === '' ? null : day;
 }
 
 /**
@@ -324,10 +336,7 @@ function selectWindowRows(
     if (day < sinceDay || day >= cutoffDay) continue;
     byDay.set(day, [...(byDay.get(day) ?? []), row]);
   }
-  // Before the first day of the window has completed there is nothing to cover.
-  if (cutoffDay > sinceDay) {
-    assertWindowCovered([...byDay.keys()].sort(), sinceDay, throughDay);
-  }
+  assertWindowCovered([...byDay.keys()].sort(), sinceDay, throughDay);
   return [...byDay].map(([day, group]) => {
     const row = group.length === 1 ? group[0] : mergeSameDayRows(day, group);
     // Costs that cannot be valued would drop out of the P&L and overstate the
@@ -370,6 +379,12 @@ export function computeBuybackStats(
     throw new Error('Dune reported no usable execution time for its results');
   }
   const cutoffDay = firstIncompleteDay(options);
+  // The window opened in 2026 and the query runs daily, so a snapshot that
+  // predates it is a wrong timestamp, not an early run; accepted, it would
+  // empty the window and pass as a dashboard of zeros.
+  if (cutoffDay <= sinceDay) {
+    throw new Error(`Dune snapshot of ${cutoffDay} predates the reporting window`);
+  }
   // The history must reach the day before the cutoff.
   const throughDay = previousUtcDay(cutoffDay);
 
