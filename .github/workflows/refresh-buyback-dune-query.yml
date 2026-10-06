@@ -31,6 +31,7 @@ jobs:
         env:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
           DUNE_API: https://api.dune.com/api/v1
+          TRIGGER: ${{ github.event_name }}
         run: |
           set -euo pipefail
 
@@ -39,11 +40,13 @@ jobs:
             exit 1
           fi
 
-          # Every execution is billed, so do nothing if one already ran today
-          # (a manual run, say). One row of the latest results says which day
-          # that was; if this check itself fails, just go ahead and execute.
+          # Every execution is billed, so a scheduled run does nothing if one
+          # already ran today. One row of the latest results says which day that
+          # was; if this check itself fails, just go ahead and execute. A manual
+          # run always executes: it is how a bad same-day execution (after a
+          # query edit, say) gets replaced once the query is fixed.
           today=$(date -u +%Y-%m-%d)
-          if curl -sS --max-time 30 -f -o latest.json \
+          if [ "$TRIGGER" = "schedule" ] && curl -sS --max-time 30 -f -o latest.json \
                "$DUNE_API/query/6898547/results?limit=1" \
                -H "X-Dune-API-Key: $DUNE_API_KEY" \
              && [ "$(jq -r '.state' latest.json)" = "QUERY_STATE_COMPLETED" ] \
