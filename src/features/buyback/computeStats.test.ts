@@ -550,9 +550,12 @@ describe('computeBuybackStats', () => {
     expect(stats.latestDay).toBe('2026-05-02');
   });
 
-  it('reports the Dune execution time as updatedAt, or null when unknown', () => {
+  it('reports the Dune execution time as updatedAt, the end time when there is one', () => {
     expect(statsFor([dayRow], options).updatedAt).toBe(options.executionEndedAt);
-    expect(statsFor([dayRow], { ...options, executionEndedAt: null }).updatedAt).toBeNull();
+    const started = { executionStartedAt: '2026-05-03T05:30:00.000Z', executionEndedAt: null };
+    expect(statsFor([dayRow], { ...options, ...started }).updatedAt).toBe(
+      started.executionStartedAt,
+    );
   });
 
   // In these tests the window runs through quiet filler days, so the latest
@@ -660,7 +663,8 @@ describe('computeBuybackStats', () => {
 
   it('returns zeros, not a negative carbon deduction, before the first window day completes', () => {
     const stats = computeBuybackStats([], {
-      executionEndedAt: null,
+      executionStartedAt: '2026-04-09T05:30:00.000Z',
+      executionEndedAt: '2026-04-09T05:31:00.000Z',
       now: new Date('2026-04-09T12:00:00.000Z'),
     });
     expect(stats.totals.celoToCommunityFund).toBe(0);
@@ -705,20 +709,17 @@ describe('window coverage', () => {
     );
   });
 
-  it('does not ask for a tail it cannot know when Dune reports no execution time', () => {
-    // The clock says 05-10, but nothing says how far this snapshot should reach.
-    const stats = computeBuybackStats(whole, {
-      executionEndedAt: null,
-      now: new Date('2026-05-10T12:00:00.000Z'),
-    });
-    expect(stats.latestDay).toBe('2026-05-02');
-    // Gaps and a late start are still refused.
-    expect(() =>
-      computeBuybackStats(without('2026-04-20'), {
-        executionEndedAt: null,
-        now: new Date('2026-05-10T12:00:00.000Z'),
-      }),
-    ).toThrow('no row for 2026-04-20');
+  it('refuses a result without a usable execution time', () => {
+    // Without it, how far the snapshot should reach and how old it is are unknown.
+    for (const times of [
+      { executionEndedAt: null },
+      { executionStartedAt: null, executionEndedAt: null },
+      { executionStartedAt: 'soon', executionEndedAt: 'not a date' },
+    ]) {
+      expect(() =>
+        computeBuybackStats(whole, { ...times, now: new Date('2026-05-10T12:00:00.000Z') }),
+      ).toThrow('no usable execution time');
+    }
   });
 
   it('counts a fanned-out day as covered', () => {
@@ -734,7 +735,8 @@ describe('window coverage', () => {
 
 describe('Carbon Fund share deduction', () => {
   const options = {
-    executionEndedAt: null,
+    executionStartedAt: '2026-05-03T05:30:00.000Z',
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
     now: new Date('2026-05-03T12:00:00.000Z'),
   };
 
@@ -776,7 +778,11 @@ describe('Carbon Fund share deduction', () => {
   });
 
   it('is skipped while the window has not reached the payout day', () => {
-    const early = { executionEndedAt: null, now: new Date('2026-04-16T12:00:00.000Z') };
+    const early = {
+      executionStartedAt: '2026-04-16T05:30:00.000Z',
+      executionEndedAt: '2026-04-16T05:31:00.000Z',
+      now: new Date('2026-04-16T12:00:00.000Z'),
+    };
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-04-10' },
       { ...dayRow, day: '2026-04-11' },

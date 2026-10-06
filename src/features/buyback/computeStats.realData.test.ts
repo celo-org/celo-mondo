@@ -205,7 +205,7 @@ describe('computeBuybackStats on the real history', () => {
     );
   });
 
-  it('passes the Dune execution time through unchanged', () => {
+  it('passes the Dune execution end time through unchanged', () => {
     expect(stats.updatedAt).toBe('2026-09-17T16:29:54.146577Z');
   });
 });

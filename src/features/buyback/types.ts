@@ -68,6 +68,6 @@ export interface BuybackStats {
   sinceDay: string;
   /** Most recent complete day with price data (YYYY-MM-DD), if any. */
   latestDay: string | null;
-  /** When Dune last finished executing the query (ISO timestamp), if known. */
-  updatedAt: string | null;
+  /** When Dune executed the query these figures come from (ISO timestamp). */
+  updatedAt: string;
 }

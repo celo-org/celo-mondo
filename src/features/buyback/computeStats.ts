@@ -241,10 +241,8 @@ function previousUtcDay(day: string): string {
  * (a `LIMIT` added to the query), skips a day (an upstream gap) or stops early
  * would be summed as if it were whole while the page still says "since
  * `sinceDay`". Every day from `sinceDay` through `throughDay` must be present.
- * `throughDay` is null when Dune reported no execution time: what the snapshot
- * should reach is then unknown, and only the start and the gaps are checked.
  */
-function assertWindowCovered(days: string[], sinceDay: string, throughDay: string | null): void {
+function assertWindowCovered(days: string[], sinceDay: string, throughDay: string): void {
   if (days.length === 0) {
     throw new Error(`Dune history has no rows from ${sinceDay} on`);
   }
@@ -255,7 +253,7 @@ function assertWindowCovered(days: string[], sinceDay: string, throughDay: strin
     }
     expected = nextUtcDay(expected);
   }
-  if (throughDay !== null && days[days.length - 1] < throughDay) {
+  if (days[days.length - 1] < throughDay) {
     throw new Error(`Dune history has no row for ${expected}`);
   }
 }
@@ -312,7 +310,7 @@ function selectWindowRows(
   rows: DuneFeeRow[],
   sinceDay: string,
   cutoffDay: string,
-  throughDay: string | null,
+  throughDay: string,
 ): DuneFeeRow[] {
   const dated = rows
     .map((row) => ({ row, day: parseDay(row.day) }))
@@ -361,9 +359,15 @@ export function computeBuybackStats(
   options: ComputeBuybackStatsOptions,
 ): BuybackStats {
   const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
+  // Dune always reports when an execution ran. Without that, neither how far
+  // the snapshot should reach nor its age could be known: a short history
+  // would pass as whole and the stale note would stay off, so it is refused.
+  if (snapshotDayOf(options) === null) {
+    throw new Error('Dune reported no usable execution time for its results');
+  }
   const cutoffDay = firstIncompleteDay(options);
-  // With a known snapshot day, the history must reach the day before the cutoff.
-  const throughDay = snapshotDayOf(options) !== null ? previousUtcDay(cutoffDay) : null;
+  // The history must reach the day before the cutoff.
+  const throughDay = previousUtcDay(cutoffDay);
 
   const entries = selectWindowRows(rows, sinceDay, cutoffDay, throughDay)
     .map((row) => ({ row, metrics: computeDailyMetrics(row) }))
@@ -427,6 +431,6 @@ export function computeBuybackStats(
     latestDayStats: latest ? aggregate([latest]) : null,
     sinceDay,
     latestDay: latest?.day ?? null,
-    updatedAt: options.executionEndedAt,
+    updatedAt: options.executionEndedAt ?? options.executionStartedAt ?? '',
   };
 }
