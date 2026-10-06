@@ -77,6 +77,7 @@ describe('fetchLatestExecution', () => {
     const latest = await fetchLatestExecution('k');
     expect(latest).toEqual({
       executionId: '01EXEC',
+      state: 'QUERY_STATE_COMPLETED',
       executionStartedAt: '2026-09-17T16:29:45.379407Z',
       executionEndedAt: '2026-09-17T16:29:54.146577Z',
     });
@@ -96,9 +97,11 @@ describe('fetchLatestExecution', () => {
     await expect(fetchLatestExecution('k')).rejects.toThrow('named no execution');
   });
 
-  it('refuses an execution that did not complete, like the history read', async () => {
-    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1, { state: 'QUERY_STATE_FAILED' }));
-    await expect(fetchLatestExecution('k')).rejects.toThrow('state QUERY_STATE_FAILED');
+  it('reports a failed or running execution by id and state instead of throwing', async () => {
+    for (const state of ['QUERY_STATE_FAILED', 'QUERY_STATE_EXECUTING']) {
+      fetchMock.mockResolvedValueOnce(page([], 0, { state, result: undefined }));
+      expect(await fetchLatestExecution('k')).toMatchObject({ executionId: '01EXEC', state });
+    }
   });
 });
 
@@ -347,11 +350,22 @@ describe('fetchDuneFeeRows', () => {
       'QUERY_STATE_CANCELLED',
       'QUERY_STATE_EXPIRED',
       'QUERY_STATE_COMPLETED_PARTIAL',
-      'QUERY_STATE_EXECUTING',
-    ])('a 200 response whose execution is %s', async (state) => {
+    ])('a 200 response whose execution ended as %s, as a verdict on it', async (state) => {
       fetchMock.mockResolvedValueOnce(page([row(dayAt(0))], 1, { state }));
-      await expect(fetchDuneFeeRows('k')).rejects.toThrow(`no completed result (state ${state})`);
+      const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+      expect(error).not.toBeInstanceOf(DuneRequestError);
+      expect((error as Error).message).toContain(`no completed result (state ${state})`);
     });
+
+    it.each(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING'])(
+      'an execution that is still %s, as something to retry soon',
+      async (state) => {
+        fetchMock.mockResolvedValueOnce(page([], 0, { state, result: undefined }));
+        const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+        expect(error).toBeInstanceOf(DuneRequestError);
+        expect((error as Error).message).toContain(`still executing (state ${state})`);
+      },
+    );
 
     it('a response without a state or without a result payload', async () => {
       fetchMock.mockResolvedValueOnce(jsonResponse({ result: { rows: [row(dayAt(0))] } }));

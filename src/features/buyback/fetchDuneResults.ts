@@ -15,6 +15,9 @@ const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
 const MAX_PAGES = MAX_ROWS / PAGE_SIZE;
 const FETCH_TIMEOUT_MS = 30_000;
 const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
+// An execution in one of these states may still complete; anything else that
+// is not completed (failed, cancelled, expired, partial) never will.
+const PENDING_STATES = new Set(['QUERY_STATE_PENDING', 'QUERY_STATE_EXECUTING']);
 
 /**
  * A request to Dune that did not get a usable answer: a network failure, a
@@ -87,6 +90,7 @@ interface DuneResultsResponse {
 /** One validated page of results. */
 interface DunePage {
   rows: DuneFeeRow[];
+  state: string;
   executionId: string | null;
   executionStartedAt: string | null;
   executionEndedAt: string | null;
@@ -97,6 +101,8 @@ interface DunePage {
 /** Which execution a query's cached results currently come from. */
 export interface DuneExecution {
   executionId: string;
+  /** Its state as Dune reports it; only a completed execution has results. */
+  state: string;
   /** When Dune started that execution (ISO timestamp), if known. */
   executionStartedAt: string | null;
   /** When it finished (ISO timestamp), if known. */
@@ -120,20 +126,22 @@ export async function fetchLatestExecution(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
 ): Promise<DuneExecution> {
-  // Only the execution metadata matters here. The row is not validated, so an
-  // execution with unusable rows still gets an id, and the history read's
-  // cached verdict on it is honoured instead of failing afresh on every probe.
+  // Only the execution metadata matters here. Neither the state nor the row
+  // is judged, so a failed execution or one with unusable rows still gets an
+  // id, and the history read's cached verdict on it is honoured instead of
+  // failing afresh on every probe.
   const page = await fetchPage(
     `${DUNE_API}/query/${queryId}/results?limit=1&offset=0`,
     apiKey,
     queryId,
-    { validateRows: false },
+    { metadataOnly: true },
   );
   if (page.executionId === null) {
     throw new Error(`Dune query ${queryId} named no execution for its results`);
   }
   return {
     executionId: page.executionId,
+    state: page.state,
     executionStartedAt: page.executionStartedAt,
     executionEndedAt: page.executionEndedAt,
   };
@@ -216,7 +224,7 @@ async function fetchPage(
   url: string,
   apiKey: string,
   queryId: number,
-  { validateRows = true }: { validateRows?: boolean } = {},
+  { metadataOnly = false }: { metadataOnly?: boolean } = {},
 ): Promise<DunePage> {
   let data: DuneResultsResponse;
   try {
@@ -239,16 +247,26 @@ async function fetchPage(
     throw new DuneRequestError(`Dune API unreachable: ${String(error)}`, null);
   }
 
-  if (data.state !== COMPLETED_STATE || !Array.isArray(data.result?.rows)) {
-    throw new Error(
-      `Dune query ${queryId} has no completed result (state ${data.state ?? 'missing'})`,
-    );
+  const state = data.state ?? 'missing';
+  if (metadataOnly) {
+    return pageFrom(data, state, []);
   }
-  const rows = validateRows ? parseDuneFeeRows(data.result.rows, queryId) : [];
+  if (state !== COMPLETED_STATE || !Array.isArray(data.result?.rows)) {
+    // A run that may still finish is worth asking about again soon; one that
+    // never will is a verdict on that execution.
+    if (PENDING_STATES.has(state)) {
+      throw new DuneRequestError(`Dune query ${queryId} is still executing (state ${state})`, null);
+    }
+    throw new Error(`Dune query ${queryId} has no completed result (state ${state})`);
+  }
+  return pageFrom(data, state, parseDuneFeeRows(data.result.rows, queryId));
+}
 
+function pageFrom(data: DuneResultsResponse, state: string, rows: DuneFeeRow[]): DunePage {
   const totalRowCount = data.result?.metadata?.total_row_count;
   return {
     rows,
+    state,
     executionId: data.execution_id ?? null,
     executionStartedAt: data.execution_started_at ?? null,
     executionEndedAt: data.execution_ended_at ?? null,
