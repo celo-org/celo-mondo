@@ -552,9 +552,10 @@ describe('computeBuybackStats', () => {
 
   it('reports the Dune execution time as updatedAt, the end time when there is one', () => {
     expect(statsFor([dayRow], options).updatedAt).toBe(options.executionEndedAt);
-    const started = { executionStartedAt: '2026-05-03T05:30:00.000Z', executionEndedAt: null };
-    expect(statsFor([dayRow], { ...options, ...started }).updatedAt).toBe(
-      started.executionStartedAt,
+    // A malformed end time is skipped, not passed on for the page to choke on.
+    const garbled = { executionStartedAt: '2026-05-03T05:30:00.000Z', executionEndedAt: 'soon' };
+    expect(statsFor([dayRow], { ...options, ...garbled }).updatedAt).toBe(
+      garbled.executionStartedAt,
     );
   });
 

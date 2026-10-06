@@ -431,6 +431,9 @@ export function computeBuybackStats(
     latestDayStats: latest ? aggregate([latest]) : null,
     sinceDay,
     latestDay: latest?.day ?? null,
-    updatedAt: options.executionEndedAt ?? options.executionStartedAt ?? '',
+    // The first timestamp that parses; at least one does, as checked above.
+    updatedAt:
+      [options.executionEndedAt, options.executionStartedAt].find((t) => utcDayOf(t) !== null) ??
+      '',
   };
 }
