@@ -86,6 +86,11 @@ describe('fetchLatestExecution', () => {
     );
   });
 
+  it('does not validate the sampled row, leaving that verdict to the history read', async () => {
+    fetchMock.mockResolvedValueOnce(page([{ ...row('2026-09-16'), fee_CELO: 'oops' }], 558));
+    expect((await fetchLatestExecution('k')).executionId).toBe('01EXEC');
+  });
+
   it('refuses a result that names no execution', async () => {
     fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1, { execution_id: undefined }));
     await expect(fetchLatestExecution('k')).rejects.toThrow('named no execution');
@@ -248,6 +253,9 @@ describe('fetchDuneFeeRows', () => {
     );
 
     it.each([
+      ['a negative fee', { fee_USDT: -1 }, '0.fee_USDT'],
+      ['a negative cost', { batcher_cost_eth: -0.001 }, '0.batcher_cost_eth'],
+      ['a negative price', { eth_price_usd: -2500 }, '0.eth_price_usd'],
       ['a null fee', { fee_CELO: null }, '0.fee_CELO'],
       ['a numeric string', { fee_USDT: '500' }, '0.fee_USDT'],
       ['text', { fee_CELO_usd: 'n/a' }, '0.fee_CELO_usd'],
@@ -310,6 +318,13 @@ describe('fetchDuneFeeRows', () => {
       expect((error as Error).message).toBe(
         'Dune API 402: {"error":"Payment Required: datapoints limit exceeded"}',
       );
+    });
+
+    it('reports a truncated or garbled body as a request error, not a bad execution', async () => {
+      fetchMock.mockResolvedValueOnce(new Response('{"state":"QUERY_STATE_COMPL', { status: 200 }));
+      const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(DuneRequestError);
+      expect((error as Error).message).toContain('unreachable');
     });
 
     it('reports a network failure or timeout as a request error, not a bad execution', async () => {

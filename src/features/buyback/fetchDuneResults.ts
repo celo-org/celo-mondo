@@ -31,7 +31,10 @@ export class DuneRequestError extends Error {
   }
 }
 
-const amount = z.number().finite();
+// Fees, costs and prices are absolute amounts. A negative one is a sign error
+// upstream that would lower revenue or raise profit, so it is refused here;
+// the derived P&L may of course go negative.
+const amount = z.number().finite().nonnegative();
 // Columns the query fills through a LEFT JOIN are null on a day with no such
 // cost (or price) row. Every other column is a sum and always has a value.
 const joinedAmount = amount.nullable();
@@ -117,10 +120,14 @@ export async function fetchLatestExecution(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
 ): Promise<DuneExecution> {
+  // Only the execution metadata matters here. The row is not validated, so an
+  // execution with unusable rows still gets an id, and the history read's
+  // cached verdict on it is honoured instead of failing afresh on every probe.
   const page = await fetchPage(
     `${DUNE_API}/query/${queryId}/results?limit=1&offset=0`,
     apiKey,
     queryId,
+    { validateRows: false },
   );
   if (page.executionId === null) {
     throw new Error(`Dune query ${queryId} named no execution for its results`);
@@ -205,32 +212,39 @@ export async function fetchDuneFeeRows(
  * and partial executions too, with the rows missing, which would otherwise
  * read as a valid dashboard of zeros.
  */
-async function fetchPage(url: string, apiKey: string, queryId: number): Promise<DunePage> {
-  let response: Response;
+async function fetchPage(
+  url: string,
+  apiKey: string,
+  queryId: number,
+  { validateRows = true }: { validateRows?: boolean } = {},
+): Promise<DunePage> {
+  let data: DuneResultsResponse;
   try {
-    response = await fetch(url, {
+    const response = await fetch(url, {
       headers: { 'X-Dune-API-Key': apiKey },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new DuneRequestError(
+        `Dune API ${response.status}: ${body.slice(0, 200)}`,
+        response.status,
+      );
+    }
+    // A truncated or garbled body is a transport problem too, not a verdict on
+    // the execution.
+    data = (await response.json()) as DuneResultsResponse;
   } catch (error) {
+    if (error instanceof DuneRequestError) throw error;
     throw new DuneRequestError(`Dune API unreachable: ${String(error)}`, null);
   }
 
-  if (!response.ok) {
-    const body = await response.text();
-    throw new DuneRequestError(
-      `Dune API ${response.status}: ${body.slice(0, 200)}`,
-      response.status,
-    );
-  }
-
-  const data = (await response.json()) as DuneResultsResponse;
   if (data.state !== COMPLETED_STATE || !Array.isArray(data.result?.rows)) {
     throw new Error(
       `Dune query ${queryId} has no completed result (state ${data.state ?? 'missing'})`,
     );
   }
-  const rows = parseDuneFeeRows(data.result.rows, queryId);
+  const rows = validateRows ? parseDuneFeeRows(data.result.rows, queryId) : [];
 
   const totalRowCount = data.result?.metadata?.total_row_count;
   return {
