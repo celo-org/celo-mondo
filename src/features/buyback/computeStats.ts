@@ -344,6 +344,11 @@ function selectWindowRows(
     if (l1CostEth(row) > 0 && num(row.eth_price_usd) <= 0) {
       throw new Error(`Dune has L1 costs but no ETH price for ${day}`);
     }
+    // A USD value with no fees behind it would be counted as revenue; CELO
+    // fees without a value are the unpriced case handled further down.
+    if (num(row.fee_CELO_usd) > 0 && num(row.fee_CELO) <= 0) {
+      throw new Error(`Dune has a CELO value but no CELO fees for ${day}`);
+    }
     // EURm is the one fee currency valued by Dune's price feed rather than a
     // peg; without that price its fees would silently drop out of revenue,
     // and a value without fees behind it would be counted as revenue.

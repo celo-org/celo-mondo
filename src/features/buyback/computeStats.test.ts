@@ -538,6 +538,13 @@ describe('computeBuybackStats', () => {
     }
   });
 
+  it('refuses a CELO value with no CELO fees behind it, even on the last days', () => {
+    for (const day of ['2026-04-20', '2026-05-01', '2026-05-02']) {
+      const rows: DuneFeeRow[] = [{ ...dayRow, day, fee_CELO: 0, fee_CELO_usd: 100 }];
+      expect(() => statsFor(rows, options), day).toThrow(`CELO value but no CELO fees for ${day}`);
+    }
+  });
+
   it('refuses an EURm value with no EURm fees behind it', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2026-05-01', fee_EURm: 0, fee_EURm_usd: 3.3 },
