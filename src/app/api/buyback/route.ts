@@ -3,6 +3,7 @@ import { computeBuybackStats } from 'src/features/buyback/computeStats';
 import { fetchDuneFeeRows, fetchLatestExecution } from 'src/features/buyback/fetchDuneResults';
 import { BuybackStats } from 'src/features/buyback/types';
 import { logger } from 'src/utils/logger';
+import { errorToString } from 'src/utils/strings';
 
 // Run the handler on every request. A `revalidate` export only caches a GET
 // handler that can be prerendered at build time, and a build without the Dune
@@ -17,6 +18,12 @@ const PROBE_SECONDS = 15 * 60;
 // A history read for one execution never changes, so it is kept until long
 // after the next daily execution has replaced it.
 const HISTORY_SECONDS = 7 * 24 * 60 * 60;
+// How long to remember that an execution could not be read or validated
+// before trying it again. Every attempt pages through Dune, so page traffic
+// must not turn one bad execution into a stream of billed reads.
+const FAILURE_RETRY_SECONDS = 60 * 60;
+
+type HistoryOutcome = { stats: BuybackStats } | { failure: string };
 
 /** The configured Dune key, or undefined when it is unset or blank. */
 function getDuneApiKey(): string | undefined {
@@ -46,24 +53,47 @@ const getStatsForExecution = unstable_cache(
 );
 
 /**
+ * What reading an execution produced, failures included. A thrown read is
+ * never cached, so without this every request would retry an unusable
+ * execution; here the failure is remembered for an hour, and a success is
+ * served from the week-long history cache underneath.
+ */
+const getHistoryOutcome = unstable_cache(
+  async (executionId: string): Promise<HistoryOutcome> => {
+    try {
+      return { stats: await getStatsForExecution(executionId) };
+    } catch (error) {
+      logger.error(`Buyback stats: Dune execution ${executionId} is unusable`, error);
+      return { failure: errorToString(error) };
+    }
+  },
+  ['buyback-history-outcome'],
+  { revalidate: FAILURE_RETRY_SECONDS },
+);
+
+/**
  * The stats to serve: a cheap one-row probe for the execution Dune currently
  * serves, then that execution's stats. Cached across requests and server
  * instances, so page visits and React Query refetches share one probe.
  *
- * A failure is never stored. With nothing cached yet it surfaces as an error;
- * once an entry exists, Next serves it while refreshing in the background and
- * keeps it if that refresh fails. A new execution therefore replaces the
- * served figures only once its history has been read and validated; if it
- * cannot be, the last good figures stay up. Their age stays visible:
- * `updatedAt` is Dune's execution time and the page flags data that has gone
- * stale.
+ * A failure is never stored here. With nothing cached yet it surfaces as an
+ * error; once an entry exists, Next serves it while refreshing in the
+ * background and keeps it if that refresh fails. A new execution therefore
+ * replaces the served figures only once its history has been read and
+ * validated; if it cannot be, the last good figures stay up. Their age stays
+ * visible: `updatedAt` is Dune's execution time and the page flags data that
+ * has gone stale.
  */
 const getServedStats = unstable_cache(
   async (): Promise<BuybackStats> => {
     const apiKey = getDuneApiKey();
     if (!apiKey) throw new Error('DUNE_API_KEY not configured');
     const latest = await fetchLatestExecution(apiKey);
-    return getStatsForExecution(latest.executionId);
+    const outcome = await getHistoryOutcome(latest.executionId);
+    if ('failure' in outcome) {
+      throw new Error(`Dune execution ${latest.executionId} is unusable: ${outcome.failure}`);
+    }
+    return outcome.stats;
   },
   ['buyback-served-stats'],
   { revalidate: PROBE_SECONDS },

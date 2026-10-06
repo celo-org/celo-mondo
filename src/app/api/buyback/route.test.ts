@@ -46,15 +46,16 @@ async function get() {
 }
 
 describe('GET /api/buyback', () => {
-  it('caches each history for a week and the served stats, probed every 15 minutes', async () => {
+  it('caches histories for a week, read outcomes for an hour and the served stats for 15 minutes', async () => {
     const route = await import('./route');
     expect(route.dynamic).toBe('force-dynamic');
-    expect(unstableCache).toHaveBeenCalledTimes(2);
+    expect(unstableCache).toHaveBeenCalledTimes(3);
     const configs = (
       unstableCache.mock.calls as unknown as [unknown, string[], { revalidate: number }][]
     ).map(([, keyParts, options]) => [keyParts, options]);
     expect(configs).toEqual([
       [['buyback-stats'], { revalidate: 7 * 24 * 60 * 60 }],
+      [['buyback-history-outcome'], { revalidate: 60 * 60 }],
       [['buyback-served-stats'], { revalidate: 15 * 60 }],
     ]);
   });
