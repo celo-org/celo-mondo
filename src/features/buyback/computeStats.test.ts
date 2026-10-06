@@ -416,6 +416,15 @@ describe('computeBuybackStats', () => {
     }
   });
 
+  it('refuses a history with activity but no CELO price on any day', () => {
+    // What a query edit that drops the price join would look like.
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 0 },
+    ];
+    expect(() => statsFor(rows, options)).toThrow('no CELO price for 2026-05-01');
+  });
+
   it('accepts an entirely empty day in the middle of the window', () => {
     const empty = { fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0, batcher_cost_eth: 0 };
     const rows: DuneFeeRow[] = [

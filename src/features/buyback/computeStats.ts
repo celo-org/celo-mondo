@@ -370,10 +370,12 @@ export function computeBuybackStats(
   // USD figures would count while its CELO figures read zero, so the totals
   // would disagree with each other. Nothing can be converted without the
   // day's CELO price, so such a day is refused unless it is entirely empty.
+  // With no priced day at all, every day with activity is such a day: a
+  // history that lost its prices must not pass as an empty dashboard.
+  const lastCountedDay = latest?.day ?? cutoffDay;
   const unpriced = entries.find(
     ({ row, metrics }) =>
-      latest !== null &&
-      metrics.day < latest.day &&
+      metrics.day < lastCountedDay &&
       metrics.celoPriceUsd <= 0 &&
       (num(row.fee_CELO) > 0 || metrics.feesCollectedUsd !== 0 || metrics.l1CostUsd !== 0),
   );
