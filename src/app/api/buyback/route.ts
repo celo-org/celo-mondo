@@ -25,10 +25,14 @@ const HISTORY_SECONDS = 7 * 24 * 60 * 60;
 // How long to remember that an execution's results failed validation before
 // trying it again. Every attempt pages through Dune, so page traffic must not
 // turn one bad execution into a stream of billed reads. Only validation
-// failures are remembered: an execution's results never change, so neither
-// does that verdict. A failed request (timeout, 429, 5xx) says nothing about
-// the execution and is retried on the next refresh.
-const FAILURE_RETRY_SECONDS = 60 * 60;
+// failures are remembered this long: an execution's results never change, so
+// neither does that verdict.
+const VERDICT_SECONDS = 60 * 60;
+// How long to remember a failed request (timeout, 429, 5xx) before asking
+// Dune again. Such a failure says nothing about the execution, so it is
+// retried soon, but not on every request: while Dune is down, each attempt
+// re-downloads every page that did succeed.
+const TRANSIENT_SECONDS = 5 * 60;
 
 // Part of every cache key. The Data Cache outlives a deployment and keys on
 // the cached function's own source, not on what it imports, so a change to the
@@ -36,11 +40,27 @@ const FAILURE_RETRY_SECONDS = 60 * 60;
 // by the previous code until the week-long entry expired.
 const DEPLOYMENT = process.env.VERCEL_GIT_COMMIT_SHA ?? 'local';
 
-type HistoryOutcome = { stats: BuybackStats } | { failure: string };
+/** A deterministic verdict on an execution: its figures, or why they are unusable. */
+type HistoryVerdict = { stats: BuybackStats } | { failure: string };
+/** What an attempt produced: a verdict, or a request failure to retry soon. */
+type Attempt<T> = T | { transient: string };
 
 /** The configured Dune key, or undefined when it is unset or blank. */
-function getDuneApiKey(): string | undefined {
-  return process.env.DUNE_API_KEY?.trim() || undefined;
+function getDuneApiKey(): string {
+  const apiKey = process.env.DUNE_API_KEY?.trim();
+  if (!apiKey) throw new Error('DUNE_API_KEY not configured');
+  return apiKey;
+}
+
+/** Catch a failed request into a value that can be cached for a short while. */
+async function attempt<T>(run: () => Promise<T>, what: string): Promise<Attempt<T>> {
+  try {
+    return await run();
+  } catch (error) {
+    if (!(error instanceof DuneRequestError)) throw error;
+    logger.warn(`Buyback stats: ${what} failed, will retry in ${TRANSIENT_SECONDS}s`, error);
+    return { transient: errorToString(error) };
+  }
 }
 
 /**
@@ -50,11 +70,8 @@ function getDuneApiKey(): string | undefined {
  */
 const getStatsForExecution = unstable_cache(
   async (executionId: string): Promise<BuybackStats> => {
-    const apiKey = getDuneApiKey();
-    if (!apiKey) throw new Error('DUNE_API_KEY not configured');
-
     const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows(
-      apiKey,
+      getDuneApiKey(),
       undefined,
       executionId,
     );
@@ -66,14 +83,14 @@ const getStatsForExecution = unstable_cache(
 );
 
 /**
- * What reading an execution produced, validation failures included. A thrown
- * read is never cached, so without this every request would retry an unusable
+ * The verdict on an execution, validation failures included. A thrown read is
+ * never cached, so without this every request would retry an unusable
  * execution; here that verdict is remembered for an hour, and a success is
  * served from the week-long history cache underneath. Request failures are
- * rethrown, so they are not cached and the next refresh tries again.
+ * rethrown: they are not a verdict.
  */
-const getHistoryOutcome = unstable_cache(
-  async (executionId: string): Promise<HistoryOutcome> => {
+const getHistoryVerdict = unstable_cache(
+  async (executionId: string): Promise<HistoryVerdict> => {
     try {
       return { stats: await getStatsForExecution(executionId) };
     } catch (error) {
@@ -82,8 +99,23 @@ const getHistoryOutcome = unstable_cache(
       return { failure: errorToString(error) };
     }
   },
-  ['buyback-history-outcome', DEPLOYMENT],
-  { revalidate: FAILURE_RETRY_SECONDS },
+  ['buyback-history-verdict', DEPLOYMENT],
+  { revalidate: VERDICT_SECONDS },
+);
+
+/** One attempt at the verdict every few minutes while requests to Dune fail. */
+const getHistoryOutcome = unstable_cache(
+  (executionId: string) =>
+    attempt(() => getHistoryVerdict(executionId), `reading execution ${executionId}`),
+  ['buyback-history-attempt', DEPLOYMENT],
+  { revalidate: TRANSIENT_SECONDS },
+);
+
+/** One probe for the execution Dune currently serves every few minutes while requests fail. */
+const getLatestExecutionOutcome = unstable_cache(
+  () => attempt(() => fetchLatestExecution(getDuneApiKey()), 'probing the latest execution'),
+  ['buyback-probe-attempt', DEPLOYMENT],
+  { revalidate: TRANSIENT_SECONDS },
 );
 
 /**
@@ -101,12 +133,16 @@ const getHistoryOutcome = unstable_cache(
  */
 const getServedStats = unstable_cache(
   async (): Promise<BuybackStats> => {
-    const apiKey = getDuneApiKey();
-    if (!apiKey) throw new Error('DUNE_API_KEY not configured');
-    const latest = await fetchLatestExecution(apiKey);
-    const outcome = await getHistoryOutcome(latest.executionId);
+    const probe = await getLatestExecutionOutcome();
+    if ('transient' in probe) throw new Error(`Dune probe failed: ${probe.transient}`);
+    const outcome = await getHistoryOutcome(probe.executionId);
+    if ('transient' in outcome) {
+      throw new Error(
+        `Dune execution ${probe.executionId} could not be read: ${outcome.transient}`,
+      );
+    }
     if ('failure' in outcome) {
-      throw new Error(`Dune execution ${latest.executionId} is unusable: ${outcome.failure}`);
+      throw new Error(`Dune execution ${probe.executionId} is unusable: ${outcome.failure}`);
     }
     return outcome.stats;
   },
@@ -115,7 +151,7 @@ const getServedStats = unstable_cache(
 );
 
 export async function GET() {
-  if (!getDuneApiKey()) {
+  if (!process.env.DUNE_API_KEY?.trim()) {
     logger.warn('Buyback stats requested but DUNE_API_KEY is not configured');
     return new Response('DUNE_API_KEY not configured', { status: 503 });
   }

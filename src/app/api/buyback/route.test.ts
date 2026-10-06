@@ -53,16 +53,18 @@ async function get() {
 }
 
 describe('GET /api/buyback', () => {
-  it('keys every cache on the deployment and caches histories for a week, read outcomes for an hour, served stats for 15 minutes', async () => {
+  it('keys every cache on the deployment: histories a week, verdicts an hour, attempts 5 minutes, served stats 15 minutes', async () => {
     const route = await import('./route');
     expect(route.dynamic).toBe('force-dynamic');
-    expect(unstableCache).toHaveBeenCalledTimes(3);
+    expect(unstableCache).toHaveBeenCalledTimes(5);
     const configs = (
       unstableCache.mock.calls as unknown as [unknown, string[], { revalidate: number }][]
     ).map(([, keyParts, options]) => [keyParts, options]);
     expect(configs).toEqual([
       [['buyback-stats', 'deadbeef'], { revalidate: 7 * 24 * 60 * 60 }],
-      [['buyback-history-outcome', 'deadbeef'], { revalidate: 60 * 60 }],
+      [['buyback-history-verdict', 'deadbeef'], { revalidate: 60 * 60 }],
+      [['buyback-history-attempt', 'deadbeef'], { revalidate: 5 * 60 }],
+      [['buyback-probe-attempt', 'deadbeef'], { revalidate: 5 * 60 }],
       [['buyback-served-stats', 'deadbeef'], { revalidate: 15 * 60 }],
     ]);
   });
@@ -127,5 +129,13 @@ describe('GET /api/buyback', () => {
     const response = await get();
     expect(response.status).toBe(500);
     expect(mockFetchDuneFeeRows).not.toHaveBeenCalled();
+  });
+
+  it('returns a generic 500 on a transient Dune failure as well', async () => {
+    const { DuneRequestError } = await import('src/features/buyback/fetchDuneResults');
+    mockFetchDuneFeeRows.mockRejectedValueOnce(new DuneRequestError('Dune API 503: down', 503));
+    const response = await get();
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('Unable to load buyback stats');
   });
 });
