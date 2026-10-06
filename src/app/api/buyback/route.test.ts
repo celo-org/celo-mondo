@@ -26,13 +26,19 @@ const rows = duneFeeRows as DuneFeeRow[];
 const executionStartedAt = '2026-09-17T16:29:45.379407Z';
 const executionEndedAt = '2026-09-17T16:29:54.146577Z';
 
-const execution = { executionId: '01EXEC', executionStartedAt, executionEndedAt };
+const execution = {
+  executionId: '01EXEC',
+  state: 'QUERY_STATE_COMPLETED',
+  executionStartedAt,
+  executionEndedAt,
+};
 
 beforeEach(() => {
   mockFetchDuneFeeRows.mockReset();
   mockFetchLatestExecution.mockReset();
   mockFetchLatestExecution.mockResolvedValue(execution);
   vi.stubEnv('DUNE_API_KEY', 'test-key');
+  vi.stubEnv('VERCEL_GIT_COMMIT_SHA', 'deadbeef');
   vi.useFakeTimers({ now: new Date('2026-09-18T06:00:00.000Z'), toFake: ['Date'] });
 });
 
@@ -47,7 +53,7 @@ async function get() {
 }
 
 describe('GET /api/buyback', () => {
-  it('caches histories for a week, read outcomes for an hour and the served stats for 15 minutes', async () => {
+  it('keys every cache on the deployment and caches histories for a week, read outcomes for an hour, served stats for 15 minutes', async () => {
     const route = await import('./route');
     expect(route.dynamic).toBe('force-dynamic');
     expect(unstableCache).toHaveBeenCalledTimes(3);
@@ -55,9 +61,9 @@ describe('GET /api/buyback', () => {
       unstableCache.mock.calls as unknown as [unknown, string[], { revalidate: number }][]
     ).map(([, keyParts, options]) => [keyParts, options]);
     expect(configs).toEqual([
-      [['buyback-stats'], { revalidate: 7 * 24 * 60 * 60 }],
-      [['buyback-history-outcome'], { revalidate: 60 * 60 }],
-      [['buyback-served-stats'], { revalidate: 15 * 60 }],
+      [['buyback-stats', 'deadbeef'], { revalidate: 7 * 24 * 60 * 60 }],
+      [['buyback-history-outcome', 'deadbeef'], { revalidate: 60 * 60 }],
+      [['buyback-served-stats', 'deadbeef'], { revalidate: 15 * 60 }],
     ]);
   });
 

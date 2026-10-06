@@ -30,6 +30,12 @@ const HISTORY_SECONDS = 7 * 24 * 60 * 60;
 // the execution and is retried on the next refresh.
 const FAILURE_RETRY_SECONDS = 60 * 60;
 
+// Part of every cache key. The Data Cache outlives a deployment and keys on
+// the cached function's own source, not on what it imports, so a change to the
+// computation or the row schema would otherwise keep serving figures produced
+// by the previous code until the week-long entry expired.
+const DEPLOYMENT = process.env.VERCEL_GIT_COMMIT_SHA ?? 'local';
+
 type HistoryOutcome = { stats: BuybackStats } | { failure: string };
 
 /** The configured Dune key, or undefined when it is unset or blank. */
@@ -55,7 +61,7 @@ const getStatsForExecution = unstable_cache(
     logger.debug(`Buyback stats computed from ${rows.length} daily rows of ${executionId}`);
     return computeBuybackStats(rows, { executionStartedAt, executionEndedAt });
   },
-  ['buyback-stats'],
+  ['buyback-stats', DEPLOYMENT],
   { revalidate: HISTORY_SECONDS },
 );
 
@@ -76,7 +82,7 @@ const getHistoryOutcome = unstable_cache(
       return { failure: errorToString(error) };
     }
   },
-  ['buyback-history-outcome'],
+  ['buyback-history-outcome', DEPLOYMENT],
   { revalidate: FAILURE_RETRY_SECONDS },
 );
 
@@ -104,7 +110,7 @@ const getServedStats = unstable_cache(
     }
     return outcome.stats;
   },
-  ['buyback-served-stats'],
+  ['buyback-served-stats', DEPLOYMENT],
   { revalidate: PROBE_SECONDS },
 );
 
