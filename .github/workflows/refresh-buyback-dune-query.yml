@@ -70,8 +70,7 @@ jobs:
             cat execute.json >&2
             exit 1
           fi
-          execution_id=$(jq -r '.execution_id // empty' execute.json)
-          if [ -z "$execution_id" ]; then
+          if ! execution_id=$(jq -r '.execution_id // empty' execute.json) || [ -z "$execution_id" ]; then
             echo "Dune did not return an execution id:" >&2
             cat execute.json >&2
             exit 1
@@ -90,8 +89,15 @@ jobs:
               sleep 10
               continue
             fi
-            state=$(echo "$status" | jq -r '.state')
-            if [ "$(echo "$status" | jq -r '.is_execution_finished')" = "true" ]; then
+            # A truncated or garbled body is as transient as a failed request.
+            if ! state=$(jq -r '.state // empty' <<< "$status") \
+               || ! finished=$(jq -r '.is_execution_finished // empty' <<< "$status") \
+               || [ -z "$state" ]; then
+              echo "Unreadable status response, retrying..."
+              sleep 10
+              continue
+            fi
+            if [ "$finished" = "true" ]; then
               if [ "$state" != "QUERY_STATE_COMPLETED" ]; then
                 echo "Dune execution $execution_id ended with state $state:" >&2
                 echo "$status" >&2
