@@ -332,6 +332,16 @@ describe('fetchDuneFeeRows', () => {
       expect((error as Error).message).toContain('unreachable');
     });
 
+    it.each(['null', '[]', '"ok"', '42'])(
+      'reports a %s body as a request error, not a bad execution',
+      async (body) => {
+        fetchMock.mockResolvedValueOnce(new Response(body, { status: 200 }));
+        const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+        expect(error).toBeInstanceOf(DuneRequestError);
+        expect((error as Error).message).toContain('body');
+      },
+    );
+
     it('reports a network failure or timeout as a request error, not a bad execution', async () => {
       fetchMock.mockRejectedValueOnce(new DOMException('The operation timed out', 'TimeoutError'));
       const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);

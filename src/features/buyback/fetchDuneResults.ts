@@ -242,8 +242,15 @@ async function fetchPage(
       );
     }
     // A truncated or garbled body is a transport problem too, not a verdict on
-    // the execution.
-    data = (await response.json()) as DuneResultsResponse;
+    // the execution; so is a body that parses but is not the expected object.
+    const parsed: unknown = await response.json();
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      throw new DuneRequestError(
+        `Dune API returned a ${parsed === null ? 'null' : typeof parsed} body`,
+        null,
+      );
+    }
+    data = parsed as DuneResultsResponse;
   } catch (error) {
     if (error instanceof DuneRequestError) throw error;
     throw new DuneRequestError(`Dune API unreachable: ${String(error)}`, null);
