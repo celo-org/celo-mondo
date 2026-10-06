@@ -12,7 +12,8 @@ vi.mock('next/cache', () => ({ unstable_cache: unstableCache }));
 
 const mockFetchDuneFeeRows = vi.fn();
 const mockFetchLatestExecution = vi.fn();
-vi.mock('src/features/buyback/fetchDuneResults', () => ({
+vi.mock('src/features/buyback/fetchDuneResults', async (importActual) => ({
+  ...(await importActual<typeof import('src/features/buyback/fetchDuneResults')>()),
   fetchDuneFeeRows: (...args: unknown[]) => mockFetchDuneFeeRows(...args),
   fetchLatestExecution: (...args: unknown[]) => mockFetchLatestExecution(...args),
 }));

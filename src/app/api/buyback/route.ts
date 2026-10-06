@@ -1,6 +1,10 @@
 import { unstable_cache } from 'next/cache';
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
-import { fetchDuneFeeRows, fetchLatestExecution } from 'src/features/buyback/fetchDuneResults';
+import {
+  DuneRequestError,
+  fetchDuneFeeRows,
+  fetchLatestExecution,
+} from 'src/features/buyback/fetchDuneResults';
 import { BuybackStats } from 'src/features/buyback/types';
 import { logger } from 'src/utils/logger';
 import { errorToString } from 'src/utils/strings';
@@ -18,9 +22,12 @@ const PROBE_SECONDS = 15 * 60;
 // A history read for one execution never changes, so it is kept until long
 // after the next daily execution has replaced it.
 const HISTORY_SECONDS = 7 * 24 * 60 * 60;
-// How long to remember that an execution could not be read or validated
-// before trying it again. Every attempt pages through Dune, so page traffic
-// must not turn one bad execution into a stream of billed reads.
+// How long to remember that an execution's results failed validation before
+// trying it again. Every attempt pages through Dune, so page traffic must not
+// turn one bad execution into a stream of billed reads. Only validation
+// failures are remembered: an execution's results never change, so neither
+// does that verdict. A failed request (timeout, 429, 5xx) says nothing about
+// the execution and is retried on the next refresh.
 const FAILURE_RETRY_SECONDS = 60 * 60;
 
 type HistoryOutcome = { stats: BuybackStats } | { failure: string };
@@ -53,16 +60,18 @@ const getStatsForExecution = unstable_cache(
 );
 
 /**
- * What reading an execution produced, failures included. A thrown read is
- * never cached, so without this every request would retry an unusable
- * execution; here the failure is remembered for an hour, and a success is
- * served from the week-long history cache underneath.
+ * What reading an execution produced, validation failures included. A thrown
+ * read is never cached, so without this every request would retry an unusable
+ * execution; here that verdict is remembered for an hour, and a success is
+ * served from the week-long history cache underneath. Request failures are
+ * rethrown, so they are not cached and the next refresh tries again.
  */
 const getHistoryOutcome = unstable_cache(
   async (executionId: string): Promise<HistoryOutcome> => {
     try {
       return { stats: await getStatsForExecution(executionId) };
     } catch (error) {
+      if (error instanceof DuneRequestError) throw error;
       logger.error(`Buyback stats: Dune execution ${executionId} is unusable`, error);
       return { failure: errorToString(error) };
     }

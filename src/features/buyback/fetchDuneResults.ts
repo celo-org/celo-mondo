@@ -16,6 +16,21 @@ const MAX_PAGES = MAX_ROWS / PAGE_SIZE;
 const FETCH_TIMEOUT_MS = 30_000;
 const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 
+/**
+ * A request to Dune that did not get a usable answer: a network failure, a
+ * timeout or a non-2xx status. Unlike a validation failure, this says nothing
+ * about the execution itself and is worth retrying soon.
+ */
+export class DuneRequestError extends Error {
+  constructor(
+    message: string,
+    readonly status: number | null,
+  ) {
+    super(message);
+    this.name = 'DuneRequestError';
+  }
+}
+
 const amount = z.number().finite();
 // Columns the query fills through a LEFT JOIN are null on a day with no such
 // cost (or price) row. Every other column is a sum and always has a value.
@@ -191,14 +206,22 @@ export async function fetchDuneFeeRows(
  * read as a valid dashboard of zeros.
  */
 async function fetchPage(url: string, apiKey: string, queryId: number): Promise<DunePage> {
-  const response = await fetch(url, {
-    headers: { 'X-Dune-API-Key': apiKey },
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: { 'X-Dune-API-Key': apiKey },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+  } catch (error) {
+    throw new DuneRequestError(`Dune API unreachable: ${String(error)}`, null);
+  }
 
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`Dune API ${response.status}: ${body.slice(0, 200)}`);
+    throw new DuneRequestError(
+      `Dune API ${response.status}: ${body.slice(0, 200)}`,
+      response.status,
+    );
   }
 
   const data = (await response.json()) as DuneResultsResponse;

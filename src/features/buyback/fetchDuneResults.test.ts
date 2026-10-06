@@ -4,6 +4,7 @@ import fanOutRows from './__fixtures__/duneEigenDaFanOutRows.json';
 import realRows from './__fixtures__/duneFeeRows.json';
 import {
   CELO_PNL_QUERY_ID,
+  DuneRequestError,
   fetchDuneFeeRows,
   fetchLatestExecution,
   parseDuneFeeRows,
@@ -299,13 +300,31 @@ describe('fetchDuneFeeRows', () => {
   });
 
   describe('refuses anything short of a complete, completed history', () => {
-    it('surfaces HTTP errors such as the 402 datapoint cap with the response body', async () => {
+    it('surfaces HTTP errors such as the 402 datapoint cap as request errors with the body', async () => {
       fetchMock.mockResolvedValueOnce(
         new Response('{"error":"Payment Required: datapoints limit exceeded"}', { status: 402 }),
       );
-      await expect(fetchDuneFeeRows('k')).rejects.toThrow(
+      const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(DuneRequestError);
+      expect((error as DuneRequestError).status).toBe(402);
+      expect((error as Error).message).toBe(
         'Dune API 402: {"error":"Payment Required: datapoints limit exceeded"}',
       );
+    });
+
+    it('reports a network failure or timeout as a request error, not a bad execution', async () => {
+      fetchMock.mockRejectedValueOnce(new DOMException('The operation timed out', 'TimeoutError'));
+      const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(DuneRequestError);
+      expect((error as DuneRequestError).status).toBeNull();
+      expect((error as Error).message).toContain('unreachable');
+    });
+
+    it('does not label a validation failure as a request error', async () => {
+      fetchMock.mockResolvedValueOnce(page([row('2026-05-01')], 543));
+      const error = await fetchDuneFeeRows('k').catch((e: unknown) => e);
+      expect(error).not.toBeInstanceOf(DuneRequestError);
+      expect((error as Error).message).toContain('Dune returned 1 of 543 rows');
     });
 
     it.each([
