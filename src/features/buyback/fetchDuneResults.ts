@@ -127,6 +127,7 @@ interface DuneResultsResponse {
   /** Terminal state of the execution the results belong to. */
   state?: unknown;
   execution_id?: unknown;
+  submitted_at?: unknown;
   execution_started_at?: unknown;
   execution_ended_at?: unknown;
   /** Offset of the next page; absent on the last page. */
@@ -139,6 +140,7 @@ interface DunePage {
   rows: DuneFeeRow[];
   state: string;
   executionId: string | null;
+  submittedAt: string | null;
   executionStartedAt: string | null;
   executionEndedAt: string | null;
   totalRowCount: number | null;
@@ -150,7 +152,12 @@ export interface DuneExecution {
   executionId: string;
   /** Its state as Dune reports it; only a completed execution has results. */
   state: string;
-  /** When Dune started that execution (ISO timestamp), if known. */
+  /** When the execution was requested (ISO timestamp), if known. */
+  submittedAt: string | null;
+  /**
+   * When Dune started running it (ISO timestamp), if known. An execution
+   * still pending, waiting for a slot, has none yet.
+   */
   executionStartedAt: string | null;
   /** When it finished (ISO timestamp), if known. */
   executionEndedAt: string | null;
@@ -187,6 +194,7 @@ export async function fetchLatestExecution(
   return {
     executionId: page.executionId,
     state: page.state,
+    submittedAt: page.submittedAt,
     executionStartedAt: page.executionStartedAt,
     executionEndedAt: page.executionEndedAt,
   };
@@ -294,6 +302,7 @@ function pageFrom(data: DuneResultsResponse, state: string, rows: DuneFeeRow[]):
     rows,
     state,
     executionId: text(data.execution_id),
+    submittedAt: text(data.submitted_at),
     executionStartedAt: text(data.execution_started_at),
     executionEndedAt: text(data.execution_ended_at),
     totalRowCount: typeof totalRowCount === 'number' ? totalRowCount : null,

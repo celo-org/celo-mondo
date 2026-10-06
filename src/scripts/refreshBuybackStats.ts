@@ -6,7 +6,11 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from 'src/db/schema';
 import { buybackStatsTable } from 'src/db/schema';
-import { computeBuybackStats, parseUtcTimestamp } from 'src/features/buyback/computeStats';
+import {
+  computeBuybackStats,
+  parseUtcTimestamp,
+  usableExecutionStart,
+} from 'src/features/buyback/computeStats';
 import {
   DuneWaitTimeoutError,
   executeDuneQuery,
@@ -81,46 +85,61 @@ export function planRefresh(
   if (latest === null) {
     return { kind: 'execute', reason: 'the latest execution could not be read' };
   }
-  const { executionId, state, executionStartedAt } = latest;
-  // Dune's own timestamp decides. One that is malformed, or from the future
-  // (a clock or metadata glitch), must not stand in for a real execution and
-  // suppress the refresh.
-  const started = parseUtcTimestamp(executionStartedAt);
-  if (started === null) {
-    return { kind: 'execute', reason: `execution ${executionId} has no usable start time` };
-  }
-  const rawAgeSeconds = (now.getTime() - started.getTime()) / 1000;
-  if (rawAgeSeconds < -CLOCK_SKEW_SECONDS) {
+  const { executionId, state } = latest;
+  const pending = PENDING_STATES.has(state);
+  // Dune's own timestamp decides: the start of the execution, or, for one
+  // still pending (waiting for a slot, so not started yet), its submission.
+  const reference = pending
+    ? (latest.executionStartedAt ?? latest.submittedAt)
+    : latest.executionStartedAt;
+  const referenceTime = parseUtcTimestamp(reference);
+  const rawAgeSeconds =
+    referenceTime === null ? Number.NaN : (now.getTime() - referenceTime.getTime()) / 1000;
+  // A timestamp that is malformed, missing or from the future (a clock or
+  // metadata glitch) must not stand in for a real execution: a completed
+  // one is not reused on its strength. A pending one is simply waited for;
+  // the wait is bounded and replaces it if it never finishes.
+  if (referenceTime === null || rawAgeSeconds < -CLOCK_SKEW_SECONDS) {
+    if (pending) {
+      return {
+        kind: 'await',
+        executionId,
+        reason: `Dune is already running the query (execution ${executionId}, ${state}, timestamp ${reference ?? 'missing'})`,
+      };
+    }
     return {
       kind: 'execute',
-      reason: `Dune reports an execution started in the future (${executionStartedAt})`,
+      reason:
+        referenceTime === null
+          ? `execution ${executionId} has no usable start time`
+          : `Dune reports an execution started in the future (${reference})`,
     };
   }
   const ageSeconds = Math.max(0, rawAgeSeconds);
-  const startedIso = started.toISOString();
+  const referenceIso = referenceTime.toISOString();
   const afterTodaysRefresh =
-    startedIso.slice(0, 10) === now.toISOString().slice(0, 10) &&
-    startedIso.slice(11, 19) >= REFRESH_TIME_UTC;
+    referenceIso.slice(0, 10) === now.toISOString().slice(0, 10) &&
+    referenceIso.slice(11, 19) >= REFRESH_TIME_UTC;
   const recent = ageSeconds < RECENT_SECONDS;
 
-  if (PENDING_STATES.has(state)) {
+  if (pending) {
     if (!recent) {
       return {
         kind: 'execute',
-        reason: `execution ${executionId} has been ${state} since ${executionStartedAt} and looks stuck`,
+        reason: `execution ${executionId} has been ${state} since ${reference} and looks stuck`,
       };
     }
     if (afterTodaysRefresh || !scheduled) {
       return {
         kind: 'await',
         executionId,
-        reason: `Dune is already running the query (execution ${executionId}, started ${executionStartedAt})`,
+        reason: `Dune is already running the query (execution ${executionId}, ${state} since ${reference})`,
       };
     }
     return {
       kind: 'await-then-execute',
       executionId,
-      reason: `execution ${executionId} started ${executionStartedAt}, before today's refresh time`,
+      reason: `execution ${executionId} has been ${state} since ${reference}, before today's refresh time`,
     };
   }
   if (state === COMPLETED_STATE) {
@@ -128,19 +147,19 @@ export function planRefresh(
       return {
         kind: 'use',
         executionId,
-        reason: `Dune already executed the query today at ${executionStartedAt}, after the scheduled time`,
+        reason: `Dune already executed the query today at ${reference}, after the scheduled time`,
       };
     }
     if (!scheduled && recent) {
       return {
         kind: 'use',
         executionId,
-        reason: `Dune executed the query at ${executionStartedAt}, less than ${RECENT_SECONDS}s ago (set force to run anyway)`,
+        reason: `Dune executed the query at ${reference}, less than ${RECENT_SECONDS}s ago (set force to run anyway)`,
       };
     }
     return {
       kind: 'execute',
-      reason: `the latest execution (${executionId}) started ${executionStartedAt}`,
+      reason: `the latest execution (${executionId}) started ${reference}`,
     };
   }
   return { kind: 'execute', reason: `the latest execution (${executionId}) ended as ${state}` };
@@ -246,16 +265,24 @@ export async function refreshBuybackStats({
     queryId,
     executionId,
   );
-  const stats = computeBuybackStats(rows, {
-    executionStartedAt,
-    executionEndedAt,
-    now: clock(),
-  });
+  const timing = { executionStartedAt, executionEndedAt, now: clock() };
+  const stats = computeBuybackStats(rows, timing);
   log(
     `Computed stats from ${rows.length} daily rows of execution ${executionId}: ` +
       `${stats.sinceDay} to ${stats.latestDay}, ${stats.totals.celoToCommunityFund.toFixed(0)} CELO accrued`,
   );
-  await storeStats(databases, { executionId, executedAt: stats.updatedAt, stats }, log);
+  await storeStats(
+    databases,
+    {
+      executionId,
+      // Snapshots are ordered by when they were taken; without a usable
+      // start time the execution's own freshness timestamp stands in.
+      startedAt: usableExecutionStart(timing) ?? stats.updatedAt,
+      executedAt: stats.updatedAt,
+      stats,
+    },
+    log,
+  );
   return stats;
 }
 
@@ -280,6 +307,7 @@ async function storeStats(
         .onConflictDoUpdate({
           target: buybackStatsTable.executionId,
           set: {
+            startedAt: row.startedAt,
             executedAt: row.executedAt,
             stats: row.stats,
             computedAt: new Date().toISOString(),

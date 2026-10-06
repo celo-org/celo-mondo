@@ -25,7 +25,8 @@ const execution = (
   executionStartedAt: string | null,
   executionId = '01EXEC',
   executionEndedAt: string | null = null,
-) => ({ executionId, state, executionStartedAt, executionEndedAt });
+  submittedAt: string | null = null,
+) => ({ executionId, state, submittedAt, executionStartedAt, executionEndedAt });
 
 describe('planRefresh', () => {
   it('executes when forced, whatever Dune has', () => {
@@ -81,9 +82,11 @@ describe('planRefresh', () => {
       kind: 'execute',
       reason: expect.stringContaining('in the future'),
     });
+    // A running one is waited for instead: the wait is bounded, and a run
+    // that never finishes is replaced.
     expect(
       planRefresh(execution('QUERY_STATE_EXECUTING', '2026-09-18T05:45:01Z'), manual).kind,
-    ).toBe('execute');
+    ).toBe('await');
   });
 
   it('reads a start time a few seconds ahead of its own clock as just now', () => {
@@ -117,6 +120,33 @@ describe('planRefresh', () => {
     });
     // A manual run queued behind it is a duplicate of it, not the day's refresh.
     expect(planRefresh(early, manual)).toMatchObject({ kind: 'await', executionId: '01EXEC' });
+  });
+
+  it('ages a pending execution, which has not started yet, from its submission', () => {
+    const pendingSince = (submittedAt: string) =>
+      execution('QUERY_STATE_PENDING', null, '01QUEUED', null, submittedAt);
+    // Queued right after the scheduled time: it is the day's refresh.
+    expect(planRefresh(pendingSince('2026-09-18T05:30:02Z'), scheduled)).toMatchObject({
+      kind: 'await',
+      executionId: '01QUEUED',
+    });
+    // Queued before it: let it finish, then refresh.
+    expect(planRefresh(pendingSince('2026-09-18T05:20:00Z'), scheduled)).toMatchObject({
+      kind: 'await-then-execute',
+      executionId: '01QUEUED',
+    });
+    // Queued for longer than a refresh takes: stuck.
+    expect(planRefresh(pendingSince('2026-09-18T04:00:00Z'), scheduled).kind).toBe('execute');
+  });
+
+  it('waits for a pending execution even without any usable timestamp', () => {
+    for (const submittedAt of [null, 'soon', '2026-09-18T07:00:00Z']) {
+      const queued = execution('QUERY_STATE_PENDING', null, '01QUEUED', null, submittedAt);
+      expect(planRefresh(queued, scheduled)).toMatchObject({
+        kind: 'await',
+        executionId: '01QUEUED',
+      });
+    }
   });
 
   it('does not wait for a run that has been going for longer than a refresh takes', () => {
@@ -256,12 +286,25 @@ describe('refreshBuybackStats', () => {
     const stored = await storedRows();
     expect(stored).toHaveLength(1);
     expect(stored[0].executionId).toBe('01NEW');
+    expect(new Date(stored[0].startedAt).toISOString()).toBe(new Date(startedAt).toISOString());
     expect(new Date(stored[0].executedAt).toISOString()).toBe(new Date(endedAt).toISOString());
     expect(stored[0].stats).toEqual(JSON.parse(JSON.stringify(expected)));
     // Probe, execute, two status polls, then the pages of 100 rows.
     expect(fetchMock).toHaveBeenCalledTimes(1 + 1 + 2 + Math.ceil(rows.length / 100));
     expect(log).toHaveBeenCalledWith(expect.stringContaining('Plan: execute'));
     expect(log).toHaveBeenCalledWith('Dune execution 01NEW completed');
+  });
+
+  it('orders the snapshot by its freshness time when Dune reports no usable start', async () => {
+    serve({
+      ...yesterdays,
+      ...executeNew,
+      ...newCompletes,
+      ...pagesOf('01NEW', rows, { execution_started_at: undefined }),
+    });
+    await refresh();
+    const [stored] = await storedRows();
+    expect(new Date(stored.startedAt).toISOString()).toBe(new Date(endedAt).toISOString());
   });
 
   it('stores the figures in every database and reports a failing one after the others', async () => {

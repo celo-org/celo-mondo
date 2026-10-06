@@ -195,10 +195,16 @@ export const buybackStatsTable = pgTable(
   'buyback_stats',
   {
     executionId: text().primaryKey(),
-    /** When Dune executed the query these figures come from (the stats' updatedAt). */
+    /**
+     * When Dune started the execution: the moment its snapshot of the chain
+     * was taken, so the newest snapshot is the one started last, even when
+     * two executions overlap and finish out of order.
+     */
+    startedAt: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    /** When Dune finished it (the stats' updatedAt, shown as the refresh time). */
     executedAt: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
     stats: jsonb().$type<BuybackStats>().notNull(),
     computedAt: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
-  (table) => [index().on(table.executedAt.desc())],
+  (table) => [index().on(table.startedAt.desc())],
 );

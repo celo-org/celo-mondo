@@ -21,8 +21,15 @@ const stats = computeBuybackStats(rows, {
   now: new Date('2026-09-18T06:00:00.000Z'),
 });
 
-function store(executionId: string, executedAt: string, figures: BuybackStats) {
-  return testDatabase.insert(buybackStatsTable).values({ executionId, executedAt, stats: figures });
+function store(
+  executionId: string,
+  startedAt: string,
+  figures: BuybackStats,
+  executedAt = figures.updatedAt,
+) {
+  return testDatabase
+    .insert(buybackStatsTable)
+    .values({ executionId, startedAt, executedAt, stats: figures });
 }
 
 async function get() {
@@ -47,7 +54,7 @@ describe('GET /api/buyback', () => {
   });
 
   it('serves the stored figures of the newest execution, uncached', async () => {
-    await store('01EXEC', executionEndedAt, stats);
+    await store('01EXEC', executionStartedAt, stats);
 
     const response = await get();
 
@@ -66,10 +73,12 @@ describe('GET /api/buyback', () => {
     expect(body.totals.celoToCommunityFund).toBeGreaterThan(0);
   });
 
-  it('picks the execution Dune ran last, not the row stored last', async () => {
+  it('picks the execution Dune started last, not the one stored or finished last', async () => {
+    // Two overlapping executions: the one started later took its snapshot
+    // later, even though the earlier one finished after it.
     const newer = { ...stats, updatedAt: '2026-09-18T05:31:20.000000Z', latestDay: '2026-09-17' };
-    await store('01NEWER', newer.updatedAt, newer);
-    await store('01OLDER', executionEndedAt, stats);
+    await store('01NEWER', '2026-09-18T05:31:00.000000Z', newer);
+    await store('01OLDER', '2026-09-18T05:30:00.000000Z', stats, '2026-09-18T05:45:00.000000Z');
 
     const body = await (await get()).json();
     expect(body.updatedAt).toBe(newer.updatedAt);

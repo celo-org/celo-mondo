@@ -5,7 +5,8 @@ import { logger } from 'src/utils/logger';
 
 // Run the handler on every request: the figures live in the database, where
 // the daily refresh (src/scripts/refreshBuybackStats.ts) stores a row per Dune
-// execution, and the newest one is served. Nothing here talks to Dune.
+// execution, and the one started last is served: that is the newest snapshot
+// of the chain, whichever execution finished last. Nothing here talks to Dune.
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
@@ -13,7 +14,7 @@ export async function GET() {
     const [row] = await database
       .select({ stats: buybackStatsTable.stats })
       .from(buybackStatsTable)
-      .orderBy(desc(buybackStatsTable.executedAt))
+      .orderBy(desc(buybackStatsTable.startedAt))
       .limit(1);
     if (!row) {
       logger.warn('Buyback stats requested before any refresh stored them');

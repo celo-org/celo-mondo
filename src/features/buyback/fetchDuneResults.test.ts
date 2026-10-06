@@ -101,6 +101,7 @@ describe('fetchLatestExecution', () => {
     fetchMock.mockResolvedValueOnce(
       page([row('2026-09-16')], 558, {
         next_offset: 1,
+        submitted_at: '2026-09-17T16:29:40.000000Z',
         execution_started_at: '2026-09-17T16:29:45.379407Z',
         execution_ended_at: '2026-09-17T16:29:54.146577Z',
       }),
@@ -109,6 +110,7 @@ describe('fetchLatestExecution', () => {
     expect(latest).toEqual({
       executionId: '01EXEC',
       state: 'QUERY_STATE_COMPLETED',
+      submittedAt: '2026-09-17T16:29:40.000000Z',
       executionStartedAt: '2026-09-17T16:29:45.379407Z',
       executionEndedAt: '2026-09-17T16:29:54.146577Z',
     });
@@ -135,6 +137,23 @@ describe('fetchLatestExecution', () => {
       fetchMock.mockResolvedValueOnce(page([], 0, { state, result: undefined }));
       expect(await fetchLatestExecution('k')).toMatchObject({ executionId: '01EXEC', state });
     }
+  });
+
+  it('reports a pending execution with its submission time and no start time', async () => {
+    fetchMock.mockResolvedValueOnce(
+      page([], 0, {
+        state: 'QUERY_STATE_PENDING',
+        result: undefined,
+        submitted_at: '2026-09-18T05:30:02.000000Z',
+      }),
+    );
+    expect(await fetchLatestExecution('k')).toEqual({
+      executionId: '01EXEC',
+      state: 'QUERY_STATE_PENDING',
+      submittedAt: '2026-09-18T05:30:02.000000Z',
+      executionStartedAt: null,
+      executionEndedAt: null,
+    });
   });
 });
 

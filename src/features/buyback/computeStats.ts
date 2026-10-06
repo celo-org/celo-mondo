@@ -270,6 +270,16 @@ function usableTimestamps(options: ComputeBuybackStatsOptions): string[] {
   );
 }
 
+/**
+ * When Dune started the execution, if that timestamp is usable (see
+ * `usableTimestamps`): the moment the snapshot of the chain was taken, which
+ * orders snapshots even when two executions overlap and finish out of order.
+ */
+export function usableExecutionStart(options: ComputeBuybackStatsOptions): string | null {
+  const started = options.executionStartedAt;
+  return started && usableTimestamps(options).includes(started) ? started : null;
+}
+
 /** The UTC day Dune took its snapshot on, when it reports a usable execution time. */
 function snapshotDayOf(options: ComputeBuybackStatsOptions): string | null {
   const usable = usableTimestamps(options);

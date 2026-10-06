@@ -25,11 +25,15 @@ on:
         default: false
 
 # One run at a time: two overlapping runs would both decide to execute before
-# either execution finished, then both would start a billed execution. The
-# second waits and sees the first one's result.
+# either execution finished, then both would start a billed execution. Later
+# runs queue up (every one of them, not only the newest: a manual dispatch
+# must not displace a pending scheduled run, which is the only one that
+# refuses to reuse an execution from before the scheduled time) and each
+# sees the previous run's execution.
 concurrency:
   group: refresh-buyback-stats
   cancel-in-progress: false
+  queue: max
 
 jobs:
   install:
