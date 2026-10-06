@@ -50,8 +50,11 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // or two in a result may still be unpriced. A longer unpriced tail with activity
 // is a broken price join, not lag, and dropping it would hide real revenue.
 const MAX_UNPRICED_TAIL_DAYS = 2;
-// A calendar day, alone or followed by a time (Dune appends " 00:00:00.000 UTC").
-const DAY_PATTERN = /^(\d{4}-\d{2}-\d{2})(?:$|[ T])/;
+// A calendar day as Dune writes one: bare, in its result format
+// ("2026-06-18 00:00:00.000 UTC") or as an ISO UTC timestamp. Nothing else:
+// a value in another zone could belong to a different UTC day.
+const DAY_PATTERN =
+  /^(\d{4}-\d{2}-\d{2})(?:$|(?: |T)(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?: UTC|Z|\+00:00)$)/;
 
 function num(value: number | string | null | undefined): number {
   if (value === null || value === undefined || value === '') return 0;
@@ -80,6 +83,10 @@ export function nextUtcDay(day: string): string {
 export function parseDay(day: string | null | undefined): string {
   const match = DAY_PATTERN.exec(day ?? '');
   if (!match) return '';
+  const [, , hours, minutes, seconds] = match;
+  if (hours !== undefined && (Number(hours) > 23 || Number(minutes) > 59 || Number(seconds) > 59)) {
+    return '';
+  }
   const date = new Date(`${match[1]}T00:00:00Z`);
   // The round trip rejects impossible dates the Date parser would roll over.
   return !Number.isNaN(date.getTime()) && toUtcDay(date) === match[1] ? match[1] : '';

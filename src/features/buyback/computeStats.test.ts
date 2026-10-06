@@ -228,9 +228,23 @@ describe('parseDay', () => {
     expect(parseDay(null)).toBe('');
   });
 
-  it('accepts a day followed by a time in either common form', () => {
+  it('accepts a day followed by a UTC time in the forms Dune emits', () => {
     expect(parseDay('2026-06-18T00:00:00Z')).toBe('2026-06-18');
+    expect(parseDay('2026-06-18T00:00:00.000+00:00')).toBe('2026-06-18');
     expect(parseDay('2028-02-29 00:00:00.000 UTC')).toBe('2028-02-29');
+  });
+
+  it.each([
+    '2026-05-01 garbage',
+    '2026-05-01T23:30:00-02:00',
+    '2026-05-01T23:30:00+02:00',
+    '2026-05-01 00:00:00.000 CET',
+    '2026-05-01 00:00:00.000',
+    '2026-05-01T00:00:00',
+    '2026-05-01T24:00:00Z',
+    '2026-05-01 00:60:00.000 UTC',
+  ])('rejects %j: a day with a suffix that is not a UTC time', (value) => {
+    expect(parseDay(value)).toBe('');
   });
 
   it('rejects anything that is not a calendar day', () => {
