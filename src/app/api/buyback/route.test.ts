@@ -46,7 +46,7 @@ async function get() {
 }
 
 describe('GET /api/buyback', () => {
-  it('caches a cheap execution probe for 15 minutes and each history for a week', async () => {
+  it('caches each history for a week and the served stats, probed every 15 minutes', async () => {
     const route = await import('./route');
     expect(route.dynamic).toBe('force-dynamic');
     expect(unstableCache).toHaveBeenCalledTimes(2);
@@ -54,8 +54,8 @@ describe('GET /api/buyback', () => {
       unstableCache.mock.calls as unknown as [unknown, string[], { revalidate: number }][]
     ).map(([, keyParts, options]) => [keyParts, options]);
     expect(configs).toEqual([
-      [['buyback-latest-execution'], { revalidate: 15 * 60 }],
       [['buyback-stats'], { revalidate: 7 * 24 * 60 * 60 }],
+      [['buyback-served-stats'], { revalidate: 15 * 60 }],
     ]);
   });
 

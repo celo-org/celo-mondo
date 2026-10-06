@@ -24,26 +24,6 @@ function getDuneApiKey(): string | undefined {
 }
 
 /**
- * Which execution Dune currently serves, cached across requests and server
- * instances, so page visits and React Query refetches share one cheap probe.
- *
- * A failed probe is never stored. With nothing cached yet it surfaces as an
- * error; once an entry exists, Next serves it while refreshing in the
- * background and keeps it if that refresh fails, so an outage shows the last
- * good figures. Their age stays visible: `updatedAt` is Dune's execution time
- * and the page flags data that has gone stale.
- */
-const getLatestExecution = unstable_cache(
-  async () => {
-    const apiKey = getDuneApiKey();
-    if (!apiKey) throw new Error('DUNE_API_KEY not configured');
-    return fetchLatestExecution(apiKey);
-  },
-  ['buyback-latest-execution'],
-  { revalidate: PROBE_SECONDS },
-);
-
-/**
  * The full history of one execution plus the P&L computation. Keyed by the
  * execution id, so Dune is paged through once per daily execution rather than
  * once per cache expiry.
@@ -65,6 +45,30 @@ const getStatsForExecution = unstable_cache(
   { revalidate: HISTORY_SECONDS },
 );
 
+/**
+ * The stats to serve: a cheap one-row probe for the execution Dune currently
+ * serves, then that execution's stats. Cached across requests and server
+ * instances, so page visits and React Query refetches share one probe.
+ *
+ * A failure is never stored. With nothing cached yet it surfaces as an error;
+ * once an entry exists, Next serves it while refreshing in the background and
+ * keeps it if that refresh fails. A new execution therefore replaces the
+ * served figures only once its history has been read and validated; if it
+ * cannot be, the last good figures stay up. Their age stays visible:
+ * `updatedAt` is Dune's execution time and the page flags data that has gone
+ * stale.
+ */
+const getServedStats = unstable_cache(
+  async (): Promise<BuybackStats> => {
+    const apiKey = getDuneApiKey();
+    if (!apiKey) throw new Error('DUNE_API_KEY not configured');
+    const latest = await fetchLatestExecution(apiKey);
+    return getStatsForExecution(latest.executionId);
+  },
+  ['buyback-served-stats'],
+  { revalidate: PROBE_SECONDS },
+);
+
 export async function GET() {
   if (!getDuneApiKey()) {
     logger.warn('Buyback stats requested but DUNE_API_KEY is not configured');
@@ -73,8 +77,7 @@ export async function GET() {
 
   try {
     logger.debug('Buyback stats request received');
-    const latest = await getLatestExecution();
-    return Response.json(await getStatsForExecution(latest.executionId));
+    return Response.json(await getServedStats());
   } catch (error) {
     // Keep Dune's response out of the public body; the detail is in the log.
     logger.error('Buyback stats error', error);
