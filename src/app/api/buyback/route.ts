@@ -1,199 +1,96 @@
 import { revalidateTag, unstable_cache } from 'next/cache';
 import { computeBuybackStats } from 'src/features/buyback/computeStats';
-import {
-  DuneRequestError,
-  fetchDuneFeeRows,
-  fetchLatestExecution,
-} from 'src/features/buyback/fetchDuneResults';
+import { fetchDuneFeeRows, fetchLatestExecution } from 'src/features/buyback/fetchDuneResults';
 import { BuybackStats } from 'src/features/buyback/types';
 import { logger } from 'src/utils/logger';
-import { errorToString } from 'src/utils/strings';
 
 // Run the handler on every request. A `revalidate` export only caches a GET
 // handler that can be prerendered at build time, and a build without the Dune
 // key answers 503, which Next refuses to prerender and so leaves the route
-// uncached. The shared caches are the explicit data caches below instead.
+// uncached. What is shared across requests and server instances is the Data
+// Cache: Dune responses by URL, and one last-good result.
 export const dynamic = 'force-dynamic';
 
-// How often to ask Dune (one row, a few datapoints) whether a new execution
-// has landed. The query is re-executed once a day, so this bounds the delay
-// between a refresh and the page showing it.
-const PROBE_SECONDS = 15 * 60;
-// A history read for one execution never changes, so it is kept until long
-// after the next daily execution has replaced it.
+// How long a probe of the latest results (one row, a few datapoints) is kept.
+// The query is re-executed once a day, so this bounds the delay between a
+// refresh and the page showing it.
+const PROBE_SECONDS = 5 * 60;
+// A page of one execution's results never changes, so it is kept until long
+// after the next daily execution has replaced it. A re-read of an execution,
+// for any reason, then costs nothing.
 const HISTORY_SECONDS = 7 * 24 * 60 * 60;
-// How long to remember that an execution's results failed validation before
-// trying it again. Every attempt pages through Dune, so page traffic must not
-// turn one bad execution into a stream of billed reads. Only validation
-// failures are remembered this long: an execution's results never change, so
-// neither does that verdict.
-const VERDICT_SECONDS = 60 * 60;
-// How long to remember a failed request (timeout, 429, 5xx) before asking
-// Dune again. Such a failure says nothing about the execution, so it is
-// retried soon, but not on every request: while Dune is down, each attempt
-// re-downloads every page that did succeed.
-const TRANSIENT_SECONDS = 5 * 60;
-// Entries are keyed by the time bucket they fall in rather than refreshed in
-// the background: an entry answers every request in its bucket, including
-// with a remembered failure, and the first request of the next bucket
-// refreshes in the foreground. A background refresh would hand that request
-// the previous answer and delay a new execution by one more cycle.
-const bucketOf = (now: number, seconds: number) => String(Math.floor(now / (seconds * 1000)));
 
-// Part of every cache key. The Data Cache outlives a deployment and keys on
-// the cached function's own source, not on what it imports, so a change to the
-// computation or the row schema would otherwise keep serving figures produced
-// by the previous code until the week-long entry expired.
+// Part of the last-good key. The Data Cache outlives a deployment and keys a
+// cached function on its own source, not on what it imports, so a change to
+// the computation or the row schema would otherwise keep serving figures
+// produced by the previous code.
 const DEPLOYMENT = process.env.VERCEL_GIT_COMMIT_SHA ?? 'local';
-
-/** A deterministic verdict on an execution: its figures, or why they are unusable. */
-type HistoryVerdict = { stats: BuybackStats } | { failure: string };
-/** What an attempt produced: a verdict, or a request failure to retry soon. */
-type Attempt<T> = T | { transient: string };
+const LAST_GOOD_TAG = `buyback-last-good-${DEPLOYMENT}`;
 
 /** The configured Dune key, or undefined when it is unset or blank. */
-function getDuneApiKey(): string {
-  const apiKey = process.env.DUNE_API_KEY?.trim();
+function getDuneApiKey(): string | undefined {
+  return process.env.DUNE_API_KEY?.trim() || undefined;
+}
+
+/**
+ * The current figures: the execution Dune currently serves, its history, and
+ * the P&L. Every Dune response comes through the Data Cache, so a request
+ * costs Dune nothing unless the probe is older than five minutes or the
+ * execution is new, and a request failure part-way leaves the pages that did
+ * succeed in place. The computation itself is cheap and runs per request,
+ * which keeps this a plain function: Next does not cache a cached function
+ * called from inside another one.
+ */
+async function computeFreshStats(): Promise<BuybackStats> {
+  const apiKey = getDuneApiKey();
   if (!apiKey) throw new Error('DUNE_API_KEY not configured');
-  return apiKey;
+
+  const latest = await fetchLatestExecution(apiKey, undefined, { cacheSeconds: PROBE_SECONDS });
+  const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows(
+    apiKey,
+    undefined,
+    latest.executionId,
+    { cacheSeconds: HISTORY_SECONDS },
+  );
+  logger.debug(`Buyback stats computed from ${rows.length} daily rows of ${latest.executionId}`);
+  return computeBuybackStats(rows, { executionStartedAt, executionEndedAt });
 }
-
-/** Catch a failed request into a value that can be cached for a short while. */
-async function attempt<T>(run: () => Promise<T>, what: string): Promise<Attempt<T>> {
-  try {
-    return await run();
-  } catch (error) {
-    if (!(error instanceof DuneRequestError)) throw error;
-    logger.warn(`Buyback stats: ${what} failed, will retry in ${TRANSIENT_SECONDS}s`, error);
-    return { transient: errorToString(error) };
-  }
-}
-
-/**
- * The full history of one execution plus the P&L computation. Keyed by the
- * execution id, so Dune is paged through once per daily execution rather than
- * once per cache expiry.
- */
-const getStatsForExecution = unstable_cache(
-  async (executionId: string): Promise<BuybackStats> => {
-    const { rows, executionStartedAt, executionEndedAt } = await fetchDuneFeeRows(
-      getDuneApiKey(),
-      undefined,
-      executionId,
-    );
-    logger.debug(`Buyback stats computed from ${rows.length} daily rows of ${executionId}`);
-    return computeBuybackStats(rows, { executionStartedAt, executionEndedAt });
-  },
-  ['buyback-stats', DEPLOYMENT],
-  { revalidate: HISTORY_SECONDS },
-);
-
-/**
- * The verdict on an execution, validation failures included. A thrown read is
- * never cached, so without this every request would retry an unusable
- * execution; here that verdict is remembered for an hour, and a success is
- * served from the week-long history cache underneath. Request failures are
- * rethrown: they are not a verdict.
- */
-const getHistoryVerdict = unstable_cache(
-  async (executionId: string): Promise<HistoryVerdict> => {
-    try {
-      return { stats: await getStatsForExecution(executionId) };
-    } catch (error) {
-      if (error instanceof DuneRequestError) throw error;
-      logger.error(`Buyback stats: Dune execution ${executionId} is unusable`, error);
-      return { failure: errorToString(error) };
-    }
-  },
-  ['buyback-history-verdict', DEPLOYMENT],
-  { revalidate: VERDICT_SECONDS },
-);
-
-/** One attempt at the verdict per time bucket while requests to Dune fail. */
-const getHistoryOutcome = unstable_cache(
-  (executionId: string, bucket: string) =>
-    attempt(
-      () => getHistoryVerdict(executionId),
-      `reading execution ${executionId} (bucket ${bucket})`,
-    ),
-  ['buyback-history-attempt', DEPLOYMENT],
-  { revalidate: TRANSIENT_SECONDS },
-);
-
-/** One probe per time bucket for the execution Dune currently serves. */
-const getLatestExecutionOutcome = unstable_cache(
-  (bucket: string) =>
-    attempt(
-      () => fetchLatestExecution(getDuneApiKey()),
-      `probing the latest execution (bucket ${bucket})`,
-    ),
-  ['buyback-probe-attempt', DEPLOYMENT],
-  { revalidate: TRANSIENT_SECONDS },
-);
-
-/**
- * The current stats: a cheap one-row probe for the execution Dune currently
- * serves, then that execution's stats. Cached across requests and server
- * instances per 15-minute bucket, so page visits and React Query refetches
- * share one probe, and the first request of a bucket sees a new execution at
- * once rather than one cycle later.
- *
- * A failure is never stored here; it surfaces as an error for the request
- * that hit it, and the next request in the bucket tries again (cheaply: the
- * attempt caches above remember what failed). A new execution replaces the
- * served figures only once its history has been read and validated.
- */
-const getFreshStats = unstable_cache(
-  async (servedBucket: string): Promise<BuybackStats> => {
-    const bucket = bucketOf(Date.now(), TRANSIENT_SECONDS);
-    const probe = await getLatestExecutionOutcome(bucket);
-    if ('transient' in probe) throw new Error(`Dune probe failed: ${probe.transient}`);
-    const outcome = await getHistoryOutcome(probe.executionId, bucket);
-    if ('transient' in outcome) {
-      throw new Error(
-        `Dune execution ${probe.executionId} could not be read: ${outcome.transient}`,
-      );
-    }
-    if ('failure' in outcome) {
-      throw new Error(`Dune execution ${probe.executionId} is unusable: ${outcome.failure}`);
-    }
-    logger.debug(`Buyback stats served for bucket ${servedBucket} from ${probe.executionId}`);
-    return outcome.stats;
-  },
-  ['buyback-fresh-stats', DEPLOYMENT],
-  { revalidate: PROBE_SECONDS },
-);
-
-const LAST_GOOD_TAG = `buyback-last-good-${DEPLOYMENT}`;
 
 /**
  * The last figures that were served, kept without expiry so that an outage
  * or an unusable new execution shows them instead of an error. Refreshed by
- * tag whenever a fresh computation produced something different. Their age
- * stays visible: `updatedAt` is Dune's execution time and the page flags data
- * that has gone stale.
+ * tag, and re-materialized at once, whenever a fresh computation produced
+ * something different. Their age stays visible: `updatedAt` is Dune's
+ * execution time and the page flags data that has gone stale.
  */
-const getLastGoodStats = unstable_cache(
-  () => getFreshStats(bucketOf(Date.now(), PROBE_SECONDS)),
-  ['buyback-last-good', DEPLOYMENT],
-  { revalidate: false, tags: [LAST_GOOD_TAG] },
-);
+const getLastGoodStats = unstable_cache(computeFreshStats, ['buyback-last-good', DEPLOYMENT], {
+  revalidate: false,
+  tags: [LAST_GOOD_TAG],
+});
 
-/** Make the last-good entry follow a fresh result that differs from it. */
+/**
+ * Make the last-good entry follow a fresh result that differs from it. The
+ * old entry is dropped and the new one materialized in the same request, so
+ * there is never a moment without a fallback.
+ */
 async function rememberAsLastGood(stats: BuybackStats): Promise<void> {
   const stored = await getLastGoodStats().catch(() => null);
-  if (stored === null || stored.updatedAt !== stats.updatedAt) revalidateTag(LAST_GOOD_TAG);
+  if (stored !== null && stored.updatedAt === stats.updatedAt) return;
+  revalidateTag(LAST_GOOD_TAG);
+  await getLastGoodStats().catch((error: unknown) => {
+    logger.warn('Buyback stats: could not materialize the new last-good entry', error);
+  });
 }
 
 export async function GET() {
-  if (!process.env.DUNE_API_KEY?.trim()) {
+  if (!getDuneApiKey()) {
     logger.warn('Buyback stats requested but DUNE_API_KEY is not configured');
     return new Response('DUNE_API_KEY not configured', { status: 503 });
   }
 
   logger.debug('Buyback stats request received');
   try {
-    const stats = await getFreshStats(bucketOf(Date.now(), PROBE_SECONDS));
+    const stats = await computeFreshStats();
     await rememberAsLastGood(stats);
     return Response.json(stats);
   } catch (error) {

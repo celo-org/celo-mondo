@@ -14,6 +14,13 @@ const PAGE_SIZE = 100;
 const MAX_ROWS = 10_000; // safety cap: ~one row per day since L2 genesis
 const MAX_PAGES = MAX_ROWS / PAGE_SIZE;
 const FETCH_TIMEOUT_MS = 30_000;
+/** Tag on every cached Dune response, so they can be dropped together. */
+export const DUNE_CACHE_TAG = 'buyback-dune';
+
+/** How long Next may keep a Dune response in its Data Cache, if at all. */
+export interface ReadOptions {
+  cacheSeconds?: number;
+}
 const COMPLETED_STATE = 'QUERY_STATE_COMPLETED';
 // An execution in one of these states may still complete; anything else that
 // is not completed (failed, cancelled, expired, partial) never will.
@@ -125,6 +132,7 @@ export interface DuneFeeResults {
 export async function fetchLatestExecution(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
+  { cacheSeconds }: ReadOptions = {},
 ): Promise<DuneExecution> {
   // Only the execution metadata matters here. Neither the state nor the row
   // is judged, so a failed execution or one with unusable rows still gets an
@@ -134,7 +142,7 @@ export async function fetchLatestExecution(
     `${DUNE_API}/query/${queryId}/results?limit=1&offset=0`,
     apiKey,
     queryId,
-    { metadataOnly: true },
+    { metadataOnly: true, cacheSeconds },
   );
   // A response with no execution id is unusable like a garbled one: a
   // transient problem to retry on the short clock, not a verdict on anything.
@@ -167,6 +175,7 @@ export async function fetchDuneFeeRows(
   apiKey: string,
   queryId: number = CELO_PNL_QUERY_ID,
   executionId: string | null = null,
+  { cacheSeconds }: ReadOptions = {},
 ): Promise<DuneFeeResults> {
   const rows: DuneFeeRow[] = [];
   let first: DunePage | null = null;
@@ -182,6 +191,7 @@ export async function fetchDuneFeeRows(
       `${DUNE_API}/${path}?limit=${PAGE_SIZE}&offset=${offset}`,
       apiKey,
       queryId,
+      { cacheSeconds },
     );
     first ??= current;
     rows.push(...current.rows);
@@ -226,13 +236,19 @@ async function fetchPage(
   url: string,
   apiKey: string,
   queryId: number,
-  { metadataOnly = false }: { metadataOnly?: boolean } = {},
+  { metadataOnly = false, cacheSeconds }: { metadataOnly?: boolean } & ReadOptions = {},
 ): Promise<DunePage> {
   let data: DuneResultsResponse;
   try {
+    // With cacheSeconds, Next keeps a successful response in its Data Cache
+    // under this URL for that long, so the same page is not billed again;
+    // failures are never kept.
     const response = await fetch(url, {
       headers: { 'X-Dune-API-Key': apiKey },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      ...(cacheSeconds === undefined
+        ? { cache: 'no-store' as const }
+        : { next: { revalidate: cacheSeconds, tags: [DUNE_CACHE_TAG] } }),
     });
     if (!response.ok) {
       const body = await response.text();

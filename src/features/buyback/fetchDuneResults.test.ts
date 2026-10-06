@@ -140,6 +140,21 @@ describe('fetchDuneFeeRows', () => {
     );
     expect(init.headers).toEqual({ 'X-Dune-API-Key': 'secret' });
     expect(init.signal).toBeInstanceOf(AbortSignal);
+    // Without a cache lifetime the read bypasses Next's Data Cache.
+    expect(init.cache).toBe('no-store');
+    expect(init.next).toBeUndefined();
+  });
+
+  it('asks Next to keep a successful response for the given lifetime, tagged', async () => {
+    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1));
+    await fetchDuneFeeRows('secret', CELO_PNL_QUERY_ID, null, { cacheSeconds: 604_800 });
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.cache).toBeUndefined();
+    expect(init.next).toEqual({ revalidate: 604_800, tags: ['buyback-dune'] });
+
+    fetchMock.mockResolvedValueOnce(page([row('2026-09-16')], 1));
+    await fetchLatestExecution('secret', CELO_PNL_QUERY_ID, { cacheSeconds: 300 });
+    expect(fetchMock.mock.calls[1][1].next).toEqual({ revalidate: 300, tags: ['buyback-dune'] });
   });
 
   it('follows next_offset and reads later pages from the execution named by the first', async () => {
