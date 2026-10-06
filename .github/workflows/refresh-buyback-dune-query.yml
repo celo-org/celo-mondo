@@ -15,6 +15,13 @@ on:
   # Allow manual trigger
   workflow_dispatch:
 
+# One run at a time: two overlapping runs would both pass the "already
+# executed today" check before either execution finished, then both would
+# start a billed execution. The second waits and sees the first one's result.
+concurrency:
+  group: refresh-buyback-dune-query
+  cancel-in-progress: false
+
 jobs:
   execute-query:
     runs-on: ubuntu-latest
