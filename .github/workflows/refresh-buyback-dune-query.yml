@@ -14,6 +14,11 @@ on:
     - cron: '30 5 * * *'
   # Allow manual trigger
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Execute even if Dune ran the query recently or already today'
+        type: boolean
+        default: false
 
 # One run at a time: two overlapping runs would both pass the "already
 # executed today" check before either execution finished, then both would
@@ -31,9 +36,11 @@ jobs:
         env:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
           DUNE_API: https://api.dune.com/api/v1
-          TRIGGER: ${{ github.event_name }}
+          FORCE: ${{ inputs.force }}
           # Must match the cron schedule above.
           REFRESH_TIME_UTC: '05:30:00'
+          # A run started this soon after another is a duplicate, not a refresh.
+          RECENT_SECONDS: '1800'
         run: |
           set -euo pipefail
 
@@ -42,25 +49,34 @@ jobs:
             exit 1
           fi
 
-          # Every execution is billed, so a scheduled run does nothing if one
-          # already ran today at or after the scheduled time, when the previous
-          # UTC day is complete and Dune's ingestion has caught up; an earlier
-          # same-day run may have caught that day half-ingested and does not
-          # count. One row of the latest results says when the last execution
-          # started; if this check itself fails, or the value is not a real
-          # same-day UTC timestamp, just go ahead and execute. A manual run
-          # always executes: it is how a bad same-day execution (after a query
-          # edit, say) gets replaced once the query is fixed.
+          # Every execution is billed, so a run does nothing if Dune already ran
+          # the query today at or after the scheduled time, when the previous
+          # UTC day is complete and ingested, or started one less than half an
+          # hour ago (two runs queued together, say). One row of the latest
+          # results says when the last execution started; if this check itself
+          # fails, or the value is not a real UTC timestamp, just go ahead and
+          # execute. The force input runs regardless: it is how a bad
+          # execution (after a query edit, say) gets replaced once the query is
+          # fixed.
           today=$(date -u +%Y-%m-%d)
-          if [ "$TRIGGER" = "schedule" ] && curl -sS --max-time 30 -f -o latest.json \
+          if [ "$FORCE" != "true" ] && curl -sS --max-time 30 -f -o latest.json \
                "$DUNE_API/query/6898547/results?limit=1" \
                -H "X-Dune-API-Key: $DUNE_API_KEY" \
              && [ "$(jq -r '.state' latest.json)" = "QUERY_STATE_COMPLETED" ] \
              && started=$(jq -r '.execution_started_at // ""' latest.json) \
-             && [[ "$started" =~ ^${today}T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])(\.[0-9]+)?Z$ ]] \
-             && [[ "${BASH_REMATCH[1]}" > "$REFRESH_TIME_UTC" || "${BASH_REMATCH[1]}" == "$REFRESH_TIME_UTC" ]]; then
-            echo "Dune already executed the query today at $started, after the scheduled time; nothing to do"
-            exit 0
+             && [[ "$started" =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2})T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])(\.[0-9]+)?Z$ ]]; then
+            started_day=${BASH_REMATCH[1]}
+            started_time=${BASH_REMATCH[2]}
+            if [ "$started_day" = "$today" ] \
+               && [[ "$started_time" > "$REFRESH_TIME_UTC" || "$started_time" == "$REFRESH_TIME_UTC" ]]; then
+              echo "Dune already executed the query today at $started, after the scheduled time; nothing to do"
+              exit 0
+            fi
+            started_epoch=$(jq -rn --arg t "${started_day}T${started_time}Z" '$t | fromdateiso8601')
+            if (( $(date -u +%s) - started_epoch < RECENT_SECONDS )); then
+              echo "Dune started an execution at $started, less than ${RECENT_SECONDS}s ago; nothing to do (set force to run anyway)"
+              exit 0
+            fi
           fi
 
           # No automatic retry here: the request is not idempotent, and resending
