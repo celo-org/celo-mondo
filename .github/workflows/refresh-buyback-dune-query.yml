@@ -36,6 +36,7 @@ jobs:
         env:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
           DUNE_API: https://api.dune.com/api/v1
+          TRIGGER: ${{ github.event_name }}
           FORCE: ${{ inputs.force }}
           # Must match the cron schedule above.
           REFRESH_TIME_UTC: '05:30:00'
