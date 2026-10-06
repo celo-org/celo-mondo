@@ -30,12 +30,13 @@ export function BuybackDashboard() {
         >
           CELOccelerate (CGP-233)
         </A_Blank>
-        , Celo L2 sequencer fees — after L1 operating costs and the OP Superchain share — are used
-        to acquire CELO for the Community Fund, where CELO holders govern their use (which may
-        include burning). Figures are estimates computed from gross daily fee P&amp;L, the same data
-        as the operator distribution report, not settled amounts; actual transfers to the Community
-        Fund are executed in periodic batches. Totals leave out earlier revenue, which was already
-        returned to the Community Fund in a single transfer of 1,748,950 CELO (see{' '}
+        , Celo L2 sequencer revenue, after the core protocol operating costs the proposal names (OP
+        Stack, EigenDA, Succinct and, while applicable, carbon offsets), is used to acquire CELO for
+        the Community Fund, where CELO holders govern its use (which may include burning). Figures
+        are estimates computed from gross daily fee P&amp;L, the same data as the operator
+        distribution report, not settled amounts; actual transfers to the Community Fund are
+        executed in periodic batches. Totals leave out earlier revenue, which was already returned
+        to the Community Fund in a single transfer of 1,748,950 CELO (see{' '}
         <Link href="/governance/cgp-234" className="underline">
           CGP-234
         </Link>

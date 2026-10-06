@@ -13,7 +13,8 @@ function jsonResponse(body: unknown, status = 200) {
 const status = (
   state: string,
   finished = state !== 'QUERY_STATE_PENDING' && state !== 'QUERY_STATE_EXECUTING',
-) => jsonResponse({ execution_id: '01EXEC', state, is_execution_finished: finished });
+  times: Record<string, string> = {},
+) => jsonResponse({ execution_id: '01EXEC', state, is_execution_finished: finished, ...times });
 
 const fetchMock = vi.fn();
 const log = vi.fn();
@@ -85,6 +86,8 @@ describe('waitForExecution', () => {
       executionId: '01EXEC',
       state: 'QUERY_STATE_COMPLETED',
       completed: true,
+      executionStartedAt: null,
+      executionEndedAt: null,
     });
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(
@@ -102,9 +105,24 @@ describe('waitForExecution', () => {
         executionId: '01EXEC',
         state,
         completed: false,
+        executionStartedAt: null,
+        executionEndedAt: null,
       });
     },
   );
+
+  it('reports when the execution started and ended, as a queued one starts late', async () => {
+    fetchMock.mockResolvedValueOnce(
+      status('QUERY_STATE_COMPLETED', true, {
+        execution_started_at: '2026-09-18T05:35:00.000000Z',
+        execution_ended_at: '2026-09-18T05:35:20.000000Z',
+      }),
+    );
+    expect(await waitForExecution('k', '01EXEC', fast)).toMatchObject({
+      executionStartedAt: '2026-09-18T05:35:00.000000Z',
+      executionEndedAt: '2026-09-18T05:35:20.000000Z',
+    });
+  });
 
   it('treats a terminal state as finished even without the finished flag', async () => {
     fetchMock.mockResolvedValueOnce(status('QUERY_STATE_COMPLETED', false));

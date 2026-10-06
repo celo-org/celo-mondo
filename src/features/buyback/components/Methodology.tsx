@@ -36,6 +36,15 @@ export function Methodology() {
       <div className="space-y-3 border-t border-taupe-300 px-4 py-3 text-black">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
+            <Link href="/governance/cgp-233" className="underline">
+              CGP-233
+            </Link>{' '}
+            deducts the core protocol operating costs first (OP Stack, EigenDA, Succinct and, while
+            applicable, carbon offsets) and fixes no amounts. The figures here follow the operator
+            tooling: L1 posting costs, the OP Stack contribution and the Carbon Fund share. Succinct
+            proving costs are not in the Dune data and are not deducted.
+          </li>
+          <li>
             Revenue is CELO fees plus stablecoin fees at their USD peg, with EURm at Dune&apos;s
             forex price; COPm is left out.
           </li>
@@ -44,15 +53,15 @@ export function Methodology() {
             at the day&apos;s price.
           </li>
           <li>
-            The OP Superchain share is the greater of 2.5% of fees and 15% of fees after L1 costs,
-            an estimate per Optimism&apos;s{' '}
+            The OP Stack contribution (the OP Superchain share) is estimated as the greater of 2.5%
+            of fees and 15% of fees after L1 costs, the formula of Optimism&apos;s{' '}
             <A_Blank
               href="https://docs.optimism.io/superchain/superchain-information/superchain-revenue-explainer"
               className="underline"
             >
               Standard Rollup Charter
             </A_Blank>
-            .
+            ; the chain&apos;s own terms are not published.
           </li>
           <li>
             The Carbon Fund fraction is 0% since{' '}

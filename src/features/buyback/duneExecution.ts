@@ -14,6 +14,16 @@ export interface ExecutionOutcome {
   state: string;
   /** Whether it completed; only then does it have results to read. */
   completed: boolean;
+  /** When Dune started it (ISO timestamp), if reported; a queued one starts later than it was submitted. */
+  executionStartedAt: string | null;
+  executionEndedAt: string | null;
+}
+
+/** What one status check learned. */
+interface ExecutionStatus {
+  state: string;
+  executionStartedAt: string | null;
+  executionEndedAt: string | null;
 }
 
 /** The execution was still running when the wait ran out. */
@@ -67,25 +77,32 @@ export async function waitForExecution(
 ): Promise<ExecutionOutcome> {
   const deadline = Date.now() + timeoutMs;
   for (;;) {
-    const state = await readState(apiKey, executionId, log);
-    if (state !== null && !PENDING_STATES.has(state)) {
-      return { executionId, state, completed: state === COMPLETED_STATE };
+    const status = await readStatus(apiKey, executionId, log);
+    if (status !== null && !PENDING_STATES.has(status.state)) {
+      return { executionId, ...status, completed: status.state === COMPLETED_STATE };
     }
-    if (state !== null) log?.(`State: ${state}, waiting...`);
+    if (status !== null) log?.(`State: ${status.state}, waiting...`);
     if (Date.now() >= deadline) throw new DuneWaitTimeoutError(executionId);
     await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
   }
 }
 
-/** The execution's state, or null when this check did not get a readable one. */
-async function readState(
+/** The execution's status, or null when this check did not get a readable one. */
+async function readStatus(
   apiKey: string,
   executionId: string,
   log: WaitOptions['log'],
-): Promise<string | null> {
+): Promise<ExecutionStatus | null> {
   try {
     const status = await requestDune(`execution/${executionId}/status`, apiKey);
-    if (typeof status.state === 'string' && status.state !== '') return status.state;
+    const text = (value: unknown) => (typeof value === 'string' ? value : null);
+    if (typeof status.state === 'string' && status.state !== '') {
+      return {
+        state: status.state,
+        executionStartedAt: text(status.execution_started_at),
+        executionEndedAt: text(status.execution_ended_at),
+      };
+    }
     log?.('Unreadable status response, retrying...');
     return null;
   } catch (error) {

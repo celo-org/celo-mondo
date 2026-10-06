@@ -437,6 +437,63 @@ describe('refreshBuybackStats', () => {
     expect(execute).toBeGreaterThan(lastEarlyPoll);
   });
 
+  it('uses an early-queued execution after all when Dune started it after the refresh time', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        {
+          state: 'QUERY_STATE_PENDING',
+          execution_id: '01QUEUED',
+          submitted_at: '2026-09-18T05:20:00Z',
+        },
+      ],
+      'GET execution/01QUEUED/status': [
+        { execution_id: '01QUEUED', state: 'QUERY_STATE_PENDING' },
+        {
+          execution_id: '01QUEUED',
+          state: 'QUERY_STATE_COMPLETED',
+          execution_started_at: '2026-09-18T05:35:00.000000Z',
+          execution_ended_at: '2026-09-18T05:35:20.000000Z',
+        },
+      ],
+      ...pagesOf('01QUEUED', rows, {
+        execution_started_at: '2026-09-18T05:35:00.000000Z',
+        execution_ended_at: '2026-09-18T05:35:20.000000Z',
+      }),
+    });
+
+    await refresh();
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01QUEUED']);
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('after the refresh time; using it'));
+  });
+
+  it('still refreshes after an early execution that also started before the refresh time', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        {
+          state: 'QUERY_STATE_PENDING',
+          execution_id: '01QUEUED',
+          submitted_at: '2026-09-18T05:20:00Z',
+        },
+      ],
+      'GET execution/01QUEUED/status': [
+        {
+          execution_id: '01QUEUED',
+          state: 'QUERY_STATE_COMPLETED',
+          execution_started_at: '2026-09-18T05:25:00.000000Z',
+        },
+      ],
+      ...executeNew,
+      'GET execution/01NEW/status': [status('QUERY_STATE_COMPLETED')],
+      ...pagesOf('01NEW', rows),
+    });
+
+    await refresh();
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01NEW']);
+  });
+
   it('runs the scheduled refresh even if the early execution never finishes', async () => {
     serve({
       'GET query/6898547/results?limit=1&offset=0': [

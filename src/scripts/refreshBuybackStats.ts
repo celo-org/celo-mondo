@@ -78,7 +78,7 @@ export type RefreshPlan =
   | { kind: 'execute'; reason: string }
   | { kind: 'use'; executionId: string; reason: string }
   | { kind: 'await'; executionId: string; reason: string }
-  | { kind: 'await-then-execute'; executionId: string; reason: string };
+  | { kind: 'await-then-execute'; executionId: string; latest: DuneExecution; reason: string };
 
 export function planRefresh(
   latest: DuneExecution | null,
@@ -142,6 +142,7 @@ export function planRefresh(
     return {
       kind: 'await-then-execute',
       executionId,
+      latest,
       reason: `execution ${executionId} has been ${state} since ${reference}, before today's refresh time`,
     };
   }
@@ -166,6 +167,14 @@ export function planRefresh(
     };
   }
   return { kind: 'execute', reason: `the latest execution (${executionId}) ended as ${state}` };
+}
+
+/** The timestamps a finished execution reports, in the probe's shape. */
+function timestampsOf(outcome: ExecutionOutcome) {
+  return {
+    executionStartedAt: outcome.executionStartedAt,
+    executionEndedAt: outcome.executionEndedAt,
+  };
 }
 
 export interface RefreshOptions extends Omit<RefreshContext, 'now'> {
@@ -261,8 +270,25 @@ export async function refreshBuybackStats({
     }
     case 'await-then-execute': {
       const outcome = await awaitExisting(plan.executionId);
-      if (outcome?.completed) log(`Dune execution ${plan.executionId} completed; executing`);
-      executionId = await executeAndWait();
+      // A queued execution starts later than it was submitted. If Dune only
+      // started it after the refresh time, its snapshot is the day's and a
+      // second billed execution would add nothing: plan again on what the
+      // wait learned.
+      const started = outcome?.completed
+        ? planRefresh(
+            { ...plan.latest, state: outcome.state, ...timestampsOf(outcome) },
+            { scheduled, force, now: clock() },
+          )
+        : null;
+      if (started?.kind === 'use') {
+        log(
+          `Dune execution ${plan.executionId} started at ${outcome?.executionStartedAt}, after the refresh time; using it`,
+        );
+        executionId = plan.executionId;
+      } else {
+        if (outcome?.completed) log(`Dune execution ${plan.executionId} completed; executing`);
+        executionId = await executeAndWait();
+      }
       break;
     }
     case 'execute':
