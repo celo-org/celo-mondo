@@ -7,6 +7,7 @@ import { A_Blank } from 'src/components/buttons/A_Blank';
 import { Section } from 'src/components/layout/Section';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { H1 } from 'src/components/text/headers';
+import { DailyCharts } from 'src/features/buyback/charts/DailyCharts';
 import { PeriodStats } from 'src/features/buyback/types';
 import { useBuybackStats } from 'src/features/buyback/useBuybackStats';
 
@@ -116,9 +117,16 @@ export default function Page() {
       {view === 'error' ? (
         <ErrorNotice />
       ) : view === 'loading' ? (
-        <StatsSkeleton />
+        <>
+          <StatsSkeleton />
+          <ChartsSkeleton />
+        </>
       ) : (
-        <StatsTable metrics={buildMetrics(stats?.totals, stats?.latestDayStats)} />
+        <>
+          <StatsTable metrics={buildMetrics(stats?.totals, stats?.latestDayStats)} />
+          {/* Figures stored before the charts existed carry no daily series. */}
+          <DailyCharts days={stats?.days ?? []} />
+        </>
       )}
 
       <Footnote
@@ -182,6 +190,19 @@ function StatsSkeleton() {
         >
           <SkeletonBlock className="h-5 w-48" />
           <SkeletonBlock className="h-6 w-28" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChartsSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="border border-taupe-300 bg-white p-4">
+          <SkeletonBlock className="mb-3 h-4 w-56" />
+          <SkeletonBlock className="h-40 w-full" />
         </div>
       ))}
     </div>

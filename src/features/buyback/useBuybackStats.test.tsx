@@ -21,6 +21,7 @@ const stats: BuybackStats = {
   latestDayStats: null,
   sinceDay: '2026-04-09',
   latestDay: '2026-05-01',
+  days: [],
   updatedAt: '2026-05-02T05:31:00.000Z',
 };
 

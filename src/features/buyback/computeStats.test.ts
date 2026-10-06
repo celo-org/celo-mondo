@@ -5,6 +5,7 @@ import {
   aggregate,
   computeBuybackStats,
   computeDailyMetrics,
+  cumulativeCeloAccrued,
   firstIncompleteDay,
   mergeSameDayRows,
   nextUtcDay,
@@ -876,5 +877,119 @@ describe('Carbon Fund share deduction', () => {
     const stats = statsFor([{ ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day }], options);
     expect(stats.totals.celoToCommunityFund).toBeLessThan(0);
     expect(stats.totals.avgCeloPriceUsd).toBe(0);
+  });
+});
+
+describe('daily series', () => {
+  const options = {
+    executionStartedAt: '2026-04-23T05:30:00.000Z',
+    executionEndedAt: '2026-04-23T05:31:00.000Z',
+    now: new Date('2026-04-23T12:00:00.000Z'),
+  };
+  const rows: DuneFeeRow[] = [
+    { ...dayRow, day: '2026-04-19' },
+    { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
+    { ...dayRow, day: '2026-04-21' },
+    { ...dayRow, day: '2026-04-22' },
+  ];
+
+  it('lists every counted day in order with its own figures', () => {
+    const stats = computeBuybackStats(history(rows, options), options);
+    expect(stats.days.map((d) => d.day)).toEqual([
+      '2026-04-09',
+      '2026-04-10',
+      '2026-04-11',
+      '2026-04-12',
+      '2026-04-13',
+      '2026-04-14',
+      '2026-04-15',
+      '2026-04-16',
+      '2026-04-17',
+      '2026-04-18',
+      '2026-04-19',
+      '2026-04-20',
+      '2026-04-21',
+      '2026-04-22',
+    ]);
+    const payoutDay = stats.days.find((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day);
+    expect(payoutDay).toEqual(
+      computeDailyMetrics({ ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day }),
+    );
+    expect(stats.latestDay).toBe('2026-04-22');
+  });
+
+  it('sums to the totals, with the Carbon Fund share only taken off the totals', () => {
+    const stats = computeBuybackStats(history(rows, options), options);
+    const sum = (pick: (d: (typeof stats.days)[number]) => number) =>
+      stats.days.reduce((total, d) => total + pick(d), 0);
+    expect(sum((d) => d.feesCollectedUsd)).toBeCloseTo(stats.totals.feesCollectedUsd, 4);
+    expect(sum((d) => d.feesAfterExpensesUsd)).toBeCloseTo(stats.totals.feesAfterExpensesUsd, 4);
+    expect(sum((d) => d.communityFundCelo) - CARBON_FUND_SHARE_IN_WINDOW.celo).toBeCloseTo(
+      stats.totals.celoToCommunityFund,
+      4,
+    );
+    expect(sum((d) => d.communityFundUsd) - CARBON_FUND_SHARE_IN_WINDOW.usd).toBeCloseTo(
+      stats.totals.usdToCommunityFund,
+      4,
+    );
+  });
+
+  it('rounds the stored figures to six decimals', () => {
+    const stats = computeBuybackStats(history(rows, options), options);
+    for (const day of stats.days) {
+      for (const value of Object.values(day)) {
+        if (typeof value === 'number') expect(value).toBe(Number(value.toFixed(6)));
+      }
+    }
+  });
+
+  it('stops at the latest priced day, like the totals', () => {
+    // Dune has not priced the newest day yet: it is left out of the totals,
+    // so it is left out of the series too.
+    const unpriced = history(rows, options).map((row) =>
+      row.day === '2026-04-22' ? { ...row, fee_CELO_usd: 0, fee_CELO: 0 } : row,
+    );
+    const stats = computeBuybackStats(unpriced, options);
+    expect(stats.latestDay).toBe('2026-04-21');
+    expect(stats.days[stats.days.length - 1].day).toBe('2026-04-21');
+  });
+
+  describe('cumulativeCeloAccrued', () => {
+    it('runs the total day by day and ends at the window total', () => {
+      const stats = computeBuybackStats(history(rows, options), options);
+      const series = cumulativeCeloAccrued(stats.days);
+      expect(series).toHaveLength(stats.days.length);
+      expect(series[0]).toBeCloseTo(stats.days[0].communityFundCelo, 6);
+      expect(series[1]).toBeCloseTo(
+        stats.days[0].communityFundCelo + stats.days[1].communityFundCelo,
+        6,
+      );
+      expect(series[series.length - 1]).toBeCloseTo(stats.totals.celoToCommunityFund, 4);
+    });
+
+    it('takes the Carbon Fund share off on the day it was paid', () => {
+      const days = computeBuybackStats(history(rows, options), options).days;
+      const series = cumulativeCeloAccrued(days);
+      const payout = days.findIndex((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day);
+      expect(series[payout] - series[payout - 1]).toBeCloseTo(
+        days[payout].communityFundCelo - CARBON_FUND_SHARE_IN_WINDOW.celo,
+        6,
+      );
+    });
+
+    it('is a plain running sum when the payout day is not in the series', () => {
+      const days = computeBuybackStats(history(rows, options), options).days.filter(
+        (d) => d.day < CARBON_FUND_SHARE_IN_WINDOW.day,
+      );
+      const series = cumulativeCeloAccrued(days);
+      expect(series[series.length - 1]).toBeCloseTo(
+        days.reduce((total, d) => total + d.communityFundCelo, 0),
+        6,
+      );
+    });
+
+    it('is empty for no days', () => {
+      expect(cumulativeCeloAccrued([])).toEqual([]);
+    });
   });
 });

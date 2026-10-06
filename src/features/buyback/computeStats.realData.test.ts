@@ -344,3 +344,27 @@ describe('on-chain reconciliation of the Dune revenue (archive node, window bloc
     expect(onchain.revenueReturn.celo).toBeCloseTo(1_748_950, 0);
   });
 });
+
+describe('daily series on the real rows', () => {
+  const stats = computeBuybackStats(rows, {
+    executionStartedAt: expected.duneExecution.execution_started_at,
+    executionEndedAt: expected.duneExecution.execution_ended_at,
+    now: new Date('2026-09-18T06:00:00.000Z'),
+  });
+
+  it('covers every day of the window once, in order', () => {
+    expect(stats.days[0].day).toBe(WINDOW.from);
+    expect(stats.days[stats.days.length - 1].day).toBe(stats.latestDay);
+    expect(stats.days).toHaveLength(expected.windowTotals.days);
+    expect(new Set(stats.days.map((d) => d.day)).size).toBe(stats.days.length);
+  });
+
+  it('matches report.py day by day after rounding', () => {
+    for (const day of stats.days) {
+      const wanted = expected.perDay[day.day];
+      expect(day.feesCollectedUsd).toBeCloseTo(wanted.total_revenue_usd, 5);
+      expect(day.l1CostUsd).toBeCloseTo(wanted.total_l1_cost_usd, 5);
+      expect(day.communityFundCelo).toBeCloseTo(wanted.profit_celo, 5);
+    }
+  });
+});

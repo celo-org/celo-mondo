@@ -68,6 +68,11 @@ export interface BuybackStats {
   sinceDay: string;
   /** Most recent complete day with price data (YYYY-MM-DD), if any. */
   latestDay: string | null;
+  /**
+   * Every counted day in order, from `sinceDay` through `latestDay`, for the
+   * charts and the daily table. Figures are rounded to six decimals.
+   */
+  days: DailyMetrics[];
   /** When Dune executed the query these figures come from (ISO timestamp). */
   updatedAt: string;
 }

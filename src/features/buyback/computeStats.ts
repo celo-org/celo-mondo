@@ -185,6 +185,40 @@ export function aggregate(days: DailyMetrics[]): PeriodStats {
  * after expenses are untouched: carbon is a distribution of net revenue, not an
  * operating cost.
  */
+/**
+ * CELO accrued for the Community Fund, cumulative day by day. The Carbon Fund
+ * share comes off on the day it was taken, so the series ends at the window
+ * total shown in the table.
+ */
+export function cumulativeCeloAccrued(days: DailyMetrics[]): number[] {
+  const series: number[] = [];
+  let total = 0;
+  for (const day of days) {
+    total += day.communityFundCelo;
+    if (day.day === CARBON_FUND_SHARE_IN_WINDOW.day) total -= CARBON_FUND_SHARE_IN_WINDOW.celo;
+    series.push(total);
+  }
+  return series;
+}
+
+/**
+ * A day's figures for the stored series. Six decimals keep cents and CELO
+ * dust while dropping the float noise of the computation, which would
+ * otherwise double the payload for nothing.
+ */
+function compactMetrics(metrics: DailyMetrics): DailyMetrics {
+  const round = (value: number) => Number(value.toFixed(6));
+  return {
+    day: metrics.day,
+    celoPriceUsd: round(metrics.celoPriceUsd),
+    feesCollectedUsd: round(metrics.feesCollectedUsd),
+    l1CostUsd: round(metrics.l1CostUsd),
+    feesAfterExpensesUsd: round(metrics.feesAfterExpensesUsd),
+    communityFundUsd: round(metrics.communityFundUsd),
+    communityFundCelo: round(metrics.communityFundCelo),
+  };
+}
+
 export function deductCarbonFundShare(totals: PeriodStats, days: DailyMetrics[]): PeriodStats {
   if (!days.some((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day)) return totals;
   const celoToCommunityFund = totals.celoToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.celo;
@@ -502,6 +536,7 @@ export function computeBuybackStats(
     latestDayStats: latest ? aggregate([latest]) : null,
     sinceDay,
     latestDay: latest?.day ?? null,
+    days: counted.map(compactMetrics),
     // The first usable timestamp; there is one, as checked above.
     updatedAt: usableTimestamps(options)[0] ?? '',
   };
