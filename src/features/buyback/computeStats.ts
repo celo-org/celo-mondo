@@ -1,4 +1,12 @@
-import { BuybackStats, DailyMetrics, DuneFeeRow, PeriodStats } from 'src/features/buyback/types';
+import {
+  BuybackStats,
+  DailyMetrics,
+  DuneFeeRow,
+  FeesByCurrencyUsd,
+  MonthlyStats,
+  PeriodStats,
+  SettledTransfers,
+} from 'src/features/buyback/types';
 
 // Constants mirror scripts/sequencer-fees/report.py (celo-monorepo). Proposals
 // are named by CGP number: CGP-233 is CELOccelerate (on-chain proposal 286),
@@ -154,8 +162,17 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
     day: parseDay(row.day),
     celoPriceUsd,
     feesCollectedUsd: revenueUsd,
+    feesByCurrencyUsd: {
+      CELO: feeCeloUsd,
+      USDT: feeUsdtUsd,
+      USDC: feeUsdcUsd,
+      USDm: feeUsdmUsd,
+      EURm: feeEurmUsd,
+      other: othersUsd,
+    },
     l1CostUsd,
     feesAfterExpensesUsd: revenueUsd - l1CostUsd,
+    opShareUsd,
     communityFundUsd,
     communityFundCelo,
   };
@@ -163,28 +180,56 @@ export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
 
 /** Sum a set of daily metrics into the dashboard's period figures. */
 export function aggregate(days: DailyMetrics[]): PeriodStats {
-  const feesCollectedUsd = days.reduce((s, d) => s + d.feesCollectedUsd, 0);
-  const feesAfterExpensesUsd = days.reduce((s, d) => s + d.feesAfterExpensesUsd, 0);
-  const celoToCommunityFund = days.reduce((s, d) => s + d.communityFundCelo, 0);
-  const usdToCommunityFund = days.reduce((s, d) => s + d.communityFundUsd, 0);
+  const sum = (pick: (d: DailyMetrics) => number) => days.reduce((s, d) => s + pick(d), 0);
+  const celoToCommunityFund = sum((d) => d.communityFundCelo);
+  const usdToCommunityFund = sum((d) => d.communityFundUsd);
   // Volume-weighted average CELO price = total USD value / total CELO.
   const avgCeloPriceUsd = celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0;
 
   return {
-    feesCollectedUsd,
-    feesAfterExpensesUsd,
+    feesCollectedUsd: sum((d) => d.feesCollectedUsd),
+    l1CostUsd: sum((d) => d.l1CostUsd),
+    feesAfterExpensesUsd: sum((d) => d.feesAfterExpensesUsd),
+    opShareUsd: sum((d) => d.opShareUsd),
+    // Taken off at distribution time, not accrued per day; see deductCarbonFundShare.
+    carbonFundUsd: 0,
+    carbonFundCelo: 0,
     celoToCommunityFund,
     usdToCommunityFund,
     avgCeloPriceUsd,
   };
 }
 
+/** USD value of the fees by currency, summed over the days. */
+export function sumFeesByCurrency(days: DailyMetrics[]): FeesByCurrencyUsd {
+  const total: FeesByCurrencyUsd = { CELO: 0, USDT: 0, USDC: 0, USDm: 0, EURm: 0, other: 0 };
+  for (const day of days) {
+    for (const currency of Object.keys(total) as (keyof FeesByCurrencyUsd)[]) {
+      total[currency] += day.feesByCurrencyUsd[currency];
+    }
+  }
+  return total;
+}
+
 /**
- * Remove the Carbon Fund's realised share from the Community Fund totals when
- * the day it was paid falls inside the aggregated days. Fees collected and fees
- * after expenses are untouched: carbon is a distribution of net revenue, not an
- * operating cost.
+ * The series by calendar month, in order, each month's figures aggregated
+ * like the window's (the Carbon Fund share comes off the month it fell in).
+ * A partial month, at either end, says how many days it holds.
  */
+export function monthlyStats(days: DailyMetrics[]): MonthlyStats[] {
+  const byMonth = new Map<string, DailyMetrics[]>();
+  for (const day of days) {
+    const month = day.day.slice(0, 7);
+    byMonth.set(month, [...(byMonth.get(month) ?? []), day]);
+  }
+  return [...byMonth.entries()].map(([month, monthDays]) => ({
+    month,
+    days: monthDays.length,
+    stats: deductCarbonFundShare(aggregate(monthDays), monthDays),
+    feesByCurrencyUsd: sumFeesByCurrency(monthDays),
+  }));
+}
+
 /**
  * CELO accrued for the Community Fund, cumulative day by day. The Carbon Fund
  * share comes off on the day it was taken, so the series ends at the window
@@ -208,23 +253,41 @@ export function cumulativeCeloAccrued(days: DailyMetrics[]): number[] {
  */
 function compactMetrics(metrics: DailyMetrics): DailyMetrics {
   const round = (value: number) => Number(value.toFixed(6));
+  const fees = metrics.feesByCurrencyUsd;
   return {
     day: metrics.day,
     celoPriceUsd: round(metrics.celoPriceUsd),
     feesCollectedUsd: round(metrics.feesCollectedUsd),
+    feesByCurrencyUsd: {
+      CELO: round(fees.CELO),
+      USDT: round(fees.USDT),
+      USDC: round(fees.USDC),
+      USDm: round(fees.USDm),
+      EURm: round(fees.EURm),
+      other: round(fees.other),
+    },
     l1CostUsd: round(metrics.l1CostUsd),
     feesAfterExpensesUsd: round(metrics.feesAfterExpensesUsd),
+    opShareUsd: round(metrics.opShareUsd),
     communityFundUsd: round(metrics.communityFundUsd),
     communityFundCelo: round(metrics.communityFundCelo),
   };
 }
 
+/**
+ * Remove the Carbon Fund's realised share from the Community Fund totals when
+ * the day it was paid falls inside the aggregated days. Fees collected and fees
+ * after expenses are untouched: carbon is a distribution of net revenue, not an
+ * operating cost.
+ */
 export function deductCarbonFundShare(totals: PeriodStats, days: DailyMetrics[]): PeriodStats {
   if (!days.some((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day)) return totals;
   const celoToCommunityFund = totals.celoToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.celo;
   const usdToCommunityFund = totals.usdToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.usd;
   return {
     ...totals,
+    carbonFundUsd: CARBON_FUND_SHARE_IN_WINDOW.usd,
+    carbonFundCelo: CARBON_FUND_SHARE_IN_WINDOW.celo,
     celoToCommunityFund,
     usdToCommunityFund,
     avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
@@ -241,6 +304,8 @@ export interface ComputeBuybackStatsOptions {
   executionEndedAt: string | null;
   /** Current time; injectable for tests. Defaults to now. */
   now?: Date;
+  /** On-chain transfers to the Community Fund, read separately; null when not read. */
+  settled?: SettledTransfers | null;
 }
 
 // An ISO-8601 UTC timestamp as Dune writes it ("2026-10-02T11:56:25.407379Z").
@@ -537,6 +602,7 @@ export function computeBuybackStats(
     sinceDay,
     latestDay: latest?.day ?? null,
     days: counted.map(compactMetrics),
+    settled: options.settled ?? null,
     // The first usable timestamp; there is one, as checked above.
     updatedAt: usableTimestamps(options)[0] ?? '',
   };

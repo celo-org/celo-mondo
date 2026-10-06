@@ -508,6 +508,60 @@ describe('refreshBuybackStats', () => {
     expect((await storedRows()).map((r) => r.executionId)).toEqual(['01NEW']);
   });
 
+  it('stores what the chain says has been settled, read once per run', async () => {
+    serve({ ...yesterdays, ...executeNew, ...newCompletes, ...pagesOf('01NEW', rows) });
+    const settled = {
+      celo: 1_234_567.5,
+      transfers: 2,
+      lastTransferAt: '2026-09-15T10:00:00.000Z',
+      throughBlock: 77_000_000,
+    };
+    const readSettled = vi.fn(async () => settled);
+
+    const stats = await refreshBuybackStats({
+      apiKey: 'k',
+      databases: [testDatabase],
+      log,
+      pollIntervalMs: 0,
+      clock: () => now,
+      readSettled,
+      ...scheduled,
+    });
+
+    expect(readSettled).toHaveBeenCalledTimes(1);
+    expect(stats.settled).toEqual(settled);
+    const [stored] = await storedRows();
+    expect(stored.stats.settled).toEqual(settled);
+    expect(log).toHaveBeenCalledWith(
+      'Settled on chain: 1234567.50 CELO in 2 transfers through block 77000000',
+    );
+  });
+
+  it('stores no settled figure, and says so, when no node is configured', async () => {
+    serve({ ...yesterdays, ...executeNew, ...newCompletes, ...pagesOf('01NEW', rows) });
+    const stats = await refresh();
+    expect(stats.settled).toBeNull();
+    expect(log).toHaveBeenCalledWith('On-chain transfers not read (no node configured)');
+  });
+
+  it('fails without storing anything when the node cannot be read', async () => {
+    serve({ ...yesterdays, ...executeNew, ...newCompletes, ...pagesOf('01NEW', rows) });
+    await expect(
+      refreshBuybackStats({
+        apiKey: 'k',
+        databases: [testDatabase],
+        log,
+        pollIntervalMs: 0,
+        clock: () => now,
+        readSettled: async () => {
+          throw new Error('504 Gateway Time-out');
+        },
+        ...scheduled,
+      }),
+    ).rejects.toThrow('504');
+    expect(await storedRows()).toHaveLength(0);
+  });
+
   it('executes when the latest execution cannot be read', async () => {
     serve({
       'GET query/6898547/results?limit=1&offset=0': [new Response('down', { status: 503 })],

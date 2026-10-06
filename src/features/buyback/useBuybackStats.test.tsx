@@ -13,7 +13,11 @@ import {
 const stats: BuybackStats = {
   totals: {
     feesCollectedUsd: 600,
+    l1CostUsd: 50,
     feesAfterExpensesUsd: 550,
+    opShareUsd: 82.5,
+    carbonFundUsd: 0,
+    carbonFundCelo: 0,
     celoToCommunityFund: 4675,
     usdToCommunityFund: 467.5,
     avgCeloPriceUsd: 0.1,
@@ -22,6 +26,7 @@ const stats: BuybackStats = {
   sinceDay: '2026-04-09',
   latestDay: '2026-05-01',
   days: [],
+  settled: null,
   updatedAt: '2026-05-02T05:31:00.000Z',
 };
 

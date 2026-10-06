@@ -26,7 +26,10 @@ import {
   fetchLatestExecution,
   PENDING_STATES,
 } from 'src/features/buyback/fetchDuneResults';
-import { BuybackStats } from 'src/features/buyback/types';
+import { readSettledTransfers } from 'src/features/buyback/settledTransfers';
+import { BuybackStats, SettledTransfers } from 'src/features/buyback/types';
+import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
+import { celo } from 'viem/chains';
 
 /**
  * Daily refresh of the /buyback dashboard, run by the refresh-buyback-stats
@@ -181,6 +184,12 @@ export interface RefreshOptions extends Omit<RefreshContext, 'now'> {
   /** How often to poll a running execution, and for how long; shortened by tests. */
   pollIntervalMs?: number;
   waitTimeoutMs?: number;
+  /**
+   * Reads what the chain says has reached the Community Fund. Absent when no
+   * node is configured (a local run); the stored figures then carry no
+   * settled amount rather than a wrong one.
+   */
+  readSettled?: () => Promise<SettledTransfers>;
 }
 
 /**
@@ -197,6 +206,7 @@ export async function refreshBuybackStats({
   pollIntervalMs,
   waitTimeoutMs,
   clock = () => new Date(),
+  readSettled,
   scheduled,
   force,
 }: RefreshOptions): Promise<BuybackStats> {
@@ -265,8 +275,18 @@ export async function refreshBuybackStats({
     queryId,
     executionId,
   );
+  // A node failure fails the run like a Dune failure: the previous row, with
+  // its own settled figure, keeps being served rather than a mixed one.
+  const settled = readSettled ? await readSettled() : null;
+  if (settled) {
+    log(
+      `Settled on chain: ${settled.celo.toFixed(2)} CELO in ${settled.transfers} transfers through block ${settled.throughBlock}`,
+    );
+  } else {
+    log('On-chain transfers not read (no node configured)');
+  }
   const timing = { executionStartedAt, executionEndedAt, now: clock() };
-  const stats = computeBuybackStats(rows, timing);
+  const stats = computeBuybackStats(rows, { ...timing, settled });
   log(
     `Computed stats from ${rows.length} daily rows of execution ${executionId}: ` +
       `${stats.sinceDay} to ${stats.latestDay}, ${stats.totals.celoToCommunityFund.toFixed(0)} CELO accrued`,
@@ -333,6 +353,23 @@ async function main(): Promise<void> {
   if (!production) throw new Error('POSTGRES_URL is not set');
   const staging = process.env.POSTGRES_URL_STAGING?.trim();
   const urls = staging ? [production, staging] : [production];
+  // The archive node is required in CI (the workflow checks the secret) and
+  // optional locally. Never fall back to a public node: its log range cap
+  // would fail every scan.
+  const node = process.env.PRIVATE_NO_RATE_LIMITED_NODE?.trim();
+  if (!node)
+    console.warn('PRIVATE_NO_RATE_LIMITED_NODE is not set; on-chain transfers will not be read');
+  const readSettled = node
+    ? () =>
+        readSettledTransfers(
+          // A million-block log query can take a while; viem's default
+          // timeout of ten seconds would fail the run on a slow chunk.
+          createPublicClient({
+            chain: celo,
+            transport: http(node, { timeout: 60_000 }),
+          }) as PublicClient<Transport, Chain>,
+        )
+    : undefined;
 
   // Disable prefetch as it is not supported for "Transaction" pool mode
   const clients = urls.map((url) => postgres(url, { prepare: false }));
@@ -342,6 +379,7 @@ async function main(): Promise<void> {
       databases: clients.map((client) => drizzle({ client, schema })),
       scheduled: process.env.GITHUB_EVENT_NAME === 'schedule',
       force: process.env.FORCE === 'true',
+      readSettled,
     });
   } finally {
     await Promise.all(clients.map((client) => client.end()));

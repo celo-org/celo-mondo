@@ -6,9 +6,11 @@ name: Refresh Buyback Stats
 # serves. The app itself never talks to Dune, so page traffic can neither
 # spend execution credits nor be left waiting on Dune.
 #
-# Needs the DUNE_API_KEY repository secret: a key of a Dune account that may
+# Needs the DUNE_API_KEY repository secret (a key of a Dune account that may
 # execute the query and has datapoint budget left for one execution and one
-# read of its results a day.
+# read of its results a day) and PRIVATE_NO_RATE_LIMITED_NODE, the archive
+# node the stage-update cron also uses, for the transfers to the Community
+# Fund that have actually been mined.
 
 on:
   schedule:
@@ -86,8 +88,9 @@ jobs:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
           POSTGRES_URL_STAGING: ${{ secrets.POSTGRES_URL_STAGING }}
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
         run: |
-          for name in DUNE_API_KEY POSTGRES_URL POSTGRES_URL_STAGING; do
+          for name in DUNE_API_KEY POSTGRES_URL POSTGRES_URL_STAGING PRIVATE_NO_RATE_LIMITED_NODE; do
             if [ -z "${!name}" ]; then
               echo "The $name secret is not set" >&2
               exit 1
@@ -100,5 +103,6 @@ jobs:
           DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
           POSTGRES_URL_STAGING: ${{ secrets.POSTGRES_URL_STAGING }}
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
           FORCE: ${{ inputs.force }}
           CI: true

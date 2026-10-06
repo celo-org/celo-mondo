@@ -8,8 +8,10 @@ import {
   cumulativeCeloAccrued,
   firstIncompleteDay,
   mergeSameDayRows,
+  monthlyStats,
   nextUtcDay,
   parseDay,
+  sumFeesByCurrency,
 } from './computeStats';
 import { DuneFeeRow } from './types';
 
@@ -110,8 +112,11 @@ function statsFor(rows: DuneFeeRow[], options: Options) {
   return {
     ...stats,
     totals: {
+      ...stats.totals,
       feesCollectedUsd: stats.totals.feesCollectedUsd - extra.feesCollectedUsd,
+      l1CostUsd: stats.totals.l1CostUsd - extra.l1CostUsd,
       feesAfterExpensesUsd: stats.totals.feesAfterExpensesUsd - extra.feesAfterExpensesUsd,
+      opShareUsd: stats.totals.opShareUsd - extra.opShareUsd,
       celoToCommunityFund,
       usdToCommunityFund,
       avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
@@ -990,6 +995,126 @@ describe('daily series', () => {
 
     it('is empty for no days', () => {
       expect(cumulativeCeloAccrued([])).toEqual([]);
+    });
+  });
+});
+
+describe('period breakdown', () => {
+  const options = {
+    executionStartedAt: '2026-05-03T05:30:00.000Z',
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+
+  it('carries the costs and the estimated OP share next to the revenue', () => {
+    const days = [
+      computeDailyMetrics(dayRow),
+      computeDailyMetrics({ ...dayRow, day: '2026-05-02' }),
+    ];
+    const stats = aggregate(days);
+    expect(stats.l1CostUsd).toBeCloseTo(days[0].l1CostUsd + days[1].l1CostUsd, 6);
+    expect(stats.opShareUsd).toBeCloseTo(days[0].opShareUsd + days[1].opShareUsd, 6);
+    expect(stats.carbonFundUsd).toBe(0);
+    expect(stats.carbonFundCelo).toBe(0);
+    // Revenue less every deduction is what accrues (carbon fraction is 0%).
+    expect(stats.feesCollectedUsd - stats.l1CostUsd - stats.opShareUsd).toBeCloseTo(
+      stats.usdToCommunityFund,
+      6,
+    );
+  });
+
+  it("splits a day's fees by the currency they were paid in", () => {
+    const day = computeDailyMetrics({
+      ...dayRow,
+      fee_CELO: 1000,
+      fee_CELO_usd: 100,
+      fee_USDT: 200,
+      fee_USDC: 30,
+      fee_USDm: 40,
+      fee_EURm: 10,
+      fee_EURm_usd: 11,
+      others_usd: 5,
+    });
+    expect(day.feesByCurrencyUsd).toEqual({
+      CELO: 100,
+      USDT: 200,
+      USDC: 30,
+      USDm: 40,
+      EURm: 11,
+      other: 5,
+    });
+    const total = Object.values(day.feesByCurrencyUsd).reduce((s, v) => s + v, 0);
+    expect(total).toBeCloseTo(day.feesCollectedUsd, 10);
+    expect(sumFeesByCurrency([day, day]).USDT).toBe(400);
+  });
+
+  it('estimates the OP share as the greater of 2.5% of fees and 15% of fees after L1 costs', () => {
+    // L1 costs eat most of the revenue, so 2.5% of fees is the larger figure.
+    const thin = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 0.5 });
+    expect(thin.opShareUsd).toBeCloseTo(
+      Math.max(0.025 * thin.feesCollectedUsd, 0.15 * thin.feesAfterExpensesUsd),
+      10,
+    );
+    expect(thin.opShareUsd).toBeCloseTo(0.025 * thin.feesCollectedUsd, 10);
+    const fat = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 0 });
+    expect(fat.opShareUsd).toBeCloseTo(0.15 * fat.feesAfterExpensesUsd, 10);
+  });
+
+  it('records the Carbon Fund share on the totals it was taken off', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-19' },
+      { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
+    ];
+    const stats = statsFor(rows, {
+      executionStartedAt: '2026-04-21T05:30:00.000Z',
+      executionEndedAt: '2026-04-21T05:31:00.000Z',
+      now: new Date('2026-04-21T12:00:00.000Z'),
+    });
+    expect(stats.totals.carbonFundUsd).toBe(CARBON_FUND_SHARE_IN_WINDOW.usd);
+    expect(stats.totals.carbonFundCelo).toBe(CARBON_FUND_SHARE_IN_WINDOW.celo);
+    expect(stats.latestDayStats?.carbonFundUsd).toBe(0);
+  });
+
+  it('passes the settled transfers through, null when none were read', () => {
+    const rows = [{ ...dayRow, day: '2026-05-01' }];
+    expect(computeBuybackStats(history(rows, options), options).settled).toBeNull();
+    const settled = { celo: 10, transfers: 1, lastTransferAt: null, throughBlock: 5 };
+    expect(computeBuybackStats(history(rows, options), { ...options, settled }).settled).toEqual(
+      settled,
+    );
+  });
+
+  describe('monthlyStats', () => {
+    const rows = Array.from({ length: 12 }, (_, i) => ({
+      ...dayRow,
+      day: new Date(Date.UTC(2026, 3, 25) + i * 86_400_000).toISOString().slice(0, 10),
+    }));
+    const stats = computeBuybackStats(history(rows, options), options);
+
+    it('groups the series by calendar month, in order, counting the days', () => {
+      const months = monthlyStats(stats.days);
+      expect(months.map((m) => [m.month, m.days])).toEqual([
+        ['2026-04', 22],
+        ['2026-05', 2],
+      ]);
+    });
+
+    it('aggregates each month like the window, with the Carbon Fund share in its month', () => {
+      const [april, may] = monthlyStats(stats.days);
+      const aprilDays = stats.days.filter((d) => d.day.startsWith('2026-04'));
+      expect(april.stats.feesCollectedUsd).toBeCloseTo(
+        aprilDays.reduce((s, d) => s + d.feesCollectedUsd, 0),
+        6,
+      );
+      expect(april.stats.carbonFundUsd).toBe(CARBON_FUND_SHARE_IN_WINDOW.usd);
+      expect(may.stats.carbonFundUsd).toBe(0);
+      expect(april.feesByCurrencyUsd).toEqual(sumFeesByCurrency(aprilDays));
+      const sum = april.stats.usdToCommunityFund + may.stats.usdToCommunityFund;
+      expect(sum).toBeCloseTo(stats.totals.usdToCommunityFund, 4);
+    });
+
+    it('is empty for no days', () => {
+      expect(monthlyStats([])).toEqual([]);
     });
   });
 });
