@@ -14,7 +14,8 @@ import { DuneFeeRow } from './types';
 
 type Options = Parameters<typeof computeBuybackStats>[1];
 
-// A single day: 1000 CELO fees @ $0.10, 500 USDT fees, and $50 of L1 cost.
+// A single day: 1000 CELO fees @ $0.10, 500 USDT fees, and $50 of L1 cost
+// (0.04 ETH batcher + 0.01 ETH proposer at $1000).
 // celo_price      = 100 / 1000 = 0.10
 // revenue_usd     = 100 (CELO) + 500 (USDT) = 600
 // revenue_celo    = 600 / 0.10 = 6000
@@ -33,8 +34,8 @@ const dayRow: DuneFeeRow = {
   fee_CELO_usd: 100,
   fee_EURm_usd: 0,
   others_usd: 0,
-  batcher_cost_eth: 0.05,
-  proposer_cost_eth: 0,
+  batcher_cost_eth: 0.04,
+  proposer_cost_eth: 0.01,
   challenger_cost_eth: 0,
   EigenDA_cost_eth: 0,
   eth_price_usd: 1000,
@@ -48,11 +49,18 @@ const emptyDay: DuneFeeRow = {
   fee_USDT: 0,
   fee_CELO_usd: 0,
   batcher_cost_eth: 0,
+  proposer_cost_eth: 0,
 };
 
-// A quiet real day: 1 CELO of fees at $0.10, nothing else. Revenue $0.10,
-// OP share $0.015, so $0.085 / 0.85 CELO for the Community Fund.
-const quietDay: DuneFeeRow = { ...emptyDay, fee_CELO: 1, fee_CELO_usd: 0.1 };
+// A quiet real day: 1 CELO of fees at $0.10 and a sliver of batcher and
+// proposer cost, as every real day has.
+const quietDay: DuneFeeRow = {
+  ...emptyDay,
+  fee_CELO: 1,
+  fee_CELO_usd: 0.1,
+  batcher_cost_eth: 0.00001,
+  proposer_cost_eth: 0.00001,
+};
 
 /** Every day the window has to cover for these options. */
 function windowDays(options: Options): string[] {
@@ -142,14 +150,14 @@ describe('computeDailyMetrics', () => {
   });
 
   it('keeps losses negative when L1 costs exceed revenue, like report.py', () => {
-    // Same day but with 1 ETH of L1 cost = $1000 against $600 revenue.
+    // Same day but with 1.01 ETH of L1 cost = $1010 against $600 revenue.
     const m = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
-    expect(m.feesAfterExpensesUsd).toBeCloseTo(-400, 6);
+    expect(m.feesAfterExpensesUsd).toBeCloseTo(-410, 6);
     expect(m.communityFundUsd).toBeLessThan(0);
     expect(m.communityFundCelo).toBeLessThan(0);
     // OP share falls back to the 2.5%-of-revenue floor on loss days.
-    // buyback_usd = 600 - 1000 - max(15, -60) = -415
-    expect(m.communityFundUsd).toBeCloseTo(-415, 6);
+    // buyback_usd = 600 - 1010 - max(15, -61.5) = -425
+    expect(m.communityFundUsd).toBeCloseTo(-425, 6);
   });
 
   it('coerces string values from the Dune JSON payload', () => {
@@ -448,9 +456,9 @@ describe('computeBuybackStats', () => {
     const priced = { ...dayRow, day: '2026-05-02' };
     const cases: [string, Partial<DuneFeeRow>][] = [
       // Stablecoin fees only: USD revenue with no CELO price to convert it.
-      ['stablecoin fees', { fee_CELO: 0, fee_CELO_usd: 0, batcher_cost_eth: 0 }],
+      ['stablecoin fees', { fee_CELO: 0, fee_CELO_usd: 0 }],
       // CELO fees Dune could not price.
-      ['unpriced CELO fees', { fee_CELO_usd: 0, fee_USDT: 0, batcher_cost_eth: 0 }],
+      ['unpriced CELO fees', { fee_CELO_usd: 0, fee_USDT: 0 }],
       // Nothing but L1 costs.
       ['L1 costs', { fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0 }],
     ];
@@ -613,17 +621,30 @@ describe('computeBuybackStats', () => {
     }
   });
 
-  it('accepts a missing ETH price when there is nothing to value, or outside the window', () => {
-    const noCosts = { batcher_cost_eth: null, proposer_cost_eth: 0, EigenDA_cost_eth: null };
+  it('ignores a missing ETH price outside the window and on the execution day', () => {
     const rows: DuneFeeRow[] = [
       { ...dayRow, day: '2025-09-10', eth_price_usd: null },
-      { ...dayRow, day: '2026-05-01', ...noCosts, eth_price_usd: null },
+      { ...dayRow, day: '2026-05-01' },
       // The execution day is dropped before any of this is looked at.
       { ...dayRow, day: '2026-05-03', eth_price_usd: null },
     ];
     const stats = statsFor(rows, options);
     expect(stats.latestDay).toBe('2026-05-02');
-    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(600, 6);
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(550, 6);
+  });
+
+  it('refuses a window day without batcher or proposer costs', () => {
+    for (const change of [
+      { batcher_cost_eth: null },
+      { batcher_cost_eth: 0 },
+      { proposer_cost_eth: null },
+      { proposer_cost_eth: 0 },
+    ]) {
+      const rows: DuneFeeRow[] = [{ ...dayRow, day: '2026-05-01', ...change }];
+      expect(() => statsFor(rows, options), JSON.stringify(change)).toThrow(
+        'no batcher or proposer cost for 2026-05-01',
+      );
+    }
   });
 
   it('accepts rows in any order', () => {

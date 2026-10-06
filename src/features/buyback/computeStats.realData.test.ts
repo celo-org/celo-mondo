@@ -65,11 +65,13 @@ describe('fixture integrity', () => {
     expect(rows.some((r) => parseDay(r.day) === '2025-03-26')).toBe(true);
   });
 
-  it('has a CELO and ETH price on every window day', () => {
+  it('has CELO fees, prices and batcher and proposer costs on every window day', () => {
     for (const r of windowRows) {
       expect(num(r.fee_CELO)).toBeGreaterThan(0);
       expect(num(r.fee_CELO_usd)).toBeGreaterThan(0);
       expect(num(r.eth_price_usd)).toBeGreaterThan(0);
+      expect(num(r.batcher_cost_eth)).toBeGreaterThan(0);
+      expect(num(r.proposer_cost_eth)).toBeGreaterThan(0);
     }
   });
 

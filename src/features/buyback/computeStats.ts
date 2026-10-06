@@ -393,6 +393,15 @@ export function computeBuybackStats(
   if (idle) {
     throw new Error(`Dune history has no fees or costs on ${idle.metrics.day}`);
   }
+  // The batcher and the proposer post to L1 every day, so a day without their
+  // costs means the query lost that source (a new proposer address, say).
+  // Read as zero, those costs would silently inflate the Community Fund.
+  const unsourced = entries.find(
+    ({ row }) => num(row.batcher_cost_eth) <= 0 || num(row.proposer_cost_eth) <= 0,
+  );
+  if (unsourced) {
+    throw new Error(`Dune has no batcher or proposer cost for ${unsourced.metrics.day}`);
+  }
 
   const lastCountedDay = latest?.day ?? cutoffDay;
   const unpricedWithActivity = entries.filter(
