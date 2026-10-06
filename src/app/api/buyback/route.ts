@@ -33,6 +33,12 @@ const VERDICT_SECONDS = 60 * 60;
 // retried soon, but not on every request: while Dune is down, each attempt
 // re-downloads every page that did succeed.
 const TRANSIENT_SECONDS = 5 * 60;
+// Attempts are keyed by the time bucket they fall in rather than refreshed
+// in the background: an entry answers every request in its bucket, including
+// with a remembered failure, and the next bucket starts afresh. A background
+// refresh would hand the served-stats revalidation an old answer first and
+// delay a new execution by one more cycle.
+const bucketOf = (now: number) => String(Math.floor(now / (TRANSIENT_SECONDS * 1000)));
 
 // Part of every cache key. The Data Cache outlives a deployment and keys on
 // the cached function's own source, not on what it imports, so a change to the
@@ -103,17 +109,24 @@ const getHistoryVerdict = unstable_cache(
   { revalidate: VERDICT_SECONDS },
 );
 
-/** One attempt at the verdict every few minutes while requests to Dune fail. */
+/** One attempt at the verdict per time bucket while requests to Dune fail. */
 const getHistoryOutcome = unstable_cache(
-  (executionId: string) =>
-    attempt(() => getHistoryVerdict(executionId), `reading execution ${executionId}`),
+  (executionId: string, bucket: string) =>
+    attempt(
+      () => getHistoryVerdict(executionId),
+      `reading execution ${executionId} (bucket ${bucket})`,
+    ),
   ['buyback-history-attempt', DEPLOYMENT],
   { revalidate: TRANSIENT_SECONDS },
 );
 
-/** One probe for the execution Dune currently serves every few minutes while requests fail. */
+/** One probe per time bucket for the execution Dune currently serves. */
 const getLatestExecutionOutcome = unstable_cache(
-  () => attempt(() => fetchLatestExecution(getDuneApiKey()), 'probing the latest execution'),
+  (bucket: string) =>
+    attempt(
+      () => fetchLatestExecution(getDuneApiKey()),
+      `probing the latest execution (bucket ${bucket})`,
+    ),
   ['buyback-probe-attempt', DEPLOYMENT],
   { revalidate: TRANSIENT_SECONDS },
 );
@@ -133,9 +146,10 @@ const getLatestExecutionOutcome = unstable_cache(
  */
 const getServedStats = unstable_cache(
   async (): Promise<BuybackStats> => {
-    const probe = await getLatestExecutionOutcome();
+    const bucket = bucketOf(Date.now());
+    const probe = await getLatestExecutionOutcome(bucket);
     if ('transient' in probe) throw new Error(`Dune probe failed: ${probe.transient}`);
-    const outcome = await getHistoryOutcome(probe.executionId);
+    const outcome = await getHistoryOutcome(probe.executionId, bucket);
     if ('transient' in outcome) {
       throw new Error(
         `Dune execution ${probe.executionId} could not be read: ${outcome.transient}`,
