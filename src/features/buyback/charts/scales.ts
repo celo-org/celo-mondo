@@ -76,6 +76,24 @@ export function dayTicks(days: string[]): AxisTick[] {
   return ticks.filter((_, i) => i % every === 0);
 }
 
+const MONTH_LONG = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const monthDate = (month: string) => new Date(`${month}-01T00:00:00Z`);
+
+/** Calendar days in a YYYY-MM month. */
+export function daysInMonth(month: string): number {
+  const [year, monthIndex] = month.split('-').map(Number);
+  return new Date(Date.UTC(year, monthIndex, 0)).getUTCDate();
+}
+
+/** "May" for 2026-05. */
+export const monthShortLabel = (month: string): string => MONTH.format(monthDate(month));
+/** "May 2026" for 2026-05. */
+export const monthLongLabel = (month: string): string => MONTH_LONG.format(monthDate(month));
+
 const COMPACT = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
 
 /** Short axis figures: 1.2M, 450K, 0. */

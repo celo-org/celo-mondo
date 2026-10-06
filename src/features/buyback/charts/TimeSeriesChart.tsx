@@ -26,18 +26,18 @@ export interface TimeSeriesChartProps {
   tooltipRows: (index: number) => TooltipRow[];
 }
 
-const MARGIN = { top: 16, right: 16, bottom: 24, left: 56 };
-const PLOT_HEIGHT = 150;
+export const MARGIN = { top: 16, right: 16, bottom: 24, left: 56 };
+export const PLOT_HEIGHT = 150;
 const DEFAULT_WIDTH = 640;
-const MAX_BAR_WIDTH = 24;
+export const MAX_BAR_WIDTH = 24;
 const BAR_GAP = 2;
 const BAR_CORNER = 4;
-const SURFACE = '#ffffff';
-const GRID = '#E7E3D4';
-const AXIS = '#C6C2B5';
+export const SURFACE = '#ffffff';
+export const GRID = '#E7E3D4';
+export const AXIS = '#C6C2B5';
 
 /** The container's rendered width, so the chart fills it without scaling its text. */
-function useContainerWidth(ref: { current: HTMLElement | null }): number {
+export function useContainerWidth(ref: { current: HTMLElement | null }): number {
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   useEffect(() => {
     const element = ref.current;
@@ -53,7 +53,7 @@ function useContainerWidth(ref: { current: HTMLElement | null }): number {
 }
 
 /** A column with rounded top corners and a square base, as a path. */
-function barPath(x: number, top: number, base: number, width: number): string {
+export function barPath(x: number, top: number, base: number, width: number): string {
   const height = base - top;
   const r = Math.min(BAR_CORNER, width / 2, height);
   if (r <= 0) return '';
@@ -260,7 +260,7 @@ export function TimeSeriesChart({
   );
 }
 
-function Tooltip({
+export function Tooltip({
   day,
   rows,
   x,

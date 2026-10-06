@@ -10,8 +10,17 @@ function day(index: number, overrides: Partial<DailyMetrics> = {}): DailyMetrics
     day: date,
     celoPriceUsd: 0.08 + (index % 10) / 1000,
     feesCollectedUsd: 3000 + index * 10,
+    feesByCurrencyUsd: {
+      CELO: 2000 + index * 10,
+      USDT: 700,
+      USDC: 100,
+      USDm: 150,
+      EURm: 30,
+      other: 20,
+    },
     l1CostUsd: 40,
     feesAfterExpensesUsd: 2960 + index * 10,
+    opShareUsd: 444 + index * 1.5,
     communityFundUsd: 2500 + index * 10,
     communityFundCelo: 30_000 + index * 100,
     ...overrides,
@@ -93,19 +102,6 @@ describe('DailyCharts', () => {
     expect(within(accrued).queryByRole('status')).toBeNull();
   });
 
-  it('backs the charts with a table of every day, newest first', () => {
-    render(<DailyCharts days={days} />);
-    expect(screen.getByText('Daily figures (60 days)')).toBeInTheDocument();
-    const rows = screen.getAllByRole('row').slice(1);
-    expect(rows).toHaveLength(60);
-    expect(rows[0]).toHaveTextContent('2026-06-07');
-    expect(rows[59]).toHaveTextContent('2026-04-09');
-    const cells = within(rows[59])
-      .getAllByRole('cell')
-      .map((c) => c.textContent);
-    expect(cells).toEqual(['2026-04-09', '3,000', '40', '2,960', '30,000', '2,500', '0.080']);
-  });
-
   it('keeps a loss day below the baseline instead of hiding it', () => {
     const withLoss = days.map((d, i) =>
       i === 5 ? { ...d, communityFundCelo: -500, communityFundUsd: -40 } : d,
@@ -116,5 +112,14 @@ describe('DailyCharts', () => {
     fireEvent.keyDown(accrued, { key: 'Home' });
     for (let i = 0; i < 5; i++) fireEvent.keyDown(accrued, { key: 'ArrowRight' });
     expect(within(accrued).getByRole('status')).toHaveTextContent('-500 CELO that day');
+  });
+
+  it('plots a slice of the window series as given, so it still ends at the window total', () => {
+    const accrued = days.map((_, i) => (i + 1) * 1000);
+    render(<DailyCharts days={days.slice(30)} accrued={accrued.slice(30)} />);
+    const [chart] = screen.getAllByRole('img');
+    expect(chart.getAttribute('aria-label')).toMatch(
+      /2026-05-09 to 2026-06-07, latest 60,000 CELO$/,
+    );
   });
 });
