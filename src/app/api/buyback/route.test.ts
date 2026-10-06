@@ -53,7 +53,7 @@ async function get() {
 }
 
 describe('GET /api/buyback', () => {
-  it('keys every cache on the deployment: histories a week, verdicts an hour, attempts 5 minutes, served stats 15 minutes', async () => {
+  it('keys every cache on the deployment: histories a week, verdicts an hour, attempts and served stats per bucket', async () => {
     const route = await import('./route');
     expect(route.dynamic).toBe('force-dynamic');
     expect(unstableCache).toHaveBeenCalledTimes(5);

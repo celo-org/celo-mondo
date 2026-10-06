@@ -33,12 +33,12 @@ const VERDICT_SECONDS = 60 * 60;
 // retried soon, but not on every request: while Dune is down, each attempt
 // re-downloads every page that did succeed.
 const TRANSIENT_SECONDS = 5 * 60;
-// Attempts are keyed by the time bucket they fall in rather than refreshed
-// in the background: an entry answers every request in its bucket, including
-// with a remembered failure, and the next bucket starts afresh. A background
-// refresh would hand the served-stats revalidation an old answer first and
-// delay a new execution by one more cycle.
-const bucketOf = (now: number) => String(Math.floor(now / (TRANSIENT_SECONDS * 1000)));
+// Entries are keyed by the time bucket they fall in rather than refreshed in
+// the background: an entry answers every request in its bucket, including
+// with a remembered failure, and the first request of the next bucket
+// refreshes in the foreground. A background refresh would hand that request
+// the previous answer and delay a new execution by one more cycle.
+const bucketOf = (now: number, seconds: number) => String(Math.floor(now / (seconds * 1000)));
 
 // Part of every cache key. The Data Cache outlives a deployment and keys on
 // the cached function's own source, not on what it imports, so a change to the
@@ -134,19 +134,20 @@ const getLatestExecutionOutcome = unstable_cache(
 /**
  * The stats to serve: a cheap one-row probe for the execution Dune currently
  * serves, then that execution's stats. Cached across requests and server
- * instances, so page visits and React Query refetches share one probe.
+ * instances per 15-minute bucket, so page visits and React Query refetches
+ * share one probe, and the first request of a bucket sees a new execution at
+ * once rather than one cycle later.
  *
- * A failure is never stored here. With nothing cached yet it surfaces as an
- * error; once an entry exists, Next serves it while refreshing in the
- * background and keeps it if that refresh fails. A new execution therefore
- * replaces the served figures only once its history has been read and
- * validated; if it cannot be, the last good figures stay up. Their age stays
- * visible: `updatedAt` is Dune's execution time and the page flags data that
- * has gone stale.
+ * A failure is never stored here; it surfaces as an error for the request
+ * that hit it, and the next request in the bucket tries again (cheaply: the
+ * attempt caches below remember what failed). A new execution replaces the
+ * served figures only once its history has been read and validated. Their
+ * age stays visible: `updatedAt` is Dune's execution time and the page flags
+ * data that has gone stale.
  */
 const getServedStats = unstable_cache(
-  async (): Promise<BuybackStats> => {
-    const bucket = bucketOf(Date.now());
+  async (servedBucket: string): Promise<BuybackStats> => {
+    const bucket = bucketOf(Date.now(), TRANSIENT_SECONDS);
     const probe = await getLatestExecutionOutcome(bucket);
     if ('transient' in probe) throw new Error(`Dune probe failed: ${probe.transient}`);
     const outcome = await getHistoryOutcome(probe.executionId, bucket);
@@ -158,6 +159,7 @@ const getServedStats = unstable_cache(
     if ('failure' in outcome) {
       throw new Error(`Dune execution ${probe.executionId} is unusable: ${outcome.failure}`);
     }
+    logger.debug(`Buyback stats served for bucket ${servedBucket} from ${probe.executionId}`);
     return outcome.stats;
   },
   ['buyback-served-stats', DEPLOYMENT],
@@ -172,7 +174,7 @@ export async function GET() {
 
   try {
     logger.debug('Buyback stats request received');
-    return Response.json(await getServedStats());
+    return Response.json(await getServedStats(bucketOf(Date.now(), PROBE_SECONDS)));
   } catch (error) {
     // Keep Dune's response out of the public body; the detail is in the log.
     logger.error('Buyback stats error', error);
