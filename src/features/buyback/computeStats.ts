@@ -376,11 +376,18 @@ export function computeBuybackStats(
   // day's CELO price, so such a day is refused unless it is entirely empty.
   // With no priced day at all, every day with activity is such a day: a
   // history that lost its prices must not pass as an empty dashboard.
+  const hasActivity = ({ row, metrics }: (typeof entries)[number]) =>
+    num(row.fee_CELO) > 0 || metrics.feesCollectedUsd !== 0 || metrics.l1CostUsd !== 0;
+  // The chain has had fees every day since the window opened, so a window
+  // with rows for every day and nothing on any of them is a source that
+  // stopped matching, not a quiet period.
+  if (entries.length > 0 && !entries.some(hasActivity)) {
+    throw new Error('Dune history has no fees or costs on any day of the window');
+  }
+
   const lastCountedDay = latest?.day ?? cutoffDay;
   const unpricedWithActivity = entries.filter(
-    ({ row, metrics }) =>
-      metrics.celoPriceUsd <= 0 &&
-      (num(row.fee_CELO) > 0 || metrics.feesCollectedUsd !== 0 || metrics.l1CostUsd !== 0),
+    (entry) => entry.metrics.celoPriceUsd <= 0 && hasActivity(entry),
   );
   const unpriced = unpricedWithActivity.find(({ metrics }) => metrics.day < lastCountedDay);
   if (unpriced) {

@@ -447,6 +447,10 @@ describe('computeBuybackStats', () => {
     expect(() => statsFor(rows, late)).toThrow('no CELO price for 3 days through 2026-05-05');
   });
 
+  it('refuses a window whose rows are all present but all empty', () => {
+    expect(() => statsFor([], options)).toThrow('no fees or costs on any day of the window');
+  });
+
   it('refuses a history with activity but no CELO price on any day', () => {
     // What a query edit that drops the price join would look like.
     const rows: DuneFeeRow[] = [
