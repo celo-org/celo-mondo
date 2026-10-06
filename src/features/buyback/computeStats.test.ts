@@ -41,6 +41,7 @@ const dayRow: DuneFeeRow = {
 };
 
 // A day on which nothing happened: no fees, no costs, so no CELO price either.
+// Real days are never like this, and the computation refuses them.
 const emptyDay: DuneFeeRow = {
   ...dayRow,
   fee_CELO: 0,
@@ -49,23 +50,65 @@ const emptyDay: DuneFeeRow = {
   batcher_cost_eth: 0,
 };
 
+// A quiet real day: 1 CELO of fees at $0.10, nothing else. Revenue $0.10,
+// OP share $0.015, so $0.085 / 0.85 CELO for the Community Fund.
+const quietDay: DuneFeeRow = { ...emptyDay, fee_CELO: 1, fee_CELO_usd: 0.1 };
+
+/** Every day the window has to cover for these options. */
+function windowDays(options: Options): string[] {
+  const days: string[] = [];
+  const end = firstIncompleteDay(options);
+  for (let day = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE); day < end; day = nextUtcDay(day)) {
+    days.push(day);
+  }
+  return days;
+}
+
+/** A row per window day from a template, so a whole history can be stated at once. */
+const everyDay = (template: DuneFeeRow, options: Options): DuneFeeRow[] =>
+  windowDays(options).map((day) => ({ ...template, day }));
+
+/** The quiet days that complete the window around the given rows. */
+function fillerFor(rows: DuneFeeRow[], options: Options): DuneFeeRow[] {
+  const present = new Set(rows.map((r) => parseDay(r.day)));
+  return windowDays(options)
+    .filter((day) => !present.has(day))
+    .map((day) => ({ ...quietDay, day }));
+}
+
 /**
- * The given rows plus an empty row for every other day the window has to
+ * The given rows plus a quiet day for every other day the window has to
  * cover, so a test can state only the days it is about. Real Dune results have
  * a row per day; a history with holes is refused (see the coverage tests).
  */
-function history(rows: DuneFeeRow[], options: Options): DuneFeeRow[] {
-  const present = new Set(rows.map((r) => parseDay(r.day)));
-  const filler: DuneFeeRow[] = [];
-  const end = firstIncompleteDay(options);
-  for (let day = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE); day < end; day = nextUtcDay(day)) {
-    if (!present.has(day)) filler.push({ ...emptyDay, day });
-  }
-  return [...rows, ...filler];
-}
+const history = (rows: DuneFeeRow[], options: Options): DuneFeeRow[] => [
+  ...rows,
+  ...fillerFor(rows, options),
+];
 
-const statsFor = (rows: DuneFeeRow[], options: Options) =>
-  computeBuybackStats(history(rows, options), options);
+/**
+ * Stats for the given rows over a completed window, with the quiet filler
+ * days' share taken back out of the totals so expectations can be stated in
+ * terms of the rows alone. The filler days are always priced, so every one of
+ * them is counted.
+ */
+function statsFor(rows: DuneFeeRow[], options: Options) {
+  const filler = fillerFor(rows, options);
+  const stats = computeBuybackStats([...rows, ...filler], options);
+  const extra = aggregate(filler.map(computeDailyMetrics));
+  const celoToCommunityFund = stats.totals.celoToCommunityFund - extra.celoToCommunityFund;
+  const usdToCommunityFund = stats.totals.usdToCommunityFund - extra.usdToCommunityFund;
+  return {
+    ...stats,
+    totals: {
+      feesCollectedUsd: stats.totals.feesCollectedUsd - extra.feesCollectedUsd,
+      feesAfterExpensesUsd: stats.totals.feesAfterExpensesUsd - extra.feesAfterExpensesUsd,
+      celoToCommunityFund,
+      usdToCommunityFund,
+      avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
+    },
+  };
+}
 
 describe('computeDailyMetrics', () => {
   it('computes P&L faithfully to report.py compute_row', () => {
@@ -335,7 +378,8 @@ describe('computeBuybackStats', () => {
     expect(stats.sinceDay).toBe('2026-04-09');
     // Only the post-cutoff day counts: 600 USD of fees, not 1800.
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
-    expect(stats.latestDay).toBe('2026-04-09');
+    // The window runs on through quiet days to the day before the execution.
+    expect(stats.latestDay).toBe('2026-05-02');
   });
 
   it("drops today's partial bucket and only counts complete UTC days", () => {
@@ -448,32 +492,32 @@ describe('computeBuybackStats', () => {
   });
 
   it('refuses a window whose rows are all present but all empty', () => {
-    expect(() => statsFor([], options)).toThrow('no fees or costs on any day of the window');
+    expect(() => computeBuybackStats(everyDay(emptyDay, options), options)).toThrow(
+      'no fees or costs on 2026-04-09',
+    );
+  });
+
+  it('refuses a single empty day, wherever it falls', () => {
+    for (const day of ['2026-04-09', '2026-04-20', '2026-05-02']) {
+      const rows = everyDay(quietDay, options).map((r) =>
+        parseDay(r.day) === day ? { ...emptyDay, day } : r,
+      );
+      expect(() => computeBuybackStats(rows, options), day).toThrow(`no fees or costs on ${day}`);
+    }
+  });
+
+  it('refuses EURm fees that Dune did not value', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01', fee_EURm: 3, fee_EURm_usd: 0 },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    expect(() => statsFor(rows, options)).toThrow('EURm fees but no EURm price for 2026-05-01');
   });
 
   it('refuses a history with activity but no CELO price on any day', () => {
     // What a query edit that drops the price join would look like.
-    const rows: DuneFeeRow[] = [
-      { ...dayRow, day: '2026-05-01', fee_CELO_usd: 0 },
-      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 0 },
-    ];
-    expect(() => statsFor(rows, options)).toThrow('no CELO price for 2026-05-01');
-  });
-
-  it('accepts an entirely empty day in the middle of the window', () => {
-    const empty = { fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0, batcher_cost_eth: 0 };
-    const rows: DuneFeeRow[] = [
-      { ...dayRow, day: '2026-04-30' },
-      { ...dayRow, day: '2026-05-01', ...empty },
-      { ...dayRow, day: '2026-05-02' },
-    ];
-    const stats = statsFor(rows, options);
-    expect(stats.latestDay).toBe('2026-05-02');
-    expect(stats.totals.feesCollectedUsd).toBeCloseTo(1200, 6);
-    expect(stats.totals.celoToCommunityFund).toBeCloseTo(
-      2 * 4675 - CARBON_FUND_SHARE_IN_WINDOW.celo,
-      4,
-    );
+    const rows = everyDay({ ...dayRow, fee_CELO_usd: 0 }, options);
+    expect(() => computeBuybackStats(rows, options)).toThrow('no CELO price for 2026-04-09');
   });
 
   it('counts a day as complete only once the next UTC day has started', () => {
@@ -503,6 +547,8 @@ describe('computeBuybackStats', () => {
     expect(statsFor([dayRow], { ...options, executionEndedAt: null }).updatedAt).toBeNull();
   });
 
+  // In these tests the window runs through quiet filler days, so the latest
+  // day is the window's last day, not the last day a test spells out.
   it('ignores individual rows without a usable day', () => {
     const stats = statsFor(
       [
@@ -512,7 +558,7 @@ describe('computeBuybackStats', () => {
       ],
       options,
     );
-    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.latestDay).toBe('2026-05-02');
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
   });
 
@@ -536,7 +582,7 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
     // L1 = batcher $50 + EigenDA (0.01 + 0.02) ETH x $1000 = $80.
     expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(520, 6);
-    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.latestDay).toBe('2026-05-02');
   });
 
   it('refuses same-day rows that disagree on anything but the EigenDA cost', () => {
@@ -576,7 +622,7 @@ describe('computeBuybackStats', () => {
       { ...dayRow, day: '2026-05-03', eth_price_usd: null },
     ];
     const stats = statsFor(rows, options);
-    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.latestDay).toBe('2026-05-02');
     expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(600, 6);
   });
 
@@ -614,7 +660,7 @@ describe('window coverage', () => {
 
   it('accepts a history with a row for every day of the window', () => {
     expect(whole).toHaveLength(24); // 2026-04-09 through 2026-05-02
-    expect(computeBuybackStats(whole, options).latestDay).toBe('2026-05-01');
+    expect(computeBuybackStats(whole, options).latestDay).toBe('2026-05-02');
   });
 
   it('refuses a history with nothing in the window', () => {
@@ -644,7 +690,7 @@ describe('window coverage', () => {
       executionEndedAt: null,
       now: new Date('2026-05-10T12:00:00.000Z'),
     });
-    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.latestDay).toBe('2026-05-02');
     // Gaps and a late start are still refused.
     expect(() =>
       computeBuybackStats(without('2026-04-20'), {
@@ -656,12 +702,12 @@ describe('window coverage', () => {
 
   it('counts a fanned-out day as covered', () => {
     const fanned = [...whole, { ...dayRow, day: '2026-05-01', EigenDA_cost_eth: 0.01 }];
-    expect(computeBuybackStats(fanned, options).latestDay).toBe('2026-05-01');
+    expect(computeBuybackStats(fanned, options).latestDay).toBe('2026-05-02');
   });
 
   it('ignores holes before the window', () => {
     const rows = [{ ...dayRow, day: '2025-03-26' }, { ...dayRow, day: '2026-04-01' }, ...whole];
-    expect(computeBuybackStats(rows, options).latestDay).toBe('2026-05-01');
+    expect(computeBuybackStats(rows, options).latestDay).toBe('2026-05-02');
   });
 });
 
@@ -677,7 +723,7 @@ describe('Carbon Fund share deduction', () => {
       { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
       { ...dayRow, day: '2026-04-21' },
     ];
-    const stats = statsFor(rows, options);
+    const stats = statsFor(rows, { ...options, now: new Date('2026-04-22T12:00:00.000Z') });
     // Three identical days: 3 x 4675 CELO and 3 x 467.5 USD before the deduction.
     expect(stats.totals.celoToCommunityFund).toBeCloseTo(
       3 * 4675 - CARBON_FUND_SHARE_IN_WINDOW.celo,

@@ -335,6 +335,11 @@ function selectWindowRows(
     if (l1CostEth(row) > 0 && num(row.eth_price_usd) <= 0) {
       throw new Error(`Dune has L1 costs but no ETH price for ${day}`);
     }
+    // EURm is the one fee currency valued by Dune's price feed rather than a
+    // peg; without that price its fees would silently drop out of revenue.
+    if (num(row.fee_EURm) > 0 && num(row.fee_EURm_usd) <= 0) {
+      throw new Error(`Dune has EURm fees but no EURm price for ${day}`);
+    }
     return row;
   });
 }
@@ -377,12 +382,16 @@ export function computeBuybackStats(
   // With no priced day at all, every day with activity is such a day: a
   // history that lost its prices must not pass as an empty dashboard.
   const hasActivity = ({ row, metrics }: (typeof entries)[number]) =>
-    num(row.fee_CELO) > 0 || metrics.feesCollectedUsd !== 0 || metrics.l1CostUsd !== 0;
-  // The chain has had fees every day since the window opened, so a window
-  // with rows for every day and nothing on any of them is a source that
-  // stopped matching, not a quiet period.
-  if (entries.length > 0 && !entries.some(hasActivity)) {
-    throw new Error('Dune history has no fees or costs on any day of the window');
+    num(row.fee_CELO) > 0 ||
+    num(row.fee_EURm) > 0 ||
+    metrics.feesCollectedUsd !== 0 ||
+    metrics.l1CostUsd !== 0;
+  // The chain has had fees every day since the window opened, so a day with
+  // a row and nothing on it is a source that stopped matching, not a quiet
+  // day; counted as zero it would silently shrink the totals.
+  const idle = entries.find((entry) => !hasActivity(entry));
+  if (idle) {
+    throw new Error(`Dune history has no fees or costs on ${idle.metrics.day}`);
   }
 
   const lastCountedDay = latest?.day ?? cutoffDay;
