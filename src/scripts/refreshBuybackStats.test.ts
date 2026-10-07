@@ -437,6 +437,76 @@ describe('refreshBuybackStats', () => {
     expect(execute).toBeGreaterThan(lastEarlyPoll);
   });
 
+  it('refreshes after a timestamp-less execution turns out to have started before the refresh time', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        { state: 'QUERY_STATE_PENDING', execution_id: '01BLIND' },
+      ],
+      'GET execution/01BLIND/status': [
+        {
+          execution_id: '01BLIND',
+          state: 'QUERY_STATE_COMPLETED',
+          execution_started_at: '2026-09-18T05:25:00.000000Z',
+        },
+      ],
+      ...executeNew,
+      'GET execution/01NEW/status': [status('QUERY_STATE_COMPLETED')],
+      ...pagesOf('01NEW', rows),
+    });
+
+    await refresh();
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01NEW']);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining('01BLIND: the latest execution'));
+  });
+
+  it('uses a timestamp-less execution once its status shows it started after the refresh time', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        { state: 'QUERY_STATE_PENDING', execution_id: '01BLIND' },
+      ],
+      'GET execution/01BLIND/status': [
+        {
+          execution_id: '01BLIND',
+          state: 'QUERY_STATE_COMPLETED',
+          execution_started_at: '2026-09-18T05:35:00.000000Z',
+        },
+      ],
+      ...pagesOf('01BLIND', rows, {
+        execution_started_at: '2026-09-18T05:35:00.000000Z',
+        execution_ended_at: '2026-09-18T05:35:20.000000Z',
+      }),
+    });
+
+    await refresh();
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01BLIND']);
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+  });
+
+  it('lets a manual run keep using the execution it queued behind, whenever it started', async () => {
+    serve({
+      'GET query/6898547/results?limit=1&offset=0': [
+        { state: 'QUERY_STATE_PENDING', execution_id: '01BLIND' },
+      ],
+      'GET execution/01BLIND/status': [
+        {
+          execution_id: '01BLIND',
+          state: 'QUERY_STATE_COMPLETED',
+          execution_started_at: '2026-09-18T05:25:00.000000Z',
+        },
+      ],
+      ...pagesOf('01BLIND', rows, {
+        execution_started_at: '2026-09-18T05:25:00.000000Z',
+        execution_ended_at: '2026-09-18T05:25:20.000000Z',
+      }),
+    });
+
+    await refresh(manual);
+
+    expect((await storedRows()).map((r) => r.executionId)).toEqual(['01BLIND']);
+  });
+
   it('uses an early-queued execution after all when Dune started it after the refresh time', async () => {
     serve({
       'GET query/6898547/results?limit=1&offset=0': [

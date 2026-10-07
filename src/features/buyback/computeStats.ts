@@ -379,12 +379,27 @@ export function usableExecutionStart(options: ComputeBuybackStatsOptions): strin
   return started && usableTimestamps(options).includes(started) ? started : null;
 }
 
-/** The UTC day Dune took its snapshot on, when it reports a usable execution time. */
+// Dune stops an execution after half an hour, so one that ended this long
+// after midnight cannot have started the day before.
+const MAX_EXECUTION_MS = 60 * 60 * 1000;
+
+/**
+ * The first UTC day the snapshot may not cover in full: the day the execution
+ * started. Without a usable start time only the end is known; an execution
+ * that ended within the first hour of a day may have started the day before,
+ * which is then treated as partial too.
+ */
 function snapshotDayOf(options: ComputeBuybackStatsOptions): string | null {
   const usable = usableTimestamps(options);
   const dayIfUsable = (t: string | null | undefined) =>
     t && usable.includes(t) ? utcDayOf(t) : null;
-  return dayIfUsable(options.executionStartedAt) ?? dayIfUsable(options.executionEndedAt);
+  const startedDay = dayIfUsable(options.executionStartedAt);
+  if (startedDay !== null) return startedDay;
+  const endedDay = dayIfUsable(options.executionEndedAt);
+  if (endedDay === null) return null;
+  const sinceMidnight =
+    Date.parse(options.executionEndedAt as string) - Date.parse(`${endedDay}T00:00:00Z`);
+  return sinceMidnight < MAX_EXECUTION_MS ? previousUtcDay(endedDay) : endedDay;
 }
 
 /** The UTC calendar day before the given one. */

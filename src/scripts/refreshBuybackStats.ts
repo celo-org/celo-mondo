@@ -77,7 +77,7 @@ export interface RefreshContext {
 export type RefreshPlan =
   | { kind: 'execute'; reason: string }
   | { kind: 'use'; executionId: string; reason: string }
-  | { kind: 'await'; executionId: string; reason: string }
+  | { kind: 'await'; executionId: string; latest: DuneExecution; reason: string }
   | { kind: 'await-then-execute'; executionId: string; latest: DuneExecution; reason: string };
 
 export function planRefresh(
@@ -107,6 +107,7 @@ export function planRefresh(
       return {
         kind: 'await',
         executionId,
+        latest,
         reason: `Dune is already running the query (execution ${executionId}, ${state}, timestamp ${reference ?? 'missing'})`,
       };
     }
@@ -136,6 +137,7 @@ export function planRefresh(
       return {
         kind: 'await',
         executionId,
+        latest,
         reason: `Dune is already running the query (execution ${executionId}, ${state} since ${reference})`,
       };
     }
@@ -169,11 +171,14 @@ export function planRefresh(
   return { kind: 'execute', reason: `the latest execution (${executionId}) ended as ${state}` };
 }
 
-/** The timestamps a finished execution reports, in the probe's shape. */
-function timestampsOf(outcome: ExecutionOutcome) {
+/**
+ * The timestamps a finished execution reports, in the probe's shape; where the
+ * status omits one, what the probe reported stands.
+ */
+function timestampsOf(outcome: ExecutionOutcome, probed: DuneExecution) {
   return {
-    executionStartedAt: outcome.executionStartedAt,
-    executionEndedAt: outcome.executionEndedAt,
+    executionStartedAt: outcome.executionStartedAt ?? probed.executionStartedAt,
+    executionEndedAt: outcome.executionEndedAt ?? probed.executionEndedAt,
   };
 }
 
@@ -265,7 +270,23 @@ export async function refreshBuybackStats({
       break;
     case 'await': {
       const outcome = await awaitExisting(plan.executionId);
-      executionId = outcome?.completed ? plan.executionId : await executeAndWait();
+      // A scheduled run may only use the execution if its completion status
+      // shows it started at or after the refresh time; one awaited without a
+      // usable timestamp could have started before it. A manual run queued
+      // behind an execution uses it regardless, as it planned to.
+      const again =
+        outcome?.completed && scheduled
+          ? planRefresh(
+              { ...plan.latest, state: outcome.state, ...timestampsOf(outcome, plan.latest) },
+              { scheduled, force, now: clock() },
+            )
+          : null;
+      if (outcome?.completed && (!scheduled || again?.kind === 'use')) {
+        executionId = plan.executionId;
+      } else {
+        if (again) log(`Dune execution ${plan.executionId}: ${again.reason}; executing`);
+        executionId = await executeAndWait();
+      }
       break;
     }
     case 'await-then-execute': {
@@ -276,7 +297,7 @@ export async function refreshBuybackStats({
       // wait learned.
       const started = outcome?.completed
         ? planRefresh(
-            { ...plan.latest, state: outcome.state, ...timestampsOf(outcome) },
+            { ...plan.latest, state: outcome.state, ...timestampsOf(outcome, plan.latest) },
             { scheduled, force, now: clock() },
           )
         : null;

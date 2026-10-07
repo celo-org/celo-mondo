@@ -357,6 +357,28 @@ describe('firstIncompleteDay', () => {
     ).toBe('2026-05-03');
   });
 
+  it('treats the day before as partial too when only an end just after midnight is known', () => {
+    // The execution may have started before midnight; its first day is not whole.
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T00:00:10.000Z', now })).toBe(
+      '2026-05-02',
+    );
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T00:59:59.000Z', now })).toBe(
+      '2026-05-02',
+    );
+    // An hour in, Dune's half-hour limit rules that out.
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T01:00:00.000Z', now })).toBe(
+      '2026-05-03',
+    );
+    // A usable start time settles it either way.
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-03T00:00:01.000Z',
+        executionEndedAt: '2026-05-03T00:00:10.000Z',
+        now,
+      }),
+    ).toBe('2026-05-03');
+  });
+
   it('falls back to today when Dune reports no usable execution time', () => {
     expect(firstIncompleteDay({ executionEndedAt: null, now })).toBe('2026-05-05');
     expect(
