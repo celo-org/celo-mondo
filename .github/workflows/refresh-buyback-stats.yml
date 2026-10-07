@@ -1,0 +1,109 @@
+name: Refresh Buyback Stats
+
+# Daily refresh of the /buyback dashboard: re-executes the Dune P&L query
+# (id 6898547), reads and validates its results, computes the figures and
+# stores them in the production and staging databases, which /api/buyback
+# serves. The app itself never talks to Dune, so page traffic can neither
+# spend execution credits nor be left waiting on Dune.
+#
+# Needs the DUNE_API_KEY repository secret (a key of a Dune account that may
+# execute the query and has datapoint budget left for one execution and one
+# read of its results a day) and PRIVATE_NO_RATE_LIMITED_NODE, the archive
+# node the stage-update cron also uses, for the transfers to the Community
+# Fund that have actually been mined.
+
+on:
+  schedule:
+    # Daily at 05:30 UTC, after the previous UTC day is complete and Dune's
+    # ingestion has caught up. Must match REFRESH_TIME_UTC in
+    # src/scripts/refreshBuybackStats.ts.
+    - cron: '30 5 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Execute even if Dune ran the query recently or already today'
+        type: boolean
+        default: false
+
+# One run at a time: two overlapping runs would both decide to execute before
+# either execution finished, then both would start a billed execution. Later
+# runs queue up (every one of them, not only the newest: a manual dispatch
+# must not displace a pending scheduled run, which is the only one that
+# refuses to reuse an execution from before the scheduled time) and each
+# sees the previous run's execution.
+concurrency:
+  group: refresh-buyback-stats
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: yarn-install
+        run: |
+          yarn install --immutable
+          CHANGES=$(git status -s)
+          if [[ ! -z $CHANGES ]]; then
+            echo "Changes found: $CHANGES"
+            git diff
+            exit 1
+          fi
+
+  refresh:
+    runs-on: ubuntu-latest
+    needs: [install]
+    # Worst case in the script: ten minutes waiting for an execution that was
+    # already running, ten for its own, the result pages, then about sixteen
+    # archive-node log queries of up to a minute each. Well under an hour.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      # The script itself only requires the production database (staging is
+      # optional for local runs), so an unset secret is caught here instead
+      # of quietly refreshing one database and reporting success.
+      - name: Check that every secret is set
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          POSTGRES_URL_STAGING: ${{ secrets.POSTGRES_URL_STAGING }}
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+        run: |
+          for name in DUNE_API_KEY POSTGRES_URL POSTGRES_URL_STAGING PRIVATE_NO_RATE_LIMITED_NODE; do
+            if [ -z "${!name}" ]; then
+              echo "The $name secret is not set" >&2
+              exit 1
+            fi
+          done
+
+      - name: Refresh buyback stats (production and staging)
+        run: npx tsx src/scripts/refreshBuybackStats.ts
+        env:
+          DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          POSTGRES_URL_STAGING: ${{ secrets.POSTGRES_URL_STAGING }}
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
+          FORCE: ${{ inputs.force }}
+          CI: true

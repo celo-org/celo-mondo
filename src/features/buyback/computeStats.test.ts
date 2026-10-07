@@ -1,0 +1,1142 @@
+import { describe, expect, it } from 'vitest';
+import {
+  CARBON_FUND_SHARE_IN_WINDOW,
+  SETTLED_REVENUE_CUTOFF_DATE,
+  aggregate,
+  computeBuybackStats,
+  computeDailyMetrics,
+  cumulativeCeloAccrued,
+  firstIncompleteDay,
+  mergeSameDayRows,
+  monthlyStats,
+  nextUtcDay,
+  parseDay,
+  sumFeesByCurrency,
+} from './computeStats';
+import { DuneFeeRow } from './types';
+
+type Options = Parameters<typeof computeBuybackStats>[1];
+
+// A single day: 1000 CELO fees @ $0.10, 500 USDT fees, and $50 of L1 cost
+// (0.04 ETH batcher + 0.01 ETH proposer at $1000).
+// celo_price      = 100 / 1000 = 0.10
+// revenue_usd     = 100 (CELO) + 500 (USDT) = 600
+// revenue_celo    = 600 / 0.10 = 6000
+// l1_usd          = 0.05 ETH * 1000 = 50 ; l1_celo = 50 / 0.10 = 500
+// op_profit_celo  = 6000 - 500 = 5500
+// op_share_celo   = max(0.025*6000, 0.15*5500) = max(150, 825) = 825
+// buyback_celo    = 6000 - 0 - 500 - 825 = 4675
+// buyback_usd     = 4675 * 0.10 = 467.5
+const dayRow: DuneFeeRow = {
+  day: '2026-05-01',
+  fee_CELO: 1000,
+  fee_USDT: 500,
+  fee_USDm: 0,
+  fee_EURm: 0,
+  fee_USDC: 0,
+  fee_CELO_usd: 100,
+  fee_EURm_usd: 0,
+  others_usd: 0,
+  batcher_cost_eth: 0.04,
+  proposer_cost_eth: 0.01,
+  challenger_cost_eth: 0,
+  EigenDA_cost_eth: 0,
+  eth_price_usd: 1000,
+};
+
+// A day on which nothing happened: no fees, no costs, so no CELO price either.
+// Real days are never like this, and the computation refuses them.
+const emptyDay: DuneFeeRow = {
+  ...dayRow,
+  fee_CELO: 0,
+  fee_USDT: 0,
+  fee_CELO_usd: 0,
+  batcher_cost_eth: 0,
+  proposer_cost_eth: 0,
+};
+
+// A quiet real day: 1 CELO of fees at $0.10 and a sliver of batcher and
+// proposer cost, as every real day has.
+const quietDay: DuneFeeRow = {
+  ...emptyDay,
+  fee_CELO: 1,
+  fee_CELO_usd: 0.1,
+  batcher_cost_eth: 0.00001,
+  proposer_cost_eth: 0.00001,
+};
+
+/** Every day the window has to cover for these options. */
+function windowDays(options: Options): string[] {
+  const days: string[] = [];
+  const end = firstIncompleteDay(options);
+  for (let day = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE); day < end; day = nextUtcDay(day)) {
+    days.push(day);
+  }
+  return days;
+}
+
+/** A row per window day from a template, so a whole history can be stated at once. */
+const everyDay = (template: DuneFeeRow, options: Options): DuneFeeRow[] =>
+  windowDays(options).map((day) => ({ ...template, day }));
+
+/** The quiet days that complete the window around the given rows. */
+function fillerFor(rows: DuneFeeRow[], options: Options): DuneFeeRow[] {
+  const present = new Set(rows.map((r) => parseDay(r.day)));
+  return windowDays(options)
+    .filter((day) => !present.has(day))
+    .map((day) => ({ ...quietDay, day }));
+}
+
+/**
+ * The given rows plus a quiet day for every other day the window has to
+ * cover, so a test can state only the days it is about. Real Dune results have
+ * a row per day; a history with holes is refused (see the coverage tests).
+ */
+const history = (rows: DuneFeeRow[], options: Options): DuneFeeRow[] => [
+  ...rows,
+  ...fillerFor(rows, options),
+];
+
+/**
+ * Stats for the given rows over a completed window, with the quiet filler
+ * days' share taken back out of the totals so expectations can be stated in
+ * terms of the rows alone. The filler days are always priced, so every one of
+ * them is counted.
+ */
+function statsFor(rows: DuneFeeRow[], options: Options) {
+  const filler = fillerFor(rows, options);
+  const stats = computeBuybackStats([...rows, ...filler], options);
+  const extra = aggregate(filler.map(computeDailyMetrics));
+  const celoToCommunityFund = stats.totals.celoToCommunityFund - extra.celoToCommunityFund;
+  const usdToCommunityFund = stats.totals.usdToCommunityFund - extra.usdToCommunityFund;
+  return {
+    ...stats,
+    totals: {
+      ...stats.totals,
+      feesCollectedUsd: stats.totals.feesCollectedUsd - extra.feesCollectedUsd,
+      l1CostUsd: stats.totals.l1CostUsd - extra.l1CostUsd,
+      feesAfterExpensesUsd: stats.totals.feesAfterExpensesUsd - extra.feesAfterExpensesUsd,
+      opShareUsd: stats.totals.opShareUsd - extra.opShareUsd,
+      celoToCommunityFund,
+      usdToCommunityFund,
+      avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
+    },
+  };
+}
+
+describe('computeDailyMetrics', () => {
+  it('computes P&L faithfully to report.py compute_row', () => {
+    const m = computeDailyMetrics(dayRow);
+    expect(m.celoPriceUsd).toBeCloseTo(0.1, 10);
+    expect(m.feesCollectedUsd).toBeCloseTo(600, 6);
+    expect(m.l1CostUsd).toBeCloseTo(50, 6);
+    expect(m.feesAfterExpensesUsd).toBeCloseTo(550, 6);
+    expect(m.communityFundCelo).toBeCloseTo(4675, 4);
+    expect(m.communityFundUsd).toBeCloseTo(467.5, 6);
+  });
+
+  it('uses hardcoded $1 pegs for stablecoins, ignoring missing Dune USD columns', () => {
+    // fee_CELO_usd omitted from revenue on the CELO side but USDT still pegs to $1.
+    const m = computeDailyMetrics({ ...dayRow, fee_USDT: 250, fee_CELO_usd: 100 });
+    // revenue = 100 + 250 = 350
+    expect(m.feesCollectedUsd).toBeCloseTo(350, 6);
+  });
+
+  it('handles a day with no CELO fees without dividing by zero', () => {
+    const m = computeDailyMetrics({
+      ...dayRow,
+      fee_CELO: 0,
+      fee_CELO_usd: 0,
+      fee_USDT: 100,
+    });
+    expect(m.celoPriceUsd).toBe(0);
+    expect(m.feesCollectedUsd).toBeCloseTo(100, 6);
+    // Without a CELO price the CELO-denominated buyback is 0.
+    expect(m.communityFundCelo).toBe(0);
+  });
+
+  it('keeps losses negative when L1 costs exceed revenue, like report.py', () => {
+    // Same day but with 1.01 ETH of L1 cost = $1010 against $600 revenue.
+    const m = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
+    expect(m.feesAfterExpensesUsd).toBeCloseTo(-410, 6);
+    expect(m.communityFundUsd).toBeLessThan(0);
+    expect(m.communityFundCelo).toBeLessThan(0);
+    // OP share falls back to the 2.5%-of-revenue floor on loss days.
+    // buyback_usd = 600 - 1010 - max(15, -61.5) = -425
+    expect(m.communityFundUsd).toBeCloseTo(-425, 6);
+  });
+
+  it('coerces string values from the Dune JSON payload', () => {
+    const m = computeDailyMetrics({
+      ...dayRow,
+      fee_CELO: '1000',
+      fee_CELO_usd: '100',
+      fee_USDT: '500',
+    } as unknown as DuneFeeRow);
+    expect(m.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('treats null, empty and non-numeric strings as zero', () => {
+    const m = computeDailyMetrics({
+      ...dayRow,
+      fee_USDT: null,
+      fee_USDm: '',
+      fee_USDC: 'NaN',
+      others_usd: 'n/a',
+      EigenDA_cost_eth: 'Infinity',
+    } as unknown as DuneFeeRow);
+    // Only the CELO fees and the batcher cost survive.
+    expect(m.feesCollectedUsd).toBeCloseTo(100, 6);
+    expect(m.l1CostUsd).toBeCloseTo(50, 6);
+    expect(Number.isFinite(m.communityFundCelo)).toBe(true);
+  });
+});
+
+describe('aggregate', () => {
+  it('weights the average CELO price by volume', () => {
+    const days = [
+      { ...computeDailyMetrics(dayRow) },
+      // Second day at a higher price: 1000 CELO @ $0.20, no other fees, no costs.
+      computeDailyMetrics({
+        ...dayRow,
+        day: '2026-05-02',
+        fee_USDT: 0,
+        fee_CELO_usd: 200,
+        batcher_cost_eth: 0,
+      }),
+    ];
+    const stats = aggregate(days);
+    // avg = total USD value accrued / total CELO accrued
+    expect(stats.avgCeloPriceUsd).toBeCloseTo(
+      stats.usdToCommunityFund / stats.celoToCommunityFund,
+      10,
+    );
+    expect(stats.celoToCommunityFund).toBeGreaterThan(0);
+  });
+
+  it('returns 0 average when nothing was distributed', () => {
+    expect(aggregate([]).avgCeloPriceUsd).toBe(0);
+  });
+
+  it('sums loss days signed and guards the average against non-positive totals', () => {
+    const loss = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 1 });
+    const stats = aggregate([loss]);
+    expect(stats.usdToCommunityFund).toBeLessThan(0);
+    expect(stats.celoToCommunityFund).toBeLessThan(0);
+    expect(stats.avgCeloPriceUsd).toBe(0);
+  });
+});
+
+describe('parseDay', () => {
+  it('keeps only the date part of a Dune timestamp', () => {
+    expect(parseDay('2026-06-18 00:00:00.000 UTC')).toBe('2026-06-18');
+    expect(parseDay('2026-06-18')).toBe('2026-06-18');
+    expect(parseDay(null)).toBe('');
+  });
+
+  it('accepts a day followed by a UTC time in the forms Dune emits', () => {
+    expect(parseDay('2026-06-18T00:00:00Z')).toBe('2026-06-18');
+    expect(parseDay('2026-06-18T00:00:00.000+00:00')).toBe('2026-06-18');
+    expect(parseDay('2028-02-29 00:00:00.000 UTC')).toBe('2028-02-29');
+  });
+
+  it.each([
+    '2026-05-01 garbage',
+    '2026-05-01T23:30:00-02:00',
+    '2026-05-01T23:30:00+02:00',
+    '2026-05-01 00:00:00.000 CET',
+    '2026-05-01 00:00:00.000',
+    '2026-05-01T00:00:00',
+    '2026-05-01T24:00:00Z',
+    '2026-05-01 00:60:00.000 UTC',
+  ])('rejects %j: a day with a suffix that is not a UTC time', (value) => {
+    expect(parseDay(value)).toBe('');
+  });
+
+  it('rejects anything that is not a calendar day', () => {
+    expect(parseDay('not-a-date')).toBe('');
+    expect(parseDay('2026/06/18')).toBe('');
+    expect(parseDay('18-06-2026 00:00')).toBe('');
+  });
+
+  it.each(['2026-99-99', '2026-13-01', '2026-00-10', '2026-02-30', '2026-02-29', '2026-04-31'])(
+    'rejects %s, which is day-shaped but not a real date',
+    (value) => {
+      expect(parseDay(value)).toBe('');
+      expect(parseDay(`${value} 00:00:00.000 UTC`)).toBe('');
+    },
+  );
+
+  it.each(['2026-05-01garbage', '2026-05-012', '2026-05-01-02', ' 2026-05-01'])(
+    'rejects %j, where the day is not cleanly delimited',
+    (value) => {
+      expect(parseDay(value)).toBe('');
+    },
+  );
+});
+
+describe('nextUtcDay', () => {
+  it('rolls over month boundaries in UTC', () => {
+    expect(nextUtcDay('2026-04-30')).toBe('2026-05-01');
+    expect(nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE)).toBe('2026-04-09');
+  });
+});
+
+describe('mergeSameDayRows', () => {
+  it('keeps the day-level columns once and sums the EigenDA costs', () => {
+    const merged = mergeSameDayRows('2026-05-01', [
+      { ...dayRow, EigenDA_cost_eth: 0.001 },
+      { ...dayRow, EigenDA_cost_eth: '0.01' },
+      { ...dayRow, EigenDA_cost_eth: 0.298 },
+    ] as unknown as DuneFeeRow[]);
+    expect(merged.EigenDA_cost_eth).toBeCloseTo(0.309, 12);
+    expect({ ...merged, EigenDA_cost_eth: null }).toEqual({ ...dayRow, EigenDA_cost_eth: null });
+  });
+
+  it('treats numbers and their string forms as the same value', () => {
+    const merged = mergeSameDayRows('2026-05-01', [
+      dayRow,
+      { ...dayRow, fee_CELO: '1000', eth_price_usd: '1000' } as unknown as DuneFeeRow,
+    ]);
+    expect(merged.fee_CELO).toBe(1000);
+  });
+
+  it.each(['fee_CELO', 'fee_CELO_usd', 'batcher_cost_eth', 'eth_price_usd'] as const)(
+    'refuses copies that differ in %s',
+    (column) => {
+      expect(() =>
+        mergeSameDayRows('2026-05-01', [dayRow, { ...dayRow, [column]: 123.456 }]),
+      ).toThrow('conflicting rows for 2026-05-01');
+    },
+  );
+});
+
+describe('firstIncompleteDay', () => {
+  const now = new Date('2026-05-05T12:00:00.000Z');
+
+  it('is the day the Dune execution started, however much later the request comes', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T05:30:00.000Z',
+        executionEndedAt: '2026-05-02T05:31:00.000Z',
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('uses the start, not the end, when an execution straddles midnight', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T23:59:50.000Z',
+        executionEndedAt: '2026-05-03T00:00:10.000Z',
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('parses the microsecond timestamps Dune returns', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T11:56:25.407379Z',
+        executionEndedAt: '2026-05-02T11:58:22.014698Z',
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('falls back to the end time when the start is unknown', () => {
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T05:31:00.000Z', now })).toBe(
+      '2026-05-03',
+    );
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: null,
+        executionEndedAt: '2026-05-03T05:31:00.000Z',
+        now,
+      }),
+    ).toBe('2026-05-03');
+  });
+
+  it('treats the day before as partial too when only an end just after midnight is known', () => {
+    // The execution may have started before midnight; its first day is not whole.
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T00:00:10.000Z', now })).toBe(
+      '2026-05-02',
+    );
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T00:59:59.000Z', now })).toBe(
+      '2026-05-02',
+    );
+    // An hour in, Dune's half-hour limit rules that out.
+    expect(firstIncompleteDay({ executionEndedAt: '2026-05-03T01:00:00.000Z', now })).toBe(
+      '2026-05-03',
+    );
+    // A usable start time settles it either way.
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-03T00:00:01.000Z',
+        executionEndedAt: '2026-05-03T00:00:10.000Z',
+        now,
+      }),
+    ).toBe('2026-05-03');
+  });
+
+  it('falls back to today when Dune reports no usable execution time', () => {
+    expect(firstIncompleteDay({ executionEndedAt: null, now })).toBe('2026-05-05');
+    expect(
+      firstIncompleteDay({ executionStartedAt: 'soon', executionEndedAt: 'not a date', now }),
+    ).toBe('2026-05-05');
+  });
+
+  it.each([
+    '0',
+    '2026-02-30T00:00:00Z',
+    '2026-05-02T24:00:00Z',
+    '2026-05-02T05:60:00Z',
+    '2026-05-02 05:30:00',
+    '2026-05-02T05:30:00',
+    '2026-05-02T05:30:00+02:00',
+  ])('does not take %j for a usable execution time, though Date would parse it', (value) => {
+    expect(firstIncompleteDay({ executionStartedAt: value, executionEndedAt: value, now })).toBe(
+      '2026-05-05',
+    );
+  });
+
+  it('accepts the +00:00 spelling of UTC as well', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-02T05:30:00+00:00',
+        executionEndedAt: null,
+        now,
+      }),
+    ).toBe('2026-05-02');
+  });
+
+  it('never goes past today, even if the execution time is ahead of the clock', () => {
+    expect(
+      firstIncompleteDay({
+        executionStartedAt: '2026-05-06T00:00:01.000Z',
+        executionEndedAt: '2026-05-06T00:00:09.000Z',
+        now,
+      }),
+    ).toBe('2026-05-05');
+  });
+});
+
+describe('computeBuybackStats', () => {
+  // Options for a run on 2026-05-03: yesterday (05-02) is the newest complete day.
+  const options = {
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+
+  it('sorts by day and exposes the newest complete day separately', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 200 },
+      { ...dayRow, day: '2026-05-01' },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    // latestDayStats equals the aggregate of only the latest day
+    const latestOnly = aggregate([computeDailyMetrics(rows[0])]);
+    expect(stats.latestDayStats?.feesCollectedUsd).toBeCloseTo(latestOnly.feesCollectedUsd, 6);
+    // totals sum both days
+    expect(stats.totals.feesCollectedUsd).toBeGreaterThan(stats.latestDayStats!.feesCollectedUsd);
+  });
+
+  it('starts the window the day after the settled-revenue cutoff, like report.py', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-07' },
+      { ...dayRow, day: SETTLED_REVENUE_CUTOFF_DATE },
+      { ...dayRow, day: '2026-04-09' },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.sinceDay).toBe('2026-04-09');
+    // Only the post-cutoff day counts: 600 USD of fees, not 1800.
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+    // The window runs on through quiet days to the day before the execution.
+    expect(stats.latestDay).toBe('2026-05-02');
+  });
+
+  it("drops today's partial bucket and only counts complete UTC days", () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02' },
+      // Today's row: still filling, and unpriced because prices.day lags.
+      { ...dayRow, day: '2026-05-03', fee_CELO_usd: 0, fee_USDT: 0 },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it("never counts the execution day's priced partial row, even after midnight", () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      // The query ran at 05:30 on 05-02, so this row holds 5.5 hours of fees.
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    const executed = {
+      executionStartedAt: '2026-05-02T05:30:00.000Z',
+      executionEndedAt: '2026-05-02T05:31:00.000Z',
+    };
+    for (const now of [
+      '2026-05-02T06:00:00.000Z',
+      '2026-05-03T00:00:00.000Z',
+      '2026-05-09T12:00:00.000Z',
+    ]) {
+      const stats = statsFor(rows, { ...executed, now: new Date(now) });
+      expect(stats.latestDay, now).toBe('2026-05-01');
+      expect(stats.totals.feesCollectedUsd, now).toBeCloseTo(600, 6);
+    }
+  });
+
+  it('counts that day once a later execution covers it in full', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-02' },
+      { ...dayRow, day: '2026-05-03' },
+    ];
+    const stats = statsFor(rows, {
+      executionStartedAt: '2026-05-03T05:30:00.000Z',
+      executionEndedAt: '2026-05-03T05:31:00.000Z',
+      now: new Date('2026-05-03T06:00:00.000Z'),
+    });
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(1200, 6);
+  });
+
+  it('stops both the latest day and the totals at the newest priced day', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      // Complete but not yet priced by Dune: zero fees, but the L1 cost is there.
+      { ...dayRow, day: '2026-05-02', fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0 },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.latestDay).toBe('2026-05-01');
+    expect(stats.latestDayStats?.feesCollectedUsd).toBeCloseTo(600, 6);
+    // The unpriced day's $50 of L1 cost must not drag the totals down.
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(550, 6);
+    // The window covers the Carbon Fund payout day, so its share comes off.
+    expect(stats.totals.usdToCommunityFund).toBeCloseTo(467.5 - CARBON_FUND_SHARE_IN_WINDOW.usd, 6);
+  });
+
+  it('refuses an unpriced day in the middle of the window that has fees or costs', () => {
+    const priced = { ...dayRow, day: '2026-05-02' };
+    const cases: [string, Partial<DuneFeeRow>][] = [
+      // Stablecoin fees only: USD revenue with no CELO price to convert it.
+      ['stablecoin fees', { fee_CELO: 0, fee_CELO_usd: 0 }],
+      // CELO fees Dune could not price.
+      ['unpriced CELO fees', { fee_CELO_usd: 0, fee_USDT: 0 }],
+      // Nothing but L1 costs.
+      ['L1 costs', { fee_CELO: 0, fee_CELO_usd: 0, fee_USDT: 0 }],
+    ];
+    for (const [label, change] of cases) {
+      const rows: DuneFeeRow[] = [{ ...dayRow, day: '2026-05-01', ...change }, priced];
+      expect(() => statsFor(rows, options), label).toThrow('no CELO price for 2026-05-01');
+    }
+  });
+
+  it('tolerates up to two trailing unpriced days of activity as price lag', () => {
+    const late = {
+      executionStartedAt: '2026-05-05T05:30:00.000Z',
+      executionEndedAt: '2026-05-05T05:31:00.000Z',
+      now: new Date('2026-05-05T12:00:00.000Z'),
+    };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02' },
+      { ...dayRow, day: '2026-05-03', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-04', fee_CELO_usd: 0 },
+    ];
+    const stats = statsFor(rows, late);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('refuses a longer unpriced tail with activity', () => {
+    const late = {
+      executionStartedAt: '2026-05-06T05:30:00.000Z',
+      executionEndedAt: '2026-05-06T05:31:00.000Z',
+      now: new Date('2026-05-06T12:00:00.000Z'),
+    };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02' },
+      { ...dayRow, day: '2026-05-03', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-04', fee_CELO_usd: 0 },
+      { ...dayRow, day: '2026-05-05', fee_CELO_usd: 0 },
+    ];
+    expect(() => statsFor(rows, late)).toThrow('no CELO price for 3 days through 2026-05-05');
+  });
+
+  it('refuses a window whose rows are all present but all empty', () => {
+    expect(() => computeBuybackStats(everyDay(emptyDay, options), options)).toThrow(
+      'no fees or costs on 2026-04-09',
+    );
+  });
+
+  it('refuses a single empty day, wherever it falls', () => {
+    for (const day of ['2026-04-09', '2026-04-20', '2026-05-02']) {
+      const rows = everyDay(quietDay, options).map((r) =>
+        parseDay(r.day) === day ? { ...emptyDay, day } : r,
+      );
+      expect(() => computeBuybackStats(rows, options), day).toThrow(`no fees or costs on ${day}`);
+    }
+  });
+
+  it('refuses a CELO value with no CELO fees behind it, even on the last days', () => {
+    for (const day of ['2026-04-20', '2026-05-01', '2026-05-02']) {
+      const rows: DuneFeeRow[] = [{ ...dayRow, day, fee_CELO: 0, fee_CELO_usd: 100 }];
+      expect(() => statsFor(rows, options), day).toThrow(`CELO value but no CELO fees for ${day}`);
+    }
+  });
+
+  it('refuses an EURm value with no EURm fees behind it', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01', fee_EURm: 0, fee_EURm_usd: 3.3 },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    expect(() => statsFor(rows, options)).toThrow('EURm value but no EURm fees for 2026-05-01');
+  });
+
+  it('refuses EURm fees that Dune did not value', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01', fee_EURm: 3, fee_EURm_usd: 0 },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    expect(() => statsFor(rows, options)).toThrow('EURm fees but no EURm price for 2026-05-01');
+  });
+
+  it('refuses a history with activity but no CELO price on any day', () => {
+    // What a query edit that drops the price join would look like.
+    const rows = everyDay({ ...dayRow, fee_CELO_usd: 0 }, options);
+    expect(() => computeBuybackStats(rows, options)).toThrow('no CELO price for 2026-04-09');
+  });
+
+  it('counts a day as complete only once the next UTC day has started', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-02' },
+    ];
+    // Executed a second before midnight: 05-02 is still filling.
+    const beforeMidnight = statsFor(rows, {
+      executionStartedAt: '2026-05-02T23:59:59.000Z',
+      executionEndedAt: '2026-05-03T00:00:09.000Z',
+      now: new Date('2026-05-03T00:01:00.000Z'),
+    });
+    expect(beforeMidnight.latestDay).toBe('2026-05-01');
+    // Executed a few seconds into the next day: 05-02 is complete.
+    const afterMidnight = statsFor(rows, {
+      executionStartedAt: '2026-05-03T00:00:05.000Z',
+      executionEndedAt: '2026-05-03T00:00:15.000Z',
+      now: new Date('2026-05-03T00:01:00.000Z'),
+    });
+    expect(afterMidnight.latestDay).toBe('2026-05-02');
+  });
+
+  it('normalizes Dune day timestamps to calendar days', () => {
+    const stats = statsFor([{ ...dayRow, day: '2026-05-02 00:00:00.000 UTC' }], options);
+    expect(stats.latestDay).toBe('2026-05-02');
+  });
+
+  it('reports the Dune execution time as updatedAt, the end time when there is one', () => {
+    expect(statsFor([dayRow], options).updatedAt).toBe(options.executionEndedAt);
+    // A malformed end time is skipped, not passed on for the page to choke on.
+    const garbled = { executionStartedAt: '2026-05-03T05:30:00.000Z', executionEndedAt: 'soon' };
+    expect(statsFor([dayRow], { ...options, ...garbled }).updatedAt).toBe(
+      garbled.executionStartedAt,
+    );
+    // So is an end time ahead of the clock, which would hide staleness.
+    const future = {
+      executionStartedAt: '2026-05-03T05:30:00.000Z',
+      executionEndedAt: '2026-05-04T05:31:00.000Z',
+    };
+    expect(statsFor([dayRow], { ...options, ...future }).updatedAt).toBe(future.executionStartedAt);
+    // A little clock skew is tolerated.
+    const skewed = {
+      executionStartedAt: '2026-05-03T05:30:00.000Z',
+      executionEndedAt: '2026-05-03T12:03:00.000Z',
+    };
+    expect(statsFor([dayRow], { ...options, ...skewed }).updatedAt).toBe(skewed.executionEndedAt);
+  });
+
+  // In these tests the window runs through quiet filler days, so the latest
+  // day is the window's last day, not the last day a test spells out.
+  it('ignores individual rows without a usable day', () => {
+    const stats = statsFor(
+      [
+        { ...dayRow, day: '' },
+        { ...dayRow, day: 'garbage' },
+        { ...dayRow, day: '2026-05-01' },
+      ],
+      options,
+    );
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('refuses a result in which no row has a usable day', () => {
+    // What a renamed or dropped `day` column looks like.
+    const rows = [
+      { ...dayRow, day: undefined },
+      { ...dayRow, day: null },
+    ] as unknown as DuneFeeRow[];
+    expect(() => computeBuybackStats(rows, options)).toThrow('no usable day');
+  });
+
+  it('counts a day once when the query fans it out per EigenDA payment', () => {
+    // Same revenue on each copy, a different EigenDA payment on each.
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01 00:00:00.000 UTC', EigenDA_cost_eth: 0.01 },
+      { ...dayRow, day: '2026-05-01 00:00:00.000 UTC', EigenDA_cost_eth: 0.02 },
+      { ...dayRow, day: '2026-05-01', EigenDA_cost_eth: null },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+    // L1 = batcher $50 + EigenDA (0.01 + 0.02) ETH x $1000 = $80.
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(520, 6);
+    expect(stats.latestDay).toBe('2026-05-02');
+  });
+
+  it('refuses same-day rows that disagree on anything but the EigenDA cost', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-01' },
+      { ...dayRow, day: '2026-05-01', fee_USDT: 501 },
+    ];
+    expect(() => statsFor(rows, options)).toThrow('conflicting rows for 2026-05-01');
+  });
+
+  it('is not disturbed by duplicated or conflicting days outside the window', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2025-09-10', EigenDA_cost_eth: 0.001 },
+      { ...dayRow, day: '2025-09-10', EigenDA_cost_eth: 0.298 },
+      { ...dayRow, day: '2025-09-11' },
+      { ...dayRow, day: '2025-09-11', fee_USDT: 9 },
+      { ...dayRow, day: '2026-05-01' },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+  });
+
+  it('refuses a counted day whose L1 costs have no ETH price', () => {
+    for (const eth_price_usd of [null, 0]) {
+      expect(() => statsFor([{ ...dayRow, day: '2026-05-01', eth_price_usd }], options)).toThrow(
+        'L1 costs but no ETH price for 2026-05-01',
+      );
+    }
+  });
+
+  it('ignores a missing ETH price outside the window and on the execution day', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2025-09-10', eth_price_usd: null },
+      { ...dayRow, day: '2026-05-01' },
+      // The execution day is dropped before any of this is looked at.
+      { ...dayRow, day: '2026-05-03', eth_price_usd: null },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(550, 6);
+  });
+
+  it('refuses a window day without batcher or proposer costs', () => {
+    for (const change of [
+      { batcher_cost_eth: null },
+      { batcher_cost_eth: 0 },
+      { proposer_cost_eth: null },
+      { proposer_cost_eth: 0 },
+    ]) {
+      const rows: DuneFeeRow[] = [{ ...dayRow, day: '2026-05-01', ...change }];
+      expect(() => statsFor(rows, options), JSON.stringify(change)).toThrow(
+        'no batcher or proposer cost for 2026-05-01',
+      );
+    }
+  });
+
+  it('accepts rows in any order', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-05-02', fee_CELO_usd: 200 },
+      { ...dayRow, day: '2026-04-30' },
+      { ...dayRow, day: '2026-05-01' },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.latestDay).toBe('2026-05-02');
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(600 + 600 + 700, 6);
+  });
+
+  it('refuses a snapshot that predates the reporting window', () => {
+    // A wrong timestamp, not an early run: the window opened months ago.
+    for (const started of ['2026-04-09T05:30:00.000Z', '2025-03-26T00:00:00.000Z']) {
+      expect(() =>
+        computeBuybackStats([], {
+          executionStartedAt: started,
+          executionEndedAt: started,
+          now: new Date('2026-05-03T12:00:00.000Z'),
+        }),
+      ).toThrow('predates the reporting window');
+    }
+  });
+});
+
+describe('window coverage', () => {
+  const options = {
+    executionStartedAt: '2026-05-03T05:30:00.000Z',
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+  const whole = history([{ ...dayRow, day: '2026-05-01' }], options);
+  const without = (day: string) => whole.filter((r) => parseDay(r.day) !== day);
+
+  it('accepts a history with a row for every day of the window', () => {
+    expect(whole).toHaveLength(24); // 2026-04-09 through 2026-05-02
+    expect(computeBuybackStats(whole, options).latestDay).toBe('2026-05-02');
+  });
+
+  it('refuses a history with nothing in the window', () => {
+    expect(() => computeBuybackStats([], options)).toThrow('no rows from 2026-04-09 on');
+    const old = [{ ...dayRow, day: '2025-09-10' }];
+    expect(() => computeBuybackStats(old, options)).toThrow('no rows from 2026-04-09 on');
+  });
+
+  it('refuses a history that starts late, as a LIMIT on the query would leave it', () => {
+    const suffix = whole.filter((r) => parseDay(r.day) >= '2026-04-25');
+    expect(() => computeBuybackStats(suffix, options)).toThrow('no row for 2026-04-09');
+  });
+
+  it.each(['2026-04-09', '2026-04-20', '2026-05-01'])('refuses a history missing %s', (day) => {
+    expect(() => computeBuybackStats(without(day), options)).toThrow(`no row for ${day}`);
+  });
+
+  it('refuses a history that stops before the last complete day of the snapshot', () => {
+    expect(() => computeBuybackStats(without('2026-05-02'), options)).toThrow(
+      'no row for 2026-05-02',
+    );
+  });
+
+  it('refuses a result without a usable execution time', () => {
+    // Without it, how far the snapshot should reach and how old it is are unknown.
+    for (const times of [
+      { executionEndedAt: null },
+      { executionStartedAt: null, executionEndedAt: null },
+      { executionStartedAt: 'soon', executionEndedAt: 'not a date' },
+      // Both ahead of the clock (2026-05-10 here): a glitch, not a snapshot.
+      {
+        executionStartedAt: '2026-05-11T05:30:00.000Z',
+        executionEndedAt: '2026-05-11T05:31:00.000Z',
+      },
+    ]) {
+      expect(() =>
+        computeBuybackStats(whole, { ...times, now: new Date('2026-05-10T12:00:00.000Z') }),
+      ).toThrow('no usable execution time');
+    }
+  });
+
+  it('counts a fanned-out day as covered', () => {
+    const fanned = [...whole, { ...dayRow, day: '2026-05-01', EigenDA_cost_eth: 0.01 }];
+    expect(computeBuybackStats(fanned, options).latestDay).toBe('2026-05-02');
+  });
+
+  it('ignores holes before the window', () => {
+    const rows = [{ ...dayRow, day: '2025-03-26' }, { ...dayRow, day: '2026-04-01' }, ...whole];
+    expect(computeBuybackStats(rows, options).latestDay).toBe('2026-05-02');
+  });
+});
+
+describe('Carbon Fund share deduction', () => {
+  const options = {
+    executionStartedAt: '2026-05-03T05:30:00.000Z',
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+
+  it('is applied once when the payout day is inside the window', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-19' },
+      { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
+      { ...dayRow, day: '2026-04-21' },
+    ];
+    const stats = statsFor(rows, {
+      executionStartedAt: '2026-04-22T05:30:00.000Z',
+      executionEndedAt: '2026-04-22T05:31:00.000Z',
+      now: new Date('2026-04-22T12:00:00.000Z'),
+    });
+    // Three identical days: 3 x 4675 CELO and 3 x 467.5 USD before the deduction.
+    expect(stats.totals.celoToCommunityFund).toBeCloseTo(
+      3 * 4675 - CARBON_FUND_SHARE_IN_WINDOW.celo,
+      4,
+    );
+    expect(stats.totals.usdToCommunityFund).toBeCloseTo(
+      3 * 467.5 - CARBON_FUND_SHARE_IN_WINDOW.usd,
+      4,
+    );
+    // Fees collected and fees after expenses are a different matter.
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(3 * 600, 6);
+    expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(3 * 550, 6);
+    // The single-day figure is never reduced.
+    expect(stats.latestDayStats?.celoToCommunityFund).toBeCloseTo(4675, 4);
+  });
+
+  it('recomputes the average price from the deducted totals', () => {
+    const stats = statsFor(
+      Array.from({ length: 10 }, (_, i) => ({
+        ...dayRow,
+        day: `2026-04-${String(15 + i).padStart(2, '0')}`,
+      })),
+      options,
+    );
+    expect(stats.totals.avgCeloPriceUsd).toBeCloseTo(
+      stats.totals.usdToCommunityFund / stats.totals.celoToCommunityFund,
+      10,
+    );
+  });
+
+  it('is skipped while the window has not reached the payout day', () => {
+    const early = {
+      executionStartedAt: '2026-04-16T05:30:00.000Z',
+      executionEndedAt: '2026-04-16T05:31:00.000Z',
+      now: new Date('2026-04-16T12:00:00.000Z'),
+    };
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-10' },
+      { ...dayRow, day: '2026-04-11' },
+    ];
+    const stats = statsFor(rows, early);
+    expect(stats.totals.celoToCommunityFund).toBeCloseTo(2 * 4675, 4);
+    expect(stats.totals.usdToCommunityFund).toBeCloseTo(2 * 467.5, 6);
+  });
+
+  it('reports a loss rather than hiding it when the deduction exceeds the accrual', () => {
+    const stats = statsFor([{ ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day }], options);
+    expect(stats.totals.celoToCommunityFund).toBeLessThan(0);
+    expect(stats.totals.avgCeloPriceUsd).toBe(0);
+  });
+});
+
+describe('daily series', () => {
+  const options = {
+    executionStartedAt: '2026-04-23T05:30:00.000Z',
+    executionEndedAt: '2026-04-23T05:31:00.000Z',
+    now: new Date('2026-04-23T12:00:00.000Z'),
+  };
+  const rows: DuneFeeRow[] = [
+    { ...dayRow, day: '2026-04-19' },
+    { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
+    { ...dayRow, day: '2026-04-21' },
+    { ...dayRow, day: '2026-04-22' },
+  ];
+
+  it('lists every counted day in order with its own figures', () => {
+    const stats = computeBuybackStats(history(rows, options), options);
+    expect(stats.days.map((d) => d.day)).toEqual([
+      '2026-04-09',
+      '2026-04-10',
+      '2026-04-11',
+      '2026-04-12',
+      '2026-04-13',
+      '2026-04-14',
+      '2026-04-15',
+      '2026-04-16',
+      '2026-04-17',
+      '2026-04-18',
+      '2026-04-19',
+      '2026-04-20',
+      '2026-04-21',
+      '2026-04-22',
+    ]);
+    const payoutDay = stats.days.find((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day);
+    expect(payoutDay).toEqual(
+      computeDailyMetrics({ ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day }),
+    );
+    expect(stats.latestDay).toBe('2026-04-22');
+  });
+
+  it('sums to the totals, with the Carbon Fund share only taken off the totals', () => {
+    const stats = computeBuybackStats(history(rows, options), options);
+    const sum = (pick: (d: (typeof stats.days)[number]) => number) =>
+      stats.days.reduce((total, d) => total + pick(d), 0);
+    expect(sum((d) => d.feesCollectedUsd)).toBeCloseTo(stats.totals.feesCollectedUsd, 4);
+    expect(sum((d) => d.feesAfterExpensesUsd)).toBeCloseTo(stats.totals.feesAfterExpensesUsd, 4);
+    expect(sum((d) => d.communityFundCelo) - CARBON_FUND_SHARE_IN_WINDOW.celo).toBeCloseTo(
+      stats.totals.celoToCommunityFund,
+      4,
+    );
+    expect(sum((d) => d.communityFundUsd) - CARBON_FUND_SHARE_IN_WINDOW.usd).toBeCloseTo(
+      stats.totals.usdToCommunityFund,
+      4,
+    );
+  });
+
+  it('rounds the stored figures to six decimals', () => {
+    const stats = computeBuybackStats(history(rows, options), options);
+    for (const day of stats.days) {
+      for (const value of Object.values(day)) {
+        if (typeof value === 'number') expect(value).toBe(Number(value.toFixed(6)));
+      }
+    }
+  });
+
+  it('stops at the latest priced day, like the totals', () => {
+    // Dune has not priced the newest day yet: it is left out of the totals,
+    // so it is left out of the series too.
+    const unpriced = history(rows, options).map((row) =>
+      row.day === '2026-04-22' ? { ...row, fee_CELO_usd: 0, fee_CELO: 0 } : row,
+    );
+    const stats = computeBuybackStats(unpriced, options);
+    expect(stats.latestDay).toBe('2026-04-21');
+    expect(stats.days[stats.days.length - 1].day).toBe('2026-04-21');
+  });
+
+  describe('cumulativeCeloAccrued', () => {
+    it('runs the total day by day and ends at the window total', () => {
+      const stats = computeBuybackStats(history(rows, options), options);
+      const series = cumulativeCeloAccrued(stats.days);
+      expect(series).toHaveLength(stats.days.length);
+      expect(series[0]).toBeCloseTo(stats.days[0].communityFundCelo, 6);
+      expect(series[1]).toBeCloseTo(
+        stats.days[0].communityFundCelo + stats.days[1].communityFundCelo,
+        6,
+      );
+      expect(series[series.length - 1]).toBeCloseTo(stats.totals.celoToCommunityFund, 4);
+    });
+
+    it('takes the Carbon Fund share off on the day it was paid', () => {
+      const days = computeBuybackStats(history(rows, options), options).days;
+      const series = cumulativeCeloAccrued(days);
+      const payout = days.findIndex((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day);
+      expect(series[payout] - series[payout - 1]).toBeCloseTo(
+        days[payout].communityFundCelo - CARBON_FUND_SHARE_IN_WINDOW.celo,
+        6,
+      );
+    });
+
+    it('is a plain running sum when the payout day is not in the series', () => {
+      const days = computeBuybackStats(history(rows, options), options).days.filter(
+        (d) => d.day < CARBON_FUND_SHARE_IN_WINDOW.day,
+      );
+      const series = cumulativeCeloAccrued(days);
+      expect(series[series.length - 1]).toBeCloseTo(
+        days.reduce((total, d) => total + d.communityFundCelo, 0),
+        6,
+      );
+    });
+
+    it('is empty for no days', () => {
+      expect(cumulativeCeloAccrued([])).toEqual([]);
+    });
+  });
+});
+
+describe('period breakdown', () => {
+  const options = {
+    executionStartedAt: '2026-05-03T05:30:00.000Z',
+    executionEndedAt: '2026-05-03T05:31:00.000Z',
+    now: new Date('2026-05-03T12:00:00.000Z'),
+  };
+
+  it('carries the costs and the estimated OP share next to the revenue', () => {
+    const days = [
+      computeDailyMetrics(dayRow),
+      computeDailyMetrics({ ...dayRow, day: '2026-05-02' }),
+    ];
+    const stats = aggregate(days);
+    expect(stats.l1CostUsd).toBeCloseTo(days[0].l1CostUsd + days[1].l1CostUsd, 6);
+    expect(stats.opShareUsd).toBeCloseTo(days[0].opShareUsd + days[1].opShareUsd, 6);
+    expect(stats.carbonFundUsd).toBe(0);
+    expect(stats.carbonFundCelo).toBe(0);
+    // Revenue less every deduction is what accrues (carbon fraction is 0%).
+    expect(stats.feesCollectedUsd - stats.l1CostUsd - stats.opShareUsd).toBeCloseTo(
+      stats.usdToCommunityFund,
+      6,
+    );
+  });
+
+  it("splits a day's fees by the currency they were paid in", () => {
+    const day = computeDailyMetrics({
+      ...dayRow,
+      fee_CELO: 1000,
+      fee_CELO_usd: 100,
+      fee_USDT: 200,
+      fee_USDC: 30,
+      fee_USDm: 40,
+      fee_EURm: 10,
+      fee_EURm_usd: 11,
+      others_usd: 5,
+    });
+    expect(day.feesByCurrencyUsd).toEqual({
+      CELO: 100,
+      USDT: 200,
+      USDC: 30,
+      USDm: 40,
+      EURm: 11,
+      other: 5,
+    });
+    const total = Object.values(day.feesByCurrencyUsd).reduce((s, v) => s + v, 0);
+    expect(total).toBeCloseTo(day.feesCollectedUsd, 10);
+    expect(sumFeesByCurrency([day, day]).USDT).toBe(400);
+  });
+
+  it('estimates the OP share as the greater of 2.5% of fees and 15% of fees after L1 costs', () => {
+    // L1 costs eat most of the revenue, so 2.5% of fees is the larger figure.
+    const thin = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 0.5 });
+    expect(thin.opShareUsd).toBeCloseTo(
+      Math.max(0.025 * thin.feesCollectedUsd, 0.15 * thin.feesAfterExpensesUsd),
+      10,
+    );
+    expect(thin.opShareUsd).toBeCloseTo(0.025 * thin.feesCollectedUsd, 10);
+    const fat = computeDailyMetrics({ ...dayRow, batcher_cost_eth: 0 });
+    expect(fat.opShareUsd).toBeCloseTo(0.15 * fat.feesAfterExpensesUsd, 10);
+  });
+
+  it('records the Carbon Fund share on the totals it was taken off', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: '2026-04-19' },
+      { ...dayRow, day: CARBON_FUND_SHARE_IN_WINDOW.day },
+    ];
+    const stats = statsFor(rows, {
+      executionStartedAt: '2026-04-21T05:30:00.000Z',
+      executionEndedAt: '2026-04-21T05:31:00.000Z',
+      now: new Date('2026-04-21T12:00:00.000Z'),
+    });
+    expect(stats.totals.carbonFundUsd).toBe(CARBON_FUND_SHARE_IN_WINDOW.usd);
+    expect(stats.totals.carbonFundCelo).toBe(CARBON_FUND_SHARE_IN_WINDOW.celo);
+    expect(stats.latestDayStats?.carbonFundUsd).toBe(0);
+  });
+
+  it('passes the settled transfers through, null when none were read', () => {
+    const rows = [{ ...dayRow, day: '2026-05-01' }];
+    expect(computeBuybackStats(history(rows, options), options).settled).toBeNull();
+    const settled = { celo: 10, transfers: 1, lastTransferAt: null, throughBlock: 5 };
+    expect(computeBuybackStats(history(rows, options), { ...options, settled }).settled).toEqual(
+      settled,
+    );
+  });
+
+  describe('monthlyStats', () => {
+    const rows = Array.from({ length: 12 }, (_, i) => ({
+      ...dayRow,
+      day: new Date(Date.UTC(2026, 3, 25) + i * 86_400_000).toISOString().slice(0, 10),
+    }));
+    const stats = computeBuybackStats(history(rows, options), options);
+
+    it('groups the series by calendar month, in order, counting the days', () => {
+      const months = monthlyStats(stats.days);
+      expect(months.map((m) => [m.month, m.days])).toEqual([
+        ['2026-04', 22],
+        ['2026-05', 2],
+      ]);
+    });
+
+    it('aggregates each month like the window, with the Carbon Fund share in its month', () => {
+      const [april, may] = monthlyStats(stats.days);
+      const aprilDays = stats.days.filter((d) => d.day.startsWith('2026-04'));
+      expect(april.stats.feesCollectedUsd).toBeCloseTo(
+        aprilDays.reduce((s, d) => s + d.feesCollectedUsd, 0),
+        6,
+      );
+      expect(april.stats.carbonFundUsd).toBe(CARBON_FUND_SHARE_IN_WINDOW.usd);
+      expect(may.stats.carbonFundUsd).toBe(0);
+      expect(april.feesByCurrencyUsd).toEqual(sumFeesByCurrency(aprilDays));
+      const sum = april.stats.usdToCommunityFund + may.stats.usdToCommunityFund;
+      expect(sum).toBeCloseTo(stats.totals.usdToCommunityFund, 4);
+    });
+
+    it('is empty for no days', () => {
+      expect(monthlyStats([])).toEqual([]);
+    });
+  });
+});

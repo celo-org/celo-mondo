@@ -1,0 +1,624 @@
+import {
+  BuybackStats,
+  DailyMetrics,
+  DuneFeeRow,
+  FeesByCurrencyUsd,
+  MonthlyStats,
+  PeriodStats,
+  SettledTransfers,
+} from 'src/features/buyback/types';
+
+// Constants mirror scripts/sequencer-fees/report.py (celo-monorepo). Proposals
+// are named by CGP number: CGP-233 is CELOccelerate (on-chain proposal 286),
+// CGP-234 the return of pre-cutoff revenue (proposal 287) and CGP-236 the
+// carbon-fund pause (proposal 288).
+// Stablecoins are valued at their USD peg; EURm keeps Dune's forex price.
+const STABLE_PEGS = { USDT: 1.0, USDC: 1.0, USDm: 1.0 } as const;
+// Carbon Fund fraction is 0% after CGP-236 paused those payments. report.py reads
+// it live from FeeHandler.getCarbonFraction(); the dashboard pins the current
+// value so it needs no RPC. If governance changes it, verify with
+// `cast call 0xcD437749E43A154C07F3553504c68fBfD56B8778 "getCarbonFraction()(uint256)"`
+// and update this constant; the realData test pins the on-chain value at the
+// end of its window.
+const CARBON_FRACTION = 0.0;
+// OP Superchain revenue share: max(2.5% of revenue, 15% of profit-after-L1).
+const OP_SHARE_REVENUE_PCT = 0.025;
+const OP_SHARE_PROFIT_PCT = 0.15;
+
+/**
+ * Sequencer revenue earned on or before this day was already returned to the
+ * Community Fund in one transfer of 1,748,950 CELO, documented in CGP-234
+ * (on-chain proposal 287). report.py (`CGP_234_CUTOFF_DATE`) clamps its
+ * reporting window to the day after it so that revenue is never counted
+ * twice; the dashboard does the same for its totals.
+ */
+export const SETTLED_REVENUE_CUTOFF_DATE = '2026-04-08';
+
+/**
+ * Carbon Fund share actually taken inside the dashboard window. The FeeHandler
+ * applies the carbon fraction when fees are distributed, not when they accrue,
+ * and only one distribution ran before CGP-236 zeroed the fraction (block
+ * 66408166, 2026-05-09): on 2026-04-20 it sent 12,429.15 CELO, 963.17 USDT,
+ * 1.66 USDC, 11.54 USDm and 0.17 EURm to the Carbon Fund
+ * (0xCe10d577295d34782815919843a3a4ef70Dc33ce), e.g. CELO tx
+ * 0x5b540e987f5a816aeba5a72dab5e6e67d43d14914b4b59a01f9dde2ad9cf4ac5.
+ * Valued at that day's prices (CELO $0.08377, stablecoins at peg, EURm at
+ * Dune's forex price) the share is 24,086.79 CELO / $2,017.75. The per-day
+ * P&L cannot express a distribution-time deduction, so it is subtracted from
+ * the window totals as a constant.
+ */
+export const CARBON_FUND_SHARE_IN_WINDOW = {
+  day: '2026-04-20',
+  celo: 24086.7871,
+  usd: 2017.75,
+} as const;
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+// Dune's prices.day fills in a day or so after the day ends, so the newest day
+// or two in a result may still be unpriced. A longer unpriced tail with activity
+// is a broken price join, not lag, and dropping it would hide real revenue.
+const MAX_UNPRICED_TAIL_DAYS = 2;
+// A calendar day as Dune writes one: bare, in its result format
+// ("2026-06-18 00:00:00.000 UTC") or as an ISO UTC timestamp. Nothing else:
+// a value in another zone could belong to a different UTC day.
+const DAY_PATTERN =
+  /^(\d{4}-\d{2}-\d{2})(?:$|(?: |T)(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?: UTC|Z|\+00:00)$)/;
+
+function num(value: number | string | null | undefined): number {
+  if (value === null || value === undefined || value === '') return 0;
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Format a date as a UTC calendar day (YYYY-MM-DD). */
+export function toUtcDay(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/** The UTC calendar day after the given one. */
+export function nextUtcDay(day: string): string {
+  return toUtcDay(new Date(Date.parse(`${day}T00:00:00Z`) + DAY_MS));
+}
+
+/**
+ * Dune returns the day as a full timestamp ("2026-06-18 00:00:00.000 UTC");
+ * only the date part is meaningful. Mirrors report.py's `parse_day`, but
+ * returns an empty string for anything that is not a real UTC calendar day
+ * ("2026-99-99", "2026-02-30", "2026-05-01garbage"), since days are compared
+ * as strings and a value that only looks like one would land on the wrong
+ * side of a boundary.
+ */
+export function parseDay(day: string | null | undefined): string {
+  const match = DAY_PATTERN.exec(day ?? '');
+  if (!match) return '';
+  const [, , hours, minutes, seconds] = match;
+  if (hours !== undefined && (Number(hours) > 23 || Number(minutes) > 59 || Number(seconds) > 59)) {
+    return '';
+  }
+  const date = new Date(`${match[1]}T00:00:00Z`);
+  // The round trip rejects impossible dates the Date parser would roll over.
+  return !Number.isNaN(date.getTime()) && toUtcDay(date) === match[1] ? match[1] : '';
+}
+
+/** A day's L1 operating costs in ETH: batcher + proposer + challenger + EigenDA. */
+function l1CostEth(row: DuneFeeRow): number {
+  return (
+    num(row.batcher_cost_eth) +
+    num(row.proposer_cost_eth) +
+    num(row.challenger_cost_eth) +
+    num(row.EigenDA_cost_eth)
+  );
+}
+
+/**
+ * Compute the derived P&L for a single day, faithful to report.py's
+ * `compute_row`. USD↔CELO conversions use that day's CELO price so aggregates
+ * stay accurate across price moves (non-linear because of the `max()` in the OP
+ * share).
+ */
+export function computeDailyMetrics(row: DuneFeeRow): DailyMetrics {
+  const feeCelo = num(row.fee_CELO);
+  const feeUsdt = num(row.fee_USDT);
+  const feeUsdm = num(row.fee_USDm);
+  const feeUsdc = num(row.fee_USDC);
+
+  const feeCeloUsd = num(row.fee_CELO_usd);
+  const feeEurmUsd = num(row.fee_EURm_usd);
+  const othersUsd = num(row.others_usd);
+
+  // Stablecoin USD values come from the hardcoded pegs, not Dune's price feed.
+  const feeUsdtUsd = feeUsdt * STABLE_PEGS.USDT;
+  const feeUsdcUsd = feeUsdc * STABLE_PEGS.USDC;
+  const feeUsdmUsd = feeUsdm * STABLE_PEGS.USDm;
+
+  const celoPriceUsd = feeCelo > 0 ? feeCeloUsd / feeCelo : 0;
+
+  const revenueUsd = feeCeloUsd + feeUsdtUsd + feeUsdmUsd + feeEurmUsd + feeUsdcUsd + othersUsd;
+  const revenueCelo = celoPriceUsd > 0 ? revenueUsd / celoPriceUsd : 0;
+
+  // L1 operating costs, converted from ETH at this day's ETH price.
+  const ethPriceUsd = num(row.eth_price_usd);
+  const l1CostUsd = l1CostEth(row) * ethPriceUsd;
+  const l1CostCelo = celoPriceUsd > 0 ? l1CostUsd / celoPriceUsd : 0;
+
+  const carbonUsd = revenueUsd * CARBON_FRACTION;
+  const carbonCelo = revenueCelo * CARBON_FRACTION;
+
+  // Profit for the OP calc is revenue minus L1 (carbon is not deducted first).
+  const opProfitUsd = revenueUsd - l1CostUsd;
+  const opProfitCelo = revenueCelo - l1CostCelo;
+  const opShareUsd = Math.max(revenueUsd * OP_SHARE_REVENUE_PCT, opProfitUsd * OP_SHARE_PROFIT_PCT);
+  const opShareCelo = Math.max(
+    revenueCelo * OP_SHARE_REVENUE_PCT,
+    opProfitCelo * OP_SHARE_PROFIT_PCT,
+  );
+
+  // Net profit goes to the Community Fund (as CELO; the stablecoin portion is
+  // used to acquire CELO per CGP-233). Burning is a separate governance call.
+  const communityFundUsd = revenueUsd - (carbonUsd + l1CostUsd + opShareUsd);
+  const communityFundCelo = revenueCelo - (carbonCelo + l1CostCelo + opShareCelo);
+
+  return {
+    day: parseDay(row.day),
+    celoPriceUsd,
+    feesCollectedUsd: revenueUsd,
+    feesByCurrencyUsd: {
+      CELO: feeCeloUsd,
+      USDT: feeUsdtUsd,
+      USDC: feeUsdcUsd,
+      USDm: feeUsdmUsd,
+      EURm: feeEurmUsd,
+      other: othersUsd,
+    },
+    l1CostUsd,
+    feesAfterExpensesUsd: revenueUsd - l1CostUsd,
+    opShareUsd,
+    communityFundUsd,
+    communityFundCelo,
+  };
+}
+
+/** Sum a set of daily metrics into the dashboard's period figures. */
+export function aggregate(days: DailyMetrics[]): PeriodStats {
+  const sum = (pick: (d: DailyMetrics) => number) => days.reduce((s, d) => s + pick(d), 0);
+  const celoToCommunityFund = sum((d) => d.communityFundCelo);
+  const usdToCommunityFund = sum((d) => d.communityFundUsd);
+  // Volume-weighted average CELO price = total USD value / total CELO.
+  const avgCeloPriceUsd = celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0;
+
+  return {
+    feesCollectedUsd: sum((d) => d.feesCollectedUsd),
+    l1CostUsd: sum((d) => d.l1CostUsd),
+    feesAfterExpensesUsd: sum((d) => d.feesAfterExpensesUsd),
+    opShareUsd: sum((d) => d.opShareUsd),
+    // Taken off at distribution time, not accrued per day; see deductCarbonFundShare.
+    carbonFundUsd: 0,
+    carbonFundCelo: 0,
+    celoToCommunityFund,
+    usdToCommunityFund,
+    avgCeloPriceUsd,
+  };
+}
+
+/** USD value of the fees by currency, summed over the days. */
+export function sumFeesByCurrency(days: DailyMetrics[]): FeesByCurrencyUsd {
+  const total: FeesByCurrencyUsd = { CELO: 0, USDT: 0, USDC: 0, USDm: 0, EURm: 0, other: 0 };
+  for (const day of days) {
+    for (const currency of Object.keys(total) as (keyof FeesByCurrencyUsd)[]) {
+      total[currency] += day.feesByCurrencyUsd[currency];
+    }
+  }
+  return total;
+}
+
+/**
+ * The series by calendar month, in order, each month's figures aggregated
+ * like the window's (the Carbon Fund share comes off the month it fell in).
+ * A partial month, at either end, says how many days it holds.
+ */
+export function monthlyStats(days: DailyMetrics[]): MonthlyStats[] {
+  const byMonth = new Map<string, DailyMetrics[]>();
+  for (const day of days) {
+    const month = day.day.slice(0, 7);
+    byMonth.set(month, [...(byMonth.get(month) ?? []), day]);
+  }
+  return [...byMonth.entries()].map(([month, monthDays]) => ({
+    month,
+    days: monthDays.length,
+    stats: deductCarbonFundShare(aggregate(monthDays), monthDays),
+    feesByCurrencyUsd: sumFeesByCurrency(monthDays),
+  }));
+}
+
+/**
+ * CELO accrued for the Community Fund, cumulative day by day. The Carbon Fund
+ * share comes off on the day it was taken, so the series ends at the window
+ * total shown in the table.
+ */
+export function cumulativeCeloAccrued(days: DailyMetrics[]): number[] {
+  const series: number[] = [];
+  let total = 0;
+  for (const day of days) {
+    total += day.communityFundCelo;
+    if (day.day === CARBON_FUND_SHARE_IN_WINDOW.day) total -= CARBON_FUND_SHARE_IN_WINDOW.celo;
+    series.push(total);
+  }
+  return series;
+}
+
+/**
+ * A day's figures for the stored series. Six decimals keep cents and CELO
+ * dust while dropping the float noise of the computation, which would
+ * otherwise double the payload for nothing.
+ */
+function compactMetrics(metrics: DailyMetrics): DailyMetrics {
+  const round = (value: number) => Number(value.toFixed(6));
+  const fees = metrics.feesByCurrencyUsd;
+  return {
+    day: metrics.day,
+    celoPriceUsd: round(metrics.celoPriceUsd),
+    feesCollectedUsd: round(metrics.feesCollectedUsd),
+    feesByCurrencyUsd: {
+      CELO: round(fees.CELO),
+      USDT: round(fees.USDT),
+      USDC: round(fees.USDC),
+      USDm: round(fees.USDm),
+      EURm: round(fees.EURm),
+      other: round(fees.other),
+    },
+    l1CostUsd: round(metrics.l1CostUsd),
+    feesAfterExpensesUsd: round(metrics.feesAfterExpensesUsd),
+    opShareUsd: round(metrics.opShareUsd),
+    communityFundUsd: round(metrics.communityFundUsd),
+    communityFundCelo: round(metrics.communityFundCelo),
+  };
+}
+
+/**
+ * Remove the Carbon Fund's realised share from the Community Fund totals when
+ * the day it was paid falls inside the aggregated days. Fees collected and fees
+ * after expenses are untouched: carbon is a distribution of net revenue, not an
+ * operating cost.
+ */
+export function deductCarbonFundShare(totals: PeriodStats, days: DailyMetrics[]): PeriodStats {
+  if (!days.some((d) => d.day === CARBON_FUND_SHARE_IN_WINDOW.day)) return totals;
+  const celoToCommunityFund = totals.celoToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.celo;
+  const usdToCommunityFund = totals.usdToCommunityFund - CARBON_FUND_SHARE_IN_WINDOW.usd;
+  return {
+    ...totals,
+    carbonFundUsd: CARBON_FUND_SHARE_IN_WINDOW.usd,
+    carbonFundCelo: CARBON_FUND_SHARE_IN_WINDOW.celo,
+    celoToCommunityFund,
+    usdToCommunityFund,
+    avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
+  };
+}
+
+export interface ComputeBuybackStatsOptions {
+  /**
+   * When Dune started executing the query, if known. This is when its snapshot
+   * of the chain was taken, so that UTC day is only partly in the results.
+   */
+  executionStartedAt?: string | null;
+  /** When Dune last finished executing the query, if known. */
+  executionEndedAt: string | null;
+  /** Current time; injectable for tests. Defaults to now. */
+  now?: Date;
+  /** On-chain transfers to the Community Fund, read separately; null when not read. */
+  settled?: SettledTransfers | null;
+}
+
+// An ISO-8601 UTC timestamp as Dune writes it ("2026-10-02T11:56:25.407379Z").
+const TIMESTAMP_PATTERN = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(?:Z|\+00:00)$/;
+// Dune's clock and ours may disagree by a little; a timestamp further ahead
+// than this is a glitch, and used for freshness it would hide staleness.
+const CLOCK_SKEW_MS = 5 * 60 * 1000;
+
+/**
+ * UTC calendar day of an ISO timestamp, or null when it is missing or not a
+ * real UTC timestamp. The Date parser would accept "0" or roll "2026-02-30"
+ * over into March; a day taken from such a value could land before the
+ * window and empty it, so only a well-formed timestamp with a real date and
+ * time counts.
+ */
+function utcDayOf(timestamp: string | null | undefined): string | null {
+  const match = TIMESTAMP_PATTERN.exec(timestamp ?? '');
+  if (!match) return null;
+  const [, date, hours, minutes, seconds] = match;
+  if (Number(hours) > 23 || Number(minutes) > 59 || Number(seconds) > 59) return null;
+  const day = parseDay(date);
+  return day === '' ? null : day;
+}
+
+/**
+ * A Dune execution timestamp as a Date, or null when it is missing or not a
+ * real UTC timestamp (see `utcDayOf`): a value the Date parser would accept
+ * but roll over or read in another zone must not stand in for a real run.
+ */
+export function parseUtcTimestamp(timestamp: string | null | undefined): Date | null {
+  if (utcDayOf(timestamp) === null) return null;
+  const parsed = new Date(timestamp as string);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/**
+ * The first UTC day the Dune results do not cover in full. Every row on or
+ * after it is dropped.
+ *
+ * The results are a snapshot taken when the query ran, so the day it ran on is
+ * partial for as long as that execution is the latest one, no matter how much
+ * time passes afterwards. The request clock is only an upper bound and the
+ * fallback when Dune reports no execution time.
+ */
+export function firstIncompleteDay(options: ComputeBuybackStatsOptions): string {
+  const todayUtc = toUtcDay(options.now ?? new Date());
+  const snapshotDay = snapshotDayOf(options);
+  return snapshotDay !== null && snapshotDay < todayUtc ? snapshotDay : todayUtc;
+}
+
+/**
+ * The execution timestamps that can be relied on: well formed, with a real
+ * date and time, and not ahead of the clock. The end time comes first since
+ * it is what "refreshed at" means on the page.
+ */
+function usableTimestamps(options: ComputeBuybackStatsOptions): string[] {
+  const now = (options.now ?? new Date()).getTime();
+  return [options.executionEndedAt, options.executionStartedAt].filter(
+    (t): t is string =>
+      typeof t === 'string' && utcDayOf(t) !== null && Date.parse(t) <= now + CLOCK_SKEW_MS,
+  );
+}
+
+/**
+ * When Dune started the execution, if that timestamp is usable (see
+ * `usableTimestamps`): the moment the snapshot of the chain was taken, which
+ * orders snapshots even when two executions overlap and finish out of order.
+ */
+export function usableExecutionStart(options: ComputeBuybackStatsOptions): string | null {
+  const started = options.executionStartedAt;
+  return started && usableTimestamps(options).includes(started) ? started : null;
+}
+
+// Dune stops an execution after half an hour, so one that ended this long
+// after midnight cannot have started the day before.
+const MAX_EXECUTION_MS = 60 * 60 * 1000;
+
+/**
+ * The first UTC day the snapshot may not cover in full: the day the execution
+ * started. Without a usable start time only the end is known; an execution
+ * that ended within the first hour of a day may have started the day before,
+ * which is then treated as partial too.
+ */
+function snapshotDayOf(options: ComputeBuybackStatsOptions): string | null {
+  const usable = usableTimestamps(options);
+  const dayIfUsable = (t: string | null | undefined) =>
+    t && usable.includes(t) ? utcDayOf(t) : null;
+  const startedDay = dayIfUsable(options.executionStartedAt);
+  if (startedDay !== null) return startedDay;
+  const endedDay = dayIfUsable(options.executionEndedAt);
+  if (endedDay === null) return null;
+  const sinceMidnight =
+    Date.parse(options.executionEndedAt as string) - Date.parse(`${endedDay}T00:00:00Z`);
+  return sinceMidnight < MAX_EXECUTION_MS ? previousUtcDay(endedDay) : endedDay;
+}
+
+/** The UTC calendar day before the given one. */
+function previousUtcDay(day: string): string {
+  return toUtcDay(new Date(Date.parse(`${day}T00:00:00Z`) - DAY_MS));
+}
+
+/**
+ * Refuse a history that does not cover the window day by day.
+ *
+ * The totals are permanent sums from `sinceDay`, so a result that starts late
+ * (a `LIMIT` added to the query), skips a day (an upstream gap) or stops early
+ * would be summed as if it were whole while the page still says "since
+ * `sinceDay`". Every day from `sinceDay` through `throughDay` must be present.
+ */
+function assertWindowCovered(days: string[], sinceDay: string, throughDay: string): void {
+  if (days.length === 0) {
+    throw new Error(`Dune history has no rows from ${sinceDay} on`);
+  }
+  let expected = sinceDay;
+  for (const day of days) {
+    if (day !== expected) {
+      throw new Error(`Dune history has no row for ${expected}`);
+    }
+    expected = nextUtcDay(expected);
+  }
+  if (days[days.length - 1] < throughDay) {
+    throw new Error(`Dune history has no row for ${expected}`);
+  }
+}
+
+// Columns that describe the day itself. Rows for one day must agree on all of
+// them; only the EigenDA cost may differ (see mergeSameDayRows).
+const DAY_LEVEL_COLUMNS = [
+  'fee_CELO',
+  'fee_USDT',
+  'fee_USDm',
+  'fee_EURm',
+  'fee_USDC',
+  'fee_CELO_usd',
+  'fee_EURm_usd',
+  'others_usd',
+  'batcher_cost_eth',
+  'proposer_cost_eth',
+  'challenger_cost_eth',
+  'eth_price_usd',
+] as const satisfies readonly (keyof DuneFeeRow)[];
+
+/**
+ * Collapse several rows for one day into one.
+ *
+ * Until version 6 (2026-10-06) the Dune query joined one row per EigenDA
+ * payment onto the day's revenue, so a day with several payments came back
+ * several times, each copy carrying the full revenue and one payment
+ * (2025-09-10 came back three times). The query now sums the payments per
+ * day, but should that join ever fan out again, summing the copies would
+ * multiply the day's revenue; the day is its revenue once plus the sum of the
+ * EigenDA costs. Rows that disagree on anything else are not that fan-out,
+ * and are refused rather than guessed at.
+ */
+export function mergeSameDayRows(day: string, rows: DuneFeeRow[]): DuneFeeRow {
+  const [first, ...rest] = rows;
+  const conflicting = rest.some((row) =>
+    DAY_LEVEL_COLUMNS.some((column) => num(row[column]) !== num(first[column])),
+  );
+  if (conflicting) throw new Error(`Dune returned conflicting rows for ${day}`);
+  return {
+    ...first,
+    EigenDA_cost_eth: rows.reduce((total, row) => total + num(row.EigenDA_cost_eth), 0),
+  };
+}
+
+/**
+ * The rows that count: one per UTC day in [sinceDay, cutoffDay). Rows without
+ * a usable day are skipped, but a result in which no row has one is refused: a
+ * renamed column would otherwise yield a dashboard of zeros. So are a window
+ * that is not covered day by day through `throughDay` and a counted day whose
+ * L1 costs have no ETH price.
+ */
+function selectWindowRows(
+  rows: DuneFeeRow[],
+  sinceDay: string,
+  cutoffDay: string,
+  throughDay: string,
+): DuneFeeRow[] {
+  const dated = rows
+    .map((row) => ({ row, day: parseDay(row.day) }))
+    .filter(({ day }) => day !== '');
+  if (rows.length > 0 && dated.length === 0) {
+    throw new Error('Dune rows carry no usable day');
+  }
+
+  const byDay = new Map<string, DuneFeeRow[]>();
+  for (const { row, day } of dated) {
+    if (day < sinceDay || day >= cutoffDay) continue;
+    byDay.set(day, [...(byDay.get(day) ?? []), row]);
+  }
+  assertWindowCovered([...byDay.keys()].sort(), sinceDay, throughDay);
+  return [...byDay].map(([day, group]) => {
+    const row = group.length === 1 ? group[0] : mergeSameDayRows(day, group);
+    // Costs that cannot be valued would drop out of the P&L and overstate the
+    // day's profit, so a counted day must come with the price to value them.
+    if (l1CostEth(row) > 0 && num(row.eth_price_usd) <= 0) {
+      throw new Error(`Dune has L1 costs but no ETH price for ${day}`);
+    }
+    // A USD value with no fees behind it would be counted as revenue; CELO
+    // fees without a value are the unpriced case handled further down.
+    if (num(row.fee_CELO_usd) > 0 && num(row.fee_CELO) <= 0) {
+      throw new Error(`Dune has a CELO value but no CELO fees for ${day}`);
+    }
+    // EURm is the one fee currency valued by Dune's price feed rather than a
+    // peg; without that price its fees would silently drop out of revenue,
+    // and a value without fees behind it would be counted as revenue.
+    if (num(row.fee_EURm) > 0 && num(row.fee_EURm_usd) <= 0) {
+      throw new Error(`Dune has EURm fees but no EURm price for ${day}`);
+    }
+    if (num(row.fee_EURm_usd) > 0 && num(row.fee_EURm) <= 0) {
+      throw new Error(`Dune has an EURm value but no EURm fees for ${day}`);
+    }
+    return row;
+  });
+}
+
+/**
+ * Turn raw Dune rows into the dashboard payload: totals for the CELOccelerate
+ * window plus the most recent complete day.
+ *
+ * The window mirrors report.py's defaults: it starts the day after the
+ * settled-revenue cutoff and ends with the last complete UTC day in the Dune
+ * results (report.py's `--to yesterday`, taken relative to the execution rather
+ * than the request). The bucket of the day the query ran on is still filling,
+ * priced or not, and is dropped.
+ */
+export function computeBuybackStats(
+  rows: DuneFeeRow[],
+  options: ComputeBuybackStatsOptions,
+): BuybackStats {
+  const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
+  // Dune always reports when an execution ran. Without that, neither how far
+  // the snapshot should reach nor its age could be known: a short history
+  // would pass as whole and the stale note would stay off, so it is refused.
+  if (snapshotDayOf(options) === null) {
+    throw new Error('Dune reported no usable execution time for its results');
+  }
+  const cutoffDay = firstIncompleteDay(options);
+  // The window opened in 2026 and the query runs daily, so a snapshot that
+  // predates it is a wrong timestamp, not an early run; accepted, it would
+  // empty the window and pass as a dashboard of zeros.
+  if (cutoffDay <= sinceDay) {
+    throw new Error(`Dune snapshot of ${cutoffDay} predates the reporting window`);
+  }
+  // The history must reach the day before the cutoff.
+  const throughDay = previousUtcDay(cutoffDay);
+
+  const entries = selectWindowRows(rows, sinceDay, cutoffDay, throughDay)
+    .map((row) => ({ row, metrics: computeDailyMetrics(row) }))
+    .sort((a, b) => a.metrics.day.localeCompare(b.metrics.day));
+  const days = entries.map(({ metrics }) => metrics);
+
+  // A day Dune has not priced yet (prices.day lags by up to a day) shows up
+  // with zero fees but still carries its L1 costs, so both the single-day
+  // figure and the totals stop at the newest day with a CELO price.
+  const priced = days.filter((d) => d.celoPriceUsd > 0);
+  const latest = priced.length > 0 ? priced[priced.length - 1] : null;
+  const counted = latest ? days.filter((d) => d.day <= latest.day) : [];
+
+  // Trailing unpriced days are cut off above. One in the middle cannot be: its
+  // USD figures would count while its CELO figures read zero, so the totals
+  // would disagree with each other. Nothing can be converted without the
+  // day's CELO price, so such a day is refused unless it is entirely empty.
+  // With no priced day at all, every day with activity is such a day: a
+  // history that lost its prices must not pass as an empty dashboard.
+  const hasActivity = ({ row, metrics }: (typeof entries)[number]) =>
+    num(row.fee_CELO) > 0 ||
+    num(row.fee_EURm) > 0 ||
+    metrics.feesCollectedUsd !== 0 ||
+    metrics.l1CostUsd !== 0;
+  // The chain has had fees every day since the window opened, so a day with
+  // a row and nothing on it is a source that stopped matching, not a quiet
+  // day; counted as zero it would silently shrink the totals.
+  const idle = entries.find((entry) => !hasActivity(entry));
+  if (idle) {
+    throw new Error(`Dune history has no fees or costs on ${idle.metrics.day}`);
+  }
+  // The batcher and the proposer post to L1 every day, so a day without their
+  // costs means the query lost that source (a new proposer address, say).
+  // Read as zero, those costs would silently inflate the Community Fund.
+  const unsourced = entries.find(
+    ({ row }) => num(row.batcher_cost_eth) <= 0 || num(row.proposer_cost_eth) <= 0,
+  );
+  if (unsourced) {
+    throw new Error(`Dune has no batcher or proposer cost for ${unsourced.metrics.day}`);
+  }
+
+  const lastCountedDay = latest?.day ?? cutoffDay;
+  const unpricedWithActivity = entries.filter(
+    (entry) => entry.metrics.celoPriceUsd <= 0 && hasActivity(entry),
+  );
+  const unpriced = unpricedWithActivity.find(({ metrics }) => metrics.day < lastCountedDay);
+  if (unpriced) {
+    throw new Error(`Dune has fees or costs but no CELO price for ${unpriced.metrics.day}`);
+  }
+  // The tail being cut off must be price lag, which is short; anything longer
+  // would silently drop real activity while `updatedAt` keeps looking fresh.
+  const tail = unpricedWithActivity.filter(({ metrics }) => metrics.day >= lastCountedDay);
+  if (tail.length > MAX_UNPRICED_TAIL_DAYS) {
+    throw new Error(
+      `Dune has fees or costs but no CELO price for ${tail.length} days through ${tail[tail.length - 1].metrics.day}`,
+    );
+  }
+
+  return {
+    totals: deductCarbonFundShare(aggregate(counted), counted),
+    latestDayStats: latest ? aggregate([latest]) : null,
+    sinceDay,
+    latestDay: latest?.day ?? null,
+    days: counted.map(compactMetrics),
+    settled: options.settled ?? null,
+    // The first usable timestamp; there is one, as checked above.
+    updatedAt: usableTimestamps(options)[0] ?? '',
+  };
+}

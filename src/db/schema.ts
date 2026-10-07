@@ -15,6 +15,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+import type { BuybackStats } from 'src/features/buyback/types';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { GetContractEventsParameters } from 'viem';
 
@@ -184,3 +185,26 @@ export const analyticsEventsTable = pgTable(
 );
 
 export type AnalyticsEvent = typeof analyticsEventsTable.$inferSelect;
+
+// Figures for the /buyback dashboard, one row per Dune execution they were
+// computed from. Written by the daily refresh (src/scripts/refreshBuybackStats.ts,
+// run by .github/workflows/refresh-buyback-stats.yml) and read by /api/buyback,
+// which serves the row of the newest execution. A row per execution leaves an
+// audit trail of what was shown when.
+export const buybackStatsTable = pgTable(
+  'buyback_stats',
+  {
+    executionId: text().primaryKey(),
+    /**
+     * When Dune started the execution: the moment its snapshot of the chain
+     * was taken, so the newest snapshot is the one started last, even when
+     * two executions overlap and finish out of order.
+     */
+    startedAt: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    /** When Dune finished it (the stats' updatedAt, shown as the refresh time). */
+    executedAt: timestamp({ withTimezone: true, mode: 'string' }).notNull(),
+    stats: jsonb().$type<BuybackStats>().notNull(),
+    computedAt: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+  },
+  (table) => [index().on(table.startedAt.desc())],
+);
