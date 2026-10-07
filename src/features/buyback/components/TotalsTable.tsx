@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { SkeletonBlock } from 'src/components/animation/Skeleton';
+import { CARBON_FUND_SHARE_IN_WINDOW } from 'src/features/buyback/computeStats';
 import { formatPrice, formatWhole } from 'src/features/buyback/format';
 import { PeriodStats } from 'src/features/buyback/types';
 
@@ -57,10 +58,11 @@ export function buildMetrics(totals?: PeriodStats, latestDay?: PeriodStats | nul
       tone: 'ink',
     },
     {
-      // Taken once, at a distribution inside the window; a single day has none to show.
-      label: 'Carbon Fund share',
+      // Taken once, at the one distribution before CGP-236 zeroed the
+      // fraction; a later day has nothing to deduct, which is a zero, not a gap.
+      label: `Carbon Fund share (one-off, ${CARBON_FUND_SHARE_IN_WINDOW.day})`,
       total: fmtUsd(totals?.carbonFundUsd),
-      latestDay: EMPTY,
+      latestDay: fmtUsd(latestDay?.carbonFundUsd),
       tone: 'ink',
     },
     {

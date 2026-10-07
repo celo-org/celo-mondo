@@ -71,7 +71,7 @@ describe('BuybackDashboard', () => {
       'Fees collected',
       'L1 operating costs',
       'OP Superchain share (estimate)',
-      'Carbon Fund share',
+      'Carbon Fund share (one-off, 2026-04-20)',
       'USD value accrued for the Community Fund',
       'CELO accrued for the Community Fund',
       'Average CELO price',
@@ -79,7 +79,10 @@ describe('BuybackDashboard', () => {
     expect(rows[1]).toHaveTextContent('9,205 USD');
     expect(rows[1]).toHaveTextContent('72 USD');
     expect(rows[3]).toHaveTextContent('2,018 USD');
-    expect(rows[3]).toHaveTextContent('—');
+    // The one-off share is a zero on any later day, not a gap.
+    expect(rows[3]).toHaveTextContent('2,018 USD');
+    expect(rows[3]).toHaveTextContent('0 USD');
+    expect(rows[3]).not.toHaveTextContent('—');
     expect(rows[5]).toHaveTextContent('7,571,214 CELO');
   });
 
