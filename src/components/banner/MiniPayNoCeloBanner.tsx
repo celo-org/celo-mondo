@@ -2,11 +2,11 @@ import Image from 'next/image';
 import { useBalance } from 'src/features/account/hooks';
 import InfoIcon from 'src/images/icons/info-circle.svg';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function MiniPayNoCeloBanner() {
   const isMiniPay = useIsMiniPay();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { balance, isLoading, isError } = useBalance(isMiniPay ? address : undefined);
 
   if (!isMiniPay || !address || isLoading || isError || balance > 0n) return null;

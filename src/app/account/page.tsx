@@ -47,10 +47,10 @@ import { usePageInvariant } from 'src/utils/navigation';
 import { StakingMode, useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { Address } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export default function Page() {
-  const account = useAccount();
+  const account = useConnection();
   const address = account?.address;
   usePageInvariant(!!address, '/');
 

@@ -8,7 +8,7 @@ import {
   TransactionFlowType,
   transactionFlowProps,
 } from 'src/features/transactions/TransactionFlowType';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function useTransactionModal(defaultType?: TransactionFlowType, defaultFormValues?: any) {
   const setTxModal = useStore((state) => state.setTransactionModal);
@@ -29,7 +29,7 @@ export function TransactionModal() {
   const activeModal = useStore((state) => state.activeModal);
   const { type, defaultFormValues } = activeModal;
 
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const isReady = address && isConnected;
 
   let Component: ComponentType<any>;

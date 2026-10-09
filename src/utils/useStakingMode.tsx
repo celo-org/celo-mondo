@@ -5,11 +5,11 @@ import { useStCELOBalance } from 'src/features/account/hooks';
 import { useWithdrawalBot } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useSessionStorage } from 'src/utils/useSessionStorage';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export type StakingMode = 'CELO' | 'stCELO';
 function useStakingModeInternal() {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const isMiniPay = useIsMiniPay();
   const { stCELOBalances } = useStCELOBalance(address);
   const [mode, setMode] = useSessionStorage<StakingMode>(

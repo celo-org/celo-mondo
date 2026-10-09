@@ -2,7 +2,7 @@ import { OFAC_SANCTIONS_LIST_URL, SANCTIONED_ADDRESSES } from '@celo/compliance'
 import { PropsWithChildren, useEffect } from 'react';
 import { DAY } from 'src/config/consts';
 import { readFromCache, writeToCache } from 'src/utils/localSave';
-import { useAccount, useDisconnect } from 'wagmi';
+import { useConnection, useDisconnect } from 'wagmi';
 
 export function LegalRestrict(props: PropsWithChildren) {
   usePolice();
@@ -10,8 +10,8 @@ export function LegalRestrict(props: PropsWithChildren) {
 }
 
 function usePolice() {
-  const { address, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
+  const { address, isConnected } = useConnection();
+  const { mutate: disconnect } = useDisconnect();
 
   useEffect(() => {
     if (isConnected && address) {

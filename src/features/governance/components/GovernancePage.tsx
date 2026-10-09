@@ -23,7 +23,7 @@ import { deserializeBigints } from 'src/utils/objects';
 import { sortByIdThenCGP } from 'src/utils/proposals';
 import useTabs from 'src/utils/useTabs';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 enum Filter {
   Recent = 'Recent',
@@ -88,7 +88,7 @@ function ProposalList({
     [initialProposals],
   );
   const { proposals, isLoading } = useGovernanceProposals(initialData);
-  const { address } = useAccount();
+  const { address } = useConnection();
   const trackEvent = useTrackEvent();
 
   const [searchQuery, setSearchQuery] = useState<string>('');

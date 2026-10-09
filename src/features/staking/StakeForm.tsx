@@ -45,7 +45,7 @@ import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { TransactionReceipt } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: StakeFormValues = {
   action: StakeActionType.Stake,
@@ -61,7 +61,7 @@ export function StakeForm({
   defaultFormValues?: Partial<StakeFormValues>;
   onConfirmed: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { groups, addressToGroup } = useValidatorGroups();
   const { signingFor } = useVoteSignerToAccount(address);
   const { lockedBalances } = useLockedStatus(signingFor);
