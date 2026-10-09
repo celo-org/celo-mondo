@@ -19,7 +19,7 @@ import {
 } from 'src/features/delegation/types';
 import { validateRegistrationRequest } from 'src/features/delegation/validateRegistrationRequest';
 import { logger } from 'src/utils/logger';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: RegisterDelegateFormValues = {
   address: '0x',
@@ -37,7 +37,7 @@ export function DelegateRegistrationForm({
 }: {
   defaultFormValues?: Partial<RegisterDelegateFormValues>;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSigning, setIsSigning] = useState(false);
   const [pullRequestUrl, setPullRequestUrl] = useState<string | null>(null);

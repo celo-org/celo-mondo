@@ -14,7 +14,7 @@ import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { isNullish } from 'src/utils/typeof';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: UpvoteFormValues = {
   proposalId: 0,
@@ -27,7 +27,7 @@ export function UpvoteForm({
   defaultFormValues?: Partial<UpvoteFormValues>;
   onConfirmed: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { queue } = useProposalQueue();
   const { isUpvoting } = useIsGovernanceUpVoting(address);
   const { votingPower } = useGovernanceVotingPower(address);

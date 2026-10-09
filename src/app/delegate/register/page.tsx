@@ -8,7 +8,7 @@ import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
 import { useAccountDetails } from 'src/features/account/hooks';
 import { DelegateRegistrationForm } from 'src/features/delegation/DelegateRegistrationForm';
 import { RegisterDelegateFormValues } from 'src/features/delegation/types';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: RegisterDelegateFormValues = {
   name: '',
@@ -22,7 +22,7 @@ const initialValues: RegisterDelegateFormValues = {
 };
 
 export default function Page() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const { isRegistered, refetch: refetchAccountDetails } = useAccountDetails(address);
 
   return (

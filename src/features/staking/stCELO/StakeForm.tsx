@@ -28,7 +28,7 @@ import { afterDeposit, withdraw } from 'src/utils/stCELOAPI';
 import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: LiquidStakeFormValues = {
   amount: 0,
@@ -44,7 +44,7 @@ export function StakeStCeloForm({
   showTip?: boolean;
   onConfirmed?: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { balance: walletBalance } = useBalance(address);
   const { unlockingPeriod } = useLockedStatus(address);
   const { stCELOBalances, isLoading: isLoadingStCELOBalances, refetch } = useStCELOBalance(address);

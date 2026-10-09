@@ -16,7 +16,7 @@ vi.mock('wagmi', async (importActual) => ({
 
 describe('<DelegationForm />', () => {
   beforeEach(async () => {
-    vi.spyOn(wagmi, 'useAccount').mockReturnValue({
+    vi.spyOn(wagmi, 'useConnection').mockReturnValue({
       isLoading: false,
       address: TEST_ADDRESSES[0],
     } as any);

@@ -50,13 +50,9 @@ describe('<WalletDropdown />', () => {
   beforeEach(() => {
     mockTrackEvent = vi.fn();
     vi.spyOn(useTrackEventModule, 'useTrackEvent').mockReturnValue(mockTrackEvent);
-    vi.spyOn(wagmi, 'useDisconnect').mockReturnValue({
-      disconnectAsync: vi.fn(),
-    } as any);
-    vi.spyOn(wagmi, 'useConnect').mockReturnValue({
-      connect: vi.fn(),
-      connectors: [],
-    } as any);
+    vi.spyOn(wagmi, 'useDisconnect').mockReturnValue({ mutateAsync: vi.fn() } as any);
+    vi.spyOn(wagmi, 'useConnect').mockReturnValue({ mutate: vi.fn() } as any);
+    vi.spyOn(wagmi, 'useConnectors').mockReturnValue([]);
   });
 
   afterEach(() => {
@@ -64,7 +60,7 @@ describe('<WalletDropdown />', () => {
   });
 
   it('tracks wallet_connected event when wallet becomes connected', () => {
-    const mockUseAccount = vi.spyOn(wagmi, 'useAccount');
+    const mockUseAccount = vi.spyOn(wagmi, 'useConnection');
     mockUseAccount.mockReturnValue({
       isConnected: false,
       address: undefined,
@@ -89,7 +85,7 @@ describe('<WalletDropdown />', () => {
   });
 
   it('does not track wallet_connected if already connected on initial render', () => {
-    vi.spyOn(wagmi, 'useAccount').mockReturnValue({
+    vi.spyOn(wagmi, 'useConnection').mockReturnValue({
       isConnected: true,
       address: TEST_ADDRESSES[0],
       connector: { name: 'MetaMask' },
@@ -101,7 +97,7 @@ describe('<WalletDropdown />', () => {
   });
 
   it('does not track wallet_connected if connected but no address', () => {
-    const mockUseAccount = vi.spyOn(wagmi, 'useAccount');
+    const mockUseAccount = vi.spyOn(wagmi, 'useConnection');
     mockUseAccount.mockReturnValue({
       isConnected: false,
       address: undefined,

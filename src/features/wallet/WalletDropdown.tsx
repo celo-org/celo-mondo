@@ -19,14 +19,15 @@ import { useAddressToLabel } from 'src/utils/useAddressToLabel';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { useConnect, useConnection, useConnectors, useDisconnect } from 'wagmi';
 import { useBalance, useLockedBalance, useVoteSignerToAccount } from '../account/hooks';
 
 export function WalletDropdown() {
-  const { address, isConnected, connector } = useAccount();
+  const { address, isConnected, connector } = useConnection();
   const { openConnectModal } = useConnectModal();
-  const { disconnectAsync } = useDisconnect();
-  const { connect, connectors } = useConnect();
+  const { mutateAsync: disconnectAsync } = useDisconnect();
+  const { mutate: connect } = useConnect();
+  const connectors = useConnectors();
   const isMiniPay = useIsMiniPay();
   const trackEvent = useTrackEvent();
   const { mode } = useStakingMode();
