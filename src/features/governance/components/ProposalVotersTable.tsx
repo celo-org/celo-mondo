@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { SpinnerWithLabel } from 'src/components/animation/Spinner';
-import { ChartDataItem, sortAndCombineChartData } from 'src/components/charts/chartData';
+import { ChartDataItem } from 'src/components/charts/chartData';
 import { Collapse } from 'src/components/menus/Collapse';
 import { formatNumberString } from 'src/components/numbers/Amount';
 import AddressLabel from 'src/components/text/AddressLabel';
@@ -12,7 +12,7 @@ import { useIsMobile } from 'src/styles/mediaQueries';
 import { normalizeAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { bigIntMax, percent } from 'src/utils/math';
-import { objKeys, objMap } from 'src/utils/objects';
+import { objKeys } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 
 const NUM_TO_SHOW = 20;
@@ -30,7 +30,7 @@ export function ProposalVotersTable({ propData }: { propData: MergedProposalData
       buttonClasses="w-full"
       defaultOpen={isMobile ? false : propData.stage >= ProposalStage.Execution}
     >
-      <VoterTableContent propData={{ ...propData, votersData }} />
+      <VoterTableContent key={propData.id} propData={{ ...propData, votersData }} />
     </Collapse>
   );
 }
@@ -42,41 +42,30 @@ function VoterTableContent({
 }) {
   const { isLoading, voters, totals } = propData.votersData;
 
+  const [showAll, setShowAll] = useState(false);
+
   const tableData = useMemo(() => {
     if (!voters || !totals) return [];
-    // Accounts can split their vote which complicates the table data
-    // Creating separate entries for each vote type for each account
-    const votesByType: Record<VoteType, Array<ChartDataItem>> = {
-      [VoteType.None]: [],
-      [VoteType.Yes]: [],
-      [VoteType.No]: [],
-      [VoteType.Abstain]: [],
-    };
+    // Accounts can split their vote, so each vote type gets its own row
+    const rows: Array<ChartDataItem & { type: VoteType }> = [];
     for (const account of objKeys(voters)) {
       for (const type of objKeys(voters[account])) {
         const amount = fromWei(voters[account][type]);
         if (amount <= 0) continue;
         const percentage = percent(voters[account][type], bigIntMax(totals[type], 1n));
-        votesByType[type]?.push({
+        rows.push({
           label: account,
           value: amount,
           percentage,
           address: normalizeAddress(account),
+          type,
         });
       }
     }
-    // Use the sortAndCombine utility to collapse down to limited number
-    const combinedByType = objMap(votesByType, (type) =>
-      sortAndCombineChartData(votesByType[type], NUM_TO_SHOW),
-    );
-    // Weave in type and flatten
-    const combined = objKeys(combinedByType)
-      .map((type) => combinedByType[type].map((v) => ({ ...v, type })))
-      .flat();
-    // Sort by value and take the top NUM_VOTERS_TO_SHOW
-    const sorted = combined.sort((a, b) => b.value - a.value);
-    return sorted.slice(0, NUM_TO_SHOW);
+    return rows.sort((a, b) => b.value - a.value);
   }, [voters, totals]);
+
+  const visibleRows = showAll ? tableData : tableData.slice(0, NUM_TO_SHOW);
 
   if (isLoading) {
     return (
@@ -90,24 +79,20 @@ function VoterTableContent({
     return <div className="py-6 text-center text-sm text-gray-600">No voters found</div>;
   }
   return (
-    <div className="grid grid-cols-6 gap-x-2 gap-y-4 pt-4">
-      {tableData.map((row) => {
-        return (
-          <>
+    <>
+      <div className="grid grid-cols-6 gap-x-2 gap-y-4 pt-4">
+        {visibleRows.map((row) => (
+          <Fragment key={`${row.address}-${row.type}`}>
             <div className="col-span-3 font-mono text-sm text-taupe-600">
-              {row.label === 'Others' ? (
-                'Others'
-              ) : (
-                <CopyInline
-                  text={
-                    <AddressLabel
-                      address={row.address!}
-                      className="text-ellipsis text-nowrap text-start"
-                    />
-                  }
-                  textToCopy={row.address!}
-                />
-              )}
+              <CopyInline
+                text={
+                  <AddressLabel
+                    address={row.address!}
+                    className="text-ellipsis text-nowrap text-start"
+                  />
+                }
+                textToCopy={row.address!}
+              />
             </div>
             <div className="text-sm font-medium">{toTitleCase(row.type)}</div>
             <div className="col-span-2">
@@ -116,10 +101,19 @@ function VoterTableContent({
                 <span className="text-[0.6rem] text-gray-500">{`(${formatNumberString(row.value)})`}</span>
               </div>
             </div>
-          </>
-        );
-      })}
-    </div>
+          </Fragment>
+        ))}
+      </div>
+      {tableData.length > NUM_TO_SHOW && (
+        <button
+          type="button"
+          className="mt-4 text-sm text-taupe-600 underline-offset-2 hover:underline"
+          onClick={() => setShowAll((v) => !v)}
+        >
+          {showAll ? 'Show fewer' : `Show all ${tableData.length} votes`}
+        </button>
+      )}
+    </>
   );
 }
 
