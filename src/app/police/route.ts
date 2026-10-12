@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   return new NextResponse(null, { status: 202 });
 }
-const RESTRICTED_COUNTRIES = new Set(['KP', 'IR', 'CU', 'SY']);
+const RESTRICTED_COUNTRIES = new Set(['KP', 'IR', 'CU']);
 
 // https://www.iso.org/obp/ui/#iso:code:3166:UA although listed with UA prefix. the header/api received that and just used the number
 const crimea = '43';
