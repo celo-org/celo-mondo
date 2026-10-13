@@ -53,20 +53,17 @@ export function compoundDaily(simpleAnnualRatePercent: number): number {
   return (Math.pow(1 + simpleAnnualRatePercent / 100 / 365, 365) - 1) * 100;
 }
 
-// Projected yearly return for someone staking with this group, in percent.
-// The network rate is the simple annual target voting yield. On-chain, a group's
-// voter rewards are scaled by its score and slashing multiplier, the group keeps
-// its voter reward commission, and only groups that are elected and meet the
-// locked CELO requirement receive rewards at all. Undefined when the rate or
-// the group's on-chain reward inputs are unknown.
-export function getProjectedGroupApy(
-  networkRate: number | undefined,
-  group: Pick<
-    ValidatorGroup,
-    'score' | 'commission' | 'slashingMultiplier' | 'meetsLockedGoldRequirement' | 'members'
-  >,
-): number | undefined {
-  if (networkRate === undefined) return undefined;
+type RewardInputs = Pick<
+  ValidatorGroup,
+  'score' | 'commission' | 'slashingMultiplier' | 'meetsLockedGoldRequirement' | 'members'
+>;
+
+// On-chain, a group's voter rewards are scaled by its score and slashing multiplier,
+// the group keeps its voter reward commission, and only groups that are elected and
+// meet the locked CELO requirement receive rewards at all. Returns each factor with
+// its label in the order the protocol applies them, or undefined when a reward
+// input is unknown.
+function getRewardFactors(group: RewardInputs): [label: string, factor: number][] | undefined {
   if (
     group.slashingMultiplier === null ||
     group.meetsLockedGoldRequirement === null ||
@@ -74,8 +71,48 @@ export function getProjectedGroupApy(
   ) {
     return undefined;
   }
-  if (!isElected(group) || !group.meetsLockedGoldRequirement) return 0;
-  return compoundDaily(
-    networkRate * group.score * group.slashingMultiplier * (1 - group.commission),
-  );
+  if (!isElected(group)) return [['Not elected', 0]];
+  if (!group.meetsLockedGoldRequirement) return [['Below locked CELO requirement', 0]];
+  return [
+    [`Score ${(group.score * 100).toFixed()}%`, group.score],
+    [
+      `Slashing penalty ${((1 - group.slashingMultiplier) * 100).toFixed()}%`,
+      group.slashingMultiplier,
+    ],
+    [`Commission ${formatCommission(group.commission)}`, 1 - group.commission],
+  ];
+}
+
+// Projected yearly return for someone staking with this group, in percent.
+// The network rate is the simple annual target voting yield. Undefined when the
+// rate or the group's on-chain reward inputs are unknown.
+export function getProjectedGroupApy(
+  networkRate: number | undefined,
+  group: RewardInputs,
+): number | undefined {
+  const factors = getRewardFactors(group);
+  if (networkRate === undefined || !factors) return undefined;
+  return compoundDaily(factors.reduce((rate, [, factor]) => rate * factor, networkRate));
+}
+
+// Hover text for the APY cell: the network-wide maximum, then how much each
+// on-chain factor takes off it, one line per factor.
+export function describeProjectedGroupApy(
+  networkRate: number | undefined,
+  group: RewardInputs,
+): string | undefined {
+  const factors = getRewardFactors(group);
+  if (networkRate === undefined || !factors) return undefined;
+  const maxApy = compoundDaily(networkRate);
+  const lines = [`Max APY ${maxApy.toFixed(2)}%`];
+  let rate = networkRate;
+  let apy = maxApy;
+  for (const [label, factor] of factors) {
+    rate *= factor;
+    const next = compoundDaily(rate);
+    lines.push(`${label}: -${(apy - next).toFixed(2)}%`);
+    apy = next;
+  }
+  lines.push(`Projected APY ${apy.toFixed(2)}%`);
+  return lines.join('\n');
 }

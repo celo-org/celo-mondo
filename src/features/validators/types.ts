@@ -47,4 +47,5 @@ export interface ValidatorGroupRow extends ValidatorGroup {
   numMembers: number;
   isContributor: boolean;
   apy?: number; // projected yearly return in percent, unset until the network rate loads
+  apyBreakdown?: string; // hover text explaining how apy was derived
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ValidatorGroup, ValidatorStatus } from './types';
 import {
   compoundDaily,
+  describeProjectedGroupApy,
   formatCommission,
   getProjectedGroupApy,
   getRemainingCapacityWei,
@@ -125,6 +126,55 @@ describe('getProjectedGroupApy', () => {
 
   it('returns undefined when the network rate is unknown', () => {
     expect(getProjectedGroupApy(undefined, createMockGroup(1000n, 100n))).toBeUndefined();
+  });
+});
+
+describe('describeProjectedGroupApy', () => {
+  const electedMember = {
+    address: '0xabc' as Address,
+    name: 'validator',
+    score: 1,
+    signer: '0xabc' as Address,
+    status: ValidatorStatus.Elected,
+  };
+
+  it('lists the network maximum and what each factor takes off it', () => {
+    const group = {
+      ...createMockGroup(1000n, 100n),
+      members: { '0xabc': electedMember },
+      score: 0.5,
+      slashingMultiplier: 0.8,
+      commission: 0.1,
+    };
+    expect(describeProjectedGroupApy(4, group)).toBe(
+      [
+        'Max APY 4.08%',
+        'Score 50%: -2.06%',
+        'Slashing penalty 20%: -0.41%',
+        'Commission 10%: -0.16%',
+        'Projected APY 1.45%',
+      ].join('\n'),
+    );
+  });
+
+  it('explains a zero projection by the reason the group earns nothing', () => {
+    expect(describeProjectedGroupApy(4, createMockGroup(1000n, 100n))).toBe(
+      ['Max APY 4.08%', 'Not elected: -4.08%', 'Projected APY 0.00%'].join('\n'),
+    );
+    const belowRequirement = {
+      ...createMockGroup(1000n, 100n),
+      members: { '0xabc': electedMember },
+      meetsLockedGoldRequirement: false,
+    };
+    expect(describeProjectedGroupApy(4, belowRequirement)).toContain(
+      'Below locked CELO requirement: -4.08%',
+    );
+  });
+
+  it('is undefined whenever the projection is', () => {
+    const group = createMockGroup(1000n, 100n);
+    expect(describeProjectedGroupApy(undefined, group)).toBeUndefined();
+    expect(describeProjectedGroupApy(4, { ...group, commission: null })).toBeUndefined();
   });
 });
 

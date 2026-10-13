@@ -25,6 +25,7 @@ import ContributionBadge from 'src/features/validators/components/ContributionBa
 import { ValidatorGroup, ValidatorGroupRow } from 'src/features/validators/types';
 import {
   cleanGroupName,
+  describeProjectedGroupApy,
   formatCommission,
   getGroupStats,
   getProjectedGroupApy,
@@ -218,7 +219,15 @@ function useTableColumns(_totalVotes: bigint) {
         enableSorting: true,
         cell: (props) => {
           const apy = props.getValue();
-          return <div>{apy === undefined ? '-' : `${apy.toFixed(2)}%`}</div>;
+          const breakdown = props.row.original.apyBreakdown;
+          return (
+            <div
+              className={clsx(breakdown && 'tooltip before:whitespace-pre-line before:text-left')}
+              data-tip={breakdown}
+            >
+              {apy === undefined ? '-' : `${apy.toFixed(2)}%`}
+            </div>
+          );
         },
       }),
       columnHelper.accessor('score', {
@@ -323,6 +332,7 @@ function useTableRows({
         ...getGroupStats(g),
         isContributor: Boolean(VALIDATOR_GROUPS[g.address]?.communityContributor),
         apy: getProjectedGroupApy(annualProjectedRate, g),
+        apyBreakdown: describeProjectedGroupApy(annualProjectedRate, g),
       }),
     );
     return groupRows;
