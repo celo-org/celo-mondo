@@ -19,24 +19,30 @@ import { celo, celoAlfajores } from 'viem/chains';
 import { WagmiProvider, createConfig, fallback, http } from 'wagmi';
 
 function buildWagmiConfig() {
-  const connectors = connectorsForWallets(
-    [
-      {
-        groupName: 'Recommended for Celo',
-        wallets: [
-          valoraWallet,
-          metaMaskWallet,
-          rainbowWallet,
-          trustWallet,
-          braveWallet,
-          safeWallet,
-          walletConnectWallet,
-          injectedWallet,
-        ],
-      },
-    ],
-    { appName: config.appName, projectId: config.walletConnectProjectId },
-  );
+  // Wallet connectors only exist in the browser. Building them on the server makes
+  // the WalletConnect connector eagerly initialise its browser storage (IndexedDB),
+  // which throws asynchronously and kills the Node process after the response is sent.
+  const connectors =
+    typeof window === 'undefined'
+      ? []
+      : connectorsForWallets(
+          [
+            {
+              groupName: 'Recommended for Celo',
+              wallets: [
+                valoraWallet,
+                metaMaskWallet,
+                rainbowWallet,
+                trustWallet,
+                braveWallet,
+                safeWallet,
+                walletConnectWallet,
+                injectedWallet,
+              ],
+            },
+          ],
+          { appName: config.appName, projectId: config.walletConnectProjectId },
+        );
 
   return createConfig({
     chains: [config.chain],
