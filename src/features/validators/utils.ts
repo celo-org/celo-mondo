@@ -108,12 +108,12 @@ export function getProjectedGroupApy(
   return compoundDaily(factors.reduce((rate, { factor }) => rate * factor, networkRate));
 }
 
-// Hover text for the APY cell: the network-wide maximum, then one line per on-chain
+// Lines explaining the projection: the network-wide maximum, then one per on-chain
 // factor saying how much it takes off, or just its state when it takes nothing.
-export function describeProjectedGroupApy(
+export function getProjectedGroupApyLines(
   networkRate: number | undefined,
   group: RewardInputs,
-): string | undefined {
+): string[] | undefined {
   const factors = getRewardFactors(group);
   if (networkRate === undefined || !factors) return undefined;
   const maxApy = compoundDaily(networkRate);
@@ -129,6 +129,16 @@ export function describeProjectedGroupApy(
     else lines.push(`${label}: -${cut}%`);
     apy = next;
   }
-  lines.push(`Projected APY ${apy.toFixed(2)}%`);
-  return lines.join('\n');
+  return lines;
+}
+
+// Hover text for the APY cell: the explanation lines followed by the result.
+export function describeProjectedGroupApy(
+  networkRate: number | undefined,
+  group: RewardInputs,
+): string | undefined {
+  const apy = getProjectedGroupApy(networkRate, group);
+  const lines = getProjectedGroupApyLines(networkRate, group);
+  if (apy === undefined || !lines) return undefined;
+  return [...lines, `Projected APY ${apy.toFixed(2)}%`].join('\n');
 }

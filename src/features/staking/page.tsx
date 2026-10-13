@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 import { toast } from 'react-toastify';
+import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { Spinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
@@ -28,6 +29,7 @@ import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeuedProposalIds';
+import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
 import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { StakeActionType } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
@@ -38,7 +40,12 @@ import ContributionBadge from 'src/features/validators/components/ContributionBa
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups, ValidatorGroupInfo } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
-import { formatCommission, getGroupStats } from 'src/features/validators/utils';
+import {
+  formatCommission,
+  getGroupStats,
+  getProjectedGroupApy,
+  getProjectedGroupApyLines,
+} from 'src/features/validators/utils';
 import { Color } from 'src/styles/Color';
 import { tableClasses } from 'src/styles/common';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -200,11 +207,39 @@ function StatSection({
   group?: ValidatorGroup;
   currentStakeInGroup: bigint;
 }) {
+  const { mode } = useStakingMode();
   return (
     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-8">
       <CapacityStatBox group={group} currentStakeInGroup={currentStakeInGroup} />
+      {/* stCELO holders earn the pool-wide rate, not the return of the group they pick */}
+      {mode === 'CELO' && <ApyStatBox group={group} />}
       <GovernanceStatBox group={group} />
     </div>
+  );
+}
+
+function ApyStatBox({ group }: { group?: ValidatorGroup }) {
+  const { annualProjectedRate, isLoading } = useAnnualProjectedRate();
+  const apy = group ? getProjectedGroupApy(annualProjectedRate, group) : undefined;
+  const lines = group ? getProjectedGroupApyLines(annualProjectedRate, group) : undefined;
+
+  return (
+    <StatBox header="Projected APY" valueWei={null}>
+      {isLoading || !group ? (
+        <SkeletonBlock className="h-7 w-20 md:h-8" />
+      ) : (
+        <div className="font-serif text-xl md:text-2xl">
+          {apy === undefined ? '-' : `${apy.toFixed(2)}%`}
+        </div>
+      )}
+      {lines && (
+        <div className="text-xs text-taupe-600">
+          {lines.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
+      )}
+    </StatBox>
   );
 }
 

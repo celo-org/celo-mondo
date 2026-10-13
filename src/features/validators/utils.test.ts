@@ -5,6 +5,7 @@ import {
   describeProjectedGroupApy,
   formatCommission,
   getProjectedGroupApy,
+  getProjectedGroupApyLines,
   getRemainingCapacityWei,
 } from './utils';
 
@@ -182,6 +183,20 @@ describe('describeProjectedGroupApy', () => {
     expect(describeProjectedGroupApy(4, belowRequirement)).toContain(
       'Below locked CELO requirement: no rewards',
     );
+  });
+
+  it('exposes the explanation lines without the result for inline display', () => {
+    const group = {
+      ...createMockGroup(1000n, 100n),
+      members: { '0xabc': electedMember },
+      score: 1,
+    };
+    expect(getProjectedGroupApyLines(4, group)).toEqual([
+      'Max APY 4.08%',
+      'Score 100%',
+      'Not slashed',
+      'No commission',
+    ]);
   });
 
   it('is undefined whenever the projection is', () => {
