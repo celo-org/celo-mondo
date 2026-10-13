@@ -56,9 +56,9 @@ function buildWagmiConfig() {
   });
 }
 
-// Lazy module-level singleton: the config is static (no per-request state),
-// and rebuilding the full connector set on every server-rendered request
-// would be wasted work
+// Lazy module-level singleton: the config is static (no per-request state), so it is
+// built once per runtime. The browser builds the full connector set; the server
+// instance keeps an empty one.
 let wagmiConfig: ReturnType<typeof buildWagmiConfig> | undefined;
 function getWagmiConfig() {
   wagmiConfig ??= buildWagmiConfig();
