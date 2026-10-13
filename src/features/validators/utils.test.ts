@@ -157,26 +157,22 @@ describe('describeProjectedGroupApy', () => {
     );
   });
 
-  it('shows a factor that takes nothing off without a minus sign', () => {
+  it('names a factor without an amount when it takes nothing off', () => {
     const group = {
       ...createMockGroup(1000n, 100n),
       members: { '0xabc': electedMember },
       score: 1,
     };
     expect(describeProjectedGroupApy(4, group)).toBe(
-      [
-        'Max APY 4.08%',
-        'Score 100%: 0.00%',
-        'Slashing penalty 0%: 0.00%',
-        'Commission 0%: 0.00%',
-        'Projected APY 4.08%',
-      ].join('\n'),
+      ['Max APY 4.08%', 'Score 100%', 'Not slashed', 'No commission', 'Projected APY 4.08%'].join(
+        '\n',
+      ),
     );
   });
 
   it('explains a zero projection by the reason the group earns nothing', () => {
     expect(describeProjectedGroupApy(4, createMockGroup(1000n, 100n))).toBe(
-      ['Max APY 4.08%', 'Not elected: -4.08%', 'Projected APY 0.00%'].join('\n'),
+      ['Max APY 4.08%', 'Not elected: no rewards', 'Projected APY 0.00%'].join('\n'),
     );
     const belowRequirement = {
       ...createMockGroup(1000n, 100n),
@@ -184,7 +180,7 @@ describe('describeProjectedGroupApy', () => {
       meetsLockedGoldRequirement: false,
     };
     expect(describeProjectedGroupApy(4, belowRequirement)).toContain(
-      'Below locked CELO requirement: -4.08%',
+      'Below locked CELO requirement: no rewards',
     );
   });
 
