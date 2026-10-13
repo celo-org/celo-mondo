@@ -12,7 +12,9 @@ export interface ValidatorGroup {
   lastSlashed: number | null; // timestamp
   members: AddressTo<Validator>;
   score: number;
-  commission: number; // voter reward commission as a fraction (0–1)
+  commission: number | null; // voter reward commission as a fraction (0–1); null if the read failed
+  slashingMultiplier: number | null; // 0–1, drops below 1 after a slash and scales voter rewards; null if the read failed
+  meetsLockedGoldRequirement: boolean | null; // groups below the locked CELO requirement earn no voter rewards; null if the read failed
   validStCeloGroup?: boolean;
 }
 
@@ -44,4 +46,5 @@ export interface ValidatorGroupRow extends ValidatorGroup {
   numElected: number;
   numMembers: number;
   isContributor: boolean;
+  apy?: number; // projected yearly return in percent, unset until the network rate loads
 }

@@ -17,6 +17,7 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { TabHeaderFilters } from 'src/components/buttons/TabHeaderButton';
 import { TableSortChevron } from 'src/components/icons/TableSortChevron';
 import { VALIDATOR_GROUPS } from 'src/config/validators';
+import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
@@ -26,6 +27,7 @@ import {
   cleanGroupName,
   formatCommission,
   getGroupStats,
+  getProjectedGroupApy,
   isElected,
 } from 'src/features/validators/utils';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -63,8 +65,10 @@ export function ValidatorGroupTable({
   const [columnVisibility, setColumnVisibility] = useState({});
   const [sorting, setSorting] = useState<SortingState>([{ id: 'votes', desc: true }]);
 
+  const { annualProjectedRate } = useAnnualProjectedRate();
+  const { mode } = useStakingMode();
   const columns = useTableColumns(totalVotes);
-  const groupRows = useTableRows({ groups, filter, searchQuery });
+  const groupRows = useTableRows({ groups, filter, searchQuery, annualProjectedRate });
   const table = useReactTable<ValidatorGroupRow>({
     data: groupRows,
     columns,
@@ -86,6 +90,11 @@ export function ValidatorGroupTable({
       [Filter.Ineligible]: groups.filter((g) => !g.eligible).length,
     };
   }, [groups]);
+
+  // stCELO holders earn the pool-wide rate, not the return of the group they pick
+  useEffect(() => {
+    table.getColumn('apy')?.toggleVisibility(mode === 'CELO');
+  }, [mode, table]);
 
   // Set up responsive column visibility
   const isMobile = useIsMobile();
@@ -143,7 +152,7 @@ export function ValidatorGroupTable({
                 <td key={cell.id} className={clsx(classNames.td, '')}>
                   <Link
                     href={`/staking/${row.original.address}`}
-                    className="flex items-center gap-4 px-4 py-4"
+                    className="flex items-center gap-4 px-3 py-4 md:px-4"
                     onClick={() =>
                       trackEvent('validator_group_viewed', {
                         groupAddress: row.original.address,
@@ -203,6 +212,14 @@ function useTableColumns(_totalVotes: bigint) {
             className="all:font-sans"
           />
         ),
+      }),
+      columnHelper.accessor('apy', {
+        header: 'APY',
+        enableSorting: true,
+        cell: (props) => {
+          const apy = props.getValue();
+          return <div>{apy === undefined ? '-' : `${apy.toFixed(2)}%`}</div>;
+        },
       }),
       columnHelper.accessor('score', {
         header: 'Score',
@@ -273,10 +290,12 @@ function useTableRows({
   groups,
   filter,
   searchQuery,
+  annualProjectedRate,
 }: {
   groups: ValidatorGroup[];
   filter: Filter;
   searchQuery: string;
+  annualProjectedRate?: number;
 }) {
   return useMemo<ValidatorGroupRow[]>(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -303,10 +322,11 @@ function useTableRows({
         ...g,
         ...getGroupStats(g),
         isContributor: Boolean(VALIDATOR_GROUPS[g.address]?.communityContributor),
+        apy: getProjectedGroupApy(annualProjectedRate, g),
       }),
     );
     return groupRows;
-  }, [groups, filter, searchQuery]);
+  }, [groups, filter, searchQuery, annualProjectedRate]);
 }
 
 function getRowSortedIndex(rowProps: CellContext<ValidatorGroupRow, unknown>) {

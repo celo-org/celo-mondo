@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ValidatorGroup } from './types';
-import { formatCommission, getRemainingCapacityWei } from './utils';
+import { ValidatorGroup, ValidatorStatus } from './types';
+import {
+  compoundDaily,
+  formatCommission,
+  getProjectedGroupApy,
+  getRemainingCapacityWei,
+} from './utils';
 
 const createMockGroup = (capacity: bigint, votes: bigint): ValidatorGroup => ({
   address: '0x123' as Address,
@@ -13,6 +18,8 @@ const createMockGroup = (capacity: bigint, votes: bigint): ValidatorGroup => ({
   members: {},
   score: 0.5,
   commission: 0,
+  slashingMultiplier: 1,
+  meetsLockedGoldRequirement: true,
 });
 
 describe('getRemainingCapacity', () => {
@@ -47,6 +54,10 @@ describe('getRemainingCapacity', () => {
 });
 
 describe('formatCommission', () => {
+  it('shows an unknown commission as unavailable', () => {
+    expect(formatCommission(null)).toBe('-');
+  });
+
   it('formats zero commission', () => {
     expect(formatCommission(0)).toBe('0%');
   });
@@ -67,5 +78,59 @@ describe('formatCommission', () => {
 
   it('defaults to 0% when commission is undefined', () => {
     expect(formatCommission(undefined)).toBe('0%');
+  });
+});
+
+describe('getProjectedGroupApy', () => {
+  const electedMember = {
+    address: '0xabc' as Address,
+    name: 'validator',
+    score: 1,
+    signer: '0xabc' as Address,
+    status: ValidatorStatus.Elected,
+  };
+
+  it('compounds the network rate scaled by score, slashing multiplier and voter reward commission', () => {
+    const group = {
+      ...createMockGroup(1000n, 100n),
+      members: { '0xabc': electedMember },
+      score: 0.5,
+      slashingMultiplier: 0.8,
+      commission: 0.1,
+    };
+    expect(getProjectedGroupApy(4, group)).toBeCloseTo(1.4504, 3);
+  });
+
+  it('returns 0 for a group with no elected validator', () => {
+    expect(getProjectedGroupApy(4, createMockGroup(1000n, 100n))).toBe(0);
+  });
+
+  it('returns 0 for an elected group below the locked CELO requirement', () => {
+    const group = {
+      ...createMockGroup(1000n, 100n),
+      members: { '0xabc': electedMember },
+      meetsLockedGoldRequirement: false,
+    };
+    expect(getProjectedGroupApy(4, group)).toBe(0);
+  });
+
+  it('returns undefined when an on-chain reward input is unknown', () => {
+    const elected = { ...createMockGroup(1000n, 100n), members: { '0xabc': electedMember } };
+    expect(getProjectedGroupApy(4, { ...elected, slashingMultiplier: null })).toBeUndefined();
+    expect(
+      getProjectedGroupApy(4, { ...elected, meetsLockedGoldRequirement: null }),
+    ).toBeUndefined();
+    expect(getProjectedGroupApy(4, { ...elected, commission: null })).toBeUndefined();
+  });
+
+  it('returns undefined when the network rate is unknown', () => {
+    expect(getProjectedGroupApy(undefined, createMockGroup(1000n, 100n))).toBeUndefined();
+  });
+});
+
+describe('compoundDaily', () => {
+  it('compounds a simple annual rate daily', () => {
+    expect(compoundDaily(0)).toBe(0);
+    expect(compoundDaily(10)).toBeCloseTo(10.5156, 3);
   });
 });
