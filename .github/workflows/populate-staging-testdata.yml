@@ -60,11 +60,15 @@ jobs:
       - name: Populate staging database with test data
         run: yarn populate-test-data
         env:
+          # The database client reads POSTGRES_URL; STAGING_POSTGRES_URL is the
+          # safety check's proof that CI is pointed at staging. Both must match.
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
           STAGING_POSTGRES_URL: ${{ secrets.POSTGRES_URL_STAGING }}
           CI: true
 
       - name: Notify on failure
         if: failure()
-        run: |
-          echo "::error::Failed to populate staging test data"
-          echo "Check the logs above for details"
+        run: yarn tsx src/scripts/notifyWorkflowFailure.ts "Populate Staging Test Data" "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          NODE_ENV: production

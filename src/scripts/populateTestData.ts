@@ -25,6 +25,12 @@ function ensureLocalDatabase() {
   }
 
   if (isCI && dbUrl === process.env.STAGING_POSTGRES_URL) {
+    // The database client connects with POSTGRES_URL, so the check above proves
+    // nothing unless both variables point at the same staging database.
+    if (process.env.POSTGRES_URL !== dbUrl) {
+      console.error('❌ ERROR: In CI, POSTGRES_URL must equal STAGING_POSTGRES_URL');
+      process.exit(1);
+    }
     console.log('✅ Safety check bypassed: Running on staging database from CI');
     console.log(`   Database: ${dbUrl.substring(0, 30)}...`);
     console.log('');
