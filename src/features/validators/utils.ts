@@ -110,7 +110,8 @@ export function describeProjectedGroupApy(
   for (const [label, factor] of factors) {
     rate *= factor;
     const next = compoundDaily(rate);
-    lines.push(`${label}: -${(apy - next).toFixed(2)}%`);
+    const cut = (apy - next).toFixed(2);
+    lines.push(`${label}: ${cut === '0.00' ? '' : '-'}${cut}%`);
     apy = next;
   }
   lines.push(`Projected APY ${apy.toFixed(2)}%`);

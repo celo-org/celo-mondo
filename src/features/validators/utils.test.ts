@@ -157,6 +157,23 @@ describe('describeProjectedGroupApy', () => {
     );
   });
 
+  it('shows a factor that takes nothing off without a minus sign', () => {
+    const group = {
+      ...createMockGroup(1000n, 100n),
+      members: { '0xabc': electedMember },
+      score: 1,
+    };
+    expect(describeProjectedGroupApy(4, group)).toBe(
+      [
+        'Max APY 4.08%',
+        'Score 100%: 0.00%',
+        'Slashing penalty 0%: 0.00%',
+        'Commission 0%: 0.00%',
+        'Projected APY 4.08%',
+      ].join('\n'),
+    );
+  });
+
   it('explains a zero projection by the reason the group earns nothing', () => {
     expect(describeProjectedGroupApy(4, createMockGroup(1000n, 100n))).toBe(
       ['Max APY 4.08%', 'Not elected: -4.08%', 'Projected APY 0.00%'].join('\n'),
