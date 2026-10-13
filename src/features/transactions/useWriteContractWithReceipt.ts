@@ -7,7 +7,7 @@ import { capitalizeFirstLetter } from 'src/utils/strings';
 import { TransactionReceipt, encodeFunctionData } from 'viem';
 import {
   Config,
-  useAccount,
+  useConnection,
   usePublicClient,
   useWaitForTransactionReceipt,
   useWriteContract,
@@ -25,7 +25,7 @@ export function useWriteContractWithReceipt(
   onSuccess?: (receipt: TransactionReceipt) => any,
   showTxSuccessToast = false,
 ) {
-  const account = useAccount();
+  const account = useConnection();
   const publicClient = usePublicClient();
 
   const {
@@ -33,7 +33,7 @@ export function useWriteContractWithReceipt(
     error: writeError,
     isError: isWriteError,
     isPending,
-    writeContract,
+    mutate: writeContract,
   } = useWriteContract();
 
   const writeContractWithTxPrep = useCallback(

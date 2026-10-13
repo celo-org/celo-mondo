@@ -14,7 +14,7 @@ import Governance from 'src/images/icons/governance.svg';
 import Staking from 'src/images/icons/staking.svg';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
@@ -28,7 +28,7 @@ const LINKS = (isWalletConnected?: boolean) => [
 
 export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const pathname = usePathname();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
 
@@ -75,7 +75,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
 }
 
 export function MobileNavDropdown({ className }: { className?: string }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
 

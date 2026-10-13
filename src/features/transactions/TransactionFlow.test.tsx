@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import * as wagmi from 'wagmi';
 
-// Otherwise the tests will fail with "cannot redeclare useAccount" error
+// Otherwise the tests will fail with "cannot redeclare useConnection" error
 vi.mock('wagmi', async (importActual) => ({
   ...(await importActual()),
 }));
@@ -42,7 +42,7 @@ const createWrapper = () => {
 
 describe('<TransactionFlow />', () => {
   beforeEach(async () => {
-    vi.spyOn(wagmi, 'useAccount').mockReturnValue({
+    vi.spyOn(wagmi, 'useConnection').mockReturnValue({
       isLoading: false,
       address: TEST_ADDRESSES[0],
     } as any);

@@ -13,7 +13,7 @@ import {
 } from 'src/features/staking/stCELO/hooks/useWithdrawals';
 import { claim } from 'src/utils/stCELOAPI';
 import { getFullDateHumanDateString, getHumanReadableDuration } from 'src/utils/time';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 interface PendingWithdrawalsProps {
   pendingWithdrawals: PendingStCELOWithdrawal[];
@@ -26,7 +26,7 @@ export const PendingWithdrawalsTable = ({
   isWaitingForNewWithdrawal,
   scheduledWithdrawalAmount,
 }: PendingWithdrawalsProps) => {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { loadPendingWithdrawals } = useWithdrawals();
   const { isLoading, refetch } = useQuery({
     queryKey: ['stcelo-claim', address],

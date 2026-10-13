@@ -20,7 +20,7 @@ import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteC
 import { isNullish } from 'src/utils/typeof';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: VoteFormValues = {
   proposalId: 0,
@@ -34,7 +34,7 @@ export function VoteForm({
   defaultFormValues?: Partial<VoteFormValues>;
   onConfirmed: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { mode } = useStakingMode();
   const { stCeloVotingPower } = useStCELOVotingPower(address);
   const { isLoading: isSignerForLoading, signingFor } = useVoteSignerToAccount(address);

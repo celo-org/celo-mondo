@@ -3,7 +3,7 @@ import { sha256 } from 'viem';
 import { useSignTypedData } from 'wagmi';
 
 export function useSignedData() {
-  const { signTypedDataAsync } = useSignTypedData();
+  const { mutateAsync: signTypedDataAsync } = useSignTypedData();
 
   return async (values: RegisterDelegateFormValues) => {
     if (!values.image) {

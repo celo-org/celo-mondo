@@ -52,7 +52,7 @@ import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { isAddressEqual } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export default function Page({
   address,
@@ -61,7 +61,7 @@ export default function Page({
   address: Address;
   initialValidatorGroups?: string;
 }) {
-  const account = useAccount();
+  const account = useConnection();
   // Serialized because RSC prop serialization downgrades bigints to strings
   const initialGroups = useMemo(
     () =>
@@ -93,7 +93,7 @@ function HeaderSection({
   group?: ValidatorGroup;
   currentStakeInGroup: bigint;
 }) {
-  const account = useAccount();
+  const account = useConnection();
   const { ui, mode } = useStakingMode();
   const { group: stCELOStakingGroup } = useStrategy(account.address);
   const address = group?.address || ZERO_ADDRESS;

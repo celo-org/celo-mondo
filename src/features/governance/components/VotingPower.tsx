@@ -5,10 +5,10 @@ import {
   useStCELOVotingPower,
 } from 'src/features/governance/hooks/useVotingStatus';
 import { useStakingMode } from 'src/utils/useStakingMode';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function VotingPower() {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { mode } = useStakingMode();
   const { votingPower } = useGovernanceVotingPower(address);
   const { stCeloVotingPower } = useStCELOVotingPower(address);

@@ -1,8 +1,14 @@
 /** @type {import('next').NextConfig} */
 
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const isDev = process.env.NODE_ENV !== 'production';
+
+// RainbowKit 2.x still imports connectors that wagmi 3.4.4+ removed, so both
+// bundlers resolve `wagmi/connectors` to a shim that adds inert stand-ins.
+// See src/vendor/wagmiConnectors.ts
+const WAGMI_CONNECTORS_SHIM = path.resolve(process.cwd(), 'src/vendor/wagmiConnectors.ts');
 
 // Sometimes useful to disable this during development
 const ENABLE_CSP_HEADER = true;
@@ -89,13 +95,17 @@ const securityHeaders = [
 ];
 
 export default {
-  // webpack: (config, { isServer }) => {
-  //   config.externals = [...config.externals, 'pino-pretty'];
-  //   if (isServer && process.env.NODE_ENV === 'production') {
-  //     config.devtool = 'source-map';
-  //   }
-  //   return config;
-  // },
+  webpack: (config) => ({
+    ...config,
+    resolve: {
+      ...config.resolve,
+      alias: { ...config.resolve?.alias, 'wagmi/connectors$': WAGMI_CONNECTORS_SHIM },
+    },
+  }),
+  turbopack: {
+    // Turbopack resolves alias targets like imports, so use the tsconfig path form
+    resolveAlias: { 'wagmi/connectors': 'src/vendor/wagmiConnectors' },
+  },
 
   async headers() {
     return [

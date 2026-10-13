@@ -12,7 +12,7 @@ import { TransactionFlowType } from 'src/features/transactions/TransactionFlowTy
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
   const { isDequeueReady } = useIsDequeueReady();
@@ -49,7 +49,7 @@ export function ProposalUpvoteButton({ proposalId }: { proposalId?: number }) {
 }
 
 export function ProposalVoteButtons({ proposalId }: { proposalId?: number }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { votingRecord } = useGovernanceVoteRecord(address, proposalId);
   const { stCELOVotingRecord } = useStCELOVoteRecord(address, proposalId);
   const { mode } = useStakingMode();
