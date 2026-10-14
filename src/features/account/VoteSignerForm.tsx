@@ -59,9 +59,10 @@ export function VoteSignerForm({ onConfirmed }: { onConfirmed: OnConfirmedFn }) 
     onTxSuccess,
   );
 
-  const onSubmit = (values: VoteSignerFormValues) => {
+  // Async so Formik keeps isSubmitting set until the write has been handed to the wallet
+  const onSubmit = async (values: VoteSignerFormValues) => {
     submitted.current = values;
-    return writeContract(getAuthorizeTx(values));
+    await writeContract(getAuthorizeTx(values));
   };
 
   const validate = async (values: VoteSignerFormValues) => {
@@ -82,55 +83,64 @@ export function VoteSignerForm({ onConfirmed }: { onConfirmed: OnConfirmedFn }) 
       validateOnChange={false}
       validateOnBlur={false}
     >
-      <Form
-        className="mt-4 flex flex-1 flex-col justify-between space-y-3"
-        data-testid="vote-signer-form"
-      >
-        <div className="space-y-3">
-          <TipBox color="purple">
-            A vote signer votes, stakes and delegates on behalf of this account without holding its
-            locked CELO. The signer wallet must first create a proof of possession for this account
-            under Account → Settings.
-          </TipBox>
-          <TipBox color="yellow">
-            This permanently ties the signer key to this account. Even after you remove it, that
-            wallet can never register as its own account or sign for a different account.
-          </TipBox>
-          <div className="space-y-1">
-            <label htmlFor="signer" className="pl-0.5 text-xs font-medium">
-              Vote signer address
-            </label>
-            <TextField
-              id="signer"
-              name="signer"
-              placeholder="0x..."
-              className="w-full font-mono text-sm"
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-1">
-            <label htmlFor="signature" className="pl-0.5 text-xs font-medium">
-              Proof of possession
-            </label>
-            <TextField
-              id="signature"
-              name="signature"
-              as="textarea"
-              rows={3}
-              placeholder="0x..."
-              className="w-full resize-none font-mono text-sm"
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-        <FormSubmitButton
-          isLoading={isLoading}
-          loadingText="Authorizing"
-          data-testid="vote-signer-form-submit"
-        >
-          Authorize
-        </FormSubmitButton>
-      </Form>
+      {({ isSubmitting }) => {
+        // Formik is submitting while the on-chain validation reads run, before the write
+        // hook reports loading; lock the form for the whole window so the values being
+        // validated are the values that get sent
+        const isBusy = isLoading || isSubmitting;
+        return (
+          <Form
+            className="mt-4 flex flex-1 flex-col justify-between space-y-3"
+            data-testid="vote-signer-form"
+          >
+            <div className="space-y-3">
+              <TipBox color="purple">
+                A vote signer votes, stakes and delegates on behalf of this account without holding
+                its locked CELO. The signer wallet must first create a proof of possession for this
+                account under Account → Settings.
+              </TipBox>
+              <TipBox color="yellow">
+                This permanently ties the signer key to this account. Even after you remove it, that
+                wallet can never register as its own account or sign for a different account.
+              </TipBox>
+              <div className="space-y-1">
+                <label htmlFor="signer" className="pl-0.5 text-xs font-medium">
+                  Vote signer address
+                </label>
+                <TextField
+                  id="signer"
+                  name="signer"
+                  placeholder="0x..."
+                  className="w-full font-mono text-sm"
+                  disabled={isBusy}
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="signature" className="pl-0.5 text-xs font-medium">
+                  Proof of possession
+                </label>
+                <TextField
+                  id="signature"
+                  name="signature"
+                  as="textarea"
+                  rows={3}
+                  placeholder="0x..."
+                  className="w-full resize-none font-mono text-sm"
+                  disabled={isBusy}
+                />
+              </div>
+            </div>
+            <FormSubmitButton
+              isLoading={isLoading}
+              disabled={isBusy}
+              loadingText="Authorizing"
+              data-testid="vote-signer-form-submit"
+            >
+              Authorize
+            </FormSubmitButton>
+          </Form>
+        );
+      }}
     </Formik>
   );
 }

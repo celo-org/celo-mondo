@@ -26,6 +26,8 @@ function setup({
   authorizedBy = ZERO_ADDRESS,
   currentSigner = principal,
   isRegistered = true,
+  // resolves the chain reads only after the caller releases it
+  chainGate = Promise.resolve(),
 } = {}) {
   const writeContract = vi.fn();
   const tx: { onSuccess?: (receipt: TransactionReceipt) => unknown } = {};
@@ -37,7 +39,10 @@ function setup({
     getVoteSigner: currentSigner,
   };
   vi.spyOn(wagmi, 'usePublicClient').mockReturnValue({
-    readContract: vi.fn(async ({ functionName }: { functionName: string }) => chain[functionName]),
+    readContract: vi.fn(async ({ functionName }: { functionName: string }) => {
+      await chainGate;
+      return chain[functionName];
+    }),
   } as any);
   vi.spyOn(useWriteContractWithReceipt, 'useWriteContractWithReceipt').mockImplementation(
     (_description, onSuccess) => {
@@ -100,6 +105,24 @@ describe('<VoteSignerForm />', () => {
         properties: [{ label: 'Signer', value: shortenAddress(otherSigner.address) }],
       }),
     );
+  });
+
+  it('locks the inputs and button while the on-chain validation is still running', async () => {
+    let release!: () => void;
+    const chainGate = new Promise<void>((resolve) => (release = resolve));
+    const { writeContract } = setup({ chainGate });
+    const view = render(<VoteSignerForm onConfirmed={vi.fn()} />, { wrapper: testWrapper });
+
+    submit(view, validSignature);
+
+    await waitFor(() => expect(view.getByTestId('vote-signer-form-submit')).toBeDisabled());
+    expect(view.getByLabelText('Vote signer address')).toBeDisabled();
+    expect(view.getByLabelText('Proof of possession')).toBeDisabled();
+    expect(writeContract).not.toHaveBeenCalled();
+
+    release();
+    await waitFor(() => expect(writeContract).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(view.getByTestId('vote-signer-form-submit')).toBeEnabled());
   });
 
   it('rejects a proof signed for another account', async () => {
