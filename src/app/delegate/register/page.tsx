@@ -30,6 +30,12 @@ export default function Page() {
       <Section className="mt-4" containerClassName="space-y-4">
         <BackLink href="/delegate">Browse delegates</BackLink>
         <H1>Register delegatee</H1>
+        <p className="max-w-prose">
+          Registering is only needed if you want other CELO holders to delegate their voting power
+          to you. You can vote with your own locked CELO without registering, and you never need to
+          delegate to yourself. To give your voting power to someone else, pick a delegate from the
+          list instead.
+        </p>
         {(() => {
           if (!(address && isConnected)) {
             return <AccountConnectForm />;
