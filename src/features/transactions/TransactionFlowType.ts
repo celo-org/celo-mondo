@@ -1,3 +1,4 @@
+import { VoteSignerForm } from 'src/features/account/VoteSignerForm';
 import { DelegationForm } from 'src/features/delegation/DelegationForm';
 import { UpvoteForm } from 'src/features/governance/UpvoteForm';
 import { VoteForm } from 'src/features/governance/VoteForm';
@@ -17,6 +18,7 @@ export enum TransactionFlowType {
   Upvote = 'upvote',
   Vote = 'vote',
   Delegate = 'delegate',
+  AuthorizeVoteSigner = 'authorize vote signer',
 }
 
 export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowProps> = {
@@ -61,5 +63,10 @@ export const transactionFlowProps: Record<TransactionFlowType, TransactionFlowPr
     FormComponent: DelegationForm,
     header: 'Delegate CELO',
     requiresLockedFundsOrVoteSigner: true,
+  },
+  [TransactionFlowType.AuthorizeVoteSigner]: {
+    FormComponent: VoteSignerForm,
+    header: 'Authorize vote signer',
+    requiresLockedFundsOrVoteSigner: false,
   },
 };

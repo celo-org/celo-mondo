@@ -126,6 +126,7 @@ export default function PrivacyPage() {
             ['upvote_completed', 'Proposal ID'],
             ['delegate_completed', 'Action type, delegation percentage'],
             ['account_created', '(none)'],
+            ['vote_signer_authorized', '(none)'],
             ['nav_clicked', 'Navigation item label'],
             ['mode_toggled', 'Mode (CELO / stCELO)'],
             ['proposal_viewed', 'Proposal ID, stage'],
