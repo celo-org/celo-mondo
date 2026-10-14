@@ -29,6 +29,45 @@ export function ProofOfPossessionForm() {
   // account could never be used
   const boundAccount =
     binding.data && !eqAddress(binding.data, ZERO_ADDRESS) ? binding.data : undefined;
+  if (isAccount.data) {
+    return (
+      <TipBox color="yellow">
+        This wallet is already registered as an account, so it cannot become a vote signer.
+      </TipBox>
+    );
+  }
+  // Both reads decide what this wallet may sign for, so never show the form before they settle
+  if (isAccount.isPending || binding.isPending) {
+    return (
+      <div data-testid="proof-of-possession-loading">
+        <SkeletonBlock className="h-24 w-full" />
+      </div>
+    );
+  }
+  if (isAccount.isError || binding.isError) {
+    return (
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm text-red-600" data-testid="proof-of-possession-error">
+          Could not check what this wallet may sign for.
+        </p>
+        <OutlineButton onClick={() => Promise.all([isAccount.refetch(), binding.refetch()])}>
+          Retry
+        </OutlineButton>
+      </div>
+    );
+  }
+
+  // Keyed so the values and any generated proof reset when the wallet or its binding changes
+  return (
+    <ProofForm
+      key={`${address ?? ''}-${boundAccount ?? ''}`}
+      address={address}
+      boundAccount={boundAccount}
+    />
+  );
+}
+
+function ProofForm({ address, boundAccount }: { address?: Address; boundAccount?: Address }) {
   const { mutateAsync: signMessageAsync, isPending } = useSignMessage();
   // Keep the signing wallet and the signed-for account next to the signature so a proof
   // is only ever shown for the wallet that produced it and the account currently in the field.
@@ -58,34 +97,6 @@ export function ProofOfPossessionForm() {
     }
     return {};
   };
-
-  if (isAccount.data) {
-    return (
-      <TipBox color="yellow">
-        This wallet is already registered as an account, so it cannot become a vote signer.
-      </TipBox>
-    );
-  }
-  // Both reads decide what this wallet may sign for, so never show the form before they settle
-  if (isAccount.isPending || binding.isPending) {
-    return (
-      <div data-testid="proof-of-possession-loading">
-        <SkeletonBlock className="h-24 w-full" />
-      </div>
-    );
-  }
-  if (isAccount.isError || binding.isError) {
-    return (
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-sm text-red-600" data-testid="proof-of-possession-error">
-          Could not check what this wallet may sign for.
-        </p>
-        <OutlineButton onClick={() => Promise.all([isAccount.refetch(), binding.refetch()])}>
-          Retry
-        </OutlineButton>
-      </div>
-    );
-  }
 
   return (
     <Formik<ProofOfPossessionFormValues>

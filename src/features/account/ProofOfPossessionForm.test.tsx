@@ -57,6 +57,25 @@ describe('<ProofOfPossessionForm />', () => {
     expect(view.queryByTestId('proof-of-possession-form')).toBeNull();
   });
 
+  it('resets the form and drops the proof when the binding changes', async () => {
+    setup(signer);
+    const view = render(<ProofOfPossessionForm />);
+    fireEvent.change(view.getByLabelText('Account to vote on behalf of'), {
+      target: { value: principal },
+    });
+    fireEvent.click(view.getByTestId('proof-of-possession-submit'));
+    await view.findByTestId('proof-of-possession-signature');
+
+    vi.restoreAllMocks();
+    setup(signer, otherSigner);
+    view.rerender(<ProofOfPossessionForm />);
+
+    expect((view.getByLabelText('Account to vote on behalf of') as HTMLInputElement).value).toBe(
+      otherSigner,
+    );
+    expect(view.queryByTestId('proof-of-possession-signature')).toBeNull();
+  });
+
   it('pins a previously bound wallet to the account it is tied to', async () => {
     setup(signer, principal);
     const view = render(<ProofOfPossessionForm />);
