@@ -10,6 +10,7 @@ import { Section } from 'src/components/layout/Section';
 import { Amount } from 'src/components/numbers/Amount';
 import { TokenId } from 'src/config/tokens';
 import { useBalance, useStCELOBalance, useVoteSignerToAccount } from 'src/features/account/hooks';
+import { VoteSignerSettings } from 'src/features/account/VoteSignerSettings';
 import { DelegationsTable } from 'src/features/delegation/components/DelegationsTable';
 import { useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
 import { useDelegationBalances } from 'src/features/delegation/hooks/useDelegationBalances';
@@ -320,7 +321,7 @@ function TabBadge({ label }: { label: string }) {
   );
 }
 
-type Tab = 'stakes' | 'rewards' | 'delegations' | 'history' | 'withdrawals';
+type Tab = 'stakes' | 'rewards' | 'delegations' | 'history' | 'withdrawals' | 'settings';
 function TableTabs({
   groupToStake,
   addressToGroup,
@@ -347,12 +348,14 @@ function TableTabs({
   scheduledWithdrawalAmount?: bigint;
 }) {
   const tabs: Tab[] =
-    mode === 'CELO' ? ['stakes', 'rewards', 'delegations', 'history'] : ['stakes', 'withdrawals'];
+    mode === 'CELO'
+      ? ['stakes', 'rewards', 'delegations', 'history', 'settings']
+      : ['stakes', 'withdrawals'];
   const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
 
   return (
     <div className="pt-2">
-      <div className="flex space-x-10 border-b border-taupe-300 pb-2">
+      <div className="flex space-x-10 overflow-x-auto border-b border-taupe-300 pb-2">
         {tabs.map((tabName) => (
           <TabHeaderButton
             key={tabName}
@@ -401,6 +404,7 @@ function TableTabs({
         />
       )}
       {tab === 'history' && <ProposalVotesHistoryTable />}
+      {tab === 'settings' && mode === 'CELO' && <VoteSignerSettings />}
     </div>
   );
 }

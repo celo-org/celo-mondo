@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useToastTxSuccess } from 'src/components/notifications/TxSuccessToast';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { WALLET_CONNECT_CONNECTOR_ID } from 'src/config/consts';
@@ -45,13 +46,22 @@ export function useWriteContractWithReceipt(
 
       logger.debug('Estimating gas for transaction');
       const encodedData = encodeFunctionData(args);
-      const estimatedGas = await publicClient.estimateGas({
-        to: args.address,
-        data: encodedData,
-        value: args.value,
-        account: account.address,
-      });
-      const bufferedGas = (estimatedGas * GAS_LIMIT_MULTIPLIER) / 100n;
+      let bufferedGas: bigint;
+      try {
+        const estimatedGas = await publicClient.estimateGas({
+          to: args.address,
+          data: encodedData,
+          value: args.value,
+          account: account.address,
+        });
+        bufferedGas = (estimatedGas * GAS_LIMIT_MULTIPLIER) / 100n;
+      } catch (error) {
+        // A failed estimate means the call would revert; without this the rejection
+        // escapes the click handler and the user sees nothing
+        logger.error(`Error estimating gas for ${description} transaction`, error);
+        toast.error(`Error preparing ${description} transaction, it would fail on-chain.`);
+        return;
+      }
 
       // Some WalletConnect-ed wallets like Celo Terminal require that the tx be fully populated
       if (account?.connector?.id === WALLET_CONNECT_CONNECTOR_ID) {
@@ -79,7 +89,7 @@ export function useWriteContractWithReceipt(
         writeContract({ ...args, gas: bufferedGas });
       }
     },
-    [writeContract, publicClient, account],
+    [writeContract, publicClient, account, description],
   );
 
   const {
