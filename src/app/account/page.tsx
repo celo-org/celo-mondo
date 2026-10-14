@@ -359,7 +359,7 @@ function TableTabs({
 
   return (
     <div className="pt-2">
-      <div className="flex space-x-10 overflow-x-auto border-b border-taupe-300 pb-2">
+      <div className="flex flex-wrap gap-x-10 gap-y-4 border-b border-taupe-300 pb-2">
         {tabs.map((tabName) => (
           <TabHeaderButton
             key={tabName}
