@@ -1,6 +1,6 @@
 import { lockedGoldABI } from '@celo/abis';
 import { Addresses } from 'src/config/contracts';
-import { Participation, scoreParticipation } from 'src/features/delegation/participation';
+import { ParticipationData, scoreParticipation } from 'src/features/delegation/participation';
 import { Delegatee, DelegateeMetadata } from 'src/features/delegation/types';
 import { fromFixidity } from 'src/utils/numbers';
 import { PublicClient } from 'viem';
@@ -14,7 +14,7 @@ export async function fetchDelegateeStats(
   publicClient: PublicClient,
   metadata: DelegateeMetadata[],
   // Absent when the DB query failed; every delegate then renders without a score
-  participation?: AddressTo<Participation>,
+  participation?: ParticipationData,
 ): Promise<AddressTo<Delegatee>> {
   const votingPowerResults = await publicClient.multicall({
     contracts: metadata.map(
@@ -80,7 +80,10 @@ export async function fetchDelegateeStats(
       delegatedByPercent,
       participation:
         participation &&
-        (participation[address.toLowerCase() as Address] ?? scoreParticipation([])),
+        scoreParticipation(
+          participation.votedRanks[address.toLowerCase() as Address] ?? [],
+          participation.closedProposals,
+        ),
     };
   }
 
