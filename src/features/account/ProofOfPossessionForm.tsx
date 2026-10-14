@@ -9,6 +9,7 @@ import { useIsAccount } from 'src/features/account/hooks';
 import {
   ProofOfPossessionFormValues,
   getProofOfPossessionMessage,
+  recoverProofOfPossessionSigner,
 } from 'src/features/account/voteSigner';
 import { eqAddress, isValidAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
@@ -21,16 +22,19 @@ export function ProofOfPossessionForm() {
   const { address } = useConnection();
   const { data: isRegistered } = useIsAccount(address);
   const { mutateAsync: signMessageAsync, isPending } = useSignMessage();
-  // Keep the signed-for account next to the signature so a proof is only ever shown
-  // for the account currently in the field
-  const [proof, setProof] = useState<{ account: Address; signature: Hex }>();
+  // Keep the signing wallet and the signed-for account next to the signature so a proof
+  // is only ever shown for the wallet that produced it and the account currently in the field.
+  // The signer is recovered from the signature itself, so the displayed proof is self-verified
+  // even if the wallet switched while the signing prompt was open.
+  const [proof, setProof] = useState<{ signer: Address; account: Address; signature: Hex }>();
 
   const onSubmit = async (values: ProofOfPossessionFormValues) => {
     const account = values.account.trim() as Address;
     setProof(undefined);
     try {
       const signature = await signMessageAsync({ message: getProofOfPossessionMessage(account) });
-      setProof({ account, signature });
+      const signer = await recoverProofOfPossessionSigner(account, signature);
+      setProof({ signer, account, signature });
     } catch (error) {
       logger.error('Error signing proof of possession', error);
       toast.error('Signing failed, please check your wallet');
@@ -62,7 +66,10 @@ export function ProofOfPossessionForm() {
     >
       {({ values }) => {
         const signature =
-          proof && values.account.trim().toLowerCase() === proof.account.toLowerCase()
+          proof &&
+          address &&
+          eqAddress(proof.signer, address) &&
+          values.account.trim().toLowerCase() === proof.account.toLowerCase()
             ? proof.signature
             : undefined;
         return (
@@ -102,6 +109,11 @@ export function ProofOfPossessionForm() {
                   Send this to the account owner. They paste it under Account → Settings → Authorize
                   vote signer.
                 </p>
+                <TipBox color="yellow">
+                  Only share this with the owner of that account. Once they authorize this wallet,
+                  it is permanently tied to their account and can never register as its own account
+                  or sign for another one.
+                </TipBox>
               </div>
             )}
           </Form>

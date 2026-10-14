@@ -1,6 +1,7 @@
 import { accountsABI } from '@celo/abis';
 import { useQueryClient } from '@tanstack/react-query';
 import { Form, Formik, FormikErrors } from 'formik';
+import { useCallback, useRef } from 'react';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
 import { TextField } from 'src/components/input/TextField';
 import { TipBox } from 'src/components/layout/TipBox';
@@ -13,16 +14,16 @@ import {
   parseProofOfPossession,
   recoverProofOfPossessionSigner,
 } from 'src/features/account/voteSigner';
-import { OnConfirmedFn, TxPlan } from 'src/features/transactions/types';
-import { useTransactionPlan } from 'src/features/transactions/useTransactionPlan';
+import { OnConfirmedFn } from 'src/features/transactions/types';
 import { useWriteContractWithReceipt } from 'src/features/transactions/useWriteContractWithReceipt';
 import { eqAddress, isValidAddress, shortenAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { Address, Hex, isHex } from 'viem';
+import { Address, Hex, TransactionReceipt, isHex } from 'viem';
 import { useConnection, usePublicClient } from 'wagmi';
 
 const initialValues: VoteSignerFormValues = { signer: '', signature: '' };
+type WriteArgs = Parameters<ReturnType<typeof useWriteContractWithReceipt>['writeContract']>[0];
 
 export function VoteSignerForm({ onConfirmed }: { onConfirmed: OnConfirmedFn }) {
   const { address } = useConnection();
@@ -31,25 +32,37 @@ export function VoteSignerForm({ onConfirmed }: { onConfirmed: OnConfirmedFn }) 
   const queryClient = useQueryClient();
   const trackEvent = useTrackEvent();
 
-  const { getNextTx, onTxSuccess } = useTransactionPlan<VoteSignerFormValues>({
-    createTxPlan: (v) => getAuthorizeTxPlan(v),
-    onPlanSuccess: (v, r) => {
+  // The values behind the transaction currently in flight. Every submission builds its own
+  // transaction (no cached plan), so a rejected or failed attempt can never resend an
+  // earlier signer after the form was edited.
+  const submitted = useRef<VoteSignerFormValues>(undefined);
+  const onTxSuccess = useCallback(
+    (receipt: TransactionReceipt) => {
+      const values = submitted.current;
+      if (!values) {
+        logger.error('Vote signer authorization confirmed without submitted values');
+        return;
+      }
       trackEvent('vote_signer_authorized', {});
       // The settings view behind the modal reads getVoteSigner and must pick up the change
       void queryClient.invalidateQueries({ queryKey: ['readContract'] });
       onConfirmed({
         message: 'Vote signer authorized',
-        receipt: r,
-        properties: [{ label: 'Signer', value: shortenAddress(v.signer) }],
+        receipt,
+        properties: [{ label: 'Signer', value: shortenAddress(values.signer.trim()) }],
       });
     },
-  });
+    [trackEvent, queryClient, onConfirmed],
+  );
   const { writeContract, isLoading } = useWriteContractWithReceipt(
     'vote signer authorization',
     onTxSuccess,
   );
 
-  const onSubmit = (values: VoteSignerFormValues) => writeContract(getNextTx(values));
+  const onSubmit = (values: VoteSignerFormValues) => {
+    submitted.current = values;
+    return writeContract(getAuthorizeTx(values));
+  };
 
   const validate = async (values: VoteSignerFormValues) => {
     if (!address || !publicClient) return { signer: 'Form data not ready' };
@@ -123,18 +136,15 @@ export function VoteSignerForm({ onConfirmed }: { onConfirmed: OnConfirmedFn }) 
 }
 
 // Only called after validateForm accepted the values, so the casts below are safe
-function getAuthorizeTxPlan(values: VoteSignerFormValues): TxPlan {
+function getAuthorizeTx(values: VoteSignerFormValues): WriteArgs {
   const { v, r, s } = parseProofOfPossession(values.signature.trim() as Hex);
-  return [
-    {
-      action: 'authorize',
-      chainId: config.chain.id,
-      address: Addresses.Accounts,
-      abi: accountsABI,
-      functionName: 'authorizeVoteSigner',
-      args: [values.signer.trim() as Address, v, r, s],
-    },
-  ];
+  return {
+    chainId: config.chain.id,
+    address: Addresses.Accounts,
+    abi: accountsABI,
+    functionName: 'authorizeVoteSigner',
+    args: [values.signer.trim() as Address, v, r, s],
+  };
 }
 
 // Mirrors the Accounts contract's own checks so the user gets a precise error
