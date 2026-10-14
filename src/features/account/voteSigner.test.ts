@@ -103,6 +103,15 @@ describe('vote signer authorization on a Celo mainnet fork', () => {
     await expect(readSigner('getVoteSigner', principal.account.address)).resolves.toBe(
       principal.account.address,
     );
+    // Removal does not release the key: it stays bound to the account forever
+    await expect(
+      publicClient.readContract({
+        address: accounts,
+        abi: accountsABI,
+        functionName: 'authorizedBy',
+        args: [signer.account.address],
+      }),
+    ).resolves.toBe(principal.account.address);
   }, 60_000);
 
   test('rejects a proof of possession signed for a different account', async () => {

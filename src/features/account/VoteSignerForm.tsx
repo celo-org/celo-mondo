@@ -79,6 +79,10 @@ export function VoteSignerForm({ onConfirmed }: { onConfirmed: OnConfirmedFn }) 
             locked CELO. The signer wallet must first create a proof of possession for this account
             under Account → Settings.
           </TipBox>
+          <TipBox color="yellow">
+            This permanently ties the signer key to this account. Even after you remove it, that
+            wallet can never register as its own account or sign for a different account.
+          </TipBox>
           <div className="space-y-1">
             <label htmlFor="signer" className="pl-0.5 text-xs font-medium">
               Vote signer address
@@ -153,7 +157,7 @@ async function validateForm(
     return { signature: 'Proof of possession was not signed by this signer for your account' };
   }
 
-  const [isAccount, authorizedBy] = await Promise.all([
+  const [isAccount, authorizedBy, currentSigner] = await Promise.all([
     publicClient.readContract({
       address: Addresses.Accounts,
       abi: accountsABI,
@@ -166,10 +170,20 @@ async function validateForm(
       functionName: 'authorizedBy',
       args: [signer],
     }),
+    publicClient.readContract({
+      address: Addresses.Accounts,
+      abi: accountsABI,
+      functionName: 'getVoteSigner',
+      args: [account],
+    }),
   ]);
   if (isAccount) return { signer: 'Signer is already a registered account' };
   if (authorizedBy !== ZERO_ADDRESS && !eqAddress(authorizedBy, account)) {
     return { signer: 'Signer is already authorized for another account' };
+  }
+  // Authorizing over an existing signer would replace it without revoking the old key
+  if (!eqAddress(currentSigner, account) && !eqAddress(currentSigner, signer)) {
+    return { signer: 'Remove the current vote signer before authorizing a new one' };
   }
   return {};
 }

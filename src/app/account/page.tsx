@@ -351,7 +351,11 @@ function TableTabs({
     mode === 'CELO'
       ? ['stakes', 'rewards', 'delegations', 'history', 'settings']
       : ['stakes', 'withdrawals'];
-  const { tab, onTabChange } = useTabs<(typeof tabs)[number]>('stakes');
+  const { tab: requestedTab, onTabChange } = useTabs<Tab>('stakes');
+  // The tab persists in the URL, so a mode switch or a shared link can name a tab the
+  // current mode does not offer; fall back to the first tab without touching the URL so
+  // the requested tab comes back once the mode matches it again
+  const tab = tabs.includes(requestedTab) ? requestedTab : tabs[0];
 
   return (
     <div className="pt-2">

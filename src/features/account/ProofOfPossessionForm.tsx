@@ -21,12 +21,16 @@ export function ProofOfPossessionForm() {
   const { address } = useConnection();
   const { data: isRegistered } = useIsAccount(address);
   const { mutateAsync: signMessageAsync, isPending } = useSignMessage();
-  const [signature, setSignature] = useState<Hex>();
+  // Keep the signed-for account next to the signature so a proof is only ever shown
+  // for the account currently in the field
+  const [proof, setProof] = useState<{ account: Address; signature: Hex }>();
 
   const onSubmit = async (values: ProofOfPossessionFormValues) => {
+    const account = values.account.trim() as Address;
+    setProof(undefined);
     try {
-      const account = values.account.trim() as Address;
-      setSignature(await signMessageAsync({ message: getProofOfPossessionMessage(account) }));
+      const signature = await signMessageAsync({ message: getProofOfPossessionMessage(account) });
+      setProof({ account, signature });
     } catch (error) {
       logger.error('Error signing proof of possession', error);
       toast.error('Signing failed, please check your wallet');
@@ -56,45 +60,53 @@ export function ProofOfPossessionForm() {
       validateOnChange={false}
       validateOnBlur={false}
     >
-      <Form className="space-y-3" data-testid="proof-of-possession-form">
-        <div className="space-y-1">
-          <label htmlFor="account" className="pl-0.5 text-xs font-medium">
-            Account to vote on behalf of
-          </label>
-          <TextField
-            id="account"
-            name="account"
-            placeholder="0x..."
-            className="w-full font-mono text-sm"
-            disabled={isPending}
-          />
-        </div>
-        <FormSubmitButton
-          isLoading={isPending}
-          loadingText="Signing"
-          data-testid="proof-of-possession-submit"
-        >
-          Sign proof of possession
-        </FormSubmitButton>
-        {signature && (
-          <div className="space-y-1">
-            <p className="pl-0.5 text-xs font-medium">Proof of possession</p>
-            <div className="flex items-start space-x-2 border border-taupe-300 p-2">
-              <code
-                className="ph-no-capture grow break-all font-mono text-xs"
-                data-testid="proof-of-possession-signature"
-              >
-                {signature}
-              </code>
-              <CopyButton copyValue={signature} width={16} height={16} />
+      {({ values }) => {
+        const signature =
+          proof && values.account.trim().toLowerCase() === proof.account.toLowerCase()
+            ? proof.signature
+            : undefined;
+        return (
+          <Form className="space-y-3" data-testid="proof-of-possession-form">
+            <div className="space-y-1">
+              <label htmlFor="account" className="pl-0.5 text-xs font-medium">
+                Account to vote on behalf of
+              </label>
+              <TextField
+                id="account"
+                name="account"
+                placeholder="0x..."
+                className="w-full font-mono text-sm"
+                disabled={isPending}
+              />
             </div>
-            <p className="text-xs text-taupe-600">
-              Send this to the account owner. They paste it under Account → Settings → Authorize
-              vote signer.
-            </p>
-          </div>
-        )}
-      </Form>
+            <FormSubmitButton
+              isLoading={isPending}
+              loadingText="Signing"
+              data-testid="proof-of-possession-submit"
+            >
+              Sign proof of possession
+            </FormSubmitButton>
+            {signature && (
+              <div className="space-y-1">
+                <p className="pl-0.5 text-xs font-medium">Proof of possession</p>
+                <div className="flex items-start space-x-2 border border-taupe-300 p-2">
+                  <code
+                    className="ph-no-capture grow break-all font-mono text-xs"
+                    data-testid="proof-of-possession-signature"
+                  >
+                    {signature}
+                  </code>
+                  <CopyButton copyValue={signature} width={16} height={16} />
+                </div>
+                <p className="text-xs text-taupe-600">
+                  Send this to the account owner. They paste it under Account → Settings → Authorize
+                  vote signer.
+                </p>
+              </div>
+            )}
+          </Form>
+        );
+      }}
     </Formik>
   );
 }

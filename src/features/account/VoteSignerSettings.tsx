@@ -1,4 +1,6 @@
 import { accountsABI } from '@celo/abis';
+import { useQueryClient } from '@tanstack/react-query';
+import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { SolidButton } from 'src/components/buttons/SolidButton';
 import { ShortAddress } from 'src/components/text/ShortAddress';
@@ -15,13 +17,15 @@ import { useConnection } from 'wagmi';
 export function VoteSignerSettings() {
   const { address } = useConnection();
   const { signingFor, isVoteSigner } = useVoteSignerToAccount(address);
-  const { data: voteSigner, refetch } = useGetVoteSignerFor(address);
+  const { data: voteSigner, isPending, isError, refetch } = useGetVoteSignerFor(address);
   // getVoteSigner returns the account itself when nothing is authorized
   const hasVoteSigner = !!address && !!voteSigner && !eqAddress(voteSigner, address);
   const showTxModal = useTransactionModal(TransactionFlowType.AuthorizeVoteSigner);
+  const queryClient = useQueryClient();
   const { writeContract, isLoading: isRemoving } = useWriteContractWithReceipt(
     'vote signer removal',
-    () => refetch(),
+    // Also drops the cached voteSignerToAccount mapping the removed wallet would otherwise keep
+    () => queryClient.invalidateQueries({ queryKey: ['readContract'] }),
     true,
   );
 
@@ -46,6 +50,15 @@ export function VoteSignerSettings() {
           <p className="text-sm" data-testid="vote-signer-status">
             This wallet is the vote signer for <ShortAddress address={signingFor!} />.
           </p>
+        ) : isPending ? (
+          <SkeletonBlock className="h-10 w-48" />
+        ) : isError || !voteSigner ? (
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm text-red-600" data-testid="vote-signer-error">
+              Could not load the current vote signer.
+            </p>
+            <OutlineButton onClick={() => refetch()}>Retry</OutlineButton>
+          </div>
         ) : hasVoteSigner ? (
           <div className="flex items-center justify-between gap-4">
             <p className="text-sm" data-testid="vote-signer-status">

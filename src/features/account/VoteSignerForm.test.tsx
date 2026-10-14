@@ -19,14 +19,22 @@ vi.mock('wagmi', async (importActual) => ({
 const [principal, , stranger] = TEST_ADDRESSES as Address[];
 const signer = mnemonicToAccount(TEST_MNEMONIC, { addressIndex: 1 });
 
-function setup({ signerIsAccount = false, authorizedBy = ZERO_ADDRESS, isRegistered = true } = {}) {
+function setup({
+  signerIsAccount = false,
+  authorizedBy = ZERO_ADDRESS,
+  currentSigner = principal,
+  isRegistered = true,
+} = {}) {
   const writeContract = vi.fn();
   vi.spyOn(wagmi, 'useConnection').mockReturnValue({ address: principal } as any);
   vi.spyOn(hooks, 'useIsAccount').mockReturnValue({ data: isRegistered } as any);
+  const chain: Record<string, unknown> = {
+    isAccount: signerIsAccount,
+    authorizedBy,
+    getVoteSigner: currentSigner,
+  };
   vi.spyOn(wagmi, 'usePublicClient').mockReturnValue({
-    readContract: vi.fn(async ({ functionName }: { functionName: string }) =>
-      functionName === 'isAccount' ? signerIsAccount : authorizedBy,
-    ),
+    readContract: vi.fn(async ({ functionName }: { functionName: string }) => chain[functionName]),
   } as any);
   vi.spyOn(useWriteContractWithReceipt, 'useWriteContractWithReceipt').mockReturnValue({
     writeContract,
@@ -58,6 +66,7 @@ describe('<VoteSignerForm />', () => {
     const { writeContract } = setup();
     const view = render(<VoteSignerForm onConfirmed={vi.fn()} />, { wrapper: testWrapper });
 
+    expect(view.getByText(/permanently ties the signer key/)).toBeTruthy();
     submit(view, validSignature);
 
     await waitFor(() => expect(writeContract).toHaveBeenCalledTimes(1));
@@ -94,6 +103,16 @@ describe('<VoteSignerForm />', () => {
     submit(view, validSignature);
 
     await view.findByText(/not a registered account/);
+    expect(writeContract).not.toHaveBeenCalled();
+  });
+
+  it('refuses to replace an existing vote signer', async () => {
+    const { writeContract } = setup({ currentSigner: stranger });
+    const view = render(<VoteSignerForm onConfirmed={vi.fn()} />, { wrapper: testWrapper });
+
+    submit(view, validSignature);
+
+    await view.findByText(/Remove the current vote signer/);
     expect(writeContract).not.toHaveBeenCalled();
   });
 
