@@ -1,17 +1,20 @@
 import { Form, Formik } from 'formik';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { CopyButton } from 'src/components/buttons/CopyButton';
 import { FormSubmitButton } from 'src/components/buttons/FormSubmitButton';
+import { OutlineButton } from 'src/components/buttons/OutlineButton';
 import { TextField } from 'src/components/input/TextField';
 import { TipBox } from 'src/components/layout/TipBox';
-import { useIsAccount } from 'src/features/account/hooks';
+import { ZERO_ADDRESS } from 'src/config/consts';
+import { useAuthorizedBy, useIsAccount } from 'src/features/account/hooks';
 import {
   ProofOfPossessionFormValues,
   getProofOfPossessionMessage,
   recoverProofOfPossessionSigner,
 } from 'src/features/account/voteSigner';
-import { eqAddress, isValidAddress } from 'src/utils/addresses';
+import { eqAddress, isValidAddress, shortenAddress } from 'src/utils/addresses';
 import { logger } from 'src/utils/logger';
 import { Address, Hex } from 'viem';
 import { useConnection, useSignMessage } from 'wagmi';
@@ -20,7 +23,12 @@ import { useConnection, useSignMessage } from 'wagmi';
 // the principal account's address. The output is pasted into the principal's authorize form.
 export function ProofOfPossessionForm() {
   const { address } = useConnection();
-  const { data: isRegistered } = useIsAccount(address);
+  const isAccount = useIsAccount(address);
+  const binding = useAuthorizedBy(address);
+  // A key that was ever authorized stays bound to that account, so a proof for any other
+  // account could never be used
+  const boundAccount =
+    binding.data && !eqAddress(binding.data, ZERO_ADDRESS) ? binding.data : undefined;
   const { mutateAsync: signMessageAsync, isPending } = useSignMessage();
   // Keep the signing wallet and the signed-for account next to the signature so a proof
   // is only ever shown for the wallet that produced it and the account currently in the field.
@@ -45,20 +53,43 @@ export function ProofOfPossessionForm() {
     const account = values.account.trim();
     if (!isValidAddress(account)) return { account: 'Invalid account address' };
     if (address && eqAddress(account, address)) return { account: 'Enter the other account' };
+    if (boundAccount && !eqAddress(account, boundAccount)) {
+      return { account: `This wallet can only sign for ${shortenAddress(boundAccount)}` };
+    }
     return {};
   };
 
-  if (isRegistered) {
+  if (isAccount.data) {
     return (
       <TipBox color="yellow">
         This wallet is already registered as an account, so it cannot become a vote signer.
       </TipBox>
     );
   }
+  // Both reads decide what this wallet may sign for, so never show the form before they settle
+  if (isAccount.isPending || binding.isPending) {
+    return (
+      <div data-testid="proof-of-possession-loading">
+        <SkeletonBlock className="h-24 w-full" />
+      </div>
+    );
+  }
+  if (isAccount.isError || binding.isError) {
+    return (
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-sm text-red-600" data-testid="proof-of-possession-error">
+          Could not check what this wallet may sign for.
+        </p>
+        <OutlineButton onClick={() => Promise.all([isAccount.refetch(), binding.refetch()])}>
+          Retry
+        </OutlineButton>
+      </div>
+    );
+  }
 
   return (
     <Formik<ProofOfPossessionFormValues>
-      initialValues={{ account: '' }}
+      initialValues={{ account: boundAccount ?? '' }}
       onSubmit={onSubmit}
       validate={validate}
       validateOnChange={false}
@@ -74,6 +105,12 @@ export function ProofOfPossessionForm() {
             : undefined;
         return (
           <Form className="space-y-3" data-testid="proof-of-possession-form">
+            {boundAccount && (
+              <TipBox color="yellow">
+                This wallet was already authorized by {shortenAddress(boundAccount)} and stays
+                permanently tied to it, so it can only be re-authorized by that account.
+              </TipBox>
+            )}
             <div className="space-y-1">
               <label htmlFor="account" className="pl-0.5 text-xs font-medium">
                 Account to vote on behalf of

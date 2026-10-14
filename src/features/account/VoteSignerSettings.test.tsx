@@ -1,4 +1,5 @@
 import { fireEvent, render } from '@testing-library/react';
+import { ZERO_ADDRESS } from 'src/config/consts';
 import * as hooks from 'src/features/account/hooks';
 import { VoteSignerSettings } from 'src/features/account/VoteSignerSettings';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
@@ -34,7 +35,16 @@ function setup({
   const writeContract = vi.fn();
   vi.spyOn(wagmi, 'useConnection').mockReturnValue({ address: me } as any);
   vi.spyOn(wagmi, 'useSignMessage').mockReturnValue({ mutateAsync: vi.fn() } as any);
-  vi.spyOn(hooks, 'useIsAccount').mockReturnValue({ data: isRegistered } as any);
+  vi.spyOn(hooks, 'useIsAccount').mockReturnValue({
+    data: isRegistered,
+    isPending: false,
+    isError: false,
+  } as any);
+  vi.spyOn(hooks, 'useAuthorizedBy').mockReturnValue({
+    data: ZERO_ADDRESS,
+    isPending: false,
+    isError: false,
+  } as any);
   vi.spyOn(hooks, 'useVoteSignerToAccount').mockReturnValue({
     signingFor: signingFor ?? me,
     isVoteSigner: !!signingFor,

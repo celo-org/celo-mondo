@@ -115,6 +115,26 @@ export function useGetVoteSignerFor(address?: Address) {
     args: [address || ZERO_ADDRESS],
     query: {
       enabled: !!address,
+      // Polled so the settings view catches an authorization whose receipt landed after
+      // the transaction modal was dismissed
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
+    },
+  });
+}
+
+// The account a signer key is bound to; zero when it was never authorized. The binding is
+// never cleared by the Accounts contract, even after the signer role is removed.
+export function useAuthorizedBy(address?: Address) {
+  return useReadContract({
+    address: Addresses.Accounts,
+    abi: accountsABI,
+    functionName: 'authorizedBy',
+    args: [address || ZERO_ADDRESS],
+    query: {
+      enabled: !!address,
+      refetchInterval: BALANCE_REFRESH_INTERVAL,
+      staleTime: BALANCE_REFRESH_INTERVAL,
     },
   });
 }
