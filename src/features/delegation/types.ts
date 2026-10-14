@@ -1,4 +1,5 @@
 import { SocialLinksSchema } from 'src/config/types';
+import { Participation } from 'src/features/delegation/participation';
 import { Hex } from 'viem';
 import { celo } from 'viem/chains';
 import { z } from 'zod';
@@ -77,6 +78,8 @@ export type Delegatee = DelegateeMetadata & {
   votingPower: bigint;
   delegatedToBalance: bigint;
   delegatedByPercent: number;
+  // Undefined when the participation query failed, so the UI shows "-" rather than 0
+  participation?: Participation;
 };
 
 export const EIP712Delegatee = {
