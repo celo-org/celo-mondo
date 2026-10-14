@@ -1,5 +1,5 @@
 {
-  "id": "4ac174a5-ff5e-45d5-a395-c9ab65fea06c",
+  "id": "0ed35352-d497-4e28-b5fb-ddcc39b8f5c1",
   "prevId": "5ff2c2e8-a977-4972-acfd-b71f454c6d44",
   "version": "7",
   "dialect": "postgresql",
@@ -54,9 +54,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         },
         "idx_analytics_events_name": {
           "name": "idx_analytics_events_name",
@@ -69,9 +69,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "idx_analytics_events_created_at": {
           "name": "idx_analytics_events_created_at",
@@ -84,9 +84,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -94,7 +94,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.approvals": {
       "name": "approvals",
@@ -155,9 +155,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "approvals_multisigTxId_index": {
           "name": "approvals_multisigTxId_index",
@@ -170,9 +170,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "approvals_chainId_index": {
           "name": "approvals_chainId_index",
@@ -185,29 +185,29 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "approvals_chainId_chains_id_fk": {
           "name": "approvals_chainId_chains_id_fk",
           "tableFrom": "approvals",
-          "columnsFrom": ["chainId"],
           "tableTo": "chains",
+          "columnsFrom": ["chainId"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         },
         "approvals_proposalId_chainId_proposals_id_chainId_fk": {
           "name": "approvals_proposalId_chainId_proposals_id_chainId_fk",
           "tableFrom": "approvals",
-          "columnsFrom": ["proposalId", "chainId"],
           "tableTo": "proposals",
+          "columnsFrom": ["proposalId", "chainId"],
           "columnsTo": ["id", "chainId"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -219,7 +219,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.blocksProcessed": {
       "name": "blocksProcessed",
@@ -249,11 +249,11 @@
         "blocksProcessed_chainId_chains_id_fk": {
           "name": "blocksProcessed_chainId_chains_id_fk",
           "tableFrom": "blocksProcessed",
-          "columnsFrom": ["chainId"],
           "tableTo": "chains",
+          "columnsFrom": ["chainId"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -265,7 +265,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.buyback_stats": {
       "name": "buyback_stats",
@@ -315,9 +315,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {},
@@ -325,7 +325,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.chains": {
       "name": "chains",
@@ -350,7 +350,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.events": {
       "name": "events",
@@ -436,9 +436,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "events_eventName_index": {
           "name": "events_eventName_index",
@@ -451,9 +451,9 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "events_chainId_index": {
           "name": "events_chainId_index",
@@ -466,35 +466,35 @@
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "btree",
-          "concurrently": false
+          "with": {}
         },
         "events_topics_proposalId_index": {
           "name": "events_topics_proposalId_index",
           "columns": [
             {
               "expression": "\"topics\"[2]",
-              "isExpression": true,
               "asc": true,
+              "isExpression": true,
               "nulls": "last"
             }
           ],
           "isUnique": false,
-          "with": {},
+          "concurrently": false,
           "method": "gin",
-          "concurrently": false
+          "with": {}
         }
       },
       "foreignKeys": {
         "events_chainId_chains_id_fk": {
           "name": "events_chainId_chains_id_fk",
           "tableFrom": "events",
-          "columnsFrom": ["chainId"],
           "tableTo": "chains",
+          "columnsFrom": ["chainId"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -506,7 +506,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.proposals": {
       "name": "proposals",
@@ -668,20 +668,20 @@
         "proposals_chainId_chains_id_fk": {
           "name": "proposals_chainId_chains_id_fk",
           "tableFrom": "proposals",
-          "columnsFrom": ["chainId"],
           "tableTo": "chains",
+          "columnsFrom": ["chainId"],
           "columnsTo": ["id"],
-          "onUpdate": "no action",
-          "onDelete": "restrict"
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         },
         "proposals_pastId_chainId_proposals_id_chainId_fk": {
           "name": "proposals_pastId_chainId_proposals_id_chainId_fk",
           "tableFrom": "proposals",
-          "columnsFrom": ["pastId", "chainId"],
           "tableTo": "proposals",
+          "columnsFrom": ["pastId", "chainId"],
           "columnsTo": ["id", "chainId"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -693,7 +693,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     },
     "public.votes": {
       "name": "votes",
@@ -730,11 +730,11 @@
         "votes_proposalId_chainId_proposals_id_chainId_fk": {
           "name": "votes_proposalId_chainId_proposals_id_chainId_fk",
           "tableFrom": "votes",
-          "columnsFrom": ["proposalId", "chainId"],
           "tableTo": "proposals",
+          "columnsFrom": ["proposalId", "chainId"],
           "columnsTo": ["id", "chainId"],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -746,7 +746,7 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
+      "isRLSEnabled": true
     }
   },
   "enums": {
@@ -757,10 +757,10 @@
     }
   },
   "schemas": {},
-  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
+  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
