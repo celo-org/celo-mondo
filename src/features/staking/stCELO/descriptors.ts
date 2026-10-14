@@ -11,6 +11,8 @@ export const DEFAULT_STRATEGY: ValidatorGroup = {
   votes: 0n,
   score: 1,
   commission: 0,
+  slashingMultiplier: 1,
+  meetsLockedGoldRequirement: true,
   // @ts-expect-error -- filled in later
   members: [],
   validStCeloGroup: true,

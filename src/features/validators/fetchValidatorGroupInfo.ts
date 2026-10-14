@@ -18,9 +18,17 @@ import { PublicClient } from 'viem';
 import { Validator, ValidatorGroup, ValidatorStatus } from './types';
 
 // The voter reward commission introduced by the commission CGP is not yet in
-// the installed @celo/abis (validatorsABI). Minimal fragment for reading it.
-// Returns [current, pending, activationBlock]; current/pending are Fixidity.
+// the installed @celo/abis (validatorsABI). Minimal fragments for reading it.
+// getVoterRewardCommission returns [current, pending, activationBlock] and
+// maxVoterRewardCommission the governance cap; all values are Fixidity.
 const voterRewardCommissionABI = [
+  {
+    type: 'function',
+    stateMutability: 'view',
+    name: 'maxVoterRewardCommission',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
   {
     type: 'function',
     stateMutability: 'view',
@@ -71,7 +79,9 @@ export async function fetchValidatorGroupInfo(publicClient: PublicClient) {
         votes: 0n,
         lastSlashed: null,
         score: 0,
-        commission: 0,
+        commission: null,
+        slashingMultiplier: null,
+        meetsLockedGoldRequirement: null,
         validStCeloGroup: valDetails.validStCeloGroup,
       };
     }
@@ -141,6 +151,8 @@ export async function fetchValidatorGroupInfo(publicClient: PublicClient) {
     groups[groupAddr].name = groupNames[i] || groupAddr.substring(0, 10) + '...';
     groups[groupAddr].lastSlashed = groupDetails[i].lastSlashed;
     groups[groupAddr].commission = groupDetails[i].commission;
+    groups[groupAddr].slashingMultiplier = groupDetails[i].slashingMultiplier;
+    groups[groupAddr].meetsLockedGoldRequirement = groupDetails[i].meetsLockedGoldRequirement;
   }
 
   // Fetch vote-related total amounts
@@ -334,7 +346,7 @@ async function fetchNamesForAccounts(publicClient: PublicClient, addresses: read
 }
 
 async function fetchGroupDetails(publicClient: PublicClient, addresses: readonly Address[]) {
-  const [groupResults, commissionResults] = await Promise.all([
+  const [groupResults, lockedGoldResults, commissionResults, maxCommission] = await Promise.all([
     publicClient.multicall({
       contracts: addresses.map(
         (addr) =>
@@ -352,6 +364,18 @@ async function fetchGroupDetails(publicClient: PublicClient, addresses: readonly
         (addr) =>
           ({
             address: Addresses.Validators,
+            abi: validatorsABI,
+            functionName: 'meetsAccountLockedGoldRequirements',
+            args: [addr],
+          }) as const,
+      ),
+      allowFailure: true,
+    }),
+    publicClient.multicall({
+      contracts: addresses.map(
+        (addr) =>
+          ({
+            address: Addresses.Validators,
             abi: voterRewardCommissionABI,
             functionName: 'getVoterRewardCommission',
             args: [addr],
@@ -359,13 +383,24 @@ async function fetchGroupDetails(publicClient: PublicClient, addresses: readonly
       ),
       allowFailure: true,
     }),
+    // Rewards are distributed with the commission clamped to the current cap,
+    // even when a group's stored commission is above it. Null when the read fails,
+    // which marks every group's effective commission unknown.
+    publicClient
+      .readContract({
+        address: Addresses.Validators,
+        abi: voterRewardCommissionABI,
+        functionName: 'maxVoterRewardCommission',
+      })
+      .then(fromFixidity)
+      .catch(() => null),
   ]);
 
   return addresses.map((_addr, i) => {
     // getValidatorGroup returns: [members, commission, nextCommission,
     // nextCommissionBlock, sizeHistory, slashingMultiplier, lastSlashed].
     // result[1] is the legacy validator-reward commission, NOT what we want;
-    // we only read lastSlashed here.
+    // we read slashingMultiplier and lastSlashed here.
     const groupResult = groupResults[i]?.result as
       | [Address, bigint, bigint, bigint, bigint[], bigint, bigint]
       | undefined;
@@ -373,16 +408,28 @@ async function fetchGroupDetails(publicClient: PublicClient, addresses: readonly
       groupResult && Array.isArray(groupResult) && groupResult.length >= 7
         ? Number(groupResult[6]) * 1000
         : null;
+    // Null means the read failed and the projected return is unknown, rather than
+    // assuming the most optimistic value.
+    const slashingMultiplier =
+      groupResult && Array.isArray(groupResult) && groupResult.length >= 7
+        ? fromFixidity(groupResult[5])
+        : null;
+    const lockedGoldResult = lockedGoldResults[i];
+    const meetsLockedGoldRequirement =
+      lockedGoldResult?.status === 'success' ? lockedGoldResult.result : null;
 
     // getVoterRewardCommission returns [current, pending, activationBlock];
-    // current/pending are Fixidity. We display the currently active rate.
+    // current/pending are Fixidity. We display the currently active rate, or
+    // null when it or the cap could not be read.
     const commissionResult = commissionResults[i]?.result as
       | readonly [bigint, bigint, bigint]
       | undefined;
     const commission =
-      commissionResult && Array.isArray(commissionResult) ? fromFixidity(commissionResult[0]) : 0;
+      commissionResult && Array.isArray(commissionResult) && maxCommission !== null
+        ? Math.min(fromFixidity(commissionResult[0]), maxCommission)
+        : null;
 
-    return { lastSlashed, commission };
+    return { lastSlashed, slashingMultiplier, meetsLockedGoldRequirement, commission };
   });
 }
 
