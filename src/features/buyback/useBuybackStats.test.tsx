@@ -26,6 +26,22 @@ const stats: BuybackStats = {
   sinceDay: '2026-04-09',
   latestDay: '2026-05-01',
   days: [],
+  initial: {
+    sinceDay: '2025-03-26',
+    throughDay: '2026-04-08',
+    days: 379,
+    stats: {
+      feesCollectedUsd: 1200,
+      l1CostUsd: 100,
+      feesAfterExpensesUsd: 1100,
+      opShareUsd: 165,
+      carbonFundUsd: 0,
+      carbonFundCelo: 0,
+      celoToCommunityFund: 9350,
+      usdToCommunityFund: 935,
+      avgCeloPriceUsd: 0.1,
+    },
+  },
   settled: null,
   updatedAt: '2026-05-02T05:31:00.000Z',
 };

@@ -6,11 +6,21 @@ import { A_Blank } from 'src/components/buttons/A_Blank';
 import { Section } from 'src/components/layout/Section';
 import { CeloGlyph } from 'src/components/logos/Celo';
 import { H1 } from 'src/components/text/headers';
+import { AllTimeTable } from 'src/features/buyback/components/AllTimeTable';
 import { Methodology } from 'src/features/buyback/components/Methodology';
 import { PeriodFigures } from 'src/features/buyback/components/PeriodFigures';
 import { SettledCard } from 'src/features/buyback/components/SettledCard';
-import { TotalsSkeleton, TotalsTable } from 'src/features/buyback/components/TotalsTable';
+import { TotalsSkeleton, TotalsTable, fmtCelo } from 'src/features/buyback/components/TotalsTable';
+import {
+  CGP_234_RETURN,
+  SETTLED_REVENUE_CUTOFF_DATE,
+  nextUtcDay,
+} from 'src/features/buyback/computeStats';
 import { useBuybackStats } from 'src/features/buyback/useBuybackStats';
+
+// The window start is fixed by the cutoff, so the intro can name it before
+// the figures have loaded.
+const sinceDay = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE);
 
 export function BuybackDashboard() {
   const { stats, view, refreshFailed, isStale } = useBuybackStats();
@@ -35,12 +45,14 @@ export function BuybackDashboard() {
         the Community Fund, where CELO holders govern its use (which may include burning). Figures
         are estimates computed from gross daily fee P&amp;L, the same data as the operator
         distribution report, not settled amounts; actual transfers to the Community Fund are
-        executed in periodic batches. Totals leave out earlier revenue, which was already returned
-        to the Community Fund in a single transfer of 1,748,950 CELO (see{' '}
+        executed in periodic batches. The totals and charts start on {sinceDay}: Celo Core Co.
+        returned {fmtCelo(CGP_234_RETURN.celo).text} to the Community Fund on {CGP_234_RETURN.day}{' '}
+        (see{' '}
         <Link href="/governance/cgp-234" className="underline">
           CGP-234
         </Link>
-        ).
+        ) and its accounting counts revenue from the L2 launch through {SETTLED_REVENUE_CUTOFF_DATE}{' '}
+        as settled by that return. That first period is shown in the all-time table below.
       </p>
 
       {view === 'stats' && stats ? (
@@ -54,6 +66,16 @@ export function BuybackDashboard() {
             settled={stats.settled ?? null}
             estimatedCelo={stats.totals.celoToCommunityFund}
           />
+          {/* A row stored before the first period was computed is served
+              until the next daily refresh replaces it; the table waits a day. */}
+          {stats.initial && (
+            <AllTimeTable
+              initial={stats.initial}
+              totals={stats.totals}
+              sinceDay={stats.sinceDay}
+              settled={stats.settled ?? null}
+            />
+          )}
           <PeriodFigures days={stats.days ?? []} />
         </>
       ) : view === 'error' ? (
@@ -67,7 +89,7 @@ export function BuybackDashboard() {
 
       <Methodology />
       <Footnote
-        sinceDay={stats?.sinceDay}
+        sinceDay={stats?.initial?.sinceDay ?? stats?.sinceDay}
         latestDay={stats?.latestDay}
         updatedAt={stats?.updatedAt}
         refreshFailed={refreshFailed}
