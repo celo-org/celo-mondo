@@ -168,7 +168,7 @@ export default function PrivacyPage() {
         When you connect a wallet, your request is sent to our <code>/police</code> endpoint. This
         uses Vercel&apos;s geo-enrichment headers to determine your country and region (ISO 3166
         codes). No IP address is stored — only the country/region is logged transiently. Access is
-        blocked (HTTP 451) for visitors from North Korea, Iran, Cuba, Syria, and Russian-occupied
+        blocked (HTTP 451) for visitors from North Korea, Iran, Cuba, and Russian-occupied
         territories of Ukraine (Crimea, Luhansk, Donetsk) as required by applicable sanctions law.
       </P>
 
