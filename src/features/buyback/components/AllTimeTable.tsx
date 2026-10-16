@@ -43,8 +43,9 @@ export function buildAllTimeRows(
       ],
     },
     {
-      // The first period's transfer is the CGP-234 return; the window's are
-      // the batches read from the chain, absent when no node was configured.
+      // The CGP-234 return was made inside the first period; the window's
+      // transfers are the batches read from the chain, absent when no node
+      // was configured.
       label: 'CELO transferred to the Community Fund',
       tone: 'flow',
       cells: [
@@ -116,8 +117,7 @@ export function AllTimeTable({
         ))}
       </div>
       <p className="text-xs text-taupe-600">
-        The first period was settled by a single return of {fmtCelo(CGP_234_RETURN.celo).text} on{' '}
-        {CGP_234_RETURN.day} (
+        Celo Core Co. returned {fmtCelo(CGP_234_RETURN.celo).text} on {CGP_234_RETURN.day} (
         <Link href="/governance/cgp-234" className="underline">
           CGP-234
         </Link>
@@ -125,8 +125,10 @@ export function AllTimeTable({
         <A_Blank href={celoscanTx(CGP_234_RETURN.txHash)} className="underline">
           transaction
         </A_Blank>
-        ), the operator&apos;s figure. Its estimate here values each day&apos;s revenue at that
-        day&apos;s prices, like the window&apos;s, and is not what was transferred.
+        ), the operator&apos;s figure, and its accounting counts revenue through{' '}
+        {initial.throughDay} as settled by that return, so the window starts the day after. The
+        first period&apos;s estimate here values each day&apos;s revenue at that day&apos;s prices,
+        like the window&apos;s, and is not what was transferred.
       </p>
     </section>
   );

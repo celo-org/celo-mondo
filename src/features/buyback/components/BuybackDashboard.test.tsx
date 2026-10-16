@@ -144,7 +144,9 @@ describe('BuybackDashboard', () => {
       'Since 2026-04-09: 5,000,000 CELO',
       'All time: 6,748,950 CELO',
     ]);
-    expect(table).toHaveTextContent('settled by a single return of 1,748,950 CELO on 2026-04-01');
+    expect(table).toHaveTextContent(
+      "Celo Core Co. returned 1,748,950 CELO on 2026-04-01 (CGP-234, transaction), the operator's figure, and its accounting counts revenue through 2026-04-08 as settled by that return",
+    );
     expect(within(table).getByRole('link', { name: 'CGP-234' })).toHaveAttribute(
       'href',
       '/governance/cgp-234',
@@ -179,7 +181,7 @@ describe('BuybackDashboard', () => {
     expect(card).toHaveTextContent('7,571,214 CELO');
     expect(card).toHaveTextContent('2,571,214 CELO');
     expect(card).toHaveTextContent(
-      'With the 1,748,950 CELO returned for the first period (CGP-234), the Community Fund has received 6,748,950 CELO in all.',
+      'With the 1,748,950 CELO returned on 2026-04-01 (CGP-234), the Community Fund has received 6,748,950 CELO in all.',
     );
     expect(within(card).getByRole('link', { name: 'Operations Safe' })).toHaveAttribute(
       'href',
@@ -254,7 +256,7 @@ describe('BuybackDashboard', () => {
     expect(details).toHaveTextContent('greater of 2.5% of fees and 15% of fees after L1 costs');
     expect(details).toHaveTextContent('24,086.79 CELO / 2,017.75 USD');
     expect(details).toHaveTextContent(
-      'from the L2 launch (2025-03-26) through 2026-04-08, was returned to the Community Fund in a single transfer of 1,748,950 CELO on 2026-04-01',
+      'returned 1,748,950 CELO to the Community Fund on 2026-04-01 (CGP-234). The operator tooling counts revenue from the L2 launch (2025-03-26) through 2026-04-08 as settled by that return',
     );
     expect(within(details).getByRole('link', { name: 'CGP-236' })).toHaveAttribute(
       'href',

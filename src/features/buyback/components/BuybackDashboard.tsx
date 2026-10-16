@@ -45,13 +45,14 @@ export function BuybackDashboard() {
         the Community Fund, where CELO holders govern its use (which may include burning). Figures
         are estimates computed from gross daily fee P&amp;L, the same data as the operator
         distribution report, not settled amounts; actual transfers to the Community Fund are
-        executed in periodic batches. The totals and charts start on {sinceDay}: the revenue of the
-        first period, from the L2 launch through {SETTLED_REVENUE_CUTOFF_DATE}, was returned in a
-        single transfer of {fmtCelo(CGP_234_RETURN.celo).text} (see{' '}
+        executed in periodic batches. The totals and charts start on {sinceDay}: Celo Core Co.
+        returned {fmtCelo(CGP_234_RETURN.celo).text} to the Community Fund on {CGP_234_RETURN.day}{' '}
+        (see{' '}
         <Link href="/governance/cgp-234" className="underline">
           CGP-234
         </Link>
-        ) and is shown in the all-time table below.
+        ) and its accounting counts revenue from the L2 launch through {SETTLED_REVENUE_CUTOFF_DATE}{' '}
+        as settled by that return. That first period is shown in the all-time table below.
       </p>
 
       {view === 'stats' && stats ? (

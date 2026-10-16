@@ -75,14 +75,15 @@ export function Methodology() {
             {decimals2.format(carbon.usd)} USD taken on {carbon.day} is deducted.
           </li>
           <li>
-            The revenue of the first period, from the L2 launch ({L2_LAUNCH_DAY}) through{' '}
-            {SETTLED_REVENUE_CUTOFF_DATE}, was returned to the Community Fund in a single transfer
-            of {formatWhole(CGP_234_RETURN.celo)} CELO on {CGP_234_RETURN.day} (
+            Celo Core Co. returned {formatWhole(CGP_234_RETURN.celo)} CELO to the Community Fund on{' '}
+            {CGP_234_RETURN.day} (
             <Link href="/governance/cgp-234" className="underline">
               CGP-234
             </Link>
-            ). The window totals and charts start the day after; the all-time table shows that
-            period&apos;s per-day figures next to the amount returned.
+            ). The operator tooling counts revenue from the L2 launch ({L2_LAUNCH_DAY}) through{' '}
+            {SETTLED_REVENUE_CUTOFF_DATE} as settled by that return, so the window totals and charts
+            start the day after; the all-time table shows that period&apos;s per-day figures next to
+            the amount returned.
           </li>
           <li>USD and CELO are converted per day, at that day&apos;s CELO price.</li>
           <li>The average CELO price is volume-weighted: USD accrued divided by CELO accrued.</li>

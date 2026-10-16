@@ -27,11 +27,12 @@ const OP_SHARE_REVENUE_PCT = 0.025;
 const OP_SHARE_PROFIT_PCT = 0.15;
 
 /**
- * Sequencer revenue earned on or before this day was already returned to the
- * Community Fund in one transfer of 1,748,950 CELO, documented in CGP-234
- * (on-chain proposal 287). report.py (`CGP_234_CUTOFF_DATE`) clamps its
- * reporting window to the day after it so that revenue is never counted
- * twice; the dashboard does the same for its totals.
+ * Sequencer revenue earned on or before this day counts as settled by the
+ * operator's return of 1,748,950 CELO to the Community Fund on 2026-04-01,
+ * documented in CGP-234 (on-chain proposal 287). report.py
+ * (`CGP_234_CUTOFF_DATE`) clamps its reporting window to the day after it so
+ * that revenue is never counted twice; the dashboard does the same for its
+ * totals.
  */
 export const SETTLED_REVENUE_CUTOFF_DATE = '2026-04-08';
 
@@ -43,10 +44,12 @@ export const SETTLED_REVENUE_CUTOFF_DATE = '2026-04-08';
 export const L2_LAUNCH_DAY = '2025-03-26';
 
 /**
- * How the first period was settled: Celo Core Co. sent 1,748,950 CELO from
- * the Operations Safe to the Community Fund on 2026-04-01 (block 63177657),
- * documented in CGP-234. The amount was the operator's; the dashboard shows
- * that period's per-day estimate next to it and does not reconcile the two.
+ * The one transfer of the first period: Celo Core Co. sent 1,748,950 CELO
+ * from the Operations Safe to the Community Fund on 2026-04-01 (block
+ * 63177657), documented in CGP-234, and its accounting counts revenue
+ * through the cutoff a week later as settled by it. The amount was the
+ * operator's; the dashboard shows the period's per-day estimate next to it
+ * and does not reconcile the two.
  */
 export const CGP_234_RETURN = {
   celo: 1_748_950,

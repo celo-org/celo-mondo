@@ -111,10 +111,10 @@ export interface SettledTransfers {
 
 /**
  * The period before the window: the L2 launch through the settled-revenue
- * cutoff. Celo Core Co. returned its revenue to the Community Fund in one
- * transfer (CGP-234), so its figures are the same per-day estimate the window
- * gets, shown next to the amount that was returned rather than reconciled
- * with it.
+ * cutoff. Celo Core Co. returned 1,748,950 CELO to the Community Fund on
+ * 2026-04-01 (CGP-234) and counts the period's revenue as settled by that,
+ * so its figures are the same per-day estimate the window gets, shown next
+ * to the amount returned rather than reconciled with it.
  */
 export interface InitialPeriod {
   /** First day counted: the L2 launch day (YYYY-MM-DD). */
@@ -141,7 +141,7 @@ export interface BuybackStats {
    * charts and the daily table. Figures are rounded to six decimals.
    */
   days: DailyMetrics[];
-  /** The period before `sinceDay`, settled by the CGP-234 return. */
+  /** The period before `sinceDay`, counted as settled by the CGP-234 return. */
   initial: InitialPeriod;
   /** On-chain transfers to the Community Fund, or null when no RPC node was configured for the refresh. */
   settled: SettledTransfers | null;

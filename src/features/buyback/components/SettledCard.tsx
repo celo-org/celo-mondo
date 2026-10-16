@@ -61,7 +61,7 @@ export function SettledCard({
       </dl>
       {settled && (
         <p className="text-sm">
-          With the {fmtCelo(CGP_234_RETURN.celo).text} returned for the first period (
+          With the {fmtCelo(CGP_234_RETURN.celo).text} returned on {CGP_234_RETURN.day} (
           <Link href="/governance/cgp-234" className="underline">
             CGP-234
           </Link>
