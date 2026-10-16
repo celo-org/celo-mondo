@@ -98,7 +98,8 @@ export interface MonthlyStats {
 /**
  * What has actually reached the Community Fund, read from the chain: CELO
  * transferred by the Operations Safe to the Governance contract since the
- * settled-revenue cutoff, the distribution path of the operator tooling.
+ * settled-revenue cutoff, the distribution path of the operator tooling,
+ * whether sent as plain value or through the CELO token contract.
  */
 export interface SettledTransfers {
   celo: number;

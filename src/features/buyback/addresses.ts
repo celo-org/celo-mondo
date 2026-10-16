@@ -2,7 +2,8 @@
 // only. Fees land in the SequencerFeeVault, the FeeHandler forwards them to
 // the Operations Safe (and, until CGP-236, a share to the Carbon Fund), and
 // the operator's Safe batches pay the Community Fund, which is the Governance
-// contract's balance, in CELO through the CELO token contract.
+// contract's balance, in CELO: as plain value or through the CELO token
+// contract.
 export const SEQUENCER_FEE_VAULT = '0x4200000000000000000000000000000000000011' as const;
 export const FEE_HANDLER = '0xcD437749E43A154C07F3553504c68fBfD56B8778' as const;
 export const OPERATIONS_SAFE = '0x7A1E98FC9a008107DbD1f430a05Ace8cf6f3FE19' as const;
