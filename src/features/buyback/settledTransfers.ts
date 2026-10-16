@@ -36,12 +36,14 @@ type TraceTransaction = (args: {
  * CELO moved to the recipient by plain value calls anywhere inside the
  * transaction. Only a CALL frame moves CELO: a DELEGATECALL frame repeats
  * its caller's value (the Governance proxy forwarding to its implementation
- * shows the same amount again), and a frame that reverted moved nothing.
+ * shows the same amount again). A frame that reverted moved nothing, and
+ * neither did anything beneath it: its calls were rolled back with it, even
+ * the ones the trace does not mark.
  */
 export function nativeValueTo(frame: CallFrame, recipient: string): bigint {
+  if (frame.error !== undefined) return 0n;
   const own =
     frame.type === 'CALL' &&
-    frame.error === undefined &&
     frame.to?.toLowerCase() === recipient.toLowerCase() &&
     frame.value !== undefined
       ? BigInt(frame.value)
