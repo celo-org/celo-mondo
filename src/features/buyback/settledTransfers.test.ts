@@ -141,6 +141,29 @@ describe('nativeValueTo', () => {
     expect(nativeValueTo(reverted, GOV)).toBe(0n);
     expect(nativeValueTo({ type: 'CALL', to: GOV }, GOV)).toBe(0n);
   });
+
+  it('ignores everything beneath a call that reverted, marked or not', () => {
+    // A transaction that caught the revert of a batch: the batch's own
+    // calls had succeeded before the batch reverted, so the trace does not
+    // mark them, but they were rolled back with it.
+    const caught: Frame = {
+      type: 'CALL',
+      to: OPERATIONS_SAFE,
+      calls: [
+        {
+          type: 'CALL',
+          to: '0x40a2accbd92bca938b02010e17a5b8929b49130d',
+          error: 'execution reverted',
+          calls: [
+            { type: 'CALL', to: GOV, value: hex(3n * CELO) },
+            { type: 'CALL', to: GOV, value: hex(4n * CELO), error: 'out of gas' },
+          ],
+        },
+        { type: 'CALL', to: GOV, value: hex(CELO) },
+      ],
+    };
+    expect(nativeValueTo(caught, GOV)).toBe(CELO);
+  });
 });
 
 describe('readSettledTransfers', () => {
