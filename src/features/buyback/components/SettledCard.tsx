@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import { A_Blank } from 'src/components/buttons/A_Blank';
 import { COMMUNITY_FUND, OPERATIONS_SAFE, celoscanAddress } from 'src/features/buyback/addresses';
 import { fmtCelo } from 'src/features/buyback/components/TotalsTable';
+import { CGP_234_RETURN } from 'src/features/buyback/computeStats';
 import { SettledTransfers } from 'src/features/buyback/types';
 
 function transfersLine(settled: SettledTransfers): string {
@@ -57,6 +59,16 @@ export function SettledCard({
           </div>
         )}
       </dl>
+      {settled && (
+        <p className="text-sm">
+          With the {fmtCelo(CGP_234_RETURN.celo).text} returned for the first period (
+          <Link href="/governance/cgp-234" className="underline">
+            CGP-234
+          </Link>
+          ), the Community Fund has received {fmtCelo(settled.celo + CGP_234_RETURN.celo).text} in
+          all.
+        </p>
+      )}
       <p className="text-xs text-taupe-600">
         Batches are sent by the operator&apos;s 2-of-5{' '}
         <A_Blank href={celoscanAddress(OPERATIONS_SAFE)} className="underline">

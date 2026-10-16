@@ -11,3 +11,4 @@ export const CARBON_FUND = '0xCe10d577295d34782815919843a3a4ef70Dc33ce' as const
 export const CELO_TOKEN = '0x471EcE3750Da237f93B8E339c536989b8978a438' as const;
 
 export const celoscanAddress = (address: string) => `https://celoscan.io/address/${address}`;
+export const celoscanTx = (hash: string) => `https://celoscan.io/tx/${hash}`;

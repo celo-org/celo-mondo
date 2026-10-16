@@ -3,6 +3,7 @@ import {
   DailyMetrics,
   DuneFeeRow,
   FeesByCurrencyUsd,
+  InitialPeriod,
   MonthlyStats,
   PeriodStats,
   SettledTransfers,
@@ -33,6 +34,25 @@ const OP_SHARE_PROFIT_PCT = 0.15;
  * twice; the dashboard does the same for its totals.
  */
 export const SETTLED_REVENUE_CUTOFF_DATE = '2026-04-08';
+
+/**
+ * First UTC day with sequencer fees: Celo became an L2 on 2025-03-26 (hardfork
+ * block 31,056,500) and the Dune history starts that day. The first period of
+ * the dashboard runs from here through the settled-revenue cutoff.
+ */
+export const L2_LAUNCH_DAY = '2025-03-26';
+
+/**
+ * How the first period was settled: Celo Core Co. sent 1,748,950 CELO from
+ * the Operations Safe to the Community Fund on 2026-04-01 (block 63177657),
+ * documented in CGP-234. The amount was the operator's; the dashboard shows
+ * that period's per-day estimate next to it and does not reconcile the two.
+ */
+export const CGP_234_RETURN = {
+  celo: 1_748_950,
+  day: '2026-04-01',
+  txHash: '0xfbe1dac031726b6f580b561bfc2a80262b9529d09e4463fc3600cc74dce31a86',
+} as const;
 
 /**
  * Carbon Fund share actually taken inside the dashboard window. The FeeHandler
@@ -475,11 +495,11 @@ export function mergeSameDayRows(day: string, rows: DuneFeeRow[]): DuneFeeRow {
 /**
  * The rows that count: one per UTC day in [sinceDay, cutoffDay). Rows without
  * a usable day are skipped, but a result in which no row has one is refused: a
- * renamed column would otherwise yield a dashboard of zeros. So are a window
+ * renamed column would otherwise yield a dashboard of zeros. So are a history
  * that is not covered day by day through `throughDay` and a counted day whose
  * L1 costs have no ETH price.
  */
-function selectWindowRows(
+function selectHistoryRows(
   rows: DuneFeeRow[],
   sinceDay: string,
   cutoffDay: string,
@@ -525,13 +545,16 @@ function selectWindowRows(
 
 /**
  * Turn raw Dune rows into the dashboard payload: totals for the CELOccelerate
- * window plus the most recent complete day.
+ * window plus the most recent complete day, and the figures of the first
+ * period before it.
  *
  * The window mirrors report.py's defaults: it starts the day after the
  * settled-revenue cutoff and ends with the last complete UTC day in the Dune
  * results (report.py's `--to yesterday`, taken relative to the execution rather
  * than the request). The bucket of the day the query ran on is still filling,
- * priced or not, and is dropped.
+ * priced or not, and is dropped. The whole history from the L2 launch is read
+ * and checked the same way; the days through the cutoff make up the first
+ * period, which CGP-234 settled.
  */
 export function computeBuybackStats(
   rows: DuneFeeRow[],
@@ -554,17 +577,19 @@ export function computeBuybackStats(
   // The history must reach the day before the cutoff.
   const throughDay = previousUtcDay(cutoffDay);
 
-  const entries = selectWindowRows(rows, sinceDay, cutoffDay, throughDay)
+  const entries = selectHistoryRows(rows, L2_LAUNCH_DAY, cutoffDay, throughDay)
     .map((row) => ({ row, metrics: computeDailyMetrics(row) }))
     .sort((a, b) => a.metrics.day.localeCompare(b.metrics.day));
   const days = entries.map(({ metrics }) => metrics);
+  const initialDays = days.filter((d) => d.day <= SETTLED_REVENUE_CUTOFF_DATE);
+  const windowDays = days.filter((d) => d.day >= sinceDay);
 
   // A day Dune has not priced yet (prices.day lags by up to a day) shows up
   // with zero fees but still carries its L1 costs, so both the single-day
   // figure and the totals stop at the newest day with a CELO price.
-  const priced = days.filter((d) => d.celoPriceUsd > 0);
+  const priced = windowDays.filter((d) => d.celoPriceUsd > 0);
   const latest = priced.length > 0 ? priced[priced.length - 1] : null;
-  const counted = latest ? days.filter((d) => d.day <= latest.day) : [];
+  const counted = latest ? windowDays.filter((d) => d.day <= latest.day) : [];
 
   // Trailing unpriced days are cut off above. One in the middle cannot be: its
   // USD figures would count while its CELO figures read zero, so the totals
@@ -577,8 +602,8 @@ export function computeBuybackStats(
     num(row.fee_EURm) > 0 ||
     metrics.feesCollectedUsd !== 0 ||
     metrics.l1CostUsd !== 0;
-  // The chain has had fees every day since the window opened, so a day with
-  // a row and nothing on it is a source that stopped matching, not a quiet
+  // The chain has had fees every day since the L2 launch, so a day with a
+  // row and nothing on it is a source that stopped matching, not a quiet
   // day; counted as zero it would silently shrink the totals.
   const idle = entries.find((entry) => !hasActivity(entry));
   if (idle) {
@@ -611,12 +636,22 @@ export function computeBuybackStats(
     );
   }
 
+  // The first period is whole by construction: every day from the launch
+  // through the cutoff is present and priced, or the history was refused.
+  const initial: InitialPeriod = {
+    sinceDay: L2_LAUNCH_DAY,
+    throughDay: SETTLED_REVENUE_CUTOFF_DATE,
+    days: initialDays.length,
+    stats: aggregate(initialDays),
+  };
+
   return {
     totals: deductCarbonFundShare(aggregate(counted), counted),
     latestDayStats: latest ? aggregate([latest]) : null,
     sinceDay,
     latestDay: latest?.day ?? null,
     days: counted.map(compactMetrics),
+    initial,
     settled: options.settled ?? null,
     // The first usable timestamp; there is one, as checked above.
     updatedAt: usableTimestamps(options)[0] ?? '',

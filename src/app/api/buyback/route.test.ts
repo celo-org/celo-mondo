@@ -71,6 +71,15 @@ describe('GET /api/buyback', () => {
     expect(body.totals.feesCollectedUsd).toBeCloseTo(total_revenue_usd, 6);
     expect(body.totals.feesAfterExpensesUsd).toBeCloseTo(total_revenue_usd - total_l1_cost_usd, 6);
     expect(body.totals.celoToCommunityFund).toBeGreaterThan(0);
+    // The first period, L2 launch through the cutoff, with report.py's own sums.
+    const preCutoff = reportPyExpected.preCutoffTotals;
+    expect(body.initial).toMatchObject({
+      sinceDay: '2025-03-26',
+      throughDay: '2026-04-08',
+      days: 379,
+    });
+    expect(body.initial.stats.feesCollectedUsd).toBeCloseTo(preCutoff.total_revenue_usd, 6);
+    expect(body.initial.stats.celoToCommunityFund).toBeCloseTo(preCutoff.profit_celo, 6);
   });
 
   it('picks the execution Dune started last, not the one stored or finished last', async () => {

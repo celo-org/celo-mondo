@@ -7,7 +7,7 @@ import { PeriodStats } from 'src/features/buyback/types';
 // A rendered stat cell. Values can legitimately go negative (a day where L1
 // costs exceed revenue is a loss), so the sign travels with the text and the
 // table colors losses red.
-interface Cell {
+export interface Cell {
   text: string;
   negative: boolean;
 }

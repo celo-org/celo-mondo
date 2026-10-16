@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   CARBON_FUND_SHARE_IN_WINDOW,
+  L2_LAUNCH_DAY,
   SETTLED_REVENUE_CUTOFF_DATE,
   aggregate,
   computeBuybackStats,
@@ -13,7 +14,7 @@ import {
   parseDay,
   sumFeesByCurrency,
 } from './computeStats';
-import { DuneFeeRow } from './types';
+import { DuneFeeRow, PeriodStats } from './types';
 
 type Options = Parameters<typeof computeBuybackStats>[1];
 
@@ -65,30 +66,36 @@ const quietDay: DuneFeeRow = {
   proposer_cost_eth: 0.00001,
 };
 
-/** Every day the window has to cover for these options. */
-function windowDays(options: Options): string[] {
+/**
+ * Every day the history has to cover for these options: the L2 launch through
+ * the last complete day. The days through the cutoff are the first period,
+ * the rest the window.
+ */
+function historyDays(options: Options): string[] {
   const days: string[] = [];
   const end = firstIncompleteDay(options);
-  for (let day = nextUtcDay(SETTLED_REVENUE_CUTOFF_DATE); day < end; day = nextUtcDay(day)) {
+  for (let day = L2_LAUNCH_DAY; day < end; day = nextUtcDay(day)) {
     days.push(day);
   }
   return days;
 }
 
-/** A row per window day from a template, so a whole history can be stated at once. */
-const everyDay = (template: DuneFeeRow, options: Options): DuneFeeRow[] =>
-  windowDays(options).map((day) => ({ ...template, day }));
+const inWindow = (row: DuneFeeRow) => parseDay(row.day) > SETTLED_REVENUE_CUTOFF_DATE;
 
-/** The quiet days that complete the window around the given rows. */
+/** A row per history day from a template, so a whole history can be stated at once. */
+const everyDay = (template: DuneFeeRow, options: Options): DuneFeeRow[] =>
+  historyDays(options).map((day) => ({ ...template, day }));
+
+/** The quiet days that complete the history around the given rows. */
 function fillerFor(rows: DuneFeeRow[], options: Options): DuneFeeRow[] {
   const present = new Set(rows.map((r) => parseDay(r.day)));
-  return windowDays(options)
+  return historyDays(options)
     .filter((day) => !present.has(day))
     .map((day) => ({ ...quietDay, day }));
 }
 
 /**
- * The given rows plus a quiet day for every other day the window has to
+ * The given rows plus a quiet day for every other day the history has to
  * cover, so a test can state only the days it is about. Real Dune results have
  * a row per day; a history with holes is refused (see the coverage tests).
  */
@@ -97,29 +104,40 @@ const history = (rows: DuneFeeRow[], options: Options): DuneFeeRow[] => [
   ...fillerFor(rows, options),
 ];
 
+/** Period figures less the share of the given (always priced, so counted) filler days. */
+function without(totals: PeriodStats, filler: DuneFeeRow[]): PeriodStats {
+  const extra = aggregate(filler.map(computeDailyMetrics));
+  const celoToCommunityFund = totals.celoToCommunityFund - extra.celoToCommunityFund;
+  const usdToCommunityFund = totals.usdToCommunityFund - extra.usdToCommunityFund;
+  return {
+    ...totals,
+    feesCollectedUsd: totals.feesCollectedUsd - extra.feesCollectedUsd,
+    l1CostUsd: totals.l1CostUsd - extra.l1CostUsd,
+    feesAfterExpensesUsd: totals.feesAfterExpensesUsd - extra.feesAfterExpensesUsd,
+    opShareUsd: totals.opShareUsd - extra.opShareUsd,
+    celoToCommunityFund,
+    usdToCommunityFund,
+    avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
+  };
+}
+
 /**
- * Stats for the given rows over a completed window, with the quiet filler
- * days' share taken back out of the totals so expectations can be stated in
- * terms of the rows alone. The filler days are always priced, so every one of
- * them is counted.
+ * Stats for the given rows over a completed history, with the quiet filler
+ * days' share taken back out of the window totals and the first period so
+ * expectations can be stated in terms of the rows alone.
  */
 function statsFor(rows: DuneFeeRow[], options: Options) {
   const filler = fillerFor(rows, options);
   const stats = computeBuybackStats([...rows, ...filler], options);
-  const extra = aggregate(filler.map(computeDailyMetrics));
-  const celoToCommunityFund = stats.totals.celoToCommunityFund - extra.celoToCommunityFund;
-  const usdToCommunityFund = stats.totals.usdToCommunityFund - extra.usdToCommunityFund;
   return {
     ...stats,
-    totals: {
-      ...stats.totals,
-      feesCollectedUsd: stats.totals.feesCollectedUsd - extra.feesCollectedUsd,
-      l1CostUsd: stats.totals.l1CostUsd - extra.l1CostUsd,
-      feesAfterExpensesUsd: stats.totals.feesAfterExpensesUsd - extra.feesAfterExpensesUsd,
-      opShareUsd: stats.totals.opShareUsd - extra.opShareUsd,
-      celoToCommunityFund,
-      usdToCommunityFund,
-      avgCeloPriceUsd: celoToCommunityFund > 0 ? usdToCommunityFund / celoToCommunityFund : 0,
+    totals: without(stats.totals, filler.filter(inWindow)),
+    initial: {
+      ...stats.initial,
+      stats: without(
+        stats.initial.stats,
+        filler.filter((row) => !inWindow(row)),
+      ),
     },
   };
 }
@@ -454,6 +472,39 @@ describe('computeBuybackStats', () => {
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
     // The window runs on through quiet days to the day before the execution.
     expect(stats.latestDay).toBe('2026-05-02');
+    // The two earlier days belong to the first period instead.
+    expect(stats.initial.stats.feesCollectedUsd).toBeCloseTo(1200, 6);
+  });
+
+  it('reports the first period, L2 launch through the cutoff, next to the window', () => {
+    const rows: DuneFeeRow[] = [
+      { ...dayRow, day: L2_LAUNCH_DAY },
+      { ...dayRow, day: SETTLED_REVENUE_CUTOFF_DATE },
+    ];
+    const stats = statsFor(rows, options);
+    expect(stats.initial.sinceDay).toBe('2025-03-26');
+    expect(stats.initial.throughDay).toBe('2026-04-08');
+    expect(stats.initial.days).toBe(379);
+    expect(stats.initial.stats.feesCollectedUsd).toBeCloseTo(2 * 600, 6);
+    expect(stats.initial.stats.l1CostUsd).toBeCloseTo(2 * 50, 6);
+    expect(stats.initial.stats.opShareUsd).toBeCloseTo(2 * 82.5, 6);
+    expect(stats.initial.stats.celoToCommunityFund).toBeCloseTo(2 * 4675, 4);
+    expect(stats.initial.stats.usdToCommunityFund).toBeCloseTo(2 * 467.5, 6);
+    // The Carbon Fund share was taken inside the window, not before it.
+    expect(stats.initial.stats.carbonFundUsd).toBe(0);
+    // Nothing of it leaks into the window.
+    expect(stats.totals.feesCollectedUsd).toBeCloseTo(0, 6);
+  });
+
+  it('reports the same first period whatever day the snapshot was taken', () => {
+    const rows = [{ ...dayRow, day: '2025-06-01' }];
+    const later = {
+      executionEndedAt: '2026-08-03T05:31:00.000Z',
+      now: new Date('2026-08-03T12:00:00.000Z'),
+    };
+    expect(computeBuybackStats(history(rows, later), later).initial).toEqual(
+      computeBuybackStats(history(rows, options), options).initial,
+    );
   });
 
   it("drops today's partial bucket and only counts complete UTC days", () => {
@@ -565,14 +616,14 @@ describe('computeBuybackStats', () => {
     expect(() => statsFor(rows, late)).toThrow('no CELO price for 3 days through 2026-05-05');
   });
 
-  it('refuses a window whose rows are all present but all empty', () => {
+  it('refuses a history whose rows are all present but all empty', () => {
     expect(() => computeBuybackStats(everyDay(emptyDay, options), options)).toThrow(
-      'no fees or costs on 2026-04-09',
+      'no fees or costs on 2025-03-26',
     );
   });
 
   it('refuses a single empty day, wherever it falls', () => {
-    for (const day of ['2026-04-09', '2026-04-20', '2026-05-02']) {
+    for (const day of ['2025-03-26', '2026-04-08', '2026-04-09', '2026-04-20', '2026-05-02']) {
       const rows = everyDay(quietDay, options).map((r) =>
         parseDay(r.day) === day ? { ...emptyDay, day } : r,
       );
@@ -606,7 +657,7 @@ describe('computeBuybackStats', () => {
   it('refuses a history with activity but no CELO price on any day', () => {
     // What a query edit that drops the price join would look like.
     const rows = everyDay({ ...dayRow, fee_CELO_usd: 0 }, options);
-    expect(() => computeBuybackStats(rows, options)).toThrow('no CELO price for 2026-04-09');
+    expect(() => computeBuybackStats(rows, options)).toThrow('no CELO price for 2025-03-26');
   });
 
   it('counts a day as complete only once the next UTC day has started', () => {
@@ -702,16 +753,24 @@ describe('computeBuybackStats', () => {
     expect(() => statsFor(rows, options)).toThrow('conflicting rows for 2026-05-01');
   });
 
-  it('is not disturbed by duplicated or conflicting days outside the window', () => {
-    const rows: DuneFeeRow[] = [
+  it('merges a fanned-out day of the first period and refuses a conflicting one', () => {
+    const fanned: DuneFeeRow[] = [
       { ...dayRow, day: '2025-09-10', EigenDA_cost_eth: 0.001 },
       { ...dayRow, day: '2025-09-10', EigenDA_cost_eth: 0.298 },
-      { ...dayRow, day: '2025-09-11' },
-      { ...dayRow, day: '2025-09-11', fee_USDT: 9 },
       { ...dayRow, day: '2026-05-01' },
     ];
-    const stats = statsFor(rows, options);
+    const stats = statsFor(fanned, options);
     expect(stats.totals.feesCollectedUsd).toBeCloseTo(600, 6);
+    expect(stats.initial.stats.feesCollectedUsd).toBeCloseTo(600, 6);
+    // 0.05 ETH of batcher and proposer plus the two payments, at $1000.
+    expect(stats.initial.stats.l1CostUsd).toBeCloseTo(50 + 299, 6);
+
+    const conflicting = [
+      ...fanned,
+      { ...dayRow, day: '2025-09-11' },
+      { ...dayRow, day: '2025-09-11', fee_USDT: 9 },
+    ];
+    expect(() => statsFor(conflicting, options)).toThrow('conflicting rows for 2025-09-11');
   });
 
   it('refuses a counted day whose L1 costs have no ETH price', () => {
@@ -722,9 +781,8 @@ describe('computeBuybackStats', () => {
     }
   });
 
-  it('ignores a missing ETH price outside the window and on the execution day', () => {
+  it('ignores a missing ETH price on the execution day, but not in the first period', () => {
     const rows: DuneFeeRow[] = [
-      { ...dayRow, day: '2025-09-10', eth_price_usd: null },
       { ...dayRow, day: '2026-05-01' },
       // The execution day is dropped before any of this is looked at.
       { ...dayRow, day: '2026-05-03', eth_price_usd: null },
@@ -732,6 +790,10 @@ describe('computeBuybackStats', () => {
     const stats = statsFor(rows, options);
     expect(stats.latestDay).toBe('2026-05-02');
     expect(stats.totals.feesAfterExpensesUsd).toBeCloseTo(550, 6);
+    // The first period is reported, so its costs must be valued too.
+    expect(() =>
+      statsFor([...rows, { ...dayRow, day: '2025-09-10', eth_price_usd: null }], options),
+    ).toThrow('L1 costs but no ETH price for 2025-09-10');
   });
 
   it('refuses a window day without batcher or proposer costs', () => {
@@ -782,25 +844,31 @@ describe('window coverage', () => {
   const whole = history([{ ...dayRow, day: '2026-05-01' }], options);
   const without = (day: string) => whole.filter((r) => parseDay(r.day) !== day);
 
-  it('accepts a history with a row for every day of the window', () => {
-    expect(whole).toHaveLength(24); // 2026-04-09 through 2026-05-02
+  it('accepts a history with a row for every day since the L2 launch', () => {
+    expect(whole).toHaveLength(379 + 24); // 2025-03-26 through 2026-05-02
     expect(computeBuybackStats(whole, options).latestDay).toBe('2026-05-02');
   });
 
-  it('refuses a history with nothing in the window', () => {
-    expect(() => computeBuybackStats([], options)).toThrow('no rows from 2026-04-09 on');
+  it('refuses an empty history, and one that starts after the L2 launch', () => {
+    expect(() => computeBuybackStats([], options)).toThrow('no rows from 2025-03-26 on');
     const old = [{ ...dayRow, day: '2025-09-10' }];
-    expect(() => computeBuybackStats(old, options)).toThrow('no rows from 2026-04-09 on');
+    expect(() => computeBuybackStats(old, options)).toThrow('no row for 2025-03-26');
   });
 
   it('refuses a history that starts late, as a LIMIT on the query would leave it', () => {
     const suffix = whole.filter((r) => parseDay(r.day) >= '2026-04-25');
-    expect(() => computeBuybackStats(suffix, options)).toThrow('no row for 2026-04-09');
+    expect(() => computeBuybackStats(suffix, options)).toThrow('no row for 2025-03-26');
+    // The first period is reported too, so the window alone is not enough.
+    const windowOnly = whole.filter((r) => parseDay(r.day) >= '2026-04-09');
+    expect(() => computeBuybackStats(windowOnly, options)).toThrow('no row for 2025-03-26');
   });
 
-  it.each(['2026-04-09', '2026-04-20', '2026-05-01'])('refuses a history missing %s', (day) => {
-    expect(() => computeBuybackStats(without(day), options)).toThrow(`no row for ${day}`);
-  });
+  it.each(['2025-03-26', '2025-12-31', '2026-04-08', '2026-04-09', '2026-04-20', '2026-05-01'])(
+    'refuses a history missing %s',
+    (day) => {
+      expect(() => computeBuybackStats(without(day), options)).toThrow(`no row for ${day}`);
+    },
+  );
 
   it('refuses a history that stops before the last complete day of the snapshot', () => {
     expect(() => computeBuybackStats(without('2026-05-02'), options)).toThrow(
@@ -831,9 +899,9 @@ describe('window coverage', () => {
     expect(computeBuybackStats(fanned, options).latestDay).toBe('2026-05-02');
   });
 
-  it('ignores holes before the window', () => {
-    const rows = [{ ...dayRow, day: '2025-03-26' }, { ...dayRow, day: '2026-04-01' }, ...whole];
-    expect(computeBuybackStats(rows, options).latestDay).toBe('2026-05-02');
+  it('ignores rows from before the L2 launch', () => {
+    const rows = [{ ...dayRow, day: '2025-03-25' }, { ...dayRow, day: '2024-12-31' }, ...whole];
+    expect(computeBuybackStats(rows, options)).toEqual(computeBuybackStats(whole, options));
   });
 });
 
