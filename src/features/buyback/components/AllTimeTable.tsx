@@ -72,7 +72,8 @@ export function AllTimeTable({
   sinceDay: string;
   settled: SettledTransfers | null;
 }) {
-  const columns = [`${initial.sinceDay} to ${initial.throughDay}`, `Since ${sinceDay}`, 'All time'];
+  // The heading names the launch day, so the first column only needs its end.
+  const columns = [`Through ${initial.throughDay}`, `Since ${sinceDay}`, 'All time'];
   // Below `sm` the column headers are hidden, so each value names its period.
   const prefixes = ['First period: ', `Since ${sinceDay}: `, 'All time: '];
   return (

@@ -109,7 +109,7 @@ describe('BuybackDashboard', () => {
     show();
     expect(screen.getByText(/The totals and charts start on 2026-04-09/)).toBeInTheDocument();
     const table = screen.getByRole('region', { name: 'Since the L2 launch (2025-03-26)' });
-    expect(table).toHaveTextContent('2025-03-26 to 2026-04-08');
+    expect(table).toHaveTextContent('Through 2026-04-08');
     expect(table).toHaveTextContent('Since 2026-04-09');
     expect(table).toHaveTextContent('All time');
     const rows = screen.getAllByTestId('all-time-row');
