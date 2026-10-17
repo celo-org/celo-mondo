@@ -1,14 +1,17 @@
 {
-  "name": "Celo HT",
+  "name": "CeloHT",
   "address": "0x7C5730E7fcF3aDFBdF1C203e1F2491629310CeAd",
-  "logoUri": "/logos/delegatees/0x7C5730E7fcF3aDFBdF1C203e1F2491629310CeAd.jpg",
-  "date": "2025-10-25",
+  "logoUri": "/logos/delegatees/0x7C5730E7fcF3aDFBdF1C203e1F2491629310CeAd.png",
+  "date": "2026-08-13",
   "links": {
     "website": "https://celoht.com",
-    "twitter": "https://x.com/CeloHt327?t=wxf2Xks46aMs3GNz1otIRQ&s=09"
+    "twitter": "https://x.com/CeloHTTeam"
   },
   "interests": [
-    "Blockchain"
+    "Education",
+    "Community Development",
+    "Reforestation",
+    "Open Source"
   ],
-  "description": "Celo HT is a Haitian and Caribbean community dedicated to Web3 adoption and financial education through the Celo blockchain. We aim to build an inclusive ecosystem where everyone can learn, invest, and take part in Celo governance. As a delegate, Celo HT represents the voice of emerging communities, promoting transparency, sustainability, and digital economic growth across the region."
+  "description": "CeloHT is a community-driven, open-source initiative built on the Celo ecosystem, advancing financial inclusion and community development through Web3 and financial education, a local Agent Network, and reforestation in Haiti and the wider Caribbean."
 }
