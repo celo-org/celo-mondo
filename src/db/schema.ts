@@ -19,10 +19,13 @@ import type { BuybackStats } from 'src/features/buyback/types';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { GetContractEventsParameters } from 'viem';
 
+// Every table must call .enableRLS(). Supabase exposes the public schema through
+// PostgREST with the anon key, and a table without row level security is readable
+// and writable by anyone holding it. The app connects as the owner, which bypasses RLS.
 export const chainsTable = pgTable('chains', {
   id: integer().primaryKey(),
   name: text().notNull(),
-});
+}).enableRLS();
 
 export const eventsTable = pgTable(
   'events',
@@ -63,7 +66,7 @@ export const eventsTable = pgTable(
     // https://www.postgresql.org/docs/current/gin.html#GIN-INTRO - suited for array columns indexing
     index('events_topics_proposalId_index').using('gin', sql`${table.topics}[2]`), // proposalId - pgArrays are 1-indexed
   ],
-);
+).enableRLS();
 
 export const blocksProcessedTable = pgTable(
   'blocksProcessed',
@@ -76,7 +79,7 @@ export const blocksProcessedTable = pgTable(
     foreignKey({ columns: [table.chainId], foreignColumns: [chainsTable.id] }).onDelete('restrict'),
     primaryKey({ columns: [table.eventName, table.chainId] }),
   ],
-);
+).enableRLS();
 
 export const proposalsTable = pgTable(
   'proposals',
@@ -115,7 +118,7 @@ export const proposalsTable = pgTable(
     }).onDelete('cascade'),
     primaryKey({ columns: [table.id, table.chainId] }),
   ],
-);
+).enableRLS();
 export type Proposal = typeof proposalsTable.$inferSelect;
 
 export const VoteTypeEnum = pgEnum('voteType', [
@@ -139,7 +142,7 @@ export const votesTable = pgTable(
     }).onDelete('cascade'),
     primaryKey({ columns: [table.chainId, table.type, table.proposalId] }),
   ],
-);
+).enableRLS();
 
 export const approvalsTable = pgTable(
   'approvals',
@@ -163,7 +166,7 @@ export const approvalsTable = pgTable(
     index().on(table.multisigTxId),
     index().on(table.chainId),
   ],
-);
+).enableRLS();
 export type Approval = typeof approvalsTable.$inferSelect;
 
 export const analyticsEventsTable = pgTable(
@@ -182,7 +185,7 @@ export const analyticsEventsTable = pgTable(
     index('idx_analytics_events_name').on(table.eventName),
     index('idx_analytics_events_created_at').on(table.createdAt.desc()),
   ],
-);
+).enableRLS();
 
 export type AnalyticsEvent = typeof analyticsEventsTable.$inferSelect;
 
@@ -207,4 +210,4 @@ export const buybackStatsTable = pgTable(
     computedAt: timestamp({ withTimezone: true, mode: 'string' }).defaultNow().notNull(),
   },
   (table) => [index().on(table.startedAt.desc())],
-);
+).enableRLS();
