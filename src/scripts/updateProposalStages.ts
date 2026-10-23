@@ -165,7 +165,7 @@ export async function updateProposalStages(
 
     // 6. Send updates to governance repo for REJECTED and EXPIRED proposals
     // Only sync in production to avoid duplicate workflow triggers from staging
-    if (process.env.IS_PRODUCTION_DATABASE) {
+    if (process.env.IS_PRODUCTION_DATABASE === 'true') {
       console.log('\nSyncing status updates to governance repo...');
 
       for (const update of updates) {

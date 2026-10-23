@@ -10,8 +10,6 @@ on:
 jobs:
   sync-executed:
     runs-on: ubuntu-latest
-    permissions:
-      actions: write  # Required to trigger workflows in other repos
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,6 +23,6 @@ jobs:
         run: npx tsx src/scripts/syncExecutedProposals.ts
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOVERNANCE_REPO_TOKEN: ${{ secrets.GOVERNANCE_REPO_TOKEN }}
           IS_PRODUCTION_DATABASE: true
           CI: true

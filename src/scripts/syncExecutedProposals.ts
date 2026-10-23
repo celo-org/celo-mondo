@@ -7,12 +7,15 @@ import { proposalsTable } from 'src/db/schema';
 import { triggerGovernanceRepoStatusUpdate } from 'src/features/governance/syncGovernanceRepoStatus';
 import { celo } from 'viem/chains';
 
-const LOOKBACK_HOURS = 24;
+// One hour more than the daily cadence: GitHub fires schedules late by minutes, and a
+// proposal executed between two runs must not fall through the gap. The governance
+// workflow treats a status it already has as a no-op, so the overlap is harmless.
+const LOOKBACK_HOURS = 25;
 
 /**
  * Syncs EXECUTED proposals to the governance repository.
  *
- * Finds proposals executed in the last 24 hours and triggers the governance
+ * Finds proposals executed in the last 25 hours and triggers the governance
  * repo workflow to update their status to EXECUTED. Designed to run daily as a
  * GitHub Action at 11 AM UTC.
  */

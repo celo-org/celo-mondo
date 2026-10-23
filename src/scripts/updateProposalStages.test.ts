@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
 import database from 'src/config/database';
-import { eventsTable, proposalsTable } from 'src/db/schema';
+import { eventsTable, proposalsTable, votesTable } from 'src/db/schema';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { TEST_CHAIN_ID } from 'src/test/database';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { updateProposalStages } from './updateProposalStages';
 
@@ -11,6 +11,12 @@ import { updateProposalStages } from './updateProposalStages';
 const mockGetOnChainQuorumRequired = vi.fn().mockResolvedValue({ quorumVotesRequired: 100n });
 vi.mock('src/features/governance/utils/quorum', () => ({
   getOnChainQuorumRequired: (...args: unknown[]) => mockGetOnChainQuorumRequired(...args),
+}));
+
+const mockTriggerGovernanceRepoStatusUpdate = vi.fn().mockResolvedValue(undefined);
+vi.mock('src/features/governance/syncGovernanceRepoStatus', () => ({
+  triggerGovernanceRepoStatusUpdate: (...args: unknown[]) =>
+    mockTriggerGovernanceRepoStatusUpdate(...args),
 }));
 
 function createMockClient(getProposalStageResponses: Record<number, ProposalStage>) {
@@ -229,6 +235,72 @@ describe('updateProposalStages', () => {
 
       expect(await getProposalStage(330)).toBe(ProposalStage.Execution);
       expect(client.readContract).toHaveBeenCalled();
+    });
+  });
+
+  describe('governance repo sync', () => {
+    beforeEach(() => {
+      vi.stubEnv('IS_PRODUCTION_DATABASE', 'true');
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it('reports Expired and Rejected transitions in production', async () => {
+      await insertProposal({
+        id: 400,
+        stage: ProposalStage.Execution,
+        transactionCount: 1,
+        cgp: 140,
+      });
+      await insertProposal({
+        id: 401,
+        stage: ProposalStage.Execution,
+        transactionCount: 1,
+        cgp: 141,
+      });
+      await database.insert(votesTable).values([
+        { proposalId: 401, type: VoteType.Yes, count: 1n, chainId: TEST_CHAIN_ID },
+        { proposalId: 401, type: VoteType.No, count: 2n, chainId: TEST_CHAIN_ID },
+      ]);
+      const client = createMockClient({
+        400: ProposalStage.Expiration,
+        401: ProposalStage.Expiration,
+      });
+
+      await updateProposalStages(client);
+
+      const reported = mockTriggerGovernanceRepoStatusUpdate.mock.calls.map(([update]) => update);
+      expect(reported).toHaveLength(2);
+      expect(reported).toEqual(
+        expect.arrayContaining([
+          { cgpNumber: 140, onchainId: 400, status: 'EXPIRED' },
+          { cgpNumber: 141, onchainId: 401, status: 'REJECTED' },
+        ]),
+      );
+    });
+
+    it('does not report Executed transitions', async () => {
+      await insertProposal({ id: 410, stage: ProposalStage.Execution, transactionCount: 1 });
+      await insertProposalExecutedEvent(410);
+      const client = createMockClient({ 410: ProposalStage.Expiration });
+
+      await updateProposalStages(client);
+
+      expect(await getProposalStage(410)).toBe(ProposalStage.Executed);
+      expect(mockTriggerGovernanceRepoStatusUpdate).not.toHaveBeenCalled();
+    });
+
+    it('does not report from staging', async () => {
+      vi.stubEnv('IS_PRODUCTION_DATABASE', 'false');
+      await insertProposal({ id: 420, stage: ProposalStage.Execution, transactionCount: 1 });
+      const client = createMockClient({ 420: ProposalStage.Expiration });
+
+      await updateProposalStages(client);
+
+      expect(await getProposalStage(420)).toBe(ProposalStage.Expiration);
+      expect(mockTriggerGovernanceRepoStatusUpdate).not.toHaveBeenCalled();
     });
   });
 

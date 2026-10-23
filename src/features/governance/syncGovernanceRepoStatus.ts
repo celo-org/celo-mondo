@@ -16,16 +16,20 @@ const WORKFLOW_REF = 'main';
 
 /**
  * Triggers the update-cgp-status workflow in the celo-org/governance repository.
- * Requires a GitHub Actions context with GITHUB_TOKEN.
+ *
+ * The token GitHub Actions hands to a workflow only reaches the repository that
+ * workflow runs in, so dispatching into the governance repository needs
+ * GOVERNANCE_REPO_TOKEN: a token with Actions write access on that repository.
+ * Without it the update is logged and skipped.
  *
  * Note: all dispatches are dry runs for now (dry_run: 'true').
  */
 export async function triggerGovernanceRepoStatusUpdate(
   update: GovernanceStatusUpdate,
 ): Promise<void> {
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (!githubToken) {
-    console.error('❌ GITHUB_TOKEN not found. This function must run in GitHub Actions context.');
+  const token = process.env.GOVERNANCE_REPO_TOKEN;
+  if (!token) {
+    console.error('❌ GOVERNANCE_REPO_TOKEN not set, skipping governance repo update.');
     return;
   }
 
@@ -37,12 +41,13 @@ export async function triggerGovernanceRepoStatusUpdate(
   };
 
   if (update.status === 'EXECUTED') {
-    // The governance workflow expects a YYYY-MM-DD date.
-    inputs.date_executed = new Date(update.executedAt).toISOString().split('T')[0];
+    // The governance workflow expects a YYYY-MM-DD date. executedAt is the UTC
+    // timestamp string from the database, so its first ten characters are that date.
+    inputs.date_executed = update.executedAt.slice(0, 10);
   }
 
   try {
-    const octokit = new Octokit({ auth: githubToken });
+    const octokit = new Octokit({ auth: token });
     await octokit.rest.actions.createWorkflowDispatch({
       ...GOVERNANCE_REPO,
       workflow_id: WORKFLOW_ID,
