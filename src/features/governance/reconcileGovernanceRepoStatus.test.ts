@@ -107,14 +107,50 @@ describe('reconcileGovernanceRepoStatus', () => {
     expect(mockTrigger).not.toHaveBeenCalled();
   });
 
-  it('leaves out unreadable files, old proposals and staging test data', async () => {
-    await insertProposal({ id: 330, stage: ProposalStage.Expiration, dequeuedAt: daysAgo(40) });
+  it('reports only the current attempt of a resubmitted CGP', async () => {
+    // CGP 140: first attempt expired, resubmission executed
     await insertProposal({
-      id: 1001,
-      stage: ProposalStage.Executed,
-      dequeuedAt: daysAgo(3),
-      executedAt: daysAgo(1),
+      id: 350,
+      cgp: 140,
+      stage: ProposalStage.Expiration,
+      dequeuedAt: daysAgo(25),
     });
+    await insertProposal({
+      id: 351,
+      cgp: 140,
+      pastId: 350,
+      stage: ProposalStage.Executed,
+      dequeuedAt: daysAgo(5),
+      executedAt: daysAgo(2),
+    });
+    // CGP 150: first attempt expired, resubmission still in referendum
+    await insertProposal({
+      id: 360,
+      cgp: 150,
+      stage: ProposalStage.Expiration,
+      dequeuedAt: daysAgo(25),
+    });
+    await insertProposal({
+      id: 361,
+      cgp: 150,
+      pastId: 360,
+      stage: ProposalStage.Referendum,
+      dequeuedAt: daysAgo(3),
+    });
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(reportedUpdates()).toEqual([
+      expect.objectContaining({
+        cgpNumber: 140,
+        onchainId: 351,
+        status: ProposalMetadataStatus.EXECUTED,
+      }),
+    ]);
+  });
+
+  it('leaves out unreadable files and old proposals', async () => {
+    await insertProposal({ id: 330, stage: ProposalStage.Expiration, dequeuedAt: daysAgo(40) });
     await insertProposal({
       id: 340,
       stage: ProposalStage.Executed,

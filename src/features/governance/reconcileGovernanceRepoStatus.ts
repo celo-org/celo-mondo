@@ -1,6 +1,5 @@
 /* eslint no-console: 0 */
-import { and, eq, gte, inArray, lt, lte, or } from 'drizzle-orm';
-import { STAGING_MOCK_PROPOSALS_START_ID } from 'src/config/config';
+import { and, eq, gte, inArray, lte, max, or } from 'drizzle-orm';
 import { EXECUTION_STAGE_EXPIRY_TIME, REFERENDUM_STAGE_EXPIRY_TIME } from 'src/config/consts';
 import database from 'src/config/database';
 import { proposalsTable } from 'src/db/schema';
@@ -20,6 +19,9 @@ const LOOKBACK_MS = 30 * 24 * HOUR_MS;
 // had time to land, an executed proposal still looks expired here.
 const SETTLE_MS = 6 * HOUR_MS;
 
+// Adopted (a zero-transaction proposal that passed) has no counterpart in the
+// governance repo: its only successful status, EXECUTED, is validated there against
+// a ProposalExecuted event that such a proposal never emits.
 const STAGE_TO_STATUS: Partial<Record<ProposalStage, ProposalMetadataStatus>> = {
   [ProposalStage.Executed]: ProposalMetadataStatus.EXECUTED,
   [ProposalStage.Expiration]: ProposalMetadataStatus.EXPIRED,
@@ -28,6 +30,7 @@ const STAGE_TO_STATUS: Partial<Record<ProposalStage, ProposalMetadataStatus>> = 
 
 /**
  * Pushes the outcome of recently settled proposals to the governance repository.
+ * Meant to run against the production database.
  *
  * Reads the status each CGP currently carries there and dispatches an update only
  * when it differs, so the daily run is idempotent and a failed dispatch is simply
@@ -50,7 +53,6 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
     .where(
       and(
         eq(proposalsTable.chainId, celo.id),
-        lt(proposalsTable.id, STAGING_MOCK_PROPOSALS_START_ID),
         gte(proposalsTable.dequeuedAt, since),
         or(
           eq(proposalsTable.stage, ProposalStage.Executed),
@@ -63,10 +65,33 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
     );
 
   console.log(`Found ${proposals.length} settled proposals dequeued since ${since}`);
+  if (proposals.length === 0) return;
+
+  // A resubmitted CGP keeps its earlier attempts in the table, chained by ascending
+  // id, so only the highest id for a CGP may speak for it. If that attempt is still
+  // running, an earlier outcome must not be reported either.
+  const currentAttempts = new Map(
+    (
+      await database
+        .select({ cgp: proposalsTable.cgp, id: max(proposalsTable.id) })
+        .from(proposalsTable)
+        .where(
+          and(
+            eq(proposalsTable.chainId, celo.id),
+            inArray(proposalsTable.cgp, [...new Set(proposals.map((p) => p.cgp))]),
+          ),
+        )
+        .groupBy(proposalsTable.cgp)
+    ).map((row) => [row.cgp, row.id]),
+  );
 
   for (const proposal of proposals) {
     const status = STAGE_TO_STATUS[proposal.stage];
     if (!status) continue;
+    if (currentAttempts.get(proposal.cgp) !== proposal.id) {
+      console.log(`Proposal ${proposal.id} is an earlier attempt of CGP ${proposal.cgp}, skipping`);
+      continue;
+    }
 
     const current = await fetchGovernanceRepoStatus(proposal.cgp);
     if (current === null || current === status) continue;

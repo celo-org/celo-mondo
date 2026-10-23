@@ -28,7 +28,7 @@ export async function fetchGovernanceRepoStatus(
 ): Promise<ProposalMetadataStatus | null> {
   const url = `${CGP_RAW_URL_BASE}${String(cgpNumber).padStart(4, '0')}.md`;
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     const status: unknown = separateYamlFrontMatter(await response.text())?.frontMatter?.status;
     if (!isMetadataStatus(status)) throw new Error(`unexpected status ${String(status)}`);

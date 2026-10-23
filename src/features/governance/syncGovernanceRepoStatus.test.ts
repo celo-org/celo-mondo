@@ -30,6 +30,7 @@ describe('fetchGovernanceRepoStatus', () => {
     expect(await fetchGovernanceRepoStatus(254)).toBe(ProposalMetadataStatus.EXECUTED);
     expect(fetch).toHaveBeenCalledWith(
       'https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0254.md',
+      expect.anything(),
     );
   });
 
