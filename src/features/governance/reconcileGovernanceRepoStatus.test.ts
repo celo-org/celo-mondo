@@ -43,18 +43,23 @@ function insertProposal(
   });
 }
 
-function insertProposalExecutedEvent(proposalId: number, blockNumber: bigint) {
+function insertEvent(
+  eventName: 'ProposalExecuted' | 'ProposalQueued',
+  proposalId: number,
+  overrides: Partial<typeof eventsTable.$inferInsert> = {},
+) {
   const txHash = `0x${proposalId.toString(16).padStart(64, '0')}` as `0x${string}`;
   return database.insert(eventsTable).values({
     chainId: TEST_CHAIN_ID,
-    eventName: 'ProposalExecuted',
+    eventName,
     args: { proposalId: String(proposalId) },
     address: '0x0000000000000000000000000000000000000000',
     topics: ['0xabc123' as `0x${string}`, txHash],
     data: '0x' as `0x${string}`,
-    blockNumber,
+    blockNumber: 1n,
     transactionHash: txHash,
     logIndex: 0,
+    ...overrides,
   });
 }
 
@@ -248,6 +253,39 @@ describe('reconcileGovernanceRepoStatus', () => {
     expect(mockTrigger).not.toHaveBeenCalled();
   });
 
+  it('ignores a newer proposal the backfill gave up on for lack of metadata', async () => {
+    await insertProposal({
+      id: 430,
+      cgp: 200,
+      stage: ProposalStage.Expiration,
+      dequeuedAt: daysAgo(11),
+    });
+    // 431 was queued two days ago and never became a row
+    await insertEvent('ProposalQueued', 431, { ingestedAt: new Date(daysAgo(2)) });
+    mockChain({}, 431);
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(reportedUpdates()).toEqual([
+      { cgpNumber: 200, onchainId: 430, status: ProposalMetadataStatus.EXPIRED },
+    ]);
+  });
+
+  it('waits for a newer proposal the backfill saw only just now', async () => {
+    await insertProposal({
+      id: 430,
+      cgp: 200,
+      stage: ProposalStage.Expiration,
+      dequeuedAt: daysAgo(11),
+    });
+    await insertEvent('ProposalQueued', 431, { ingestedAt: new Date(daysAgo(0, 1)) });
+    mockChain({}, 431);
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(mockTrigger).not.toHaveBeenCalled();
+  });
+
   it('anchors a missing dequeue time at the latest the proposal could have left the queue', async () => {
     // Executed: the execution itself proves it settled
     await insertProposal({
@@ -260,6 +298,8 @@ describe('reconcileGovernanceRepoStatus', () => {
     await insertProposal({ id: 421, stage: ProposalStage.Expiration, queuedAt: daysAgo(39) });
     // Expired: could still have been dequeued recently, not settled yet
     await insertProposal({ id: 422, stage: ProposalStage.Expiration, queuedAt: daysAgo(30) });
+    // Executed, created from the execution event alone
+    await insertProposal({ id: 423, stage: ProposalStage.Executed, executedAt: daysAgo(2) });
 
     await reconcileGovernanceRepoStatus(NOW);
 
@@ -267,7 +307,7 @@ describe('reconcileGovernanceRepoStatus', () => {
       reportedUpdates()
         .map((u) => u.onchainId)
         .sort(),
-    ).toEqual([420, 421]);
+    ).toEqual([420, 421, 423]);
   });
 
   it('skips an attempt the governance repo has already moved past', async () => {
@@ -286,7 +326,7 @@ describe('reconcileGovernanceRepoStatus', () => {
 
   it('derives the execution date from the event when the row lacks it', async () => {
     await insertProposal({ id: 390, stage: ProposalStage.Executed, dequeuedAt: daysAgo(5) });
-    await insertProposalExecutedEvent(390, 80_000_000n);
+    await insertEvent('ProposalExecuted', 390, { blockNumber: 80_000_000n });
     mockGetBlock.mockResolvedValue({ timestamp: 1_760_000_000n });
 
     await reconcileGovernanceRepoStatus(NOW);
