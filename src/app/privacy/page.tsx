@@ -43,7 +43,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="font-serif text-3xl font-semibold sm:text-4xl">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-gray-500">Last updated: April 2026</p>
+      <p className="mt-2 text-sm text-gray-500">Last updated: October 2026</p>
       <p className="mt-1 text-sm text-gray-500">
         Applies to:{' '}
         <A_Blank href="https://mondo.celo.org" className="underline">
@@ -126,6 +126,7 @@ export default function PrivacyPage() {
             ['upvote_completed', 'Proposal ID'],
             ['delegate_completed', 'Action type, delegation percentage'],
             ['account_created', '(none)'],
+            ['vote_signer_authorized', '(none)'],
             ['nav_clicked', 'Navigation item label'],
             ['mode_toggled', 'Mode (CELO / stCELO)'],
             ['proposal_viewed', 'Proposal ID, stage'],
@@ -167,7 +168,7 @@ export default function PrivacyPage() {
         When you connect a wallet, your request is sent to our <code>/police</code> endpoint. This
         uses Vercel&apos;s geo-enrichment headers to determine your country and region (ISO 3166
         codes). No IP address is stored — only the country/region is logged transiently. Access is
-        blocked (HTTP 451) for visitors from North Korea, Iran, Cuba, Syria, and Russian-occupied
+        blocked (HTTP 451) for visitors from North Korea, Iran, Cuba, and Russian-occupied
         territories of Ukraine (Crimea, Luhansk, Donetsk) as required by applicable sanctions law.
       </P>
 

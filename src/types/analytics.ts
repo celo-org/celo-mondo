@@ -46,6 +46,8 @@ export interface DelegateCompletedProperties {
 
 export interface AccountCreatedProperties {}
 
+export interface VoteSignerAuthorizedProperties {}
+
 // Navigation events
 export interface NavClickedProperties {
   item: string;
@@ -126,6 +128,7 @@ export interface AnalyticsEventMap {
   upvote_completed: UpvoteCompletedProperties;
   delegate_completed: DelegateCompletedProperties;
   account_created: AccountCreatedProperties;
+  vote_signer_authorized: VoteSignerAuthorizedProperties;
 
   // Navigation events
   nav_clicked: NavClickedProperties;
@@ -210,7 +213,7 @@ export function isValidAnalyticsEvent<T extends AnalyticsEventName>(
     return typeof props.action === 'string' && typeof props.percent === 'number';
   }
 
-  if (eventName === 'account_created') {
+  if (eventName === 'account_created' || eventName === 'vote_signer_authorized') {
     return typeof properties === 'object' && properties !== null;
   }
 
@@ -356,6 +359,8 @@ export const DelegateCompletedPropertiesSchema = z
 
 export const AccountCreatedPropertiesSchema = z.object({}).strict();
 
+export const VoteSignerAuthorizedPropertiesSchema = z.object({}).strict();
+
 export const NavClickedPropertiesSchema = z
   .object({
     item: z.string().min(1).max(100),
@@ -459,6 +464,7 @@ export const AnalyticsEventSchemaMap = {
   upvote_completed: UpvoteCompletedPropertiesSchema,
   delegate_completed: DelegateCompletedPropertiesSchema,
   account_created: AccountCreatedPropertiesSchema,
+  vote_signer_authorized: VoteSignerAuthorizedPropertiesSchema,
   nav_clicked: NavClickedPropertiesSchema,
   mode_toggled: ModeToggledPropertiesSchema,
   proposal_viewed: ProposalViewedPropertiesSchema,

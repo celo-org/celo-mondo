@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createHmac } from 'node:crypto';
-import { Address } from 'viem';
+import database from 'src/config/database';
+import { Address, getAddress } from 'viem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POST } from './route';
 
@@ -84,6 +85,7 @@ function makeMultiBaasEvent(overrides: {
   contractAddress?: string;
   inputs?: { name: string; value: string; hashed: boolean; type: string }[];
   rawFields?: string;
+  indexInLog?: number;
 }) {
   return {
     id: 'test-event-id',
@@ -101,7 +103,7 @@ function makeMultiBaasEvent(overrides: {
           name: 'Governance',
           label: 'Governance',
         },
-        indexInLog: 0,
+        indexInLog: overrides.indexInLog ?? 0,
       },
     },
   };
@@ -185,14 +187,7 @@ describe('POST /api/webhooks/multibaas', () => {
   });
 
   describe('MultiSig event processing', () => {
-    it('collects transactionIds from backfill result and passes them to updateApprovalsInDB', async () => {
-      const backfillTxIds = [100n, 101n];
-      mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
-        transactionIds: backfillTxIds,
-        confirmationCount: 2,
-        lastEventBlock: 59520678n,
-      });
-
+    it('collects transactionIds from the delivered event (rawFields args + inputs)', async () => {
       const event = makeMultiBaasEvent({
         name: 'Confirmation',
         contractAddress: MOCK_APPROVER_MULTISIG,
@@ -206,17 +201,12 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
-        'Confirmation',
-        expect.objectContaining({ chain: { id: 42220 } }),
-        { source: 'multibaas' },
-      );
       expect(mockUpdateApprovalsInDB).toHaveBeenCalledTimes(1);
 
-      // Should include backfill IDs (100, 101), rawFields ID (103), and inputs ID (102)
+      // rawFields args ID (103) and inputs ID (102), both from the payload
       const passedTxIds = mockUpdateApprovalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedTxIds).toEqual(expect.arrayContaining([100n, 101n, 102n, 103n]));
-      expect(passedTxIds).toHaveLength(4);
+      expect(passedTxIds).toEqual(expect.arrayContaining([102n, 103n]));
+      expect(passedTxIds).toHaveLength(2);
     });
 
     it('deduplicates transactionIds from multiple sources', async () => {
@@ -243,13 +233,7 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(passedTxIds).toContainEqual(248n);
     });
 
-    it('handles backfill returning transactionIds even when rawFields parsing fails', async () => {
-      mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
-        transactionIds: [200n, 201n],
-        confirmationCount: 2,
-        lastEventBlock: 59520678n,
-      });
-
+    it('skips approvals when rawFields is unparsable and no inputs provide a transactionId', async () => {
       const event = makeMultiBaasEvent({
         name: 'Confirmation',
         contractAddress: MOCK_APPROVER_MULTISIG,
@@ -261,17 +245,10 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      const passedTxIds = mockUpdateApprovalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedTxIds).toEqual(expect.arrayContaining([200n, 201n]));
+      expect(mockUpdateApprovalsInDB).not.toHaveBeenCalled();
     });
 
     it('processes Revocation events through the same pipeline', async () => {
-      mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively.mockResolvedValueOnce({
-        transactionIds: [50n],
-        confirmationCount: 0,
-        lastEventBlock: 100n,
-      });
-
       const event = makeMultiBaasEvent({
         name: 'Revocation',
         contractAddress: MOCK_APPROVER_MULTISIG,
@@ -282,12 +259,7 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalMultiSigEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
-        'Revocation',
-        expect.anything(),
-        { source: 'multibaas' },
-      );
-      expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
+      expect(mockUpdateApprovalsInDB).toHaveBeenCalledWith(expect.anything(), [50n]);
     });
 
     it('does not call updateApprovalsInDB when no multisig events are present', async () => {
@@ -331,39 +303,10 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalledWith(
-        'ProposalQueued',
-        expect.anything(),
-        undefined,
-        'multibaas',
-      );
       expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [278n], 'update');
     });
 
-    it('includes proposalIds from governance backfill in updateProposalsInDB call', async () => {
-      // Backfill discovers proposals 275 and 276 that were missed
-      mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n, 276n]);
-      // The webhook event itself is for proposal 278
-      mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(278n);
-
-      const event = makeMultiBaasEvent({
-        name: 'ProposalQueued',
-        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
-      });
-
-      const request = createSignedRequest([event]);
-      const response = await POST(request);
-
-      expect(response.status).toBe(200);
-      const passedProposalIds = mockUpdateProposalsInDB.mock.calls[0][1] as bigint[];
-      expect(passedProposalIds).toEqual(expect.arrayContaining([275n, 276n, 278n]));
-      expect(passedProposalIds).toHaveLength(3);
-    });
-
-    it('updates proposals from backfill even when webhook event decoding returns null', async () => {
-      // Backfill discovers proposal 275
-      mockFetchHistoricalEventsAndSaveToDBProgressively.mockResolvedValueOnce([275n]);
-      // The webhook event itself fails to decode (not a proposal event)
+    it('does not call updateProposalsInDB when the event decodes to neither proposal nor vote', async () => {
       mockDecodeAndPrepareProposalEvent.mockResolvedValueOnce(null);
       mockDecodeAndPrepareVoteEvent.mockResolvedValueOnce([]);
 
@@ -376,7 +319,7 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockUpdateProposalsInDB).toHaveBeenCalledWith(expect.anything(), [275n], 'update');
+      expect(mockUpdateProposalsInDB).not.toHaveBeenCalled();
     });
 
     it('handles mixed governance and multisig events in a single webhook', async () => {
@@ -403,6 +346,92 @@ describe('POST /api/webhooks/multibaas', () => {
       expect(response.status).toBe(200);
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
       expect(mockUpdateApprovalsInDB).toHaveBeenCalled();
+    });
+  });
+
+  describe('event persistence', () => {
+    const insertedRows = () => {
+      const valuesMock = (database as unknown as { values: ReturnType<typeof vi.fn> }).values;
+      return valuesMock.mock.calls.at(-1)?.[0] as {
+        logIndex: number;
+        address: string;
+        args: Record<string, unknown>;
+      }[];
+    };
+
+    it('persists the block-scoped logIndex from rawFields (hex string)', async () => {
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({
+          topics: ['0x'],
+          data: '0x',
+          blockNumber: '123',
+          transactionHash: '0xaaa',
+          logIndex: '0x1a',
+        }),
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      const rows = insertedRows();
+      expect(rows).toHaveLength(1);
+      expect(rows[0].logIndex).toBe(26);
+    });
+
+    it('stores the contract address lowercased whatever casing the provider sent', async () => {
+      // MultiBaas delivers checksummed addresses. Readers filter on a lowercase
+      // address, so a checksummed row is invisible to them.
+      const event = makeMultiBaasEvent({
+        name: 'Confirmation',
+        contractAddress: MOCK_APPROVER_MULTISIG,
+        inputs: [{ name: 'transactionId', value: '274', hashed: false, type: 'uint256' }],
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      expect(insertedRows()[0].address).toBe(MOCK_APPROVER_MULTISIG.toLowerCase());
+    });
+
+    it('decodes multisig owner-management events against the multisig ABI', async () => {
+      // OwnerAddition is not an approval event, but it is emitted by the
+      // multisig — decoding it against the governance ABI fails and persists an
+      // empty args object.
+      const newOwner = '0xc85639289d4bbb5f90e380a0f4db6b77a2f777bf';
+      const event = makeMultiBaasEvent({
+        name: 'OwnerAddition',
+        contractAddress: MOCK_APPROVER_MULTISIG,
+        rawFields: JSON.stringify({
+          topics: [
+            '0xf39e6e1eb0edcf53c221607b54b00cd28f3196fed0a24994dc308b8f611b682d',
+            `0x000000000000000000000000${newOwner.slice(2)}`,
+          ],
+          data: '0x',
+        }),
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      const row = insertedRows()[0];
+      expect(row.args).toEqual({ owner: getAddress(newOwner) });
+      // owner events carry no multisig transaction id, so no approval work
+      expect(mockUpdateApprovalsInDB).not.toHaveBeenCalled();
+    });
+
+    it('falls back to indexInLog when rawFields lacks logIndex', async () => {
+      const event = makeMultiBaasEvent({
+        name: 'ProposalQueued',
+        rawFields: JSON.stringify({ topics: ['0x'], data: '0x' }),
+        indexInLog: 7,
+      });
+
+      const response = await POST(createSignedRequest([event]));
+
+      expect(response.status).toBe(200);
+      expect(insertedRows()[0].logIndex).toBe(7);
     });
   });
 
@@ -433,7 +462,6 @@ describe('POST /api/webhooks/multibaas', () => {
       const response = await POST(request);
 
       expect(response.status).toBe(200);
-      expect(mockFetchHistoricalEventsAndSaveToDBProgressively).toHaveBeenCalled();
       expect(mockUpdateProposalsInDB).toHaveBeenCalled();
     });
 

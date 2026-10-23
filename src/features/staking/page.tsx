@@ -4,6 +4,7 @@ import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 import { PieChart } from 'react-minimal-pie-chart';
 import { toast } from 'react-toastify';
+import { SkeletonBlock } from 'src/components/animation/Skeleton';
 import { Spinner } from 'src/components/animation/Spinner';
 import { BackLink } from 'src/components/buttons/BackLink';
 import { OutlineButton } from 'src/components/buttons/OutlineButton';
@@ -28,6 +29,7 @@ import { VALIDATOR_GROUPS } from 'src/config/validators';
 import { useLockedBalance } from 'src/features/account/hooks';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useDequeuedProposalIds } from 'src/features/governance/hooks/useDequeuedProposalIds';
+import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
 import { useStrategy } from 'src/features/staking/stCELO/hooks/useStCELO';
 import { StakeActionType } from 'src/features/staking/types';
 import { useStakingBalances } from 'src/features/staking/useStakingBalances';
@@ -36,9 +38,14 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { ValidatorGroupLogo } from 'src/features/validators/ValidatorGroupLogo';
 import ContributionBadge from 'src/features/validators/components/ContributionBadge';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
-import { useValidatorGroups } from 'src/features/validators/useValidatorGroups';
+import { useValidatorGroups, ValidatorGroupInfo } from 'src/features/validators/useValidatorGroups';
 import { useValidatorStakers } from 'src/features/validators/useValidatorStakers';
-import { getGroupStats } from 'src/features/validators/utils';
+import {
+  formatCommission,
+  getGroupStats,
+  getProjectedGroupApy,
+  getProjectedGroupApyLines,
+} from 'src/features/validators/utils';
 import { Color } from 'src/styles/Color';
 import { tableClasses } from 'src/styles/common';
 import { useIsMobile } from 'src/styles/mediaQueries';
@@ -46,17 +53,31 @@ import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { useCopyHandler } from 'src/utils/clipboard';
 import { usePageInvariant } from 'src/utils/navigation';
-import { objLength } from 'src/utils/objects';
+import { deserializeBigints, objLength } from 'src/utils/objects';
 import { getDateTimeString, getHumanReadableTimeString } from 'src/utils/time';
 import { useStakingMode } from 'src/utils/useStakingMode';
 import useTabs from 'src/utils/useTabs';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
 import { isAddressEqual } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
-export default function Page({ address }: { address: Address }) {
-  const account = useAccount();
-  const { addressToGroup } = useValidatorGroups();
+export default function Page({
+  address,
+  initialValidatorGroups,
+}: {
+  address: Address;
+  initialValidatorGroups?: string;
+}) {
+  const account = useConnection();
+  // Serialized because RSC prop serialization downgrades bigints to strings
+  const initialGroups = useMemo(
+    () =>
+      initialValidatorGroups
+        ? deserializeBigints<ValidatorGroupInfo>(initialValidatorGroups)
+        : undefined,
+    [initialValidatorGroups],
+  );
+  const { addressToGroup } = useValidatorGroups(false, initialGroups);
   const group = addressToGroup?.[address];
   const { groupToStake } = useStakingBalances(account.address);
   const currentStakeInGroup = (group && groupToStake?.[group.address]?.active) ?? 0n;
@@ -79,7 +100,7 @@ function HeaderSection({
   group?: ValidatorGroup;
   currentStakeInGroup: bigint;
 }) {
-  const account = useAccount();
+  const account = useConnection();
   const { ui, mode } = useStakingMode();
   const { group: stCELOStakingGroup } = useStrategy(account.address);
   const address = group?.address || ZERO_ADDRESS;
@@ -135,7 +156,9 @@ function HeaderSection({
               >
                 <div className="flex items-center space-x-1.5">
                   <SlashIcon width={14} height={14} />
-                  <span>
+                  {/* Relative time is computed from Date.now(), which differs
+                      between the server render and hydration */}
+                  <span suppressHydrationWarning>
                     {group?.lastSlashed
                       ? getHumanReadableTimeString(group.lastSlashed)
                       : 'Never slashed'}
@@ -184,11 +207,39 @@ function StatSection({
   group?: ValidatorGroup;
   currentStakeInGroup: bigint;
 }) {
+  const { mode } = useStakingMode();
   return (
     <div className="flex w-full flex-col items-stretch gap-3 sm:flex-row sm:justify-between sm:gap-8">
       <CapacityStatBox group={group} currentStakeInGroup={currentStakeInGroup} />
+      {/* stCELO holders earn the pool-wide rate, not the return of the group they pick */}
+      {mode === 'CELO' && <ApyStatBox group={group} />}
       <GovernanceStatBox group={group} />
     </div>
+  );
+}
+
+function ApyStatBox({ group }: { group?: ValidatorGroup }) {
+  const { annualProjectedRate, isLoading } = useAnnualProjectedRate();
+  const apy = group ? getProjectedGroupApy(annualProjectedRate, group) : undefined;
+  const lines = group ? getProjectedGroupApyLines(annualProjectedRate, group) : undefined;
+
+  return (
+    <StatBox header="Projected APY" valueWei={null}>
+      {isLoading || !group ? (
+        <SkeletonBlock className="h-7 w-20 md:h-8" />
+      ) : (
+        <div className="font-serif text-xl md:text-2xl">
+          {apy === undefined ? '-' : `${apy.toFixed(2)}%`}
+        </div>
+      )}
+      {lines && (
+        <div className="text-xs text-taupe-600">
+          {lines.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
+      )}
+    </StatBox>
   );
 }
 
@@ -344,6 +395,10 @@ function Members({ group }: { group?: ValidatorGroup }) {
         <div className="flex flex-col">
           <h4 className="text-sm">Group Score</h4>
           <span className="mt-1 font-serif text-xl">{`${(groupStats.score * 100).toFixed(2)}%`}</span>
+        </div>
+        <div className="flex flex-col">
+          <h4 className="text-sm">Commission</h4>
+          <span className="mt-1 font-serif text-xl">{formatCommission(group?.commission)}</span>
         </div>
         <div className="flex flex-col">
           <h4 className="text-sm">Locked CELO</h4>

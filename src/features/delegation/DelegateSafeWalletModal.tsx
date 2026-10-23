@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal, useModal } from 'src/components/menus/Modal';
 import { delegateeRegistrationRequestToMetadata } from 'src/features/delegation/delegateeMetadata';
 import { RegisterDelegateFormValues } from 'src/features/delegation/types';
-import { useConfig, useConnections } from 'wagmi';
+import { useConnections } from 'wagmi';
 
 export function DelegateSafeWalletModal({
   isModalOpen,
@@ -64,9 +64,6 @@ export function useSAFEModal() {
 }
 
 export const useIsSAFEWallet = () => {
-  const config = useConfig();
   const [connection] = useConnections();
-  const safeConnector = config.connectors.find((x) => x.id === 'safe')!;
-  const isSafe = connection?.connector === safeConnector;
-  return isSafe;
+  return connection?.connector?.id === 'safe';
 };

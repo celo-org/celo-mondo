@@ -57,6 +57,41 @@
       "when": 1781681125157,
       "tag": "0007_event_ingestion_provenance",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785942610650,
+      "tag": "0008_events_log_index_pk",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789652490578,
+      "tag": "0009_normalize_event_address_casing",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791290968237,
+      "tag": "0010_buyback_stats",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791293082179,
+      "tag": "0011_buyback_stats_started_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791983519706,
+      "tag": "0012_enable_rls",
+      "breakpoints": true
     }
   ]
 }

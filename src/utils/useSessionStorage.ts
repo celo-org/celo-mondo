@@ -1,6 +1,6 @@
 'use client';
 
-import { Dispatch, SetStateAction, useCallback, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 
 export function useSessionStorage<T>(
   key: string,
@@ -34,15 +34,19 @@ export function useSessionStorage<T>(
     }
   }, [key, deserializer, initialValue]);
 
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') return initialValue;
+  // The stored value is read in an effect (not the initializer) so the server
+  // render and the hydration render agree; storage wins right after mount
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+  useEffect(() => {
     try {
       const raw = window.sessionStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as T) : initialValue;
-    } catch {
-      return initialValue;
+      if (raw != null) setStoredValue(deserializer(raw));
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn(`Error reading sessionStorage key “${key}”:`, error);
     }
-  });
+  }, [key, deserializer]);
 
   const setValue: Dispatch<SetStateAction<T>> = useCallback(
     (value) => {

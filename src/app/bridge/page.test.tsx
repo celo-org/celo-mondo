@@ -11,6 +11,7 @@ const mockUseTrackEvent = vi.mocked(useTrackEventModule.useTrackEvent);
 vi.mock('../actions', () => ({
   getBridgeClickedCounts: vi.fn().mockResolvedValue([]),
 }));
+const mockGetBridgeClickedCounts = vi.mocked((await import('../actions')).getBridgeClickedCounts);
 
 vi.mock('next/image', () => ({
   // eslint-disable-next-line @next/next/no-img-element
@@ -61,5 +62,28 @@ describe('Bridge Page', () => {
     expect(mockTrackEvent).toHaveBeenCalledWith('bridge_clicked', {
       bridgeId: 'portal-bridge',
     });
+  });
+
+  test('should keep Squid Router third even when other bridges have more clicks', async () => {
+    mockGetBridgeClickedCounts.mockResolvedValueOnce([
+      { bridgeId: 'superbridge', count: 100 },
+      { bridgeId: 'usdt0', count: 90 },
+      { bridgeId: 'jumper', count: 50 },
+      { bridgeId: 'relay', count: 40 },
+      { bridgeId: 'portal-bridge', count: 30 },
+    ]);
+
+    render(<Page />);
+    await screen.findByText('Jumper');
+
+    const headings = screen.getAllByRole('heading', { level: 2 });
+    expect(headings.map((heading) => heading.textContent)).toEqual([
+      'Superbridge',
+      'USDT0',
+      'Squid Router',
+      'Jumper',
+      'Relay',
+      'Portal Bridge',
+    ]);
   });
 });

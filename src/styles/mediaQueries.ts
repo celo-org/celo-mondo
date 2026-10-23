@@ -7,11 +7,10 @@ interface WindowSize {
 }
 
 // From https://usehooks.com/useWindowSize/
+// Initial state is empty so the hook is safe to render on the server;
+// the real size is read on mount and kept in sync on resize.
 export function useWindowSize() {
-  const [windowSize, setWindowSize] = useState<WindowSize>({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  const [windowSize, setWindowSize] = useState<WindowSize>({});
 
   useEffect(() => {
     // Handler to call on window resize
@@ -23,6 +22,8 @@ export function useWindowSize() {
       });
     };
 
+    // Read the initial size on mount
+    handleResize();
     // Add event listener
     window.addEventListener('resize', handleResize);
     // Remove event listener on cleanup

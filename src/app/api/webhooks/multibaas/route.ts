@@ -51,7 +51,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     for (const {
       data: { event },
     } of body) {
-      let parsedFields: { topics?: unknown[]; data?: string; args?: Record<string, unknown> } = {};
+      let parsedFields: {
+        topics?: unknown[];
+        data?: string;
+        args?: Record<string, unknown>;
+        blockNumber?: string;
+        transactionHash?: string;
+        logIndex?: string | number;
+      } = {};
       try {
         parsedFields = JSON.parse(event.rawFields);
       } catch {
@@ -75,6 +82,15 @@ export async function POST(request: NextRequest): Promise<Response> {
         contractAddress: event.contract.address,
         topics: (parsedFields.topics ?? []) as [`0x${string}`, ...`0x${string}`[]],
         data: (parsedFields.data ?? '0x') as `0x${string}`,
+        blockNumber: parsedFields.blockNumber ? BigInt(parsedFields.blockNumber) : 0n,
+        transactionHash: (parsedFields.transactionHash ?? '0x') as `0x${string}`,
+        // rawFields is the raw log JSON, whose logIndex (block-scoped, hex
+        // string per JSON-RPC) matches what the cron backfill stores — the PK
+        // then dedupes webhook and cron ingestions of the same event. Fall
+        // back to MultiBaas's indexInLog, then 0.
+        logIndex: Number.isFinite(Number(parsedFields.logIndex))
+          ? Number(parsedFields.logIndex)
+          : (event.indexInLog ?? 0),
         transactionIds,
       });
     }

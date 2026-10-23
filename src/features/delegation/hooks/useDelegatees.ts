@@ -1,26 +1,36 @@
-import { lockedGoldABI } from '@celo/abis';
 import { useQuery } from '@tanstack/react-query';
 import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
-import { Addresses } from 'src/config/contracts';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
-import { Delegatee, DelegateeMetadata } from 'src/features/delegation/types';
+import { DelegateesData, fetchDelegateeStats } from 'src/features/delegation/fetchDelegateeStats';
+import { ParticipationData } from 'src/features/delegation/participation';
 import { logger } from 'src/utils/logger';
-import { fromFixidity } from 'src/utils/numbers';
-import { PublicClient } from 'viem';
 import { usePublicClient } from 'wagmi';
 
-export function useDelegatees() {
+// Re-exported for existing importers; the implementation lives in a hook-free
+// module so it can also run on the server
+export { fetchDelegateeStats };
+export type { DelegateesData };
+
+export function useDelegatees(initialData?: DelegateesData) {
   const publicClient = usePublicClient();
 
   const { isLoading, isError, error, data } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- publicClient is a stable singleton
     queryKey: ['useDelegatees'],
+    // Server-rendered data; marked stale so the client refetches after hydration
+    initialData,
+    initialDataUpdatedAt: 0,
     queryFn: async () => {
       if (!publicClient) return null;
       logger.debug('Fetching delegatees');
       const cachedMetadata = Object.values(getDelegateeMetadata());
-      const addressToDelegatee = await fetchDelegateeStats(publicClient, cachedMetadata);
+      const participation = await fetchParticipationFromApi(publicClient.chain!.id);
+      const addressToDelegatee = await fetchDelegateeStats(
+        publicClient,
+        cachedMetadata,
+        participation,
+      );
       const delegatees = Object.values(addressToDelegatee);
       return { addressToDelegatee, delegatees };
     },
@@ -38,74 +48,15 @@ export function useDelegatees() {
   };
 }
 
-async function fetchDelegateeStats(
-  publicClient: PublicClient,
-  metadata: DelegateeMetadata[],
-): Promise<AddressTo<Delegatee>> {
-  const votingPowerResults = await publicClient.multicall({
-    contracts: metadata.map(
-      (d) =>
-        ({
-          address: Addresses.LockedGold,
-          abi: lockedGoldABI,
-          functionName: 'getAccountTotalGovernanceVotingPower',
-          args: [d.address],
-        }) as const,
-    ),
-  });
-
-  const delegatedFractionResults = await publicClient.multicall({
-    contracts: metadata.map(
-      (d) =>
-        ({
-          address: Addresses.LockedGold,
-          abi: lockedGoldABI,
-          functionName: 'getAccountTotalDelegatedFraction',
-          args: [d.address],
-        }) as const,
-    ),
-  });
-
-  const delegatedToResults = await publicClient.multicall({
-    contracts: metadata.map(
-      (d) =>
-        ({
-          address: Addresses.LockedGold,
-          abi: lockedGoldABI,
-          functionName: 'totalDelegatedCelo',
-          args: [d.address],
-        }) as const,
-    ),
-  });
-
-  // Process validator lists to create list of validator groups
-  const delegatees: AddressTo<Delegatee> = {};
-  for (let i = 0; i < metadata.length; i++) {
-    const address = metadata[i].address as Address;
-
-    const votingPowerRes = votingPowerResults[i];
-    const delegatedFractionRes = delegatedFractionResults[i];
-    const delegatedToRes = delegatedToResults[i];
-
-    if (
-      votingPowerRes.status !== 'success' ||
-      delegatedFractionRes.status !== 'success' ||
-      delegatedToRes.status !== 'success'
-    )
-      throw new Error('Error fetching delegatee stats');
-
-    const votingPower = votingPowerRes.result as bigint;
-    const delegatedByPercent = fromFixidity(delegatedFractionRes.result as bigint) * 100;
-    const delegatedToBalance = delegatedToRes.result as bigint;
-
-    delegatees[address] = {
-      ...metadata[i],
-      address,
-      votingPower,
-      delegatedToBalance,
-      delegatedByPercent,
-    };
+// Participation lives in the DB, which the browser reaches only through the API.
+// A failure leaves it undefined so the delegates still render, minus the score.
+async function fetchParticipationFromApi(chainId: number): Promise<ParticipationData | undefined> {
+  try {
+    const response = await fetch(`/api/governance/participation?chainId=${chainId}`);
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    return (await response.json()) as ParticipationData;
+  } catch (error) {
+    logger.warn('Error fetching delegate participation', error);
+    return undefined;
   }
-
-  return delegatees;
 }

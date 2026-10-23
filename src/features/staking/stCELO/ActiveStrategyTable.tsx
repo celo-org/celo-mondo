@@ -21,7 +21,7 @@ import Ellipsis from 'src/images/icons/ellipsis.svg';
 import { tableClasses } from 'src/styles/common';
 import { fromWei } from 'src/utils/amount';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function ActiveStrategyTable({
   addressToGroup,
@@ -30,7 +30,7 @@ export function ActiveStrategyTable({
   addressToGroup?: AddressTo<ValidatorGroup>;
   groupToIsActivatable?: AddressTo<boolean>;
 }) {
-  const account = useAccount();
+  const account = useConnection();
   const { stCELOBalances } = useStCELOBalance(account.address);
   const { group, isLoading } = useStrategy(account.address);
   const showModal = useTransactionModal(TransactionFlowType.ChangeStrategy);

@@ -106,6 +106,18 @@ Common animations
   }
 }
 
+/* daisyUI tooltips take the theme's neutral colour, which is white here and vanishes
+   against the page. Match the HelpIcon tooltip instead. The explicit colours on the
+   bubble keep it readable for dark-mode browser extensions that drop var() backgrounds. */
+.tooltip {
+  --tooltip-color: theme(colors.purple.500);
+  --tooltip-text-color: theme(colors.gray.100);
+}
+.tooltip:before {
+  background-color: theme(colors.purple.500);
+  color: theme(colors.gray.100);
+}
+
 .bounce-and-spin {
   animation: bounce-and-spin 4s infinite;
 }

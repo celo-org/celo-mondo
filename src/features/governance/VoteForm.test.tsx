@@ -33,7 +33,7 @@ vi.mock('wagmi', async (importOriginal) => {
   const actual = await importOriginal<typeof import('wagmi')>();
   return {
     ...actual,
-    useAccount: vi.fn(() => ({ address: '0x123' })),
+    useConnection: vi.fn(() => ({ address: '0x123' })),
     usePublicClient: vi.fn(() => ({})),
   };
 });
