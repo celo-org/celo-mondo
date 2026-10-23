@@ -67,14 +67,20 @@ function insertEvent(
  * Chain state: the proposal counter, the dequeued proposal ids and the CGP each
  * description URL names. Tests that do not care leave the counter at zero.
  */
-function mockChain(liveProposals: Record<number, number>, proposalCount = 0) {
-  mockReadContract.mockImplementation(({ functionName, args }) => {
+function mockChain(
+  liveProposals: Record<number, number>,
+  proposalCount = 0,
+  historicalProposals: Record<number, number> = {},
+) {
+  mockReadContract.mockImplementation(({ functionName, args, blockNumber }) => {
     const ids = Object.keys(liveProposals).map(BigInt);
     if (functionName === 'proposalCount') return Promise.resolve(BigInt(proposalCount));
     if (functionName === 'getQueue') return Promise.resolve([[], []]);
     if (functionName === 'getDequeue') return Promise.resolve(ids);
     if (functionName === 'getProposal') {
-      const cgp = liveProposals[Number(args[0])];
+      const cgp = (blockNumber === undefined ? liveProposals : historicalProposals)[
+        Number(args[0])
+      ];
       return Promise.resolve(['0x0', 0n, 0n, 0n, CGP_URL(cgp), 0n, false]);
     }
     throw new Error(`unexpected read ${functionName}`);
@@ -253,22 +259,46 @@ describe('reconcileGovernanceRepoStatus', () => {
     expect(mockTrigger).not.toHaveBeenCalled();
   });
 
-  it('ignores a newer proposal the backfill gave up on for lack of metadata', async () => {
+  it('reads a newer proposal the backfill gave up on from chain history', async () => {
     await insertProposal({
       id: 430,
       cgp: 200,
       stage: ProposalStage.Expiration,
       dequeuedAt: daysAgo(11),
     });
-    // 431 was queued two days ago and never became a row
-    await insertEvent('ProposalQueued', 431, { ingestedAt: new Date(daysAgo(2)) });
-    mockChain({}, 431);
+    // 431 was queued two days ago in block 123, never became a row and is no longer live
+    await insertEvent('ProposalQueued', 431, {
+      ingestedAt: new Date(daysAgo(2)),
+      blockNumber: 123n,
+    });
+    mockChain({}, 431, { 431: 999 });
 
     await reconcileGovernanceRepoStatus(NOW);
 
+    expect(mockReadContract).toHaveBeenCalledWith(
+      expect.objectContaining({ functionName: 'getProposal', args: [431n], blockNumber: 123n }),
+    );
     expect(reportedUpdates()).toEqual([
       { cgpNumber: 200, onchainId: 430, status: ProposalMetadataStatus.EXPIRED },
     ]);
+  });
+
+  it('skips when chain history shows the orphaned proposal resubmitted the CGP', async () => {
+    await insertProposal({
+      id: 430,
+      cgp: 200,
+      stage: ProposalStage.Expiration,
+      dequeuedAt: daysAgo(11),
+    });
+    await insertEvent('ProposalQueued', 431, {
+      ingestedAt: new Date(daysAgo(2)),
+      blockNumber: 123n,
+    });
+    mockChain({}, 431, { 431: 200 });
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(mockTrigger).not.toHaveBeenCalled();
   });
 
   it('waits for a newer proposal the backfill saw only just now', async () => {

@@ -28,4 +28,5 @@ jobs:
         run: npx tsx src/scripts/reconcileGovernanceRepoStatus.ts
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
           GOVERNANCE_REPO_TOKEN: ${{ secrets.GOVERNANCE_REPO_TOKEN }}

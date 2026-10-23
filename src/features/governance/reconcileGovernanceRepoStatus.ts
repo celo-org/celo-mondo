@@ -17,6 +17,7 @@ import {
 import { ProposalMetadataStatus, ProposalStage } from 'src/features/governance/types';
 import { celoPublicClient } from 'src/utils/client';
 import { unixTimestampToISOString } from 'src/utils/time';
+import { Chain, PublicClient, Transport } from 'viem';
 import { celo } from 'viem/chains';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -27,7 +28,9 @@ const LOOKBACK_MS = 30 * 24 * HOUR_MS;
 // had time to land, an executed proposal still looks expired here.
 const SETTLE_MS = 6 * HOUR_MS;
 // The hourly backfill keeps retrying proposals that have events but no row. One
-// still without a row after a day has no CGP metadata and never will.
+// still without a row after a day is almost always one without CGP metadata, but
+// a long metadata outage could leave a real resubmission there too, so it is
+// resolved from chain history rather than trusted.
 const ORPHAN_STALE_MS = 24 * HOUR_MS;
 
 // Adopted (a zero-transaction proposal that passed) has no counterpart in the
@@ -53,8 +56,13 @@ interface SettledProposal {
  * Reads the status each CGP currently carries there and dispatches an update only
  * when it differs, so the daily run is idempotent and a failed dispatch is simply
  * retried the next day.
+ *
+ * `archiveClient` is only used to read proposal descriptions at past blocks.
  */
-export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<void> {
+export async function reconcileGovernanceRepoStatus(
+  now = new Date(),
+  archiveClient: PublicClient<Transport, Chain> = celoPublicClient,
+): Promise<void> {
   const since = new Date(now.getTime() - LOOKBACK_MS).toISOString();
   const settledBefore = new Date(
     now.getTime() - REFERENDUM_STAGE_EXPIRY_TIME - EXECUTION_STAGE_EXPIRY_TIME - SETTLE_MS,
@@ -107,8 +115,8 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
     currentAttempts.set(row.cgp, Math.max(currentAttempts.get(row.cgp) ?? 0, row.id));
   }
 
-  // Proposals the backfill saw queued but never turned into a row. A stale one has no
-  // metadata and cannot name a CGP; a fresh one may still be on its way in.
+  // Proposals the backfill saw queued but never turned into a row. A fresh one may
+  // still be on its way in; a stale one is identified from chain history.
   const queuedId = sql`(${eventsTable.args}->>'proposalId')::bigint`;
   const staleBefore = new Date(now.getTime() - ORPHAN_STALE_MS).toISOString();
   const orphans = await database
@@ -118,6 +126,7 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
         sql`min(${eventsTable.ingestedAt}) is null or min(${eventsTable.ingestedAt}) < ${staleBefore}::timestamptz`.mapWith(
           Boolean,
         ),
+      block: sql`min(${eventsTable.blockNumber})`.mapWith(BigInt),
     })
     .from(eventsTable)
     .where(
@@ -131,7 +140,8 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
 
   const chain = new ChainLookup(
     new Set(imported.map((row) => row.id)),
-    new Map(orphans.map((row) => [row.id, row.stale])),
+    new Map(orphans.map((row) => [row.id, { stale: row.stale, block: row.block }])),
+    archiveClient,
   );
 
   for (const proposal of proposals) {
@@ -232,27 +242,29 @@ class ChainLookup {
 
   constructor(
     private importedIds: Set<number>,
-    /** Queued proposals without a row, by id, and whether the backfill has given up on them. */
-    private orphans: Map<number, boolean>,
+    /** Queued proposals without a row: whether the backfill has had its day with them, and the block they were queued in. */
+    private orphans: Map<number, { stale: boolean; block: bigint }>,
+    private archiveClient: PublicClient<Transport, Chain>,
   ) {}
 
   /**
-   * 'resubmitted' when a newer live proposal names the same CGP, 'unknown' when a
-   * newer proposal is neither imported nor live and the backfill has not had its day
-   * with it (nothing here can tell its CGP yet), 'none' otherwise.
+   * 'resubmitted' when a newer proposal names the same CGP, whether it is live or
+   * was queued long ago without ever becoming a row; 'unknown' when a newer proposal
+   * is neither imported nor live and the backfill has not had its day with it
+   * (nothing here can tell its CGP yet); 'none' otherwise.
    */
   async newerAttempt(cgp: number, afterId: number): Promise<'none' | 'resubmitted' | 'unknown'> {
     this.state ??= this.fetchState();
     const { count, live } = await this.state;
     for (let id = BigInt(afterId) + 1n; id <= count; id++) {
       if (this.importedIds.has(Number(id))) continue;
-      if (live.has(id)) {
-        this.cgpById.set(id, this.cgpById.get(id) ?? this.fetchCgp(id));
-        if ((await this.cgpById.get(id)) === cgp) return 'resubmitted';
-        continue;
-      }
-      if (this.orphans.get(Number(id)) === true) continue;
-      return 'unknown';
+      const orphan = this.orphans.get(Number(id));
+      if (!live.has(id) && !orphan?.stale) return 'unknown';
+      // A live proposal reads from the head; one that has left the queue is read at
+      // the block it was queued in, where its description was still on chain.
+      const at = live.has(id) ? undefined : orphan?.block;
+      this.cgpById.set(id, this.cgpById.get(id) ?? this.fetchCgp(id, at));
+      if ((await this.cgpById.get(id)) === cgp) return 'resubmitted';
     }
     return 'none';
   }
@@ -267,12 +279,14 @@ class ChainLookup {
     return { count, live: new Set([...queued, ...dequeued]) };
   }
 
-  private async fetchCgp(id: bigint): Promise<number> {
-    const [, , , , descriptionUrl] = await celoPublicClient.readContract({
+  private async fetchCgp(id: bigint, blockNumber?: bigint): Promise<number> {
+    const client = blockNumber === undefined ? celoPublicClient : this.archiveClient;
+    const [, , , , descriptionUrl] = await client.readContract({
       address: Addresses.Governance,
       abi: governanceABI,
       functionName: 'getProposal',
       args: [id],
+      blockNumber,
     });
     return parseInt(descriptionUrl.match(/cgp-(\d+)\.md/i)?.[1] ?? '0', 10);
   }
