@@ -94,12 +94,30 @@ const securityHeaders = [
     : []),
 ];
 
+// The WalletConnect modal icon component (@reown/appkit-ui wui-icon) lazy-imports a separate
+// chunk per icon and neither awaits nor catches the import. Error tracking shows these
+// requests failing on mobile after the user switches to the wallet app: each one surfaces as
+// an unhandled ChunkLoadError and a blank icon. Inlining the icons removes the extra requests
+// at the cost of shipping all of them with the lazily loaded modal chunk. The rule only
+// applies to the webpack production build; turbopack dev still lazy-loads them.
+const WALLET_MODAL_ICON_MODULES = /[\\/]@reown[\\/]appkit-ui[\\/].*[\\/]wui-icon[\\/]/;
+
 export default {
   webpack: (config) => ({
     ...config,
     resolve: {
       ...config.resolve,
       alias: { ...config.resolve?.alias, 'wagmi/connectors$': WAGMI_CONNECTORS_SHIM },
+    },
+    module: {
+      ...config.module,
+      rules: [
+        ...(config.module?.rules ?? []),
+        {
+          test: WALLET_MODAL_ICON_MODULES,
+          parser: { dynamicImportMode: 'eager' },
+        },
+      ],
     },
   }),
   turbopack: {
