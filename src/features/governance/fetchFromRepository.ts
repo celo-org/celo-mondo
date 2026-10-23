@@ -192,7 +192,7 @@ async function fetchGithubFile(url: string, throwsOnHttpError = false): Promise<
   }
 }
 
-function separateYamlFrontMatter(content: string) {
+export function separateYamlFrontMatter(content: string) {
   const frontMatterRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
   const match = content.match(frontMatterRegex);
   if (!match) throw new Error('No YAML front matter found');
