@@ -19,20 +19,28 @@ const WORKFLOW_ID = 'update-cgp-status.yml';
 const WORKFLOW_REF = 'main';
 const CGP_RAW_URL_BASE = `https://raw.githubusercontent.com/${GOVERNANCE_REPO.owner}/${GOVERNANCE_REPO.repo}/${WORKFLOW_REF}/CGPs/cgp-`;
 
+export interface GovernanceRepoStatus {
+  status: ProposalMetadataStatus;
+  /** The on-chain proposal id the CGP file currently points at, if any. */
+  proposalId: number | null;
+}
+
 /**
- * Reads the status a CGP currently carries in the governance repository.
- * Returns null when the file cannot be read or parsed.
+ * Reads the status and proposal id a CGP currently carries in the governance
+ * repository. Returns null when the file cannot be read or parsed.
  */
 export async function fetchGovernanceRepoStatus(
   cgpNumber: number,
-): Promise<ProposalMetadataStatus | null> {
+): Promise<GovernanceRepoStatus | null> {
   const url = `${CGP_RAW_URL_BASE}${String(cgpNumber).padStart(4, '0')}.md`;
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    const status: unknown = separateYamlFrontMatter(await response.text())?.frontMatter?.status;
+    const frontMatter = separateYamlFrontMatter(await response.text())?.frontMatter;
+    const status: unknown = frontMatter?.status;
     if (!isMetadataStatus(status)) throw new Error(`unexpected status ${String(status)}`);
-    return status;
+    const proposalId = Number(frontMatter['governance-proposal-id']);
+    return { status, proposalId: Number.isFinite(proposalId) ? proposalId : null };
   } catch (error) {
     console.error(
       `❌ Could not read CGP ${cgpNumber} from the governance repo:`,
