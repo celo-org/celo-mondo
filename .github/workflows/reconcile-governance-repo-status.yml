@@ -1,0 +1,31 @@
+name: Reconcile proposal status with governance repo
+
+on:
+  schedule:
+    # Daily, half an hour after the 11:00 UTC backfill has landed
+    - cron: '30 11 * * *'
+  workflow_dispatch:
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            **/node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-node-24-yarn-cache-${{ hashFiles('./yarn.lock') }}
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Reconcile (production)
+        run: npx tsx src/scripts/reconcileGovernanceRepoStatus.ts
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          GOVERNANCE_REPO_TOKEN: ${{ secrets.GOVERNANCE_REPO_TOKEN }}

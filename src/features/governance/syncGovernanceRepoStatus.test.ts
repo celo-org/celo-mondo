@@ -1,6 +1,10 @@
+import { ProposalMetadataStatus } from 'src/features/governance/types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { triggerGovernanceRepoStatusUpdate } from './syncGovernanceRepoStatus';
+import {
+  fetchGovernanceRepoStatus,
+  triggerGovernanceRepoStatusUpdate,
+} from './syncGovernanceRepoStatus';
 
 const { mockCreateWorkflowDispatch } = vi.hoisted(() => ({
   mockCreateWorkflowDispatch: vi.fn(),
@@ -11,6 +15,32 @@ vi.mock('octokit', () => ({
     rest = { actions: { createWorkflowDispatch: mockCreateWorkflowDispatch } };
   },
 }));
+
+describe('fetchGovernanceRepoStatus', () => {
+  const cgpFile = (status: string) =>
+    `---\ncgp: 254\ntitle: Something\nstatus: ${status}\n---\n# Body\n`;
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reads the status from the CGP front matter', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(cgpFile('EXECUTED'))));
+
+    expect(await fetchGovernanceRepoStatus(254)).toBe(ProposalMetadataStatus.EXECUTED);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://raw.githubusercontent.com/celo-org/governance/main/CGPs/cgp-0254.md',
+    );
+  });
+
+  it('returns null when the file is missing or carries an unknown status', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Not Found', { status: 404 })));
+    expect(await fetchGovernanceRepoStatus(9999)).toBeNull();
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(cgpFile('SOMETHING'))));
+    expect(await fetchGovernanceRepoStatus(254)).toBeNull();
+  });
+});
 
 describe('triggerGovernanceRepoStatusUpdate', () => {
   beforeEach(() => {
@@ -24,7 +54,11 @@ describe('triggerGovernanceRepoStatusUpdate', () => {
   });
 
   it('dispatches the governance workflow as a dry run', async () => {
-    await triggerGovernanceRepoStatusUpdate({ cgpNumber: 254, onchainId: 314, status: 'REJECTED' });
+    await triggerGovernanceRepoStatusUpdate({
+      cgpNumber: 254,
+      onchainId: 314,
+      status: ProposalMetadataStatus.REJECTED,
+    });
 
     expect(mockCreateWorkflowDispatch).toHaveBeenCalledWith({
       owner: 'celo-org',
@@ -39,7 +73,7 @@ describe('triggerGovernanceRepoStatusUpdate', () => {
     await triggerGovernanceRepoStatusUpdate({
       cgpNumber: 254,
       onchainId: 314,
-      status: 'EXECUTED',
+      status: ProposalMetadataStatus.EXECUTED,
       executedAt: '2026-10-20 23:15:00.123',
     });
 
@@ -49,7 +83,11 @@ describe('triggerGovernanceRepoStatusUpdate', () => {
   it('skips the dispatch without a token', async () => {
     vi.stubEnv('GOVERNANCE_REPO_TOKEN', '');
 
-    await triggerGovernanceRepoStatusUpdate({ cgpNumber: 254, onchainId: 314, status: 'EXPIRED' });
+    await triggerGovernanceRepoStatusUpdate({
+      cgpNumber: 254,
+      onchainId: 314,
+      status: ProposalMetadataStatus.EXPIRED,
+    });
 
     expect(mockCreateWorkflowDispatch).not.toHaveBeenCalled();
   });
@@ -60,7 +98,11 @@ describe('triggerGovernanceRepoStatusUpdate', () => {
     );
 
     await expect(
-      triggerGovernanceRepoStatusUpdate({ cgpNumber: 254, onchainId: 314, status: 'EXPIRED' }),
+      triggerGovernanceRepoStatusUpdate({
+        cgpNumber: 254,
+        onchainId: 314,
+        status: ProposalMetadataStatus.EXPIRED,
+      }),
     ).resolves.toBeUndefined();
   });
 });

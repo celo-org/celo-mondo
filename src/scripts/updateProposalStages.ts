@@ -8,7 +8,6 @@ import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
 import { getProposalVotes } from 'src/features/governance/getProposalVotes';
-import { triggerGovernanceRepoStatusUpdate } from 'src/features/governance/syncGovernanceRepoStatus';
 import { ProposalStage, VoteType } from 'src/features/governance/types';
 import { getOnChainQuorumRequired } from 'src/features/governance/utils/quorum';
 import { Chain, createPublicClient, http, PublicClient, Transport } from 'viem';
@@ -162,36 +161,6 @@ export async function updateProposalStages(
         .where(and(eq(proposalsTable.chainId, update.chainId), eq(proposalsTable.id, update.id)));
     }
     console.log('✅ Stage updates complete');
-
-    // 6. Send updates to governance repo for REJECTED and EXPIRED proposals
-    // Only sync in production to avoid duplicate workflow triggers from staging
-    if (process.env.IS_PRODUCTION_DATABASE === 'true') {
-      console.log('\nSyncing status updates to governance repo...');
-
-      for (const update of updates) {
-        // Only sync REJECTED and EXPIRED stages
-        if (update.stage !== ProposalStage.Rejected && update.stage !== ProposalStage.Expiration) {
-          continue;
-        }
-
-        // Get the proposal details to fetch the CGP number.
-        const proposal = activeProposals.find((p) => p.id === update.id);
-        if (!proposal) {
-          console.log(`⚠️  Skipping proposal ${update.id}: not found in active proposals`);
-          continue;
-        }
-
-        const status = update.stage === ProposalStage.Rejected ? 'REJECTED' : 'EXPIRED';
-
-        await triggerGovernanceRepoStatusUpdate({
-          cgpNumber: proposal.cgp,
-          onchainId: update.id,
-          status,
-        });
-      }
-    } else {
-      console.log('Not Production. Skipping governance repo sync.');
-    }
   } else {
     console.log('No stage changes detected');
   }

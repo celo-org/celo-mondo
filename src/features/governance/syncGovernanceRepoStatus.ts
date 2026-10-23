@@ -1,23 +1,55 @@
 /* eslint no-console: 0 */
 import { Octokit } from 'octokit';
+import { separateYamlFrontMatter } from 'src/features/governance/fetchFromRepository';
+import { ProposalMetadataStatus } from 'src/features/governance/types';
 
 interface BaseStatusUpdate {
   cgpNumber: number;
   onchainId: number;
 }
 
-type GovernanceStatusUpdate =
-  | (BaseStatusUpdate & { status: 'EXPIRED' | 'REJECTED' })
-  | (BaseStatusUpdate & { status: 'EXECUTED'; executedAt: string });
+export type GovernanceStatusUpdate =
+  | (BaseStatusUpdate & {
+      status: ProposalMetadataStatus.EXPIRED | ProposalMetadataStatus.REJECTED;
+    })
+  | (BaseStatusUpdate & { status: ProposalMetadataStatus.EXECUTED; executedAt: string });
 
 const GOVERNANCE_REPO = { owner: 'celo-org', repo: 'governance' } as const;
 const WORKFLOW_ID = 'update-cgp-status.yml';
 const WORKFLOW_REF = 'main';
+const CGP_RAW_URL_BASE = `https://raw.githubusercontent.com/${GOVERNANCE_REPO.owner}/${GOVERNANCE_REPO.repo}/${WORKFLOW_REF}/CGPs/cgp-`;
+
+/**
+ * Reads the status a CGP currently carries in the governance repository.
+ * Returns null when the file cannot be read or parsed.
+ */
+export async function fetchGovernanceRepoStatus(
+  cgpNumber: number,
+): Promise<ProposalMetadataStatus | null> {
+  const url = `${CGP_RAW_URL_BASE}${String(cgpNumber).padStart(4, '0')}.md`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+    const status: unknown = separateYamlFrontMatter(await response.text())?.frontMatter?.status;
+    if (!isMetadataStatus(status)) throw new Error(`unexpected status ${String(status)}`);
+    return status;
+  } catch (error) {
+    console.error(
+      `❌ Could not read CGP ${cgpNumber} from the governance repo:`,
+      error instanceof Error ? error.message : error,
+    );
+    return null;
+  }
+}
+
+function isMetadataStatus(value: unknown): value is ProposalMetadataStatus {
+  return Object.values(ProposalMetadataStatus).includes(value as ProposalMetadataStatus);
+}
 
 /**
  * Triggers the update-cgp-status workflow in the celo-org/governance repository.
  *
- * The token GitHub Actions hands to a workflow only reaches the repository that
+ * The token GitHub Actions hands a workflow only reaches the repository that
  * workflow runs in, so dispatching into the governance repository needs
  * GOVERNANCE_REPO_TOKEN: a token with Actions write access on that repository.
  * Without it the update is logged and skipped.
@@ -40,7 +72,7 @@ export async function triggerGovernanceRepoStatusUpdate(
     dry_run: 'true',
   };
 
-  if (update.status === 'EXECUTED') {
+  if (update.status === ProposalMetadataStatus.EXECUTED) {
     // The governance workflow expects a YYYY-MM-DD date. executedAt is the UTC
     // timestamp string from the database, so its first ten characters are that date.
     inputs.date_executed = update.executedAt.slice(0, 10);

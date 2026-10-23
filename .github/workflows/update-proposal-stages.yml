@@ -52,7 +52,6 @@ jobs:
         env:
           PRIVATE_NO_RATE_LIMITED_NODE: ${{ secrets.PRIVATE_NO_RATE_LIMITED_NODE }}
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-          GOVERNANCE_REPO_TOKEN: ${{ secrets.GOVERNANCE_REPO_TOKEN }}
           IS_PRODUCTION_DATABASE: true
           CI: true
 
