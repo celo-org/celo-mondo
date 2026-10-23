@@ -43,7 +43,7 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <h1 className="font-serif text-3xl font-semibold sm:text-4xl">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-gray-500">Last updated: April 2026</p>
+      <p className="mt-2 text-sm text-gray-500">Last updated: October 2026</p>
       <p className="mt-1 text-sm text-gray-500">
         Applies to:{' '}
         <A_Blank href="https://mondo.celo.org" className="underline">
