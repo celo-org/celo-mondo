@@ -6,10 +6,10 @@ import { PersonalizedProposalCard } from 'src/features/account/PersonalizedPropo
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
 import { objLength } from 'src/utils/objects';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function ProposalVotesHistoryTable() {
-  const account = useAccount();
+  const account = useConnection();
   const { proposalToVotes, isLoading: isLoadingHistory } = useDelegateeHistory(account.address!);
   const { proposals, isLoading: isLoadingProposals } = useGovernanceProposals();
   const isLoading = isLoadingHistory || isLoadingProposals;

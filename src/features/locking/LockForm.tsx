@@ -26,7 +26,7 @@ import { toTitleCase } from 'src/utils/strings';
 import { getHumanReadableDuration } from 'src/utils/time';
 import { isNullish } from 'src/utils/typeof';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: LockFormValues = {
   amount: 0,
@@ -42,7 +42,7 @@ export function LockForm({
   showTip?: boolean;
   onConfirmed?: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { balance: walletBalance } = useBalance(address);
   const { lockedBalances, pendingWithdrawals, refetch, unlockingPeriod } = useLockedStatus(address);
   const { stakeBalances } = useStakingBalances(address);

@@ -186,7 +186,9 @@ jobs:
       - name: Run Playwright tests
         run: yarn test:e2e
         env:
-          NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID }}
+          # Fork pull requests get no secrets, and RainbowKit throws on an empty project id.
+          # The e2e flow never opens WalletConnect, so any non-empty value works there.
+          NEXT_PUBLIC_WALLET_CONNECT_ID: ${{ secrets.NEXT_PUBLIC_WALLET_CONNECT_ID || 'e2e-placeholder' }}
           NEXT_PUBLIC_RPC_URL: https://public-archive-nodes.celo-testnet.org
           POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/celo_mondo_test
       - uses: actions/upload-artifact@v4

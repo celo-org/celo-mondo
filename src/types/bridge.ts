@@ -7,4 +7,6 @@ export interface Bridge {
   href: string;
   logo: string | StaticImageData;
   description: string;
+  // Zero-based display position that overrides click-count ordering
+  pinnedIndex?: number;
 }

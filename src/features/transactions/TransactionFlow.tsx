@@ -18,7 +18,7 @@ import { ConfirmationDetails, OnConfirmedFn } from 'src/features/transactions/ty
 import { capitalizeFirstLetter } from 'src/utils/strings';
 import { isNullish } from 'src/utils/typeof';
 import { useStakingMode } from 'src/utils/useStakingMode';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export interface TransactionFlowProps<FormDefaults extends {} = {}> {
   header: string;
@@ -38,7 +38,7 @@ export function TransactionFlow<FormDefaults extends {}>({
   defaultFormValues = {} as FormDefaults,
   closeModal,
 }: TransactionFlowProps<FormDefaults> & { closeModal: () => void }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { data: isRegistered, refetch: refetchAccountDetails } = useIsAccount(address);
   const { signingFor: signingForAccount, isLoading: isAccountLoading } =
     useVoteSignerToAccount(address);

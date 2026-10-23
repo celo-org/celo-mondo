@@ -23,7 +23,7 @@ vi.mock('src/utils/useStakingMode', () => ({
 }));
 
 vi.mock('wagmi', () => ({
-  useAccount: vi.fn(() => ({ address: '0x123' })),
+  useConnection: vi.fn(() => ({ address: '0x123' })),
 }));
 
 vi.mock('src/features/governance/components/VotingPower', () => ({

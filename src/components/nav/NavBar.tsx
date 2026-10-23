@@ -14,11 +14,12 @@ import Governance from 'src/images/icons/governance.svg';
 import Staking from 'src/images/icons/staking.svg';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const LINKS = (isWalletConnected?: boolean) => [
   { label: 'Staking', to: '/', icon: Staking },
   { label: 'Governance', to: '/governance', icon: Governance },
+  { label: 'Buyback', to: '/buyback', icon: Dashboard, hideInMiniPay: true },
   { label: 'Delegate', to: '/delegate', icon: Delegate, hideInMiniPay: true },
   { label: 'Bridge', to: '/bridge', icon: Bridge, hideInMiniPay: true },
   { label: 'Names', to: 'https://names.celo.org', icon: ENS, hideInMiniPay: true },
@@ -27,7 +28,7 @@ const LINKS = (isWalletConnected?: boolean) => [
 
 export function NavBar({ collapsed }: { collapsed?: boolean }) {
   const pathname = usePathname();
-  const { address } = useAccount();
+  const { address } = useConnection();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
 
@@ -74,7 +75,7 @@ export function NavBar({ collapsed }: { collapsed?: boolean }) {
 }
 
 export function MobileNavDropdown({ className }: { className?: string }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const trackEvent = useTrackEvent();
   const isMiniPay = useIsMiniPay();
 

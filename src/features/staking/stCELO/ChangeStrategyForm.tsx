@@ -24,7 +24,7 @@ import { shortenAddress } from 'src/utils/addresses';
 import { fromWei } from 'src/utils/amount';
 import { toTitleCase } from 'src/utils/strings';
 import { TransactionReceipt } from 'viem';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: ChangeStrategyFormValues = {
   action: StCeloActionType.ChangeStrategy,
@@ -40,7 +40,7 @@ export function ChangeStrategyForm({
   defaultFormValues?: Partial<ChangeStrategyFormValues>;
   onConfirmed: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { addressToGroup } = useValidatorGroups(true);
   const { stCELOBalances } = useStCELOBalance(address);
   const { group: currentGroup, refetch: refetchStrategy } = useStrategy(address);

@@ -14,15 +14,27 @@ type WithChainAndIngestion<T> = T & {
 
 /**
  * Stamps a batch of decoded events with their chainId and a per-provider
- * ingestion timestamp ({ [source]: ISO }) so the insert can record provenance.
+ * ingestion timestamp ({ [source]: ISO }) so the insert can record provenance,
+ * and normalizes the contract address to lowercase.
+ *
+ * Providers disagree on address casing: MultiBaas delivers checksummed
+ * addresses while Alchemy and viem deliver lowercase ones. The primary key does
+ * not cover the address, so whichever writer inserted a row first decided its
+ * casing, and readers comparing against a lowercase address silently skipped
+ * the checksummed rows. Normalizing on the way in keeps every row comparable.
  */
-export function withIngestionMetadata<T extends object>(
+export function withIngestionMetadata<T extends { address: string }>(
   events: T[],
   chainId: number,
   source: IngestSource,
 ): WithChainAndIngestion<T>[] {
   const at = new Date().toISOString();
-  return events.map((event) => ({ ...event, chainId, ingestedVia: { [source]: at } }));
+  return events.map((event) => ({
+    ...event,
+    address: event.address.toLowerCase() as T['address'],
+    chainId,
+    ingestedVia: { [source]: at },
+  }));
 }
 
 /**

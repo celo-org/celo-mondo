@@ -38,6 +38,7 @@ export type ParsedEvent = {
   data: `0x${string}`;
   blockNumber: bigint;
   transactionHash: `0x${string}`;
+  logIndex: number;
   transactionIds: bigint[];
 };
 
@@ -58,46 +59,53 @@ export async function processWebhookEvents(
   });
 
   for (const event of parsedEvents) {
-    // Check if this is a MultiSig event by comparing contract address
-    const isMultiSigEvent =
-      event.contractAddress.toLowerCase() === approverMultisigAddress.toLowerCase() &&
-      MULTISIG_EVENT_NAMES.has(event.name);
+    // Which ABI decodes the log is decided by the emitting contract, not by the
+    // event name: the multisig emits owner-management events (OwnerAddition,
+    // Submission, ...) too, and decoding those against the governance ABI fails
+    // and persists an empty args object.
+    const isFromApproverMultisig =
+      event.contractAddress.toLowerCase() === approverMultisigAddress.toLowerCase();
 
     // Persist the delivered event straight from the webhook payload. Previously every
     // delivery triggered a cursor->head eth_getLogs scan to ingest events, but public
     // forno rejects wide ranges ("query exceeds range") and the payload already carries
     // the full log — so we store it directly. The hourly cron remains the catch-up
     // backfill that fills any gap from a missed delivery.
-    await saveWebhookEvent(event, isMultiSigEvent, source);
+    await saveWebhookEvent(event, isFromApproverMultisig, source);
 
-    if (isMultiSigEvent) {
-      for (const txId of event.transactionIds) {
-        multisigTxIdsToProcess.add(txId);
+    if (isFromApproverMultisig) {
+      // Only Confirmation/Revocation/Execution carry a multisig transaction id
+      // that maps onto a governance approval; the rest are stored for the record.
+      if (MULTISIG_EVENT_NAMES.has(event.name)) {
+        for (const txId of event.transactionIds) {
+          multisigTxIdsToProcess.add(txId);
+        }
       }
-    } else {
-      const eventData = { topics: event.topics, data: event.data } as unknown as Event;
+      continue;
+    }
 
-      // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
-      // since they just exit early when the event doesnt match
-      proposalId = await decodeAndPrepareProposalEvent(event.name, eventData);
-      if (proposalId) {
-        proposalIdsToUpdate.add(proposalId);
-        continue;
-      }
+    const eventData = { topics: event.topics, data: event.data } as unknown as Event;
 
-      proposalId = await decodeAndPrepareVoteEvent(
-        event.name,
-        eventData,
-        celoPublicClient.chain.id,
-      ).then(upsertVotes);
+    // NOTE: for clarity, we don't need to parallelize `handleXXXEvent`
+    // since they just exit early when the event doesnt match
+    proposalId = await decodeAndPrepareProposalEvent(event.name, eventData);
+    if (proposalId) {
+      proposalIdsToUpdate.add(proposalId);
+      continue;
+    }
 
-      // NOTE: we're keeping track of the proposalId because voting for a
-      // proposal means the networkWeight will be changed and the proposal row
-      // needs to be updated
-      if (proposalId) {
-        proposalIdsToUpdate.add(proposalId);
-        revalidateTag(CacheKeys.AllVotes);
-      }
+    proposalId = await decodeAndPrepareVoteEvent(
+      event.name,
+      eventData,
+      celoPublicClient.chain.id,
+    ).then(upsertVotes);
+
+    // NOTE: we're keeping track of the proposalId because voting for a
+    // proposal means the networkWeight will be changed and the proposal row
+    // needs to be updated
+    if (proposalId) {
+      proposalIdsToUpdate.add(proposalId);
+      revalidateTag(CacheKeys.AllVotes);
     }
   }
 
@@ -115,14 +123,18 @@ export async function processWebhookEvents(
 /**
  * Stores a single webhook-delivered event into the events table, decoding its
  * args from topics+data so downstream queries (e.g. args->>'proposalId') keep
- * working. Dedupes on the (eventName, transactionHash, chainId) primary key and
- * records ingestion provenance via ingestedVia.
+ * working. Dedupes on the (eventName, transactionHash, logIndex, chainId)
+ * primary key and records ingestion provenance via ingestedVia.
  */
-async function saveWebhookEvent(event: ParsedEvent, isMultiSig: boolean, source: IngestSource) {
+async function saveWebhookEvent(
+  event: ParsedEvent,
+  isFromApproverMultisig: boolean,
+  source: IngestSource,
+) {
   let args: Record<string, unknown> = {};
   try {
     const decoded = decodeEventLog({
-      abi: isMultiSig ? multiSigABI : governanceABI,
+      abi: isFromApproverMultisig ? multiSigABI : governanceABI,
       topics: event.topics,
       data: event.data,
       strict: false,
@@ -140,13 +152,19 @@ async function saveWebhookEvent(event: ParsedEvent, isMultiSig: boolean, source:
     data: event.data,
     blockNumber: event.blockNumber,
     transactionHash: event.transactionHash,
+    logIndex: event.logIndex,
   };
 
   await database
     .insert(eventsTable)
     .values(withIngestionMetadata([row], celoPublicClient.chain.id, source))
     .onConflictDoUpdate({
-      target: [eventsTable.eventName, eventsTable.transactionHash, eventsTable.chainId],
+      target: [
+        eventsTable.eventName,
+        eventsTable.transactionHash,
+        eventsTable.logIndex,
+        eventsTable.chainId,
+      ],
       set: ingestedViaConflictSet,
     });
 }

@@ -8,7 +8,7 @@ import { AccountRegisterForm } from 'src/features/account/AccountRegisterForm';
 import { useAccountDetails } from 'src/features/account/hooks';
 import { DelegateRegistrationForm } from 'src/features/delegation/DelegateRegistrationForm';
 import { RegisterDelegateFormValues } from 'src/features/delegation/types';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: RegisterDelegateFormValues = {
   name: '',
@@ -22,7 +22,7 @@ const initialValues: RegisterDelegateFormValues = {
 };
 
 export default function Page() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useConnection();
   const { isRegistered, refetch: refetchAccountDetails } = useAccountDetails(address);
 
   return (
@@ -30,6 +30,12 @@ export default function Page() {
       <Section className="mt-4" containerClassName="space-y-4">
         <BackLink href="/delegate">Browse delegates</BackLink>
         <H1>Register delegatee</H1>
+        <p className="max-w-prose">
+          Registering is only needed if you want other CELO holders to delegate their voting power
+          to you. You can vote with your own locked CELO without registering, and you never need to
+          delegate to yourself. To give your voting power to someone else, pick a delegate from the
+          list instead.
+        </p>
         {(() => {
           if (!(address && isConnected)) {
             return <AccountConnectForm />;

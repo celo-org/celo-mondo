@@ -107,6 +107,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         data,
         blockNumber: BigInt(block.number),
         transactionHash: log.transaction.hash as `0x${string}`,
+        logIndex: log.index,
         transactionIds,
       });
     }

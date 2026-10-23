@@ -15,11 +15,17 @@ export function Header() {
       }`}
     >
       <div className="flex items-center justify-between">
-        <MobileNavDropdown className="block lg:hidden" />
-        <Link href="/" className="hidden items-center lg:flex">
+        {/*
+          The inline nav needs about 575px for its seven links once a wallet is
+          connected, next to the logo and the mode and wallet controls. That only
+          fits from xl; below it the links would be clipped with no other way to
+          reach them, so the dropdown menu stays until then.
+        */}
+        <MobileNavDropdown className="block xl:hidden" />
+        <Link href="/" className="hidden items-center xl:flex">
           <CeloLogo width={110} height={26} />
         </Link>
-        <div className="hidden min-w-0 lg:block">
+        <div className="hidden min-w-0 xl:block">
           <NavBar collapsed={collapseHeader} />
         </div>
         <div className="flex shrink-0 flex-row items-center justify-center gap-2 sm:gap-4">
