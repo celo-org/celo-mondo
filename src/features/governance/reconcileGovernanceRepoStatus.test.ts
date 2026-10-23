@@ -58,10 +58,14 @@ function insertProposalExecutedEvent(proposalId: number, blockNumber: bigint) {
   });
 }
 
-/** Chain state: queued/dequeued proposal ids and the CGP each description URL names. */
-function mockChain(liveProposals: Record<number, number>) {
+/**
+ * Chain state: the proposal counter, the dequeued proposal ids and the CGP each
+ * description URL names. Tests that do not care leave the counter at zero.
+ */
+function mockChain(liveProposals: Record<number, number>, proposalCount = 0) {
   mockReadContract.mockImplementation(({ functionName, args }) => {
     const ids = Object.keys(liveProposals).map(BigInt);
+    if (functionName === 'proposalCount') return Promise.resolve(BigInt(proposalCount));
     if (functionName === 'getQueue') return Promise.resolve([[], []]);
     if (functionName === 'getDequeue') return Promise.resolve(ids);
     if (functionName === 'getProposal') {
@@ -205,7 +209,7 @@ describe('reconcileGovernanceRepoStatus', () => {
       dequeuedAt: daysAgo(11),
     });
     // 371 resubmits CGP 160 and sits in the dequeue; 373 is an unrelated newer proposal
-    mockChain({ 371: 160, 373: 999 });
+    mockChain({ 371: 160, 373: 999 }, 373);
 
     await reconcileGovernanceRepoStatus(NOW);
 
@@ -228,6 +232,42 @@ describe('reconcileGovernanceRepoStatus', () => {
     expect(reportedUpdates()).toEqual([
       { cgpNumber: 180, onchainId: 400, status: ProposalMetadataStatus.REJECTED },
     ]);
+  });
+
+  it('waits when a newer proposal is neither imported nor live', async () => {
+    await insertProposal({
+      id: 410,
+      cgp: 190,
+      stage: ProposalStage.Expiration,
+      dequeuedAt: daysAgo(11),
+    });
+    mockChain({}, 411);
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(mockTrigger).not.toHaveBeenCalled();
+  });
+
+  it('anchors a missing dequeue time at the latest the proposal could have left the queue', async () => {
+    // Executed: the execution itself proves it settled
+    await insertProposal({
+      id: 420,
+      stage: ProposalStage.Executed,
+      queuedAt: daysAgo(20),
+      executedAt: daysAgo(2),
+    });
+    // Expired: queue expiry (28 days) plus the execution window has passed
+    await insertProposal({ id: 421, stage: ProposalStage.Expiration, queuedAt: daysAgo(39) });
+    // Expired: could still have been dequeued recently, not settled yet
+    await insertProposal({ id: 422, stage: ProposalStage.Expiration, queuedAt: daysAgo(30) });
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(
+      reportedUpdates()
+        .map((u) => u.onchainId)
+        .sort(),
+    ).toEqual([420, 421]);
   });
 
   it('skips an attempt the governance repo has already moved past', async () => {

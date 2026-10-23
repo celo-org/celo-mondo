@@ -39,6 +39,15 @@ describe('fetchGovernanceRepoStatus', () => {
     );
   });
 
+  it('accepts a lower-case status', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(cgpFile('executed', 314))));
+
+    expect(await fetchGovernanceRepoStatus(254)).toEqual({
+      status: ProposalMetadataStatus.EXECUTED,
+      proposalId: 314,
+    });
+  });
+
   it('reports no proposal id when the front matter has none', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(cgpFile('PROPOSED'))));
 

@@ -37,8 +37,9 @@ export async function fetchGovernanceRepoStatus(
     const response = await fetch(url, { signal: AbortSignal.timeout(15_000) });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     const frontMatter = separateYamlFrontMatter(await response.text())?.frontMatter;
-    const status: unknown = frontMatter?.status;
-    if (!isMetadataStatus(status)) throw new Error(`unexpected status ${String(status)}`);
+    // The repo's schema upper-cases the status before validating it, so do the same.
+    const status = String(frontMatter?.status ?? '').toUpperCase();
+    if (!isMetadataStatus(status)) throw new Error(`unexpected status ${status}`);
     const proposalId = Number(frontMatter['governance-proposal-id']);
     return { status, proposalId: Number.isFinite(proposalId) ? proposalId : null };
   } catch (error) {
@@ -50,8 +51,8 @@ export async function fetchGovernanceRepoStatus(
   }
 }
 
-function isMetadataStatus(value: unknown): value is ProposalMetadataStatus {
-  return Object.values(ProposalMetadataStatus).includes(value as ProposalMetadataStatus);
+function isMetadataStatus(value: string): value is ProposalMetadataStatus {
+  return Object.values<string>(ProposalMetadataStatus).includes(value);
 }
 
 /**

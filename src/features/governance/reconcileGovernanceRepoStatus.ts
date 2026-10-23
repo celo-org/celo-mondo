@@ -1,7 +1,11 @@
 /* eslint no-console: 0 */
 import { governanceABI } from '@celo/abis';
 import { and, eq, gte, inArray, lte, max, or, sql } from 'drizzle-orm';
-import { EXECUTION_STAGE_EXPIRY_TIME, REFERENDUM_STAGE_EXPIRY_TIME } from 'src/config/consts';
+import {
+  EXECUTION_STAGE_EXPIRY_TIME,
+  QUEUED_STAGE_EXPIRY_TIME,
+  REFERENDUM_STAGE_EXPIRY_TIME,
+} from 'src/config/consts';
 import { Addresses } from 'src/config/contracts';
 import database from 'src/config/database';
 import { eventsTable, proposalsTable } from 'src/db/schema';
@@ -53,6 +57,10 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
     now.getTime() - REFERENDUM_STAGE_EXPIRY_TIME - EXECUTION_STAGE_EXPIRY_TIME - SETTLE_MS,
   ).toISOString();
 
+  // A row whose dequeue time never got written (the backfill died between the event
+  // and the row update) is anchored at the latest moment it could have left the queue.
+  const dequeuedBy = sql`coalesce(${proposalsTable.dequeuedAt}, ${proposalsTable.queuedAt} + ${QUEUED_STAGE_EXPIRY_TIME / 1000} * interval '1 second')`;
+
   const proposals: SettledProposal[] = await database
     .select({
       id: proposalsTable.id,
@@ -64,12 +72,12 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
     .where(
       and(
         eq(proposalsTable.chainId, celo.id),
-        gte(proposalsTable.dequeuedAt, since),
+        gte(dequeuedBy, since),
         or(
           eq(proposalsTable.stage, ProposalStage.Executed),
           and(
             inArray(proposalsTable.stage, [ProposalStage.Expiration, ProposalStage.Rejected]),
-            lte(proposalsTable.dequeuedAt, settledBefore),
+            lte(dequeuedBy, settledBefore),
           ),
         ),
       ),
@@ -95,7 +103,22 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
         .groupBy(proposalsTable.cgp)
     ).map((row) => [row.cgp, row.id]),
   );
-  const chain = new ChainLookup();
+  // Every proposal id the backfill has imported past the oldest candidate. Anything
+  // newer that is missing here is only knowable from the chain.
+  const importedIds = new Set(
+    (
+      await database
+        .select({ id: proposalsTable.id })
+        .from(proposalsTable)
+        .where(
+          and(
+            eq(proposalsTable.chainId, celo.id),
+            gte(proposalsTable.id, Math.min(...proposals.map((p) => p.id))),
+          ),
+        )
+    ).map((row) => row.id),
+  );
+  const chain = new ChainLookup(importedIds);
 
   for (const proposal of proposals) {
     const status = STAGE_TO_STATUS[proposal.stage];
@@ -125,8 +148,13 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
         continue;
       }
       // The hourly backfill may not have imported a resubmission yet, so ask the chain.
-      if (await chain.hasNewerAttempt(proposal.cgp, proposal.id)) {
+      const newer = await chain.newerAttempt(proposal.cgp, proposal.id);
+      if (newer === 'resubmitted') {
         console.log(`CGP ${proposal.cgp} has a newer attempt on chain, skipping`);
+        continue;
+      }
+      if (newer === 'unknown') {
+        console.log(`Proposal ${proposal.id}: a newer proposal is not imported yet, waiting`);
         continue;
       }
 
@@ -180,35 +208,41 @@ async function executedAtFromEvent(proposalId: number): Promise<string | null> {
   return unixTimestampToISOString(Number(block.timestamp));
 }
 
-/** Reads the queue and dequeue once per run and the description URLs on demand. */
+/**
+ * Reads the proposal counter, queue and dequeue once per run and description URLs
+ * on demand, to spot a resubmission the backfill has not imported yet.
+ */
 class ChainLookup {
-  private liveIds: Promise<bigint[]> | null = null;
+  private state: Promise<{ count: bigint; live: Set<bigint> }> | null = null;
   private cgpById = new Map<bigint, Promise<number>>();
 
-  async hasNewerAttempt(cgp: number, afterId: number): Promise<boolean> {
-    this.liveIds ??= this.fetchLiveIds();
-    const newerIds = (await this.liveIds).filter((id) => id > BigInt(afterId));
-    for (const id of newerIds) {
+  constructor(private importedIds: Set<number>) {}
+
+  /**
+   * 'resubmitted' when a newer live proposal names the same CGP, 'unknown' when a
+   * newer proposal is neither imported nor live (it left the queue before the
+   * backfill saw it, so nothing here can tell its CGP), 'none' otherwise.
+   */
+  async newerAttempt(cgp: number, afterId: number): Promise<'none' | 'resubmitted' | 'unknown'> {
+    this.state ??= this.fetchState();
+    const { count, live } = await this.state;
+    for (let id = BigInt(afterId) + 1n; id <= count; id++) {
+      if (this.importedIds.has(Number(id))) continue;
+      if (!live.has(id)) return 'unknown';
       this.cgpById.set(id, this.cgpById.get(id) ?? this.fetchCgp(id));
-      if ((await this.cgpById.get(id)) === cgp) return true;
+      if ((await this.cgpById.get(id)) === cgp) return 'resubmitted';
     }
-    return false;
+    return 'none';
   }
 
-  private async fetchLiveIds(): Promise<bigint[]> {
-    const [[queued], dequeued] = await Promise.all([
-      celoPublicClient.readContract({
-        address: Addresses.Governance,
-        abi: governanceABI,
-        functionName: 'getQueue',
-      }),
-      celoPublicClient.readContract({
-        address: Addresses.Governance,
-        abi: governanceABI,
-        functionName: 'getDequeue',
-      }),
+  private async fetchState() {
+    const governance = { address: Addresses.Governance, abi: governanceABI } as const;
+    const [count, [queued], dequeued] = await Promise.all([
+      celoPublicClient.readContract({ ...governance, functionName: 'proposalCount' }),
+      celoPublicClient.readContract({ ...governance, functionName: 'getQueue' }),
+      celoPublicClient.readContract({ ...governance, functionName: 'getDequeue' }),
     ]);
-    return [...queued, ...dequeued];
+    return { count, live: new Set([...queued, ...dequeued]) };
   }
 
   private async fetchCgp(id: bigint): Promise<number> {
