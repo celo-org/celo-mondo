@@ -107,8 +107,14 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
 
     try {
       const current = await fetchGovernanceRepoStatus(proposal.cgp);
-      if (current === null || current.status === status) continue;
-      if (current.status === ProposalMetadataStatus.EXECUTED) {
+      if (current === null) continue;
+      // A resubmission can end the same way as its predecessor, so the file is only
+      // settled when it names this attempt as well.
+      if (current.status === status && current.proposalId === proposal.id) continue;
+      if (
+        current.status === ProposalMetadataStatus.EXECUTED &&
+        status !== ProposalMetadataStatus.EXECUTED
+      ) {
         console.log(`⚠️  CGP ${proposal.cgp} is executed in the governance repo, leaving it alone`);
         continue;
       }

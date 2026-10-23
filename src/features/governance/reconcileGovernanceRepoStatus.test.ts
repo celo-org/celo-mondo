@@ -214,6 +214,22 @@ describe('reconcileGovernanceRepoStatus', () => {
     ]);
   });
 
+  it('updates the proposal id when a resubmission ended like its predecessor', async () => {
+    await insertProposal({
+      id: 400,
+      cgp: 180,
+      stage: ProposalStage.Rejected,
+      dequeuedAt: daysAgo(11),
+    });
+    governanceSays(ProposalMetadataStatus.REJECTED, 399);
+
+    await reconcileGovernanceRepoStatus(NOW);
+
+    expect(reportedUpdates()).toEqual([
+      { cgpNumber: 180, onchainId: 400, status: ProposalMetadataStatus.REJECTED },
+    ]);
+  });
+
   it('skips an attempt the governance repo has already moved past', async () => {
     await insertProposal({
       id: 380,
