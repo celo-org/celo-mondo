@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 import { governanceABI } from '@celo/abis';
-import { and, eq, gte, inArray, lte, max, or, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, lte, or, sql } from 'drizzle-orm';
 import {
   EXECUTION_STAGE_EXPIRY_TIME,
   QUEUED_STAGE_EXPIRY_TIME,
@@ -26,6 +26,9 @@ const LOOKBACK_MS = 30 * 24 * HOUR_MS;
 // The execution event reaches the database on the hourly backfill. Until it has
 // had time to land, an executed proposal still looks expired here.
 const SETTLE_MS = 6 * HOUR_MS;
+// The hourly backfill keeps retrying proposals that have events but no row. One
+// still without a row after a day has no CGP metadata and never will.
+const ORPHAN_STALE_MS = 24 * HOUR_MS;
 
 // Adopted (a zero-transaction proposal that passed) has no counterpart in the
 // governance repo: its only successful status, EXECUTED, is validated there against
@@ -58,8 +61,9 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
   ).toISOString();
 
   // A row whose dequeue time never got written (the backfill died between the event
-  // and the row update) is anchored at the latest moment it could have left the queue.
-  const dequeuedBy = sql`coalesce(${proposalsTable.dequeuedAt}, ${proposalsTable.queuedAt} + ${QUEUED_STAGE_EXPIRY_TIME / 1000} * interval '1 second')`;
+  // and the row update) is anchored at the latest moment it could have left the queue,
+  // and a row created from its execution event alone at the execution itself.
+  const dequeuedBy = sql`coalesce(${proposalsTable.dequeuedAt}, ${proposalsTable.queuedAt} + ${QUEUED_STAGE_EXPIRY_TIME / 1000} * interval '1 second', ${proposalsTable.executedAt})`;
 
   const proposals: SettledProposal[] = await database
     .select({
@@ -86,39 +90,49 @@ export async function reconcileGovernanceRepoStatus(now = new Date()): Promise<v
   console.log(`Found ${proposals.length} settled proposals dequeued since ${since}`);
   if (proposals.length === 0) return;
 
+  const oldestId = Math.min(...proposals.map((p) => p.id));
+
+  // One snapshot of every imported proposal from the oldest candidate on. The
+  // current attempt per CGP and the set of known ids come from the same rows, so a
+  // backfill inserting a resubmission mid-run cannot split the two views.
+  const imported = await database
+    .select({ id: proposalsTable.id, cgp: proposalsTable.cgp })
+    .from(proposalsTable)
+    .where(and(eq(proposalsTable.chainId, celo.id), gte(proposalsTable.id, oldestId)));
   // A resubmitted CGP keeps its earlier attempts in the table, chained by ascending
   // id, so only the highest id for a CGP may speak for it. If that attempt is still
   // running, an earlier outcome must not be reported either.
-  const currentAttempts = new Map(
-    (
-      await database
-        .select({ cgp: proposalsTable.cgp, id: max(proposalsTable.id) })
-        .from(proposalsTable)
-        .where(
-          and(
-            eq(proposalsTable.chainId, celo.id),
-            inArray(proposalsTable.cgp, [...new Set(proposals.map((p) => p.cgp))]),
-          ),
-        )
-        .groupBy(proposalsTable.cgp)
-    ).map((row) => [row.cgp, row.id]),
+  const currentAttempts = new Map<number, number>();
+  for (const row of imported) {
+    currentAttempts.set(row.cgp, Math.max(currentAttempts.get(row.cgp) ?? 0, row.id));
+  }
+
+  // Proposals the backfill saw queued but never turned into a row. A stale one has no
+  // metadata and cannot name a CGP; a fresh one may still be on its way in.
+  const queuedId = sql`(${eventsTable.args}->>'proposalId')::bigint`;
+  const staleBefore = new Date(now.getTime() - ORPHAN_STALE_MS).toISOString();
+  const orphans = await database
+    .select({
+      id: queuedId.mapWith(Number),
+      stale:
+        sql`min(${eventsTable.ingestedAt}) is null or min(${eventsTable.ingestedAt}) < ${staleBefore}::timestamptz`.mapWith(
+          Boolean,
+        ),
+    })
+    .from(eventsTable)
+    .where(
+      and(
+        eq(eventsTable.chainId, celo.id),
+        eq(eventsTable.eventName, 'ProposalQueued'),
+        gte(queuedId, oldestId),
+      ),
+    )
+    .groupBy(queuedId);
+
+  const chain = new ChainLookup(
+    new Set(imported.map((row) => row.id)),
+    new Map(orphans.map((row) => [row.id, row.stale])),
   );
-  // Every proposal id the backfill has imported past the oldest candidate. Anything
-  // newer that is missing here is only knowable from the chain.
-  const importedIds = new Set(
-    (
-      await database
-        .select({ id: proposalsTable.id })
-        .from(proposalsTable)
-        .where(
-          and(
-            eq(proposalsTable.chainId, celo.id),
-            gte(proposalsTable.id, Math.min(...proposals.map((p) => p.id))),
-          ),
-        )
-    ).map((row) => row.id),
-  );
-  const chain = new ChainLookup(importedIds);
 
   for (const proposal of proposals) {
     const status = STAGE_TO_STATUS[proposal.stage];
@@ -216,21 +230,29 @@ class ChainLookup {
   private state: Promise<{ count: bigint; live: Set<bigint> }> | null = null;
   private cgpById = new Map<bigint, Promise<number>>();
 
-  constructor(private importedIds: Set<number>) {}
+  constructor(
+    private importedIds: Set<number>,
+    /** Queued proposals without a row, by id, and whether the backfill has given up on them. */
+    private orphans: Map<number, boolean>,
+  ) {}
 
   /**
    * 'resubmitted' when a newer live proposal names the same CGP, 'unknown' when a
-   * newer proposal is neither imported nor live (it left the queue before the
-   * backfill saw it, so nothing here can tell its CGP), 'none' otherwise.
+   * newer proposal is neither imported nor live and the backfill has not had its day
+   * with it (nothing here can tell its CGP yet), 'none' otherwise.
    */
   async newerAttempt(cgp: number, afterId: number): Promise<'none' | 'resubmitted' | 'unknown'> {
     this.state ??= this.fetchState();
     const { count, live } = await this.state;
     for (let id = BigInt(afterId) + 1n; id <= count; id++) {
       if (this.importedIds.has(Number(id))) continue;
-      if (!live.has(id)) return 'unknown';
-      this.cgpById.set(id, this.cgpById.get(id) ?? this.fetchCgp(id));
-      if ((await this.cgpById.get(id)) === cgp) return 'resubmitted';
+      if (live.has(id)) {
+        this.cgpById.set(id, this.cgpById.get(id) ?? this.fetchCgp(id));
+        if ((await this.cgpById.get(id)) === cgp) return 'resubmitted';
+        continue;
+      }
+      if (this.orphans.get(Number(id)) === true) continue;
+      return 'unknown';
     }
     return 'none';
   }
