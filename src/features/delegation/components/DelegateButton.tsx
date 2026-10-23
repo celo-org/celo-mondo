@@ -13,10 +13,10 @@ import { useTransactionModal } from 'src/features/transactions/TransactionModal'
 import { bigIntMax } from 'src/utils/math';
 import { objLength } from 'src/utils/objects';
 import { useStakingMode } from 'src/utils/useStakingMode';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 export function DelegateButton({ delegatee }: { delegatee: Delegatee }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { mode, ui } = useStakingMode();
   const { proposalToVotes } = useDelegateeHistory(delegatee.address);
   const { stCELOBalances } = useStCELOBalance(address);

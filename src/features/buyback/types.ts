@@ -98,7 +98,8 @@ export interface MonthlyStats {
 /**
  * What has actually reached the Community Fund, read from the chain: CELO
  * transferred by the Operations Safe to the Governance contract since the
- * settled-revenue cutoff, the distribution path of the operator tooling.
+ * settled-revenue cutoff, the distribution path of the operator tooling,
+ * whether sent as plain value or through the CELO token contract.
  */
 export interface SettledTransfers {
   celo: number;
@@ -107,6 +108,23 @@ export interface SettledTransfers {
   lastTransferAt: string | null;
   /** The last block the scan covered. */
   throughBlock: number;
+}
+
+/**
+ * The period before the window: the L2 launch through the settled-revenue
+ * cutoff. Celo Core Co. returned 1,748,950 CELO to the Community Fund on
+ * 2026-04-01 (CGP-234) and counts the period's revenue as settled by that,
+ * so its figures are the same per-day estimate the window gets, shown next
+ * to the amount returned rather than reconciled with it.
+ */
+export interface InitialPeriod {
+  /** First day counted: the L2 launch day (YYYY-MM-DD). */
+  sinceDay: string;
+  /** Last day counted: the settled-revenue cutoff (YYYY-MM-DD). */
+  throughDay: string;
+  /** Number of days counted. */
+  days: number;
+  stats: PeriodStats;
 }
 
 /** Full dashboard payload returned by the API route. */
@@ -124,6 +142,8 @@ export interface BuybackStats {
    * charts and the daily table. Figures are rounded to six decimals.
    */
   days: DailyMetrics[];
+  /** The period before `sinceDay`, counted as settled by the CGP-234 return. */
+  initial: InitialPeriod;
   /** On-chain transfers to the Community Fund, or null when no RPC node was configured for the refresh. */
   settled: SettledTransfers | null;
   /** When Dune executed the query these figures come from (ISO timestamp). */

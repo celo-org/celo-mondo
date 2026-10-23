@@ -32,3 +32,28 @@ Addresses were confirmed outside Dune as well: the Superchain registry
 `SystemConfig.batcherHash()` on Ethereum, and the `proposer()` and
 `challenger()` of the permissioned dispute game (`0x1204884e…`,
 `0x6b145ebf…`).
+
+## Batches to the Community Fund since the cutoff (checked 2026-10-16)
+
+The operator's distribution sheet lists eight transfers. Three of them moved
+CELO as plain value in the Safe transaction (no Transfer event), which the
+first version of the reader missed; it now traces every Safe execution.
+
+| Period (sheet)     | Transaction   | Path  | CELO         |
+| ------------------ | ------------- | ----- | ------------ |
+| 2025-03-26 – 04-08 | `0xfbe1dac0…` | token | 1,748,950.00 |
+| 2026-04-09 – 06-17 | `0xf55ab095…` | value | 2,566,770.00 |
+| 2026-06-19 – 07-15 | `0x0c9ed148…` | token | 1,324,344.00 |
+| 2026-07-15 – 07-31 | `0x8b2206b7…` | token | 795,081.00   |
+| 2026-08-01 – 08-15 | `0x0403c49f…` | token | 667,815.00   |
+| 2026-08-16 – 08-31 | `0x1ab9a22b…` | value | 723,708.00   |
+| 2026-09-01 – 09-15 | `0x7badf29e…` | value | 673,236.00   |
+| 2026-09-16 – 09-30 | `0x92ebdf72…` | token | 648,972.00   |
+
+Since the cutoff: 7,399,927.73 CELO in 8 transfers (the eighth is 1.73 CELO
+of dust sent through the token contract), last on 2026-10-08. The sheet's
+per-period P&L (fees in CELO, stablecoins at CELO equivalent, L1 costs, OP
+share, net) matches the dashboard's per-day figures within 0.1–0.5% on every
+period once its date headers are read as inclusive ranges (`Jun 19 – Jul 15`,
+`Jul 15 – Jul 31`, `Sep 16 – Sep 30`); the net of each period equals the
+amount transferred.

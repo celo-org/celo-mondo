@@ -32,7 +32,7 @@ import { ensure0x, isValidAddress } from 'src/utils/addresses';
 import { objLength } from 'src/utils/objects';
 import { toTitleCase } from 'src/utils/strings';
 import { useTrackEvent } from 'src/utils/useTrackEvent';
-import { useAccount } from 'wagmi';
+import { useConnection } from 'wagmi';
 
 const initialValues: DelegateFormValues = {
   action: DelegateActionType.Delegate,
@@ -49,7 +49,7 @@ export function DelegationForm({
   defaultFormValues?: Partial<DelegateFormValues>;
   onConfirmed: OnConfirmedFn;
 }) {
-  const { address } = useAccount();
+  const { address } = useConnection();
   const { addressToDelegatee } = useDelegatees();
   const { isValidator, isValidatorGroup } = useAccountDetails(address);
   const { signingFor } = useVoteSignerToAccount(address);

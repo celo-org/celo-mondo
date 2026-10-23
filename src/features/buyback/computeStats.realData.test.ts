@@ -5,6 +5,8 @@ import onchain from './__fixtures__/onchainWindow.json';
 import expectedJson from './__fixtures__/reportPyExpected.json';
 import {
   CARBON_FUND_SHARE_IN_WINDOW,
+  CGP_234_RETURN,
+  L2_LAUNCH_DAY,
   SETTLED_REVENUE_CUTOFF_DATE,
   computeBuybackStats,
   computeDailyMetrics,
@@ -14,9 +16,19 @@ import {
 import { DuneFeeRow } from './types';
 
 // Real rows of Dune query 6898547 (executed 2026-09-17 16:29 UTC, so its last
-// row is a partial day) and the values report.py's compute_row produces for
-// them. See __fixtures__/README.md.
+// row is a partial day), every day since the L2 launch, and the values
+// report.py's compute_row produces for them. See __fixtures__/README.md.
 const rows = duneFeeRowsJson as DuneFeeRow[];
+interface ReportPyTotals {
+  from: string;
+  to: string;
+  days: number;
+  total_revenue_usd: number;
+  total_l1_cost_usd: number;
+  op_share_usd: number;
+  profit_usd: number;
+  profit_celo: number;
+}
 const expected = expectedJson as {
   perDay: Record<
     string,
@@ -32,21 +44,15 @@ const expected = expectedJson as {
       profit_celo: number;
     }
   >;
-  windowTotals: {
-    from: string;
-    to: string;
-    days: number;
-    total_revenue_usd: number;
-    total_l1_cost_usd: number;
-    profit_usd: number;
-    profit_celo: number;
-  };
+  windowTotals: ReportPyTotals;
+  preCutoffTotals: ReportPyTotals;
   duneExecution: { execution_started_at: string; execution_ended_at: string };
 };
 
 const WINDOW = onchain.window;
 const inWindow = (day: string) => day >= WINDOW.from && day <= WINDOW.to;
 const windowRows = rows.filter((r) => inWindow(parseDay(r.day)));
+const preCutoffRows = rows.filter((r) => parseDay(r.day) <= SETTLED_REVENUE_CUTOFF_DATE);
 const sum = (values: number[]) => values.reduce((s, v) => s + v, 0);
 const num = (v: number | string | null) => Number(v ?? 0);
 
@@ -57,16 +63,23 @@ function expectClose(actual: number, wanted: number, rel = 1e-9) {
 }
 
 describe('fixture integrity', () => {
-  it('covers the whole CELOccelerate window plus pre-cutoff and genesis days', () => {
+  it('covers every day from the L2 launch to the execution day, once each', () => {
+    const days = rows.map((r) => parseDay(r.day));
+    expect(days[0]).toBe(L2_LAUNCH_DAY);
+    expect(days[days.length - 1]).toBe('2026-09-17');
+    expect(new Set(days).size).toBe(days.length);
+    expect(days).toHaveLength(
+      (Date.parse('2026-09-17T00:00:00Z') - Date.parse(`${L2_LAUNCH_DAY}T00:00:00Z`)) / 86_400_000 +
+        1,
+    );
     expect(windowRows).toHaveLength(expected.windowTotals.days);
     expect(windowRows[0].day).toContain(WINDOW.from);
     expect(windowRows[windowRows.length - 1].day).toContain(WINDOW.to);
-    expect(rows.some((r) => parseDay(r.day) <= SETTLED_REVENUE_CUTOFF_DATE)).toBe(true);
-    expect(rows.some((r) => parseDay(r.day) === '2025-03-26')).toBe(true);
+    expect(preCutoffRows).toHaveLength(expected.preCutoffTotals.days);
   });
 
-  it('has CELO fees, prices and batcher and proposer costs on every window day', () => {
-    for (const r of windowRows) {
+  it('has CELO fees, prices and batcher and proposer costs on every day', () => {
+    for (const r of rows) {
       expect(num(r.fee_CELO)).toBeGreaterThan(0);
       expect(num(r.fee_CELO_usd)).toBeGreaterThan(0);
       expect(num(r.eth_price_usd)).toBeGreaterThan(0);
@@ -107,10 +120,16 @@ describe('computeDailyMetrics vs report.py compute_row (real rows)', () => {
       expectClose(Math.max(floor, profitShare), want.op_share_usd);
       methods.add(profitShare >= floor ? 'profit' : 'revenue');
     }
-    // No real day has had L1 costs above five sixths of revenue, so the
-    // 2.5%-of-revenue floor never won; computeStats.test.ts covers that branch
-    // with a synthetic loss day.
-    expect(methods).toEqual(new Set(['profit']));
+    // Two real days had L1 costs above five sixths of revenue, so the
+    // 2.5%-of-revenue floor won: 2025-09-10 (a large EigenDA payment made it
+    // a loss day) and 2026-02-03, both in the first period. Never inside the
+    // window so far.
+    expect(methods).toEqual(new Set(['profit', 'revenue']));
+    const floored = rows
+      .map(computeDailyMetrics)
+      .filter((m) => m.feesCollectedUsd * 0.025 > m.feesAfterExpensesUsd * 0.15)
+      .map((m) => m.day);
+    expect(floored).toEqual(['2025-09-10', '2026-02-03']);
   });
 
   it('handles EigenDA cost being null on most days and set on a few', () => {
@@ -169,6 +188,33 @@ describe('computeBuybackStats on the real history', () => {
     expectClose(stats.totals.feesCollectedUsd, want);
     const withPreCutoff = sum(Object.values(expected.perDay).map((v) => v.total_revenue_usd));
     expect(withPreCutoff).toBeGreaterThan(want);
+  });
+
+  it('reports the first period exactly as report.py sums it', () => {
+    const want = expected.preCutoffTotals;
+    expect(stats.initial.sinceDay).toBe(L2_LAUNCH_DAY);
+    expect(stats.initial.throughDay).toBe(SETTLED_REVENUE_CUTOFF_DATE);
+    expect(stats.initial.days).toBe(want.days);
+    expectClose(stats.initial.stats.feesCollectedUsd, want.total_revenue_usd);
+    expectClose(stats.initial.stats.l1CostUsd, want.total_l1_cost_usd);
+    expectClose(stats.initial.stats.opShareUsd, want.op_share_usd);
+    expectClose(stats.initial.stats.usdToCommunityFund, want.profit_usd);
+    expectClose(stats.initial.stats.celoToCommunityFund, want.profit_celo);
+    // No Carbon Fund payout fell in that period.
+    expect(stats.initial.stats.carbonFundUsd).toBe(0);
+    // Orders of magnitude, so a unit slip (ETH for USD, say) cannot pass.
+    expect(want.total_revenue_usd).toBeGreaterThan(500_000);
+    expect(want.total_revenue_usd).toBeLessThan(600_000);
+  });
+
+  it("values the first period at each day's price, which is not what was returned", () => {
+    // The return is the on-chain transfer CGP-234 documents.
+    expect(CGP_234_RETURN.celo).toBe(onchain.revenueReturn.celo);
+    expect(CGP_234_RETURN.txHash).toBe(onchain.revenueReturn.tx);
+    expect(CGP_234_RETURN.day).toBe(onchain.revenueReturn.time.slice(0, 10));
+    // The per-day estimate ran above it; the dashboard shows both, as is.
+    expect(stats.initial.stats.celoToCommunityFund).toBeGreaterThan(CGP_234_RETURN.celo);
+    expect(stats.initial.stats.celoToCommunityFund / CGP_234_RETURN.celo).toBeLessThan(1.25);
   });
 
   it('exposes the latest day as its own un-deducted figures', () => {
@@ -232,7 +278,14 @@ describe('coverage of the real history', () => {
   });
 
   it('is refused when only the most recent rows come back', () => {
-    expect(() => computeBuybackStats(rows.slice(-100), options)).toThrow('no row for 2026-04-09');
+    expect(() => computeBuybackStats(rows.slice(-100), options)).toThrow('no row for 2025-03-26');
+  });
+
+  it('is refused when the first period is incomplete, since it is reported too', () => {
+    const windowOnly = rows.filter((r) => parseDay(r.day) >= WINDOW.from);
+    expect(() => computeBuybackStats(windowOnly, options)).toThrow('no row for 2025-03-26');
+    const gapped = rows.filter((r) => parseDay(r.day) !== '2025-12-25');
+    expect(() => computeBuybackStats(gapped, options)).toThrow('no row for 2025-12-25');
   });
 
   it('is refused when the last complete day is missing', () => {
@@ -261,14 +314,26 @@ describe('the EigenDA fan-out in the real query results', () => {
     expectClose(naive, 3 * computeDailyMetrics(merged).feesCollectedUsd);
   });
 
-  it('leaves the dashboard untouched, since that day precedes the window', () => {
+  it('comes to the same figures as the aggregated row the query returns now', () => {
     const options = {
       executionStartedAt: expected.duneExecution.execution_started_at,
       executionEndedAt: expected.duneExecution.execution_ended_at,
       now: new Date('2026-09-18T06:00:00.000Z'),
     };
-    expect(computeBuybackStats([...fanOut, ...rows], options)).toEqual(
-      computeBuybackStats(rows, options),
+    const aggregated = computeBuybackStats(rows, options);
+    const fannedOut = computeBuybackStats(
+      [...rows.filter((r) => parseDay(r.day) !== '2025-09-10'), ...fanOut],
+      options,
+    );
+    // That day is in the first period, so only its figures can differ, and
+    // they do not beyond the order the three payments were added in.
+    expect(fannedOut.totals).toEqual(aggregated.totals);
+    expect(fannedOut.days).toEqual(aggregated.days);
+    expect(fannedOut.initial.days).toBe(aggregated.initial.days);
+    expectClose(fannedOut.initial.stats.l1CostUsd, aggregated.initial.stats.l1CostUsd);
+    expectClose(
+      fannedOut.initial.stats.celoToCommunityFund,
+      aggregated.initial.stats.celoToCommunityFund,
     );
   });
 });

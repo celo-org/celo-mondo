@@ -336,7 +336,9 @@ export async function refreshBuybackStats({
   const stats = computeBuybackStats(rows, { ...timing, settled });
   log(
     `Computed stats from ${rows.length} daily rows of execution ${executionId}: ` +
-      `${stats.sinceDay} to ${stats.latestDay}, ${stats.totals.celoToCommunityFund.toFixed(0)} CELO accrued`,
+      `${stats.sinceDay} to ${stats.latestDay}, ${stats.totals.celoToCommunityFund.toFixed(0)} CELO accrued; ` +
+      `first period ${stats.initial.sinceDay} to ${stats.initial.throughDay}, ` +
+      `${stats.initial.stats.celoToCommunityFund.toFixed(0)} CELO accrued`,
   );
   await storeStats(
     databases,

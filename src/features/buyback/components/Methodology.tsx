@@ -10,8 +10,11 @@ import {
 } from 'src/features/buyback/addresses';
 import {
   CARBON_FUND_SHARE_IN_WINDOW,
+  CGP_234_RETURN,
+  L2_LAUNCH_DAY,
   SETTLED_REVENUE_CUTOFF_DATE,
 } from 'src/features/buyback/computeStats';
+import { formatWhole } from 'src/features/buyback/format';
 
 const decimals2 = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
@@ -72,11 +75,15 @@ export function Methodology() {
             {decimals2.format(carbon.usd)} USD taken on {carbon.day} is deducted.
           </li>
           <li>
-            Revenue up to {SETTLED_REVENUE_CUTOFF_DATE} was already returned to the Community Fund (
+            Celo Core Co. returned {formatWhole(CGP_234_RETURN.celo)} CELO to the Community Fund on{' '}
+            {CGP_234_RETURN.day} (
             <Link href="/governance/cgp-234" className="underline">
               CGP-234
             </Link>
-            ) and is not counted.
+            ). The operator tooling counts revenue from the L2 launch ({L2_LAUNCH_DAY}) through{' '}
+            {SETTLED_REVENUE_CUTOFF_DATE} as settled by that return, so the window totals and charts
+            start the day after; the all-time table shows that period&apos;s per-day figures next to
+            the amount returned.
           </li>
           <li>USD and CELO are converted per day, at that day&apos;s CELO price.</li>
           <li>The average CELO price is volume-weighted: USD accrued divided by CELO accrued.</li>

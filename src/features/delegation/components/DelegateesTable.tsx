@@ -22,6 +22,7 @@ import { formatNumberString } from 'src/components/numbers/Amount';
 import { SocialLinkType } from 'src/config/types';
 import { DelegateeLogoAndName } from 'src/features/delegation/components/DelegateeLogo';
 import { DelegateesData, useDelegatees } from 'src/features/delegation/hooks/useDelegatees';
+import { describeParticipation } from 'src/features/delegation/participation';
 import { DelegateActionType, Delegatee } from 'src/features/delegation/types';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
@@ -35,7 +36,7 @@ const DESKTOP_ONLY_COLUMNS = ['interests', 'links'];
 export function DelegateesTable({ delegatees }: { delegatees: Delegatee[] }) {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [columnVisibility, setColumnVisibility] = useState({});
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'delegatedToBalance', desc: true }]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: 'participation', desc: true }]);
   const trackEvent = useTrackEvent();
   const onSortingChange = (s: SortingState | ((prev: SortingState) => SortingState)) => {
     setSorting(s);
@@ -198,6 +199,23 @@ function useTableColumns() {
         ),
         enableSorting: false,
       }),
+      columnHelper.accessor((d) => d.participation?.score, {
+        id: 'participation',
+        header: 'Participation',
+        sortUndefined: 'last',
+        cell: (props) => {
+          const participation = props.row.original.participation;
+          if (!participation) return <div>-</div>;
+          return (
+            <div
+              className="tooltip before:whitespace-pre-line before:text-left"
+              data-tip={describeParticipation(participation).join('\n')}
+            >
+              {participation.score}
+            </div>
+          );
+        },
+      }),
       columnHelper.accessor('delegatedToBalance', {
         header: 'Delegated',
         cell: (props) => <div>{formatNumberString(props.getValue(), 0, true) + ' CELO'}</div>,
@@ -245,7 +263,7 @@ function DelegateeTableSkeleton() {
       <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
         <thead>
           <tr>
-            {['w-20', 'w-16', 'w-12', 'w-20'].map((w, i) => (
+            {['w-20', 'w-16', 'w-12', 'w-12', 'w-20'].map((w, i) => (
               <th
                 key={i}
                 className={clsx(classNames.th, (i === 1 || i === 2) && 'hidden md:table-cell')}
@@ -274,6 +292,11 @@ function DelegateeTableSkeleton() {
                 <div className="flex space-x-3 px-4 py-4">
                   <SkeletonCircle size={20} />
                   <SkeletonCircle size={20} />
+                </div>
+              </td>
+              <td className={classNames.td}>
+                <div className="px-4 py-4">
+                  <SkeletonBlock className="h-5 w-8" />
                 </div>
               </td>
               <td className={classNames.td}>

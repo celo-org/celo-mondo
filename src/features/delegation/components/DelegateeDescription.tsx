@@ -9,6 +9,7 @@ import { DelegateButton } from 'src/features/delegation/components/DelegateButto
 import { DelegateeLogo } from 'src/features/delegation/components/DelegateeLogo';
 import { DelegatorsTable } from 'src/features/delegation/components/DelegatorsTable';
 import { useDelegateeHistory } from 'src/features/delegation/hooks/useDelegateeHistory';
+import { describeParticipation } from 'src/features/delegation/participation';
 import { Delegatee } from 'src/features/delegation/types';
 import { ProposalCard } from 'src/features/governance/components/ProposalCard';
 import { useGovernanceProposals } from 'src/features/governance/hooks/useGovernanceProposals';
@@ -74,6 +75,13 @@ function GovernanceParticipation({ delegatee }: { delegatee: Delegatee }) {
   return (
     <div className="flex flex-col space-y-2.5 divide-y border-taupe-300 py-1">
       <h2 className="font-serif text-xl">Governance Participation</h2>
+      {delegatee.participation && (
+        <div className="space-y-1 pt-2.5 text-sm text-taupe-600">
+          {describeParticipation(delegatee.participation).map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      )}
       {isLoading ? (
         <SpinnerWithLabel className="py-10">Loading governance history</SpinnerWithLabel>
       ) : proposals && hasVotes ? (

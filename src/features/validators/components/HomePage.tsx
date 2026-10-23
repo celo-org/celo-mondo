@@ -6,11 +6,13 @@ import { SolidButton } from 'src/components/buttons/SolidButton';
 import { Section } from 'src/components/layout/Section';
 import { StatBox } from 'src/components/layout/StatBox';
 import { H1 } from 'src/components/text/headers';
+import { useAnnualProjectedRate } from 'src/features/staking/stCELO/hooks/useAnnualProjectedRate';
 import { TransactionFlowType } from 'src/features/transactions/TransactionFlowType';
 import { useTransactionModal } from 'src/features/transactions/TransactionModal';
 import { ValidatorGroupTable } from 'src/features/validators/ValidatorGroupTable';
 import { ValidatorGroup, ValidatorStatus } from 'src/features/validators/types';
 import { useValidatorGroups, ValidatorGroupInfo } from 'src/features/validators/useValidatorGroups';
+import { compoundDaily } from 'src/features/validators/utils';
 import { bigIntMin } from 'src/utils/math';
 import { deserializeBigints, objLength } from 'src/utils/objects';
 import { useIsMiniPay } from 'src/utils/useIsMiniPay';
@@ -85,7 +87,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
           )}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-2 sm:gap-8">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-8">
         {!totalVotes || !groups ? (
           <>
             <StatBox header="Total Staked CELO" valueWei={null} className="max-w-xs md:max-w-sm">
@@ -98,6 +100,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
             >
               <SkeletonBlock className="h-7 w-32 md:h-8" />
             </StatBox>
+            <ApyStatBox />
             <StatBox className="hidden max-w-xs md:max-w-sm lg:flex" valueWei={null}>
               <div className="flex gap-6 divide-x">
                 <div className="flex flex-col">
@@ -123,6 +126,7 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
               valueWei={minVotes}
               className="max-w-xs md:max-w-sm"
             />
+            <ApyStatBox />
             <StatBox className="hidden max-w-xs md:max-w-sm lg:flex" valueWei={null}>
               <div className="flex gap-6 divide-x">
                 <div className="flex flex-col">
@@ -139,6 +143,29 @@ function HeroSection({ totalVotes, groups }: { totalVotes?: bigint; groups?: Val
         )}
       </div>
     </div>
+  );
+}
+
+// Network-wide projected APY for a group with a perfect score, no slashing and no
+// commission: an upper bound, not a realized return. It stays visible on phones,
+// where the per-group column may be hidden; the label shrinks to fit the row there.
+function ApyStatBox() {
+  const { annualProjectedRate, isLoading } = useAnnualProjectedRate();
+  return (
+    <StatBox valueWei={null} className="max-w-xs md:max-w-sm">
+      <h3 className="text-nowrap text-sm">
+        Max <span className="hidden sm:inline">Projected </span>APY
+      </h3>
+      {isLoading ? (
+        <SkeletonBlock className="h-7 w-20 md:h-8" />
+      ) : (
+        <div className="font-serif text-xl md:text-2xl">
+          {annualProjectedRate === undefined
+            ? '-'
+            : `${compoundDaily(annualProjectedRate).toFixed(2)}%`}
+        </div>
+      )}
+    </StatBox>
   );
 }
 
@@ -168,7 +195,7 @@ function ValidatorTableSkeleton() {
       <table className="lg:min-w-248 xl:min-w-300 mt-2 w-full">
         <thead>
           <tr>
-            {['w-6', 'w-24', 'w-16', 'w-12', 'w-14', 'w-14', 'w-16'].map((w, i) => (
+            {['w-6', 'w-24', 'w-16', 'w-12', 'w-12', 'w-14', 'w-14', 'w-16'].map((w, i) => (
               <th
                 key={i}
                 className={`border-y border-taupe-300 px-4 py-3 ${i >= 2 ? 'hidden md:table-cell' : ''}`}
@@ -181,7 +208,7 @@ function ValidatorTableSkeleton() {
         <tbody>
           {Array.from({ length: 12 }).map((_, row) => (
             <tr key={row}>
-              {['w-6', 'w-32', 'w-20', 'w-12', 'w-14', 'w-16', 'w-16'].map((w, col) => (
+              {['w-6', 'w-32', 'w-20', 'w-12', 'w-12', 'w-14', 'w-16', 'w-16'].map((w, col) => (
                 <td
                   key={col}
                   className={`border-y border-taupe-300 px-4 py-4 ${col >= 2 ? 'hidden md:table-cell' : ''}`}

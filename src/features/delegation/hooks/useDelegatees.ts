@@ -3,6 +3,7 @@ import { useToastError } from 'src/components/notifications/useToastError';
 import { GCTime, StaleTime } from 'src/config/consts';
 import { getDelegateeMetadata } from 'src/features/delegation/delegateeMetadata';
 import { DelegateesData, fetchDelegateeStats } from 'src/features/delegation/fetchDelegateeStats';
+import { ParticipationData } from 'src/features/delegation/participation';
 import { logger } from 'src/utils/logger';
 import { usePublicClient } from 'wagmi';
 
@@ -24,7 +25,12 @@ export function useDelegatees(initialData?: DelegateesData) {
       if (!publicClient) return null;
       logger.debug('Fetching delegatees');
       const cachedMetadata = Object.values(getDelegateeMetadata());
-      const addressToDelegatee = await fetchDelegateeStats(publicClient, cachedMetadata);
+      const participation = await fetchParticipationFromApi(publicClient.chain!.id);
+      const addressToDelegatee = await fetchDelegateeStats(
+        publicClient,
+        cachedMetadata,
+        participation,
+      );
       const delegatees = Object.values(addressToDelegatee);
       return { addressToDelegatee, delegatees };
     },
@@ -40,4 +46,17 @@ export function useDelegatees(initialData?: DelegateesData) {
     delegatees: data?.delegatees,
     addressToDelegatee: data?.addressToDelegatee,
   };
+}
+
+// Participation lives in the DB, which the browser reaches only through the API.
+// A failure leaves it undefined so the delegates still render, minus the score.
+async function fetchParticipationFromApi(chainId: number): Promise<ParticipationData | undefined> {
+  try {
+    const response = await fetch(`/api/governance/participation?chainId=${chainId}`);
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    return (await response.json()) as ParticipationData;
+  } catch (error) {
+    logger.warn('Error fetching delegate participation', error);
+    return undefined;
+  }
 }
