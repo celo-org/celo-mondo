@@ -328,7 +328,7 @@ __metadata:
     eslint-config-next: "npm:^15.2.2"
     eslint-config-prettier: "npm:^9.1.0"
     formik: "npm:2.4.9"
-    happy-dom: "npm:^20.0.0"
+    happy-dom: "npm:^21.0.0"
     husky: "npm:^9.0.11"
     isomorphic-dompurify: "npm:^2.22.0"
     lint-staged: "npm:^16.1.5"
@@ -8601,9 +8601,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"happy-dom@npm:^20.0.0":
-  version: 20.10.2
-  resolution: "happy-dom@npm:20.10.2"
+"happy-dom@npm:^21.0.0":
+  version: 21.0.4
+  resolution: "happy-dom@npm:21.0.4"
   dependencies:
     "@types/node": "npm:>=20.0.0"
     "@types/whatwg-mimetype": "npm:^3.0.2"
@@ -8612,7 +8612,7 @@ __metadata:
     entities: "npm:^7.0.1"
     whatwg-mimetype: "npm:^3.0.0"
     ws: "npm:^8.21.0"
-  checksum: 10/4811621c0c642e75aa6325decf120c7b6545b33c6531b8541e7033f4160f0c52a3eed7ff88fbc93327fedb657327ab43e8bb5dce20906ac41439e8946157dcb0
+  checksum: 10/708a07432283cab0a29a10571b06cf27c0e30a933bf5f7fe948e18f78ce3875127b09fbed9aa7c6c5d23b06f4dad824eb73bc7a0cbe356febf5f66efb36aabce
   languageName: node
   linkType: hard
 
