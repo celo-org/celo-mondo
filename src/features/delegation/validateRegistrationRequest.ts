@@ -18,7 +18,7 @@ export const validateRegistrationRequest = async (
   if (!parseResult.success) {
     errors = {
       ...errors,
-      ...Object.fromEntries(parseResult.error.errors.map((e) => [e.path.join('.'), e.message])),
+      ...Object.fromEntries(parseResult.error.issues.map((e) => [e.path.join('.'), e.message])),
     };
 
     if (errors['links.twitter']) {
