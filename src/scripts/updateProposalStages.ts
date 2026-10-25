@@ -124,7 +124,7 @@ export async function updateProposalStages(
         }
 
         // 4.2
-        // Tempurature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
+        // Temperature check / proposals with zero txns do not need to be executed mearly passing quorum is enough.
         // So move them from Execution to Adopted when they leave Execution stage.
         // Txcount 0 + Passed Quorum Flow === Referendum => Execution => Adopted (or Executed if someone bothers to approve and execute it)
         if (
