@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="160" viewBox="0 0 420 160">
+  <rect width="420" height="160" fill="#0b6b3a"/>
+  <text x="16" y="80" font-family="sans-serif" font-size="18" fill="#ffffff">I1557_SVG_MARKER</text>
+  <script type="text/javascript"><![CDATA[
+    document.title='I1557_SVG_EXEC_'+document.domain;
+    console.log('I1557_SVG_SCRIPT_EXECUTED',document.domain,location.href);
+  ]]></script>
+</svg>
