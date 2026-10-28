@@ -1,0 +1,13 @@
+{
+  "name": "i2506 js-scheme render probe",
+  "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "logoUri": "/logos/delegatees/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266.png",
+  "date": "2026-10-28",
+  "links": {
+    "website": "javascript:document.title='I2506_JSURL_EXEC'"
+  },
+  "interests": [
+    "i2506-jsurl-probe"
+  ],
+  "description": "Authorized celo.org security assessment (intent 2506). Tests whether a javascript: websiteUrl is stored and rendered as an href. Contains no external requests; safe to close without merging."
+}
