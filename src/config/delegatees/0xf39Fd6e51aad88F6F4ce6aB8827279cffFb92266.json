@@ -1,0 +1,13 @@
+{
+  "name": "i1557 html active-content probe",
+  "address": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "logoUri": "/logos/delegatees/0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266.html",
+  "date": "2026-10-28",
+  "links": {
+    "website": "https://example.com/i1557"
+  },
+  "interests": [
+    "i1557-content-type-probe"
+  ],
+  "description": "Authorized celo.org security assessment marker (intent 1557). File content type test. Safe to close."
+}
